@@ -104,12 +104,12 @@ export default function AuditsPage() {
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">CRO Audits</h1>
-        <p className="text-sm text-[#7A7A7A] mt-1">Generate comprehensive homepage audits for prospects</p>
+        <p className="text-sm text-subtle mt-1">Generate comprehensive homepage audits for prospects</p>
       </div>
 
       {/* Generate new */}
-      <div className="border border-[#404040] rounded-xl bg-[#181818] p-5 mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">New Audit</p>
+      <div className="border border-border rounded-xl bg-surface p-5 mb-8">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">New Audit</p>
         <div className="flex items-end gap-3">
           <div className="flex-1">
             <input
@@ -124,7 +124,7 @@ export default function AuditsPage() {
           <button
             onClick={handleGenerate}
             disabled={!url.trim() || generating}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-5 py-2.5 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border transition-colors disabled:opacity-40"
           >
             {generating ? (
               <>
@@ -137,43 +137,43 @@ export default function AuditsPage() {
           </button>
         </div>
         {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
-        {generating && <p className="text-xs text-[#AAA] mt-2">Scraping page and analysing... this takes 30-60 seconds</p>}
+        {generating && <p className="text-xs text-muted mt-2">Scraping page and analysing... this takes 30-60 seconds</p>}
       </div>
 
       {/* Audits list */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2].map(i => (
-            <div key={i} className="border border-[#E5E5EA] rounded-xl p-4 animate-pulse">
-              <div className="h-4 bg-[#EDEDEF] rounded w-1/3 mb-2" />
-              <div className="h-3 bg-[#EDEDEF] rounded w-1/2" />
+            <div key={i} className="border border-foreground rounded-xl p-4 animate-pulse">
+              <div className="h-4 bg-border rounded w-1/3 mb-2" />
+              <div className="h-3 bg-border rounded w-1/2" />
             </div>
           ))}
         </div>
       ) : audits.length === 0 ? (
-        <div className="border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#AAA]">No audits yet</p>
-          <p className="text-xs text-[#CCC] mt-1">Enter a URL above to generate your first CRO audit</p>
+        <div className="border border-dashed border-foreground rounded-xl p-12 text-center">
+          <p className="text-sm text-muted">No audits yet</p>
+          <p className="text-xs text-muted mt-1">Enter a URL above to generate your first CRO audit</p>
         </div>
       ) : (
-        <div className="divide-y divide-[#333333]">
+        <div className="divide-y divide-border">
           {audits.map((audit) => {
             const date = new Date(audit.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
             const issueCount = audit.issues?.length || 0;
             const criticalCount = audit.issues?.filter(i => i.severity === "critical").length || 0;
 
             return (
-              <div key={audit.id} className="flex items-center justify-between py-4 px-2 hover:bg-[#222222] rounded-lg transition-colors">
+              <div key={audit.id} className="flex items-center justify-between py-4 px-2 hover:bg-surface-raised rounded-lg transition-colors">
                 <Link href={`/sales-engine/audits/${audit.id}`} className="flex-1 min-w-0">
                   <div className="flex items-center gap-3">
-                    <p className="text-sm font-semibold text-[#1A1A1A] capitalize">{audit.brand_name}</p>
+                    <p className="text-sm font-semibold text-surface capitalize">{audit.brand_name}</p>
                     <span className={`text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full ${
                       audit.status === "published" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
                     }`}>
                       {audit.status}
                     </span>
                   </div>
-                  <p className="text-[10px] text-[#AAA] mt-0.5">
+                  <p className="text-[10px] text-muted mt-0.5">
                     {date} · {issueCount} issues{criticalCount > 0 ? ` · ${criticalCount} critical` : ""} · {audit.view_count || 0} views
                   </p>
                 </Link>
@@ -190,7 +190,7 @@ export default function AuditsPage() {
                     <>
                       <button
                         onClick={() => copyLink(audit.token)}
-                        className="p-1.5 text-[#CCC] hover:text-[#1A1A1A] transition-colors"
+                        className="p-1.5 text-muted hover:text-surface transition-colors"
                       >
                         {copiedId === audit.token ? <CheckIcon className="size-3.5 text-emerald-500" /> : <ClipboardDocumentIcon className="size-3.5" />}
                       </button>
@@ -198,7 +198,7 @@ export default function AuditsPage() {
                         href={`/audit/${audit.token}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1.5 text-[#CCC] hover:text-[#1A1A1A] transition-colors"
+                        className="p-1.5 text-muted hover:text-surface transition-colors"
                       >
                         <ArrowTopRightOnSquareIcon className="size-3.5" />
                       </a>
@@ -206,7 +206,7 @@ export default function AuditsPage() {
                   )}
                   <button
                     onClick={() => handleDelete(audit.id)}
-                    className={`p-1.5 transition-colors ${confirmDeleteId === audit.id ? "text-red-500" : "text-[#CCC] hover:text-red-400"}`}
+                    className={`p-1.5 transition-colors ${confirmDeleteId === audit.id ? "text-red-500" : "text-muted hover:text-red-400"}`}
                   >
                     <TrashIcon className="size-3.5" />
                   </button>

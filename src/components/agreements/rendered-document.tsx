@@ -58,7 +58,7 @@ export function RenderedDocument({ agreement }: { agreement: Agreement }) {
         {doc.clauses.map((c) => (
           <li key={c.id}>
             <h2
-              className="text-[15px] font-bold text-[#000] mb-2.5 tracking-tight"
+              className="text-[15px] font-bold text-background mb-2.5 tracking-tight"
               style={{ fontFamily: '"Inter Tight", "Helvetica Neue", sans-serif' }}
             >
               {c.heading}
@@ -118,7 +118,7 @@ function SignatureBlock({
       </div>
       <div
         className={`h-20 border-b-2 ${
-          signed ? "border-[#1A1A1A]" : "border-dashed border-[#B5B5B5]"
+          signed ? "border-surface" : "border-dashed border-[#B5B5B5]"
         } flex items-end px-1 mb-1.5`}
       >
         {signed && signatureImage ? (
@@ -129,13 +129,13 @@ function SignatureBlock({
           />
         ) : signed ? (
           <span
-            className="text-[20px] italic text-[#1A1A1A] pb-1"
+            className="text-[20px] italic text-surface pb-1"
             style={{ fontFamily: '"Brush Script MT", "Lucida Handwriting", cursive' }}
           >
             {signedName}
           </span>
         ) : (
-          <span className="text-[11px] text-[#999] pb-1 italic">
+          <span className="text-[11px] text-subtle pb-1 italic">
             Awaiting signature
           </span>
         )}

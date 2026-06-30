@@ -84,8 +84,8 @@ export default function DiscoveryAuditsListPage() {
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">
             Discovery audits are a strategist tool. Speak to an admin if you
             need access.
           </p>
@@ -107,7 +107,7 @@ export default function DiscoveryAuditsListPage() {
               Discovery Audits
             </h1>
           </div>
-          <p className="text-sm text-[#9CA3AF] max-w-2xl">
+          <p className="text-sm text-muted max-w-2xl">
             The £1,000 pre-signup audit, systemised. Strategist fills in
             findings + plan; output renders as a consistent branded deck at
             /audit-output. Fee credits against the retainer when the client
@@ -116,7 +116,7 @@ export default function DiscoveryAuditsListPage() {
         </div>
         <button
           onClick={createNew}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0"
         >
           <PlusIcon className="size-4" />
           New audit
@@ -126,12 +126,12 @@ export default function DiscoveryAuditsListPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D]" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search brand, contact, strategist"
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-[#0F0F10] ring-1 ring-white/[0.06] text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-emerald-500/40"
+            className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40"
           />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -141,8 +141,8 @@ export default function DiscoveryAuditsListPage() {
               onClick={() => setStatusFilter(f.value)}
               className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                 statusFilter === f.value
-                  ? "bg-white text-[#0C0C0C]"
-                  : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"
+                  ? "bg-white text-background"
+                  : "bg-surface text-muted hover:bg-surface-raised"
               }`}
             >
               {f.label}
@@ -155,12 +155,12 @@ export default function DiscoveryAuditsListPage() {
       {!hydrated ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D] mb-4">
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle mb-4">
             {audits.length === 0
               ? "No audits yet. Start your first one to wow a warm lead."
               : "No audits match the current filter."}
@@ -194,12 +194,12 @@ function AuditRow({ audit }: { audit: DiscoveryAudit }) {
     <li>
       <Link
         href={`/tools/discovery-audit/${audit.id}`}
-        className="block bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all"
+        className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all"
       >
         <div className="flex items-center gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-semibold text-[#E5E5EA] truncate">
+              <span className="text-sm font-semibold text-foreground truncate">
                 {audit.brand_name || "Untitled audit"}
               </span>
               <span
@@ -208,7 +208,7 @@ function AuditRow({ audit }: { audit: DiscoveryAudit }) {
                 {STATUS_LABEL[audit.status]}
               </span>
             </div>
-            <div className="text-[12px] text-[#71757D] flex items-center gap-3 flex-wrap">
+            <div className="text-[12px] text-subtle flex items-center gap-3 flex-wrap">
               {audit.brand_url && <span className="truncate">{audit.brand_url}</span>}
               {audit.revenue_band && <span>· {audit.revenue_band}</span>}
               {audit.ran_by && <span>· {audit.ran_by}</span>}
@@ -221,7 +221,7 @@ function AuditRow({ audit }: { audit: DiscoveryAudit }) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-emerald-300 shrink-0"
+              className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-emerald-300 shrink-0"
             >
               View deck
               <ArrowTopRightOnSquareIcon className="size-3.5" />

@@ -135,7 +135,7 @@ export default function LeadMagnetsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
@@ -144,22 +144,22 @@ export default function LeadMagnetsPage() {
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-[#1B1B1B]">Lead Magnets</h1>
-        <p className="text-sm text-[#999] mt-1">
+        <h1 className="text-xl font-bold text-foreground">Lead Magnets</h1>
+        <p className="text-sm text-subtle mt-1">
           Manage your lead magnet pages, tracked links, and conversion stats.
         </p>
       </div>
 
       {/* Team member selector */}
-      <div className="flex items-center gap-1 bg-[#F5F5F5] rounded-lg p-1 w-fit">
+      <div className="flex items-center gap-1 bg-surface-raised rounded-lg p-1 w-fit">
         {TEAM_MEMBERS.map((m) => (
           <button
             key={m}
             onClick={() => setSelectedMember(m)}
             className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
               selectedMember === m
-                ? "bg-white text-[#1B1B1B] shadow-sm"
-                : "text-[#999] hover:text-[#666]"
+                ? "bg-white text-foreground shadow-sm"
+                : "text-subtle hover:text-subtle"
             }`}
           >
             {m}
@@ -177,52 +177,52 @@ export default function LeadMagnetsPage() {
           return (
             <div
               key={magnet.id}
-              className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden"
+              className="bg-white border border-foreground rounded-xl overflow-hidden"
             >
               {/* Magnet header */}
               <button
                 onClick={() => setExpandedMagnet(isExpanded ? null : magnet.id)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#FAFAFA] transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-raised transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="size-9 bg-[#F0FFF0] rounded-lg flex items-center justify-center shrink-0">
-                    <ChartBarIcon className="size-4.5 text-[#22C55E]" />
+                    <ChartBarIcon className="size-4.5 text-success" />
                   </div>
                   <div className="text-left">
                     <div className="flex items-center gap-2">
-                      <span className="text-[14px] font-semibold text-[#1B1B1B]">{magnet.name}</span>
+                      <span className="text-[14px] font-semibold text-foreground">{magnet.name}</span>
                       <span
                         className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                           magnet.status === "live"
                             ? "bg-[#D1FF4C]/20 text-[#3D7A00]"
                             : magnet.status === "draft"
-                            ? "bg-[#F5F5F5] text-[#999]"
+                            ? "bg-surface-raised text-subtle"
                             : "bg-[#FFF3CD] text-[#856404]"
                         }`}
                       >
                         {magnet.status}
                       </span>
                     </div>
-                    <p className="text-[12px] text-[#999] mt-0.5">{magnet.description}</p>
+                    <p className="text-[12px] text-subtle mt-0.5">{magnet.description}</p>
                   </div>
                 </div>
 
                 {/* Quick stats */}
                 <div className="flex items-center gap-6 mr-2">
                   <div className="text-right">
-                    <p className="text-[18px] font-bold text-[#1B1B1B]">{stats.views}</p>
-                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Views</p>
+                    <p className="text-[18px] font-bold text-foreground">{stats.views}</p>
+                    <p className="text-[10px] text-subtle uppercase tracking-wider">Views</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[18px] font-bold text-[#1B1B1B]">{stats.submissions}</p>
-                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Leads</p>
+                    <p className="text-[18px] font-bold text-foreground">{stats.submissions}</p>
+                    <p className="text-[10px] text-subtle uppercase tracking-wider">Leads</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[18px] font-bold text-[#22C55E]">{stats.cvr}%</p>
-                    <p className="text-[10px] text-[#999] uppercase tracking-wider">CVR</p>
+                    <p className="text-[18px] font-bold text-success">{stats.cvr}%</p>
+                    <p className="text-[10px] text-subtle uppercase tracking-wider">CVR</p>
                   </div>
                   <svg
-                    className={`size-4 text-[#999] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                    className={`size-4 text-subtle transition-transform ${isExpanded ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={2}
@@ -235,25 +235,25 @@ export default function LeadMagnetsPage() {
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="border-t border-[#F0F0F0] px-5 py-5 space-y-6">
+                <div className="border-t border-foreground px-5 py-5 space-y-6">
                   {/* 7-day snapshot */}
                   <div className="flex items-center gap-6 text-sm">
-                    <span className="text-[#999]">Last 7 days:</span>
+                    <span className="text-subtle">Last 7 days:</span>
                     <span className="flex items-center gap-1.5">
-                      <EyeIcon className="size-3.5 text-[#999]" />
-                      <span className="font-medium text-[#1B1B1B]">{stats.recentViews}</span>
-                      <span className="text-[#999]">views</span>
+                      <EyeIcon className="size-3.5 text-subtle" />
+                      <span className="font-medium text-foreground">{stats.recentViews}</span>
+                      <span className="text-subtle">views</span>
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <PaperAirplaneIcon className="size-3.5 text-[#999]" />
-                      <span className="font-medium text-[#1B1B1B]">{stats.recentSubmissions}</span>
-                      <span className="text-[#999]">leads</span>
+                      <PaperAirplaneIcon className="size-3.5 text-subtle" />
+                      <span className="font-medium text-foreground">{stats.recentSubmissions}</span>
+                      <span className="text-subtle">leads</span>
                     </span>
                     <div className="ml-auto flex items-center gap-3">
                       {magnet.id === "audit" && (
                         <a
                           href="/sales-engine/audits/portfolio"
-                          className="flex items-center gap-1 text-[12px] text-[#666] hover:text-[#1B1B1B] transition-colors"
+                          className="flex items-center gap-1 text-[12px] text-subtle hover:text-foreground transition-colors"
                         >
                           <svg className="size-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
@@ -274,7 +274,7 @@ export default function LeadMagnetsPage() {
 
                   {/* Tracked links */}
                   <div>
-                    <h3 className="text-[12px] font-semibold text-[#1B1B1B] uppercase tracking-wider mb-3">
+                    <h3 className="text-[12px] font-semibold text-foreground uppercase tracking-wider mb-3">
                       Tracked Links — {selectedMember}
                     </h3>
                     <div className="space-y-2">
@@ -294,23 +294,23 @@ export default function LeadMagnetsPage() {
                         return (
                           <div
                             key={key}
-                            className="flex items-center gap-3 bg-[#FAFAFA] border border-[#EDEDEF] rounded-lg px-4 py-2.5 group"
+                            className="flex items-center gap-3 bg-surface-raised border border-border rounded-lg px-4 py-2.5 group"
                           >
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="text-[13px] font-medium text-[#1B1B1B]">{link.label}</span>
-                                <span className="text-[11px] text-[#BBB]">{link.description}</span>
+                                <span className="text-[13px] font-medium text-foreground">{link.label}</span>
+                                <span className="text-[11px] text-muted">{link.description}</span>
                               </div>
-                              <p className="text-[11px] text-[#999] font-mono truncate mt-0.5">{link.ref}</p>
+                              <p className="text-[11px] text-subtle font-mono truncate mt-0.5">{link.ref}</p>
                             </div>
 
                             {/* Per-link stats */}
                             <div className="flex items-center gap-4 text-[11px] shrink-0">
-                              <span className="text-[#999]">
-                                <span className="font-medium text-[#1B1B1B]">{refViews}</span> views
+                              <span className="text-subtle">
+                                <span className="font-medium text-foreground">{refViews}</span> views
                               </span>
-                              <span className="text-[#999]">
-                                <span className="font-medium text-[#1B1B1B]">{refLeads}</span> leads
+                              <span className="text-subtle">
+                                <span className="font-medium text-foreground">{refLeads}</span> leads
                               </span>
                             </div>
 
@@ -319,7 +319,7 @@ export default function LeadMagnetsPage() {
                               className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-medium transition-all shrink-0 ${
                                 isCopied
                                   ? "bg-[#D1FF4C]/30 text-[#3D7A00]"
-                                  : "bg-white border border-[#E5E5EA] text-[#666] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                                  : "bg-white border border-foreground text-subtle hover:border-surface hover:text-foreground"
                               }`}
                             >
                               {isCopied ? (
@@ -341,7 +341,7 @@ export default function LeadMagnetsPage() {
                   {/* Source breakdown */}
                   {Object.keys(stats.sourceMap).length > 0 && (
                     <div>
-                      <h3 className="text-[12px] font-semibold text-[#1B1B1B] uppercase tracking-wider mb-3">
+                      <h3 className="text-[12px] font-semibold text-foreground uppercase tracking-wider mb-3">
                         Traffic Sources
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -358,20 +358,20 @@ export default function LeadMagnetsPage() {
                             return (
                               <div
                                 key={source}
-                                className="flex items-center justify-between bg-[#FAFAFA] border border-[#EDEDEF] rounded-lg px-3 py-2"
+                                className="flex items-center justify-between bg-surface-raised border border-border rounded-lg px-3 py-2"
                               >
                                 <div className="min-w-0">
-                                  <p className="text-[12px] font-medium text-[#1B1B1B]">{detail}</p>
-                                  <p className="text-[10px] text-[#999]">{label}</p>
+                                  <p className="text-[12px] font-medium text-foreground">{detail}</p>
+                                  <p className="text-[10px] text-subtle">{label}</p>
                                 </div>
                                 <div className="flex items-center gap-4 text-[11px] shrink-0">
-                                  <span className="text-[#999]">
-                                    <span className="font-medium text-[#1B1B1B]">{data.views}</span> views
+                                  <span className="text-subtle">
+                                    <span className="font-medium text-foreground">{data.views}</span> views
                                   </span>
-                                  <span className="text-[#999]">
-                                    <span className="font-medium text-[#1B1B1B]">{data.submissions}</span> leads
+                                  <span className="text-subtle">
+                                    <span className="font-medium text-foreground">{data.submissions}</span> leads
                                   </span>
-                                  <span className="font-medium text-[#22C55E]">{srcCvr}%</span>
+                                  <span className="font-medium text-success">{srcCvr}%</span>
                                 </div>
                               </div>
                             );
@@ -387,14 +387,14 @@ export default function LeadMagnetsPage() {
       </div>
 
       {/* Empty state for adding more */}
-      <div className="border-2 border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
-        <div className="size-10 bg-[#F5F5F5] rounded-xl flex items-center justify-center mx-auto mb-3">
-          <svg className="size-5 text-[#999]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <div className="border-2 border-dashed border-foreground rounded-xl p-8 text-center">
+        <div className="size-10 bg-surface-raised rounded-xl flex items-center justify-center mx-auto mb-3">
+          <svg className="size-5 text-subtle" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
         </div>
-        <p className="text-[13px] font-medium text-[#1B1B1B]">Add another lead magnet</p>
-        <p className="text-[12px] text-[#999] mt-1">
+        <p className="text-[13px] font-medium text-foreground">Add another lead magnet</p>
+        <p className="text-[12px] text-subtle mt-1">
           Checklists, calculators, templates — each gets its own tracked links and analytics.
         </p>
       </div>

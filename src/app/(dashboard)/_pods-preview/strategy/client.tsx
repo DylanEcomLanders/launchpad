@@ -63,19 +63,19 @@ export default function StrategyClient() {
       </AnnotationStrip>
 
       <div className="mb-1 flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-semibold text-[#E5E5EA]">Strategy</h1>
-        <span className="rounded-full border border-[#2A2A2A] bg-[#222222] px-2 py-0.5 text-[11px] text-[#71757D]">
+        <h1 className="text-2xl font-semibold text-foreground">Strategy</h1>
+        <span className="rounded-full border border-border bg-surface-raised px-2 py-0.5 text-[11px] text-subtle">
           {LEAD_STRATEGIST.name} · {LEAD_STRATEGIST.role}
         </span>
         <button
           onClick={store.reset}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-[#2A2A2A] px-2 py-1 text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA]"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-subtle hover:text-foreground"
           title="Clear saved changes and restore the seed data"
         >
           <ArrowPathIcon className="size-3.5" /> Reset preview data
         </button>
       </div>
-      <p className="mb-6 text-sm text-[#71757D]">Across all three pods · changes save to this browser.</p>
+      <p className="mb-6 text-sm text-subtle">Across all three pods · changes save to this browser.</p>
 
       {/* Touchpoints */}
       <div className="mb-8 grid gap-4 lg:grid-cols-3">
@@ -107,14 +107,14 @@ export default function StrategyClient() {
             <button
               key={c.id}
               onClick={() => setOpenClientId(c.id)}
-              className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
+              className="rounded-xl border border-border bg-surface p-4 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-muted hover:shadow-[var(--shadow-card)]"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-[#E5E5EA]">{c.name}</span>
-                <span className="text-[11px] text-[#71757D]">{POD_BY_ID[c.podId]?.tagline}</span>
+                <span className="text-sm font-semibold text-foreground">{c.name}</span>
+                <span className="text-[11px] text-subtle">{POD_BY_ID[c.podId]?.tagline}</span>
               </div>
-              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-[#71757D]">{st?.thesis}</p>
-              <div className="mt-3 flex items-center gap-2 text-[11px] text-[#71757D]">
+              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-subtle">{st?.thesis}</p>
+              <div className="mt-3 flex items-center gap-2 text-[11px] text-subtle">
                 <span>{st?.focus.length ?? 0} focus areas</span>
                 <span>·</span>
                 <span>{st?.hypotheses.length ?? 0} hypotheses</span>
@@ -140,14 +140,14 @@ export default function StrategyClient() {
 
 function TouchpointColumn({ icon, title, count, empty, children }: { icon: React.ReactNode; title: string; count: number; empty: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+    <div className="rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
       <div className="mb-3 flex items-center gap-2">
-        <span className="text-[#71757D]">{icon}</span>
-        <h3 className="text-[13px] font-semibold text-[#E5E5EA]">{title}</h3>
-        <span className="ml-auto text-[11px] tabular-nums text-[#71757D]">{count}</span>
+        <span className="text-subtle">{icon}</span>
+        <h3 className="text-[13px] font-semibold text-foreground">{title}</h3>
+        <span className="ml-auto text-[11px] tabular-nums text-subtle">{count}</span>
       </div>
       {count === 0 ? (
-        <p className="py-4 text-center text-[12px] text-[#C5C5C5]">{empty}</p>
+        <p className="py-4 text-center text-[12px] text-muted">{empty}</p>
       ) : (
         <div className="space-y-1.5">{children}</div>
       )}
@@ -157,15 +157,15 @@ function TouchpointColumn({ icon, title, count, empty, children }: { icon: React
 
 function TouchpointRow({ task, meta, idleLabel, doneLabel, done, onAction }: { task: Task; meta: string; idleLabel: string; doneLabel: string; done: boolean; onAction: () => void }) {
   return (
-    <div className="rounded-lg border border-[#404040] bg-[#0C0C0C] p-2.5">
-      <div className="text-[13px] font-medium text-[#E5E5EA]">{task.title}</div>
-      <div className="mt-0.5 text-[11px] text-[#71757D]">
+    <div className="rounded-lg border border-border bg-background p-2.5">
+      <div className="text-[13px] font-medium text-foreground">{task.title}</div>
+      <div className="mt-0.5 text-[11px] text-subtle">
         {CLIENT_BY_ID[task.clientId]?.name} · {meta}
       </div>
       <button
         onClick={onAction}
         className={`mt-2 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-all ${
-          done ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:text-[#E5E5EA]"
+          done ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-border bg-surface text-subtle hover:text-foreground"
         }`}
       >
         {done ? <CheckSolid className="size-3.5" /> : <CheckCircleIcon className="size-3.5" />}
@@ -180,15 +180,15 @@ function TestResultChip({ task }: { task: Task }) {
   if (!r) return null;
   if (r.status === "winner") return <span className="text-[11px] font-semibold text-emerald-700">Winner · +{r.lift}%</span>;
   if (r.status === "loser") return <span className="text-[11px] font-semibold text-rose-700">Lost · {r.lift}%</span>;
-  return <span className="text-[11px] font-medium text-[#71757D]">Awaiting results</span>;
+  return <span className="text-[11px] font-medium text-subtle">Awaiting results</span>;
 }
 
 function TestRow({ task }: { task: Task }) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-lg border border-[#F0F0F2] bg-[#0C0C0C] p-2.5">
+    <div className="flex items-center justify-between gap-2 rounded-lg border border-surface-raised bg-background p-2.5">
       <div className="min-w-0">
-        <div className="truncate text-[13px] font-medium text-[#E5E5EA]">{task.title}</div>
-        <div className="text-[11px] text-[#71757D]">{CLIENT_BY_ID[task.clientId]?.name}</div>
+        <div className="truncate text-[13px] font-medium text-foreground">{task.title}</div>
+        <div className="text-[11px] text-subtle">{CLIENT_BY_ID[task.clientId]?.name}</div>
       </div>
       <TestResultChip task={task} />
     </div>
@@ -196,7 +196,7 @@ function TestRow({ task }: { task: Task }) {
 }
 
 const HYP_STATUS_META: Record<HypStatus, { label: string; cls: string }> = {
-  idea: { label: "Idea", cls: "bg-[#222222] text-[#71757D] border-[#2A2A2A]" },
+  idea: { label: "Idea", cls: "bg-surface-raised text-subtle border-border" },
   testing: { label: "Testing", cls: "bg-blue-50 text-blue-700 border-blue-200" },
   validated: { label: "Validated", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
 };
@@ -222,14 +222,14 @@ export function ClientStrategyPanel({
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative h-full w-full max-w-md overflow-y-auto border-l border-[#2A2A2A] bg-[#181818] p-6 shadow-[var(--shadow-elevated)]">
+      <div className="relative h-full w-full max-w-md overflow-y-auto border-l border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">Strategy home</div>
-            <h3 className="mt-1 text-lg font-semibold text-[#E5E5EA]">{client?.name}</h3>
-            <p className="text-[12px] text-[#71757D]">{POD_BY_ID[client?.podId ?? ""]?.tagline}</p>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-subtle">Strategy home</div>
+            <h3 className="mt-1 text-lg font-semibold text-foreground">{client?.name}</h3>
+            <p className="text-[12px] text-subtle">{POD_BY_ID[client?.podId ?? ""]?.tagline}</p>
           </div>
-          <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]">
+          <button onClick={onClose} className="text-subtle hover:text-foreground">
             <XMarkIcon className="size-5" />
           </button>
         </div>
@@ -241,7 +241,7 @@ export function ClientStrategyPanel({
             value={st.thesis}
             onChange={(e) => store.setThesis(clientId, e.target.value)}
             rows={3}
-            className="w-full resize-none rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2 text-[13px] leading-relaxed text-[#3A3A3A] focus:border-white focus:bg-[#181818] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]/10"
+            className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[13px] leading-relaxed text-subtle focus:border-white focus:bg-surface focus:outline-none focus:ring-1 focus:ring-surface/10"
           />
         </div>
 
@@ -250,9 +250,9 @@ export function ClientStrategyPanel({
           <SectionHeader>Focus areas</SectionHeader>
           <div className="flex flex-wrap gap-1.5">
             {st.focus.map((f, i) => (
-              <span key={i} className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[12px] text-[#3A3A3A]">
+              <span key={i} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[12px] text-subtle">
                 {f}
-                <button onClick={() => store.removeFocus(clientId, i)} className="text-[#C5C5C5] hover:text-rose-600">
+                <button onClick={() => store.removeFocus(clientId, i)} className="text-muted hover:text-rose-600">
                   <XMarkIcon className="size-3.5" />
                 </button>
               </span>
@@ -269,7 +269,7 @@ export function ClientStrategyPanel({
             className="mt-2 flex gap-2"
           >
             <input value={focusDraft} onChange={(e) => setFocusDraft(e.target.value)} placeholder="Add focus area…" className={`${inputClass} py-1.5 text-[12px]`} />
-            <button type="submit" className="shrink-0 rounded-lg border border-[#2A2A2A] px-2.5 text-[#71757D] hover:text-[#E5E5EA]">
+            <button type="submit" className="shrink-0 rounded-lg border border-border px-2.5 text-subtle hover:text-foreground">
               <PlusIcon className="size-4" />
             </button>
           </form>
@@ -280,11 +280,11 @@ export function ClientStrategyPanel({
           <SectionHeader>Hypotheses</SectionHeader>
           <div className="space-y-1.5">
             {st.hypotheses.map((h) => (
-              <div key={h.id} className="flex items-center gap-2 rounded-lg border border-[#F0F0F2] bg-[#181818] p-2">
+              <div key={h.id} className="flex items-center gap-2 rounded-lg border border-surface-raised bg-surface p-2">
                 <input
                   value={h.text}
                   onChange={(e) => store.updateHyp(clientId, h.id, { text: e.target.value })}
-                  className="min-w-0 flex-1 bg-transparent text-[13px] text-[#3A3A3A] focus:outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-[13px] text-subtle focus:outline-none"
                 />
                 <button
                   onClick={() => store.cycleHyp(clientId, h.id)}
@@ -293,7 +293,7 @@ export function ClientStrategyPanel({
                 >
                   {HYP_STATUS_META[h.status].label}
                 </button>
-                <button onClick={() => store.removeHyp(clientId, h.id)} className="shrink-0 text-[#C5C5C5] hover:text-rose-600">
+                <button onClick={() => store.removeHyp(clientId, h.id)} className="shrink-0 text-muted hover:text-rose-600">
                   <XMarkIcon className="size-4" />
                 </button>
               </div>
@@ -310,7 +310,7 @@ export function ClientStrategyPanel({
             className="mt-2 flex gap-2"
           >
             <input value={hypDraft} onChange={(e) => setHypDraft(e.target.value)} placeholder="Add a hypothesis…" className={`${inputClass} py-1.5 text-[12px]`} />
-            <button type="submit" className="shrink-0 rounded-lg border border-[#2A2A2A] px-2.5 text-[#71757D] hover:text-[#E5E5EA]">
+            <button type="submit" className="shrink-0 rounded-lg border border-border px-2.5 text-subtle hover:text-foreground">
               <PlusIcon className="size-4" />
             </button>
           </form>
@@ -320,12 +320,12 @@ export function ClientStrategyPanel({
         <div className="mt-5">
           <SectionHeader>Tests for this client</SectionHeader>
           {tests.length === 0 ? (
-            <p className="text-[12px] text-[#C5C5C5]">No tests shipped yet.</p>
+            <p className="text-[12px] text-muted">No tests shipped yet.</p>
           ) : (
             <div className="space-y-1.5">
               {tests.map((t) => (
-                <div key={t.id} className="flex items-center justify-between gap-2 rounded-lg border border-[#F0F0F2] bg-[#181818] p-2.5">
-                  <span className="truncate text-[13px] text-[#3A3A3A]">{t.title}</span>
+                <div key={t.id} className="flex items-center justify-between gap-2 rounded-lg border border-surface-raised bg-surface p-2.5">
+                  <span className="truncate text-[13px] text-subtle">{t.title}</span>
                   <TestResultChip task={t} />
                 </div>
               ))}
@@ -347,27 +347,27 @@ export function ClientStrategyPanel({
             className="mb-3 flex gap-2"
           >
             <input value={noteDraft} onChange={(e) => setNoteDraft(e.target.value)} placeholder="Add a note…" className={`${inputClass} py-1.5 text-[12px]`} />
-            <button type="submit" className="shrink-0 rounded-lg bg-[#1B1B1B] px-3 text-sm font-medium text-white hover:bg-[#F3F4F6]">
+            <button type="submit" className="shrink-0 rounded-lg bg-surface px-3 text-sm font-medium text-white hover:bg-foreground">
               Add
             </button>
           </form>
           {st.notes.length === 0 ? (
-            <p className="text-[12px] text-[#C5C5C5]">No notes yet.</p>
+            <p className="text-[12px] text-muted">No notes yet.</p>
           ) : (
             <div className="space-y-2.5">
               {st.notes.map((n) => (
-                <div key={n.id} className="border-l-2 border-[#2A2A2A] pl-3">
-                  <div className="text-[11px] text-[#71757D]">
+                <div key={n.id} className="border-l-2 border-border pl-3">
+                  <div className="text-[11px] text-subtle">
                     {fmtDayMonth(n.at)} · {LEAD_STRATEGIST.name}
                   </div>
-                  <div className="text-[13px] text-[#3A3A3A]">{n.text}</div>
+                  <div className="text-[13px] text-subtle">{n.text}</div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="mt-6 flex items-center gap-2 border-t border-[#F0F0F2] pt-4 text-[12px] text-[#71757D]">
+        <div className="mt-6 flex items-center gap-2 border-t border-surface-raised pt-4 text-[12px] text-subtle">
           <Avatar name={LEAD_STRATEGIST.name} id={LEAD_STRATEGIST.id} size={20} />
           Owned by {LEAD_STRATEGIST.name} · saved to this browser
         </div>

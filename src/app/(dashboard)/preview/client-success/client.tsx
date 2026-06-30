@@ -138,7 +138,7 @@ function StatusDot({ status }: { status: Status }) {
   if (status === "active") {
     return <span className="block size-2.5 rounded-full bg-amber-400 ring-4 ring-amber-400/15" />;
   }
-  return <span className="block size-2.5 rounded-full bg-[#3A3A3A]" />;
+  return <span className="block size-2.5 rounded-full bg-subtle" />;
 }
 
 /* Doc cell - the three-state lifecycle control + a view link.
@@ -155,7 +155,7 @@ function DocCell({
   const view = (
     <Link
       href={output.href}
-      className="inline-flex items-center justify-center size-7 rounded-lg text-[#71757D] hover:text-cyan-200 hover:bg-white/[0.04]"
+      className="inline-flex items-center justify-center size-7 rounded-lg text-subtle hover:text-cyan-200 hover:bg-white/[0.04]"
       title="View doc"
     >
       <ArrowTopRightOnSquareIcon className="size-4" />
@@ -192,7 +192,7 @@ function DocCell({
   return (
     <Link
       href={output.href}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] whitespace-nowrap shrink-0"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-white text-background hover:bg-foreground whitespace-nowrap shrink-0"
     >
       <PlusIcon className="size-3.5" />
       Create
@@ -232,7 +232,7 @@ export default function ClientSuccessPreview() {
   }
 
   return (
-    <div className="min-h-full bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-full bg-background text-foreground">
       <div className="max-w-6xl mx-auto px-8 py-8">
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 ring-1 ring-amber-500/30 text-[12px] text-amber-200 mb-6">
           <span className="size-1.5 rounded-full bg-amber-400" />
@@ -298,11 +298,11 @@ function Home({
       <div className="flex items-end justify-between gap-4 mb-7">
         <div>
           <h1 className="text-2xl font-semibold">Client success</h1>
-          <p className="text-[14px] text-[#9CA3AF] mt-1">{ENGAGEMENTS.length} active clients</p>
+          <p className="text-[14px] text-muted mt-1">{ENGAGEMENTS.length} active clients</p>
         </div>
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-white text-background hover:bg-foreground"
         >
           <PlusIcon className="size-4" />
           Add engagement
@@ -317,32 +317,32 @@ function Home({
       </div>
 
       {/* Coming up board */}
-      <h2 className="text-[12px] uppercase tracking-[0.08em] text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+      <h2 className="text-[12px] uppercase tracking-[0.08em] text-subtle font-semibold mb-3 flex items-center gap-2">
         <span className="size-1.5 rounded-full bg-sky-400" />
         Coming up · across all clients
       </h2>
-      <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] divide-y divide-white/[0.05] mb-10">
+      <div className="bg-background rounded-2xl ring-1 ring-white/[0.05] divide-y divide-white/[0.05] mb-10">
         {comingUp.map((r) => {
           const out = resolveOutput(r);
           return (
             <div key={r.id} className="flex items-center gap-4 px-6 py-4">
               <StatusDot status={r.status} />
               <div className="min-w-0 flex-1">
-                <div className="text-[15px] text-[#E5E5EA] truncate">{r.title}</div>
-                <div className="text-[12px] text-[#71757D] mt-0.5">{r.client} · {r.owner}</div>
+                <div className="text-[15px] text-foreground truncate">{r.title}</div>
+                <div className="text-[12px] text-subtle mt-0.5">{r.client} · {r.owner}</div>
               </div>
-              <span className="text-[13px] text-[#71757D] tabular-nums shrink-0 mr-2">{r.date}</span>
+              <span className="text-[13px] text-subtle tabular-nums shrink-0 mr-2">{r.date}</span>
               {out ? (
                 <DocCell output={out} onMarkSent={() => onMarkSent(r.id)} />
               ) : (
-                <span className="text-[11px] text-[#5A5C61] w-[64px] text-center shrink-0">deliverable</span>
+                <span className="text-[11px] text-subtle w-[64px] text-center shrink-0">deliverable</span>
               )}
             </div>
           );
         })}
       </div>
 
-      <h2 className="text-[12px] uppercase tracking-[0.08em] text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+      <h2 className="text-[12px] uppercase tracking-[0.08em] text-subtle font-semibold mb-3 flex items-center gap-2">
         <span className="size-1.5 rounded-full bg-emerald-400" />
         Clients
       </h2>
@@ -351,7 +351,7 @@ function Home({
           <button
             key={e.id}
             onClick={() => onOpen(e.id)}
-            className="w-full text-left bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] hover:ring-white/[0.14] transition-all px-6 py-5"
+            className="w-full text-left bg-background rounded-2xl ring-1 ring-white/[0.05] hover:ring-white/[0.14] transition-all px-6 py-5"
           >
             <div className="flex items-center gap-4">
               <span className="inline-flex items-center justify-center size-11 rounded-xl bg-gradient-to-br from-sky-500/25 to-blue-600/25 ring-1 ring-sky-500/25 text-[14px] font-semibold text-sky-100 shrink-0">
@@ -362,12 +362,12 @@ function Home({
                   <span className="text-[17px] font-semibold truncate">{e.name}</span>
                   <span className={`size-2 rounded-full shrink-0 ${e.health === "on-track" ? "bg-emerald-400" : "bg-amber-400"}`} />
                 </div>
-                <div className="text-[13px] text-[#71757D] mt-0.5">
+                <div className="text-[13px] text-subtle mt-0.5">
                   {TYPE_LABEL[e.type]}
                   {e.tier ? ` · ${e.tier}` : ""} · {e.progressLabel}
                 </div>
               </div>
-              <ArrowRightIcon className="size-4 text-[#5A5C61] shrink-0" />
+              <ArrowRightIcon className="size-4 text-subtle shrink-0" />
             </div>
           </button>
         ))}
@@ -389,12 +389,12 @@ function StatCard({
 }) {
   const toneText = tone === "amber" ? "text-amber-300" : "text-sky-300";
   return (
-    <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] px-6 py-5">
-      <div className="text-[12px] uppercase tracking-wider text-[#71757D] font-medium">{label}</div>
-      <div className={`text-[32px] leading-none font-semibold tabular-nums mt-3 ${value === 0 ? "text-[#5A5C61]" : toneText}`}>
+    <div className="bg-background rounded-2xl ring-1 ring-white/[0.05] px-6 py-5">
+      <div className="text-[12px] uppercase tracking-wider text-subtle font-medium">{label}</div>
+      <div className={`text-[32px] leading-none font-semibold tabular-nums mt-3 ${value === 0 ? "text-subtle" : toneText}`}>
         {value}
       </div>
-      {hint && <div className="text-[11px] text-[#5A5C61] mt-2">{hint}</div>}
+      {hint && <div className="text-[11px] text-subtle mt-2">{hint}</div>}
     </div>
   );
 }
@@ -416,7 +416,7 @@ function Detail({
     <div>
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] mb-5"
+        className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground mb-5"
       >
         <ArrowLeftIcon className="size-4" />
         Dashboard
@@ -429,7 +429,7 @@ function Detail({
         <div>
           <h1 className="text-2xl font-semibold">{e.name}</h1>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[13px] text-[#9CA3AF]">
+            <span className="text-[13px] text-muted">
               {TYPE_LABEL[e.type]}
               {e.tier ? ` · ${e.tier}` : ""} · {e.progressLabel}
             </span>
@@ -442,7 +442,7 @@ function Detail({
         </div>
       </div>
 
-      <div className="text-[13px] font-medium text-[#71757D] mb-3">
+      <div className="text-[13px] font-medium text-subtle mb-3">
         {e.type === "retainer"
           ? "The engine: what the client gets, and when"
           : "Deliverables + client-facing dates"}
@@ -460,14 +460,14 @@ function Detail({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className={`text-[15px] font-medium ${s.status === "upcoming" ? "text-[#9CA3AF]" : "text-[#E5E5EA]"}`}>
+                    <span className={`text-[15px] font-medium ${s.status === "upcoming" ? "text-muted" : "text-foreground"}`}>
                       {s.title}
                     </span>
-                    <span className="text-[13px] text-[#71757D] tabular-nums shrink-0">{s.date}</span>
+                    <span className="text-[13px] text-subtle tabular-nums shrink-0">{s.date}</span>
                   </div>
-                  <div className="text-[13px] text-[#71757D] mt-0.5">{s.detail}</div>
+                  <div className="text-[13px] text-subtle mt-0.5">{s.detail}</div>
                   <div className="flex items-center justify-between gap-3 mt-1.5">
-                    <span className="text-[12px] text-[#5A5C61]">Owner: {s.owner}</span>
+                    <span className="text-[12px] text-subtle">Owner: {s.owner}</span>
                     {out && <DocCell output={out} onMarkSent={() => onMarkSent(s.id)} />}
                   </div>
                 </div>
@@ -489,14 +489,14 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
     <div>
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] mb-5"
+        className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground mb-5"
       >
         <ArrowLeftIcon className="size-4" />
         Cancel
       </button>
 
       <h1 className="text-2xl font-semibold mb-1">Add engagement</h1>
-      <p className="text-[14px] text-[#9CA3AF] mb-6">
+      <p className="text-[14px] text-muted mb-6">
         Sets up the success tracker. Would also spin up the delivery board.
       </p>
 
@@ -504,7 +504,7 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
         <Field label="Client name">
           <input
             placeholder="Acme Co"
-            className="w-full h-11 px-3.5 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.06] text-[14px] text-[#E5E5EA] placeholder:text-[#5A5C61] focus:outline-none focus:ring-white/[0.16]"
+            className="w-full h-11 px-3.5 bg-background rounded-lg ring-1 ring-white/[0.06] text-[14px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-white/[0.16]"
           />
         </Field>
 
@@ -516,12 +516,12 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
                 onClick={() => setType(t)}
                 className={`px-4 py-3 rounded-lg text-left ring-1 transition-colors ${
                   type === t
-                    ? "bg-white text-[#0C0C0C] ring-white"
-                    : "bg-[#0F0F10] text-[#9CA3AF] ring-white/[0.06] hover:text-[#E5E5EA]"
+                    ? "bg-white text-background ring-white"
+                    : "bg-background text-muted ring-white/[0.06] hover:text-foreground"
                 }`}
               >
                 <div className="text-[14px] font-semibold">{TYPE_LABEL[t]}</div>
-                <div className={`text-[12px] mt-0.5 ${type === t ? "text-[#0C0C0C]/60" : "text-[#71757D]"}`}>
+                <div className={`text-[12px] mt-0.5 ${type === t ? "text-background/60" : "text-subtle"}`}>
                   {t === "retainer" ? "Runs the success engine" : "Fixed deliverables + dates"}
                 </div>
               </button>
@@ -533,12 +533,12 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
           <Field label="Tier">
             <div className="grid grid-cols-3 gap-2.5">
               {["Entry", "Core", "VIP"].map((tier) => (
-                <div key={tier} className="px-3 py-2.5 rounded-lg text-center text-[13px] bg-[#0F0F10] ring-1 ring-white/[0.06] text-[#9CA3AF]">
+                <div key={tier} className="px-3 py-2.5 rounded-lg text-center text-[13px] bg-background ring-1 ring-white/[0.06] text-muted">
                   {tier}
                 </div>
               ))}
             </div>
-            <p className="text-[12px] text-[#5A5C61] mt-2">
+            <p className="text-[12px] text-subtle mt-2">
               Tier sets delivery volume on the board. The success cadence is the same for all three.
             </p>
           </Field>
@@ -546,12 +546,12 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
           <Field label="Deliverables">
             <div className="space-y-2">
               {["Framing page", "Product page", "Cart"].map((d) => (
-                <div key={d} className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg bg-[#0F0F10] ring-1 ring-white/[0.06]">
-                  <span className="text-[14px] text-[#E5E5EA]">{d}</span>
-                  <span className="text-[12px] text-[#5A5C61]">client date</span>
+                <div key={d} className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg bg-background ring-1 ring-white/[0.06]">
+                  <span className="text-[14px] text-foreground">{d}</span>
+                  <span className="text-[12px] text-subtle">client date</span>
                 </div>
               ))}
-              <button className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] mt-1">
+              <button className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground mt-1">
                 <PlusIcon className="size-4" />
                 Add deliverable
               </button>
@@ -562,15 +562,15 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
         <Field label="Kickoff date">
           <input
             type="date"
-            className="w-full h-11 px-3.5 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.06] text-[14px] text-[#E5E5EA] focus:outline-none focus:ring-white/[0.16]"
+            className="w-full h-11 px-3.5 bg-background rounded-lg ring-1 ring-white/[0.06] text-[14px] text-foreground focus:outline-none focus:ring-white/[0.16]"
           />
         </Field>
 
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[14px] font-semibold bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]">
+        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[14px] font-semibold bg-white text-background hover:bg-foreground">
           Create engagement
           <ArrowRightIcon className="size-4" />
         </button>
-        <p className="text-[12px] text-[#5A5C61]">
+        <p className="text-[12px] text-subtle">
           Schedule auto-fills off the kickoff date - same template every time.
         </p>
       </div>
@@ -581,7 +581,7 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-[12px] font-medium uppercase tracking-wider text-[#71757D] mb-2">
+      <label className="block text-[12px] font-medium uppercase tracking-wider text-subtle mb-2">
         {label}
       </label>
       {children}

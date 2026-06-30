@@ -40,17 +40,17 @@ export default function TeamQAPage() {
             <h1 className="text-2xl md:text-3xl font-bold mb-1">
               Dev QA Checklist
             </h1>
-            <p className="text-sm text-[#71757D]">
+            <p className="text-sm text-subtle">
               Evergreen reference — run through before handing anything to a client. Progress saves to this browser.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs font-medium text-[#71757D]">
+            <span className="text-xs font-medium text-subtle">
               {totalDone} / {total}
             </span>
             <button
               onClick={reset}
-              className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+              className="text-xs font-medium text-subtle hover:text-foreground transition-colors"
             >
               Reset
             </button>
@@ -65,29 +65,29 @@ export default function TeamQAPage() {
             return (
               <div key={section.label}>
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
                     {section.label}
                   </h2>
-                  <span className="text-[10px] text-[#9CA3AF] tabular-nums">
+                  <span className="text-[10px] text-muted tabular-nums">
                     {sectionDone}/{section.count}
                   </span>
                 </div>
-                <div className="border border-[#2A2A2A] rounded-lg bg-[#181818] divide-y divide-[#2A2A2A]">
+                <div className="border border-border rounded-lg bg-surface divide-y divide-border">
                   {DEV_HANDOFF_ITEMS.slice(section.startIndex, section.startIndex + section.count).map((item, offset) => {
                     const idx = section.startIndex + offset;
                     const isChecked = !!checked[idx];
                     return (
                       <label
                         key={idx}
-                        className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-[#0C0C0C] transition-colors"
+                        className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-background transition-colors"
                       >
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggle(idx)}
-                          className="mt-0.5 size-4 accent-[#1B1B1B] cursor-pointer shrink-0"
+                          className="mt-0.5 size-4 accent-surface cursor-pointer shrink-0"
                         />
-                        <span className={`text-sm leading-relaxed ${isChecked ? "text-[#9CA3AF] line-through" : "text-[#E5E5EA]"}`}>
+                        <span className={`text-sm leading-relaxed ${isChecked ? "text-muted line-through" : "text-foreground"}`}>
                           {item}
                         </span>
                       </label>

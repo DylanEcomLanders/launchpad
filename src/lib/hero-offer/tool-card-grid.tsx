@@ -29,7 +29,7 @@ const STATUS_META: Record<ToolStatus, { label: string; tint: string }> = {
   live: { label: "Live", tint: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30" },
   shell: { label: "Shell", tint: "bg-zinc-500/20 text-zinc-200 ring-1 ring-zinc-500/30" },
   wip: { label: "WIP", tint: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30" },
-  soon: { label: "Soon", tint: "bg-[#222222] text-[#71757D]" },
+  soon: { label: "Soon", tint: "bg-surface-raised text-subtle" },
 };
 
 export type Accent = "emerald" | "cyan" | "sky";
@@ -57,7 +57,7 @@ export function ToolCardGrid({
       {cards.map((c) => {
         const Icon = c.icon;
         const inner = (
-          <div className={`group h-full bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] ${ACCENT_HOVER[accent]} shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all`}>
+          <div className={`group h-full bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] ${ACCENT_HOVER[accent]} shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all`}>
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className={`size-10 rounded-xl bg-gradient-to-br ${ACCENT_GRADIENT[accent]} flex items-center justify-center transition-transform group-hover:scale-105`}>
                 <Icon className="size-5 text-white" />
@@ -66,8 +66,8 @@ export function ToolCardGrid({
                 {STATUS_META[c.status].label}
               </span>
             </div>
-            <div className="text-sm font-semibold text-[#E5E5EA] mb-1">{c.label}</div>
-            <p className="text-[12px] text-[#9CA3AF] leading-relaxed">{c.blurb}</p>
+            <div className="text-sm font-semibold text-foreground mb-1">{c.label}</div>
+            <p className="text-[12px] text-muted leading-relaxed">{c.blurb}</p>
           </div>
         );
         if (c.external) {

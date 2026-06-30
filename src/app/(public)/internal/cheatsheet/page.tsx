@@ -45,18 +45,18 @@ function WIPGate({ children }: { children: React.ReactNode }) {
 
   if (!unlocked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA] px-6">
-        <div className="bg-white rounded-2xl border border-[#EDEDEF] shadow-[var(--shadow-card)] p-8 max-w-sm w-full">
+      <div className="min-h-screen flex items-center justify-center bg-surface-raised px-6">
+        <div className="bg-white rounded-2xl border border-border shadow-[var(--shadow-card)] p-8 max-w-sm w-full">
           <p
             className="text-[12px] font-semibold uppercase tracking-wider mb-2"
             style={{ color: ACCENT }}
           >
             Ecomlanders
           </p>
-          <h2 className="text-lg font-semibold text-[#1B1B1B]">
+          <h2 className="text-lg font-semibold text-foreground">
             Cheat sheet
           </h2>
-          <p className="mt-1 text-[13px] text-[#666]">
+          <p className="mt-1 text-[13px] text-subtle">
             Enter the password to view.
           </p>
           <input
@@ -78,7 +78,7 @@ function WIPGate({ children }: { children: React.ReactNode }) {
               }
             }}
             placeholder="Password"
-            className="mt-5 w-full px-4 py-3 text-[14px] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B] transition-colors"
+            className="mt-5 w-full px-4 py-3 text-[14px] border border-foreground rounded-lg focus:outline-none focus:border-surface transition-colors"
           />
           {error && (
             <p className="mt-2 text-[12px] text-red-600">
@@ -105,11 +105,11 @@ function CheatsheetBody() {
           >
             Internal · Admin only
           </p>
-          <h1 className="mt-1 text-[22px] font-semibold tracking-tight text-[#1B1B1B]">
+          <h1 className="mt-1 text-[22px] font-semibold tracking-tight text-foreground">
             Ecomlanders cheat sheet
           </h1>
         </div>
-        <p className="text-[12px] text-[#999] shrink-0">
+        <p className="text-[12px] text-subtle shrink-0">
           The non-negotiables. Owner: Dylan. Last updated: {LAST_UPDATED}.
         </p>
       </header>
@@ -117,7 +117,7 @@ function CheatsheetBody() {
       {/* ── Bento grid ──────────────────────── */}
       <div className="grid grid-cols-12 gap-3 auto-rows-min">
         {/* Anchor principle — DARK HERO, full width */}
-        <div className="col-span-12 rounded-[16px] bg-[#1B1B1B] px-7 py-6 text-white">
+        <div className="col-span-12 rounded-[16px] bg-surface px-7 py-6 text-white">
           <p
             className="text-[12px] font-semibold uppercase tracking-[0.2em] mb-2"
             style={{ color: ACCENT }}
@@ -132,13 +132,13 @@ function CheatsheetBody() {
         {/* 01 — The week (full-width, calendar carries its own chrome) */}
         <div className="col-span-12">
           <div className="mb-3 flex items-baseline justify-between gap-2">
-            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#1B1B1B]">
+            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
               The week
             </h2>
-            <span className="font-mono text-[12px] tabular-nums text-[#BBB]">01</span>
+            <span className="font-mono text-[12px] tabular-nums text-muted">01</span>
           </div>
           <WeekCalendar />
-          <p className="mt-3 text-[12px] italic leading-snug text-[#777]">
+          <p className="mt-3 text-[12px] italic leading-snug text-subtle">
             Launches go out M/W/F only. Never T/Th. Emergency lane = Alister
             gatekeeps every time. Nobody else triggers it.
           </p>
@@ -177,27 +177,27 @@ function CheatsheetBody() {
         </BentoCard>
 
         {/* 03 — Pricing HERO — big £8k anchor (neutral) */}
-        <div className="col-span-12 md:col-span-4 rounded-[16px] border-[0.5px] border-[#EDEDEF] bg-white p-5 flex flex-col justify-between">
+        <div className="col-span-12 md:col-span-4 rounded-[16px] border-[0.5px] border-border bg-white p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-baseline justify-between mb-3">
-              <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#1B1B1B]">
+              <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
                 What we sell
               </h2>
-              <span className="font-mono text-[12px] tabular-nums text-[#BBB]">03</span>
+              <span className="font-mono text-[12px] tabular-nums text-muted">03</span>
             </div>
-            <div className="mb-1 text-[12px] font-semibold uppercase tracking-wider text-[#999]">
+            <div className="mb-1 text-[12px] font-semibold uppercase tracking-wider text-subtle">
               Conversion Engine
             </div>
-            <div className="text-[44px] md:text-[52px] font-bold leading-none tracking-tight text-[#1B1B1B]">
-              £8K<span className="text-[14px] font-medium text-[#999]">/mo</span>
+            <div className="text-[44px] md:text-[52px] font-bold leading-none tracking-tight text-foreground">
+              £8K<span className="text-[14px] font-medium text-subtle">/mo</span>
             </div>
-            <div className="mt-1 text-[12px] text-[#666]">
-              <span className="font-semibold text-[#1B1B1B]">£12K anchor</span>{" "}
+            <div className="mt-1 text-[12px] text-subtle">
+              <span className="font-semibold text-foreground">£12K anchor</span>{" "}
               sits next to it. Always quote both.
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t border-[#F0F0F0]">
-            <ul className="space-y-1 text-[12px] leading-snug text-[#1B1B1B]">
+          <div className="mt-4 pt-3 border-t border-foreground">
+            <ul className="space-y-1 text-[12px] leading-snug text-foreground">
               <li>· Page builds — bespoke. Pricing per deliverable.</li>
               <li>· Add-ons — service existing clients only.</li>
               <li>· Free audit — Twitter traffic, not qualification.</li>
@@ -235,65 +235,65 @@ function CheatsheetBody() {
         </BentoCard>
 
         {/* 07 — Sales framing HERO with pull-quote (neutral) */}
-        <div className="col-span-12 md:col-span-7 rounded-[16px] border-[0.5px] border-[#EDEDEF] bg-white p-5">
+        <div className="col-span-12 md:col-span-7 rounded-[16px] border-[0.5px] border-border bg-white p-5">
           <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#1B1B1B]">
+            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
               Sales framing
             </h2>
-            <span className="font-mono text-[12px] tabular-nums text-[#BBB]">07</span>
+            <span className="font-mono text-[12px] tabular-nums text-muted">07</span>
           </div>
-          <p className="mb-3 text-[16px] font-semibold leading-snug text-[#1B1B1B]">
+          <p className="mb-3 text-[16px] font-semibold leading-snug text-foreground">
             The discipline isn&apos;t promising less. It&apos;s framing so you
             don&apos;t need to promise.
           </p>
-          <ul className="space-y-1 text-[14px] leading-snug text-[#1B1B1B]">
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>Sell the system, never an outcome.</span></li>
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>Ranges, never numbers. &quot;0.5–2% over 90 days&quot; yes. &quot;We&apos;ll lift you X%&quot; no.</span></li>
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>Process commitments only.</span></li>
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>90-day reset = process, not outcome.</span></li>
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>Quote the anchor. £8k is the deal because £12k is on the table.</span></li>
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>No discount talk in first contact. Dylan or Ajay only.</span></li>
+          <ul className="space-y-1 text-[14px] leading-snug text-foreground">
+            <li className="flex gap-2"><span className="text-muted">·</span><span>Sell the system, never an outcome.</span></li>
+            <li className="flex gap-2"><span className="text-muted">·</span><span>Ranges, never numbers. &quot;0.5–2% over 90 days&quot; yes. &quot;We&apos;ll lift you X%&quot; no.</span></li>
+            <li className="flex gap-2"><span className="text-muted">·</span><span>Process commitments only.</span></li>
+            <li className="flex gap-2"><span className="text-muted">·</span><span>90-day reset = process, not outcome.</span></li>
+            <li className="flex gap-2"><span className="text-muted">·</span><span>Quote the anchor. £8k is the deal because £12k is on the table.</span></li>
+            <li className="flex gap-2"><span className="text-muted">·</span><span>No discount talk in first contact. Dylan or Ajay only.</span></li>
           </ul>
         </div>
 
         {/* 06 — Rituals — features 11AM as anchor */}
-        <div className="col-span-12 md:col-span-5 rounded-[16px] border-[0.5px] border-[#EDEDEF] bg-white p-5">
+        <div className="col-span-12 md:col-span-5 rounded-[16px] border-[0.5px] border-border bg-white p-5">
           <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#1B1B1B]">
+            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
               Rituals
             </h2>
-            <span className="font-mono text-[12px] tabular-nums text-[#BBB]">06</span>
+            <span className="font-mono text-[12px] tabular-nums text-muted">06</span>
           </div>
           <div className="mb-3 flex items-baseline gap-3">
-            <span className="text-[40px] font-bold leading-none tracking-tight text-[#1B1B1B] tabular-nums">
+            <span className="text-[40px] font-bold leading-none tracking-tight text-foreground tabular-nums">
               11<span className="text-[18px]">am</span>
             </span>
-            <span className="text-[12px] text-[#666] leading-snug">
+            <span className="text-[12px] text-subtle leading-snug">
               Hard send window<br />for client updates · M/W/F
             </span>
           </div>
-          <ul className="space-y-1 text-[14px] leading-snug text-[#1B1B1B]">
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>Tue/Thu: 15-min leadership standup. Hard stop.</span></li>
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>At-risk projects flagged in real time, not weekly.</span></li>
-            <li className="flex gap-2"><span className="text-[#CCC]">·</span><span>Leads sign off standard work. VIPs get founder approval.</span></li>
+          <ul className="space-y-1 text-[14px] leading-snug text-foreground">
+            <li className="flex gap-2"><span className="text-muted">·</span><span>Tue/Thu: 15-min leadership standup. Hard stop.</span></li>
+            <li className="flex gap-2"><span className="text-muted">·</span><span>At-risk projects flagged in real time, not weekly.</span></li>
+            <li className="flex gap-2"><span className="text-muted">·</span><span>Leads sign off standard work. VIPs get founder approval.</span></li>
           </ul>
         </div>
 
         {/* What we do — green-tinted YES card */}
-        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-white border-[0.5px] border-[#EDEDEF] p-5">
+        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-white border-[0.5px] border-border p-5">
           <div className="mb-3">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-[#0E8345]">
               What we do
             </span>
           </div>
-          <ul className="space-y-1.5 text-[14px] leading-snug text-[#1B1B1B] font-medium">
+          <ul className="space-y-1.5 text-[14px] leading-snug text-foreground font-medium">
             <li>Post-click — landing pages, funnels, CRO, design, dev, testing.</li>
             <li>Internal copy via Dan as part of CRO.</li>
           </ul>
         </div>
 
         {/* What we don't do — DARK card with strikethrough rules */}
-        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-[#1B1B1B] p-5 text-white">
+        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-surface p-5 text-white">
           <div className="mb-3">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-[#FF6B6B]">
               What we don&apos;t do
@@ -311,9 +311,9 @@ function CheatsheetBody() {
       <div className="mt-6" />
 
       {/* ── Footer ──────────────────────────── */}
-      <footer className="flex items-center justify-between border-t border-[#F0F0F0] pt-4 text-[12px] text-[#999]">
+      <footer className="flex items-center justify-between border-t border-foreground pt-4 text-[12px] text-subtle">
         <span>Ecomlanders · Operating cheat sheet · v{VERSION}</span>
-        <span className="rounded-full border border-[#E5E5EA] bg-[#FAFAFA] px-2 py-0.5 font-semibold uppercase tracking-wider text-[#666]">
+        <span className="rounded-full border border-foreground bg-surface-raised px-2 py-0.5 font-semibold uppercase tracking-wider text-subtle">
           Admin only
         </span>
       </footer>
@@ -376,7 +376,7 @@ function WeekCalendar() {
     },
   ];
   return (
-    <div className="grid grid-cols-5 divide-x-[0.5px] divide-[#EDEDEF] overflow-hidden rounded-[8px] border-[0.5px] border-[#EDEDEF]">
+    <div className="grid grid-cols-5 divide-x-[0.5px] divide-border overflow-hidden rounded-[8px] border-[0.5px] border-border">
       {days.map((d, i) => {
         const isClient = d.mode === "client";
         return (
@@ -401,7 +401,7 @@ function WeekCalendar() {
                 {isClient ? "Client" : "Internal"}
               </span>
             </div>
-            <div className="mt-5 text-[14px] font-semibold leading-snug text-[#1B1B1B]">
+            <div className="mt-5 text-[14px] font-semibold leading-snug text-foreground">
               {d.headline}
             </div>
             <div className="mt-4 flex flex-wrap gap-1.5">
@@ -418,7 +418,7 @@ function WeekCalendar() {
                 </span>
               ))}
             </div>
-            <div className="mt-5 text-[12px] italic leading-relaxed text-[#666]">
+            <div className="mt-5 text-[12px] italic leading-relaxed text-subtle">
               {d.why}
             </div>
           </div>
@@ -443,14 +443,14 @@ function BentoCard({
 }) {
   return (
     <div
-      className={`rounded-[12px] border-[0.5px] border-[#EDEDEF] bg-white p-5 ${className}`}
+      className={`rounded-[12px] border-[0.5px] border-border bg-white p-5 ${className}`}
     >
       <div className="mb-3 flex items-baseline justify-between gap-2">
-        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#1B1B1B]">
+        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
           {title}
         </h2>
         {number && (
-          <span className="font-mono text-[12px] tabular-nums text-[#BBB]">
+          <span className="font-mono text-[12px] tabular-nums text-muted">
             {number}
           </span>
         )}
@@ -462,10 +462,10 @@ function BentoCard({
 
 function BulletList({ items }: { items: React.ReactNode[] }) {
   return (
-    <ul className="space-y-1.5 text-[14px] leading-snug text-[#1B1B1B]">
+    <ul className="space-y-1.5 text-[14px] leading-snug text-foreground">
       {items.map((item, i) => (
         <li key={i} className="flex gap-2">
-          <span className="text-[#CCC]">·</span>
+          <span className="text-muted">·</span>
           <span>{item}</span>
         </li>
       ))}
@@ -485,10 +485,10 @@ function RuleGrid({
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
       {items.map((item, i) => (
         <div key={i}>
-          <dt className="text-[14px] font-medium leading-snug text-[#1B1B1B]">
+          <dt className="text-[14px] font-medium leading-snug text-foreground">
             {item.rule}
           </dt>
-          <dd className="mt-0.5 text-[12px] italic leading-snug text-[#888]">
+          <dd className="mt-0.5 text-[12px] italic leading-snug text-subtle">
             {item.why}
           </dd>
         </div>
@@ -510,10 +510,10 @@ function OwnerTable({
     <table className="w-full">
       <thead>
         <tr>
-          <th className="w-[58%] border-b border-[#F0F0F0] py-1.5 text-left text-[12px] font-semibold uppercase tracking-wider text-[#BBB]">
+          <th className="w-[58%] border-b border-foreground py-1.5 text-left text-[12px] font-semibold uppercase tracking-wider text-muted">
             {leftHead}
           </th>
-          <th className="border-b border-[#F0F0F0] py-1.5 text-left text-[12px] font-semibold uppercase tracking-wider text-[#BBB]">
+          <th className="border-b border-foreground py-1.5 text-left text-[12px] font-semibold uppercase tracking-wider text-muted">
             {rightHead}
           </th>
         </tr>
@@ -522,12 +522,12 @@ function OwnerTable({
         {rows.map(([left, right], i) => (
           <tr
             key={i}
-            className="align-top border-b border-[#F5F5F5] last:border-0"
+            className="align-top border-b border-surface-raised last:border-0"
           >
-            <td className="py-2 pr-3 text-[14px] leading-snug text-[#777]">
+            <td className="py-2 pr-3 text-[14px] leading-snug text-subtle">
               {left}
             </td>
-            <td className="py-2 text-[14px] font-semibold leading-snug text-[#1B1B1B]">
+            <td className="py-2 text-[14px] font-semibold leading-snug text-foreground">
               {right}
             </td>
           </tr>

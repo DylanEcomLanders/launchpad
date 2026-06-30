@@ -123,7 +123,7 @@ export const STATUS_LABEL: Record<DiscoveryAudit["status"], string> = {
 };
 
 export const STATUS_TINT: Record<DiscoveryAudit["status"], string> = {
-  draft: "bg-[#222222] text-[#9CA3AF]",
+  draft: "bg-surface-raised text-muted",
   ready: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
   sent: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
   credited: "bg-emerald-500/25 text-emerald-100 ring-1 ring-emerald-500/40",

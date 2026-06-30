@@ -48,8 +48,8 @@ export function RoadmapSVG({ roadmap, onStepClick, exportId }: Props) {
   // Empty state
   if (trafficCount === 0 && pageCount === 0) {
     return (
-      <div className="flex items-center justify-center py-20 px-6 border border-dashed border-[#2A2A2A] rounded-xl bg-[#0C0C0C]">
-        <p className="text-[12px] text-[#71757D]">
+      <div className="flex items-center justify-center py-20 px-6 border border-dashed border-border rounded-xl bg-background">
+        <p className="text-[12px] text-subtle">
           Pick a traffic source and a page to start the roadmap.
         </p>
       </div>

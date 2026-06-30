@@ -26,7 +26,7 @@ export function StatusDot({ status, size = 8, withRing = true }: StatusDotProps)
 export function StatusBadge({ status }: { status: AgentStatus }) {
   const meta = AGENT_STATUS_META[status];
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#181818]/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#E5E5EA] shadow-[var(--shadow-soft)]">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-foreground shadow-[var(--shadow-soft)]">
       <StatusDot status={status} size={6} withRing={false} />
       {meta.label}
     </span>

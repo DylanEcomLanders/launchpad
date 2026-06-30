@@ -217,14 +217,14 @@ export default function ReceivablesListPage() {
                   onClick={() => setCountryFilter(p.key)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                     active
-                      ? "bg-white text-[#0C0C0C] border-white"
-                      : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                      ? "bg-white text-background border-white"
+                      : "bg-surface text-foreground border-border hover:bg-background"
                   }`}
                 >
                   {p.label}
                   <span
                     className={`text-[10px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${
-                      active ? "bg-[#181818]/20 text-white" : "bg-[#222222] text-[#71757D]"
+                      active ? "bg-surface/20 text-white" : "bg-surface-raised text-subtle"
                     }`}
                   >
                     {p.count}
@@ -239,7 +239,7 @@ export default function ReceivablesListPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#71757D] z-10" />
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
             <input
               placeholder="Search invoice # or client..."
               value={query}
@@ -273,13 +273,13 @@ export default function ReceivablesListPage() {
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C] disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background disabled:opacity-40 transition-colors"
           >
             <ArrowDownTrayIcon className="size-4" /> CSV
           </button>
           <Link
             href="/finance/invoices/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
           >
             <PlusIcon className="size-4" /> New invoice
           </Link>
@@ -287,10 +287,10 @@ export default function ReceivablesListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />
+        <div className="h-48 bg-background rounded-xl animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
-          <div className="text-sm text-[#71757D] mb-3">
+        <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+          <div className="text-sm text-subtle mb-3">
             {invoices.length === 0
               ? "No invoices yet - create your first one."
               : "No invoices match these filters."}
@@ -298,23 +298,23 @@ export default function ReceivablesListPage() {
           {invoices.length === 0 && (
             <Link
               href="/finance/invoices/new"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
             >
               <PlusIcon className="size-4" /> New invoice
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
+        <div className="bg-surface border border-border rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
+            <thead className="bg-background text-[11px] uppercase tracking-wider text-subtle">
               <tr>
                 <Th onClick={() => toggleSort("invoice_date")}>Invoice #</Th>
                 <Th onClick={() => toggleSort("client_name")}>Client</Th>
                 <Th onClick={() => toggleSort("invoice_date")}>Issued</Th>
                 <Th onClick={() => toggleSort("due_date")}>Due</Th>
                 <Th onClick={() => toggleSort("status")}>Status</Th>
-                <th className="text-right px-4 py-3 font-semibold cursor-pointer select-none hover:text-[#E5E5EA]" onClick={() => toggleSort("total")}>
+                <th className="text-right px-4 py-3 font-semibold cursor-pointer select-none hover:text-foreground" onClick={() => toggleSort("total")}>
                   Total
                 </th>
               </tr>
@@ -323,18 +323,18 @@ export default function ReceivablesListPage() {
               {filtered.map((i) => {
                 const badge = INVOICE_STATUS_BADGE[i.status];
                 return (
-                  <tr key={i.id} className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]">
+                  <tr key={i.id} className="border-t border-border hover:bg-background">
                     <td className="px-4 py-3">
                       <Link
                         href={`/finance/invoices/${i.id}`}
-                        className="font-medium text-[#E5E5EA] hover:underline"
+                        className="font-medium text-foreground hover:underline"
                       >
                         {i.invoice_number}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-[#E5E5EA]">{i.client_name}</td>
-                    <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.invoice_date)}</td>
-                    <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.due_date)}</td>
+                    <td className="px-4 py-3 text-foreground">{i.client_name}</td>
+                    <td className="px-4 py-3 text-subtle">{fmtDateUK(i.invoice_date)}</td>
+                    <td className="px-4 py-3 text-subtle">{fmtDateUK(i.due_date)}</td>
                     <td className="px-4 py-3">
                       <span
                         className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -344,10 +344,10 @@ export default function ReceivablesListPage() {
                         {INVOICE_STATUS_LABELS[i.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-[#E5E5EA] tabular-nums">
+                    <td className="px-4 py-3 text-right font-medium text-foreground tabular-nums">
                       {fmtMoney(i.total, i.currency)}
                       {i.currency !== "GBP" && i.gbp_equivalent !== i.total && (
-                        <div className="text-[10px] font-normal text-[#71757D] mt-0.5">
+                        <div className="text-[10px] font-normal text-subtle mt-0.5">
                           ≈ {fmtMoney(i.gbp_equivalent, "GBP")}
                         </div>
                       )}
@@ -366,7 +366,7 @@ export default function ReceivablesListPage() {
 function Th({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
     <th
-      className="text-left px-4 py-3 font-semibold cursor-pointer select-none hover:text-[#E5E5EA]"
+      className="text-left px-4 py-3 font-semibold cursor-pointer select-none hover:text-foreground"
       onClick={onClick}
     >
       {children}
@@ -385,13 +385,13 @@ function SummaryCard({
 }) {
   const color =
     accent === "red"
-      ? "text-[#B91C1C]"
+      ? "text-danger"
       : accent === "green"
         ? "text-[#047857]"
-        : "text-[#E5E5EA]";
+        : "text-foreground";
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-1">{label}</div>
+    <div className="bg-surface border border-border rounded-xl p-4 shadow-[var(--shadow-soft)]">
+      <div className="text-[11px] uppercase tracking-wider text-subtle mb-1">{label}</div>
       <div className={`text-2xl font-semibold tabular-nums ${color}`}>{fmtMoney(amount)}</div>
     </div>
   );

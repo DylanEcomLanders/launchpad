@@ -102,14 +102,14 @@ export default function ContentCalendarPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Content Calendar</h1>
-          <p className="text-sm text-[#71757D] mt-1">
+          <p className="text-sm text-subtle mt-1">
             Personal social pipeline across Twitter and LinkedIn.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={openNew}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#1A1A1A] text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-surface text-background text-xs font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" />
             New post
@@ -118,7 +118,7 @@ export default function ContentCalendarPage() {
       </div>
 
       {/* View tabs */}
-      <div className="flex items-center gap-1 mb-5 border-b border-[#2A2A2A]">
+      <div className="flex items-center gap-1 mb-5 border-b border-border">
         {VIEWS.map((v) => {
           const active = view === v.id;
           return (
@@ -127,8 +127,8 @@ export default function ContentCalendarPage() {
               onClick={() => setView(v.id)}
               className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors -mb-[1px] ${
                 active
-                  ? "border-[#1A1A1A] text-[#E5E5EA]"
-                  : "border-transparent text-[#71757D] hover:text-[#E5E5EA]"
+                  ? "border-surface text-foreground"
+                  : "border-transparent text-subtle hover:text-foreground"
               }`}
             >
               {v.icon}
@@ -158,7 +158,7 @@ export default function ContentCalendarPage() {
 
       {/* View body */}
       {loading ? (
-        <div className="text-sm text-[#71757D] py-12 text-center">Loading...</div>
+        <div className="text-sm text-subtle py-12 text-center">Loading...</div>
       ) : view === "pipeline" ? (
         <PipelineView
           grouped={grouped}
@@ -211,11 +211,11 @@ function PipelineView({
   const empty = PIPELINE_COLUMNS.every((s) => grouped[s].length === 0);
   if (empty) {
     return (
-      <div className="rounded-xl border border-dashed border-[#2A2A2A] py-16 text-center">
-        <p className="text-sm text-[#71757D]">No posts yet.</p>
+      <div className="rounded-xl border border-dashed border-border py-16 text-center">
+        <p className="text-sm text-subtle">No posts yet.</p>
         <button
           onClick={onCreate}
-          className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6]"
+          className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground"
         >
           <PlusIcon className="size-3.5" />
           Capture your first idea
@@ -229,7 +229,7 @@ function PipelineView({
         const meta = STATUS_META[status];
         const items = grouped[status];
         return (
-          <div key={status} className="bg-[#0C0C0C] rounded-xl p-3 min-h-[200px]">
+          <div key={status} className="bg-background rounded-xl p-3 min-h-[200px]">
             <div className="flex items-center justify-between mb-3 px-1">
               <div className="flex items-center gap-2">
                 <span
@@ -238,7 +238,7 @@ function PipelineView({
                 >
                   {meta.label}
                 </span>
-                <span className="text-[11px] text-[#9CA3AF] tabular-nums">
+                <span className="text-[11px] text-muted tabular-nums">
                   {items.length}
                 </span>
               </div>
@@ -277,7 +277,7 @@ function PostCard({
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left bg-[#181818] rounded-lg border border-[#2A2A2A] hover:border-[#1A1A1A] hover:shadow-[var(--shadow-soft)] transition-all overflow-hidden"
+      className="w-full text-left bg-surface rounded-lg border border-border hover:border-surface hover:shadow-[var(--shadow-soft)] transition-all overflow-hidden"
     >
       {/* Pillar stripe */}
       <div
@@ -285,7 +285,7 @@ function PostCard({
         style={{ background: pillar?.color_hex || "#E5E5EA" }}
       />
       <div className="p-3">
-        <p className="text-xs text-[#E5E5EA] line-clamp-3 leading-relaxed">
+        <p className="text-xs text-foreground line-clamp-3 leading-relaxed">
           {preview.slice(0, 80)}
           {preview.length > 80 ? "…" : ""}
         </p>
@@ -294,7 +294,7 @@ function PostCard({
             {post.platforms.map((p: Platform) => (
               <span
                 key={p}
-                className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#222222] text-[#71757D]"
+                className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-raised text-subtle"
                 title={PLATFORM_LABELS[p]}
               >
                 {p === "twitter" ? "X" : "in"}
@@ -302,7 +302,7 @@ function PostCard({
             ))}
           </div>
           {post.scheduled_for && (
-            <span className="text-[10px] text-[#71757D] tabular-nums">
+            <span className="text-[10px] text-subtle tabular-nums">
               {new Date(post.scheduled_for).toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
@@ -311,7 +311,7 @@ function PostCard({
           )}
         </div>
         {firstMedia && (
-          <div className="mt-2 aspect-video rounded overflow-hidden bg-[#0C0C0C]">
+          <div className="mt-2 aspect-video rounded overflow-hidden bg-background">
             {firstMedia.file_type === "video" ? (
               <video
                 src={firstMedia.file_url}
@@ -349,8 +349,8 @@ function FilterChip({
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
         active
-          ? "bg-white text-[#0C0C0C] border-[#1A1A1A]"
-          : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:border-[#1A1A1A]"
+          ? "bg-white text-background border-surface"
+          : "bg-surface text-subtle border-border hover:border-surface"
       }`}
     >
       {color && (
@@ -366,9 +366,9 @@ function FilterChip({
 
 function Placeholder({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#2A2A2A] py-16 text-center">
-      <p className="text-sm font-semibold text-[#E5E5EA]">{title}</p>
-      <p className="text-xs text-[#71757D] mt-1">{subtitle}</p>
+    <div className="rounded-xl border border-dashed border-border py-16 text-center">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="text-xs text-subtle mt-1">{subtitle}</p>
     </div>
   );
 }

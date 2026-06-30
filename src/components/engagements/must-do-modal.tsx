@@ -183,18 +183,18 @@ export function MustDoModal({
         onClick={() => toggleItem(label)}
         className={`w-full flex items-start gap-3 px-3 py-2 rounded-lg border text-left transition-colors ${
           ticked
-            ? "border-[#1B5E20] bg-emerald-500/15"
-            : "border-[#2A2A2A] bg-[#181818] hover:border-white"
+            ? "border-success bg-emerald-500/15"
+            : "border-border bg-surface hover:border-white"
         }`}
       >
         <span
           className={`mt-0.5 size-4 rounded border-2 shrink-0 flex items-center justify-center ${
-            ticked ? "bg-[#1B5E20] border-[#1B5E20]" : "border-[#383838] bg-[#181818]"
+            ticked ? "bg-success border-success" : "border-border bg-surface"
           }`}
         >
           {ticked && <CheckIcon className="size-2.5 text-white" />}
         </span>
-        <span className={`text-[13px] leading-snug ${ticked ? "text-[#1B5E20]" : "text-[#E5E5EA]"}`}>
+        <span className={`text-[13px] leading-snug ${ticked ? "text-success" : "text-foreground"}`}>
           {label}
         </span>
       </button>
@@ -210,7 +210,7 @@ export function MustDoModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative w-full max-w-[640px] max-h-[88vh] overflow-y-auto rounded-2xl bg-[#181818] shadow-2xl">
+      <div className="relative w-full max-w-[640px] max-h-[88vh] overflow-y-auto rounded-2xl bg-surface shadow-2xl">
         <div
           className="sticky top-0 z-10 px-6 py-4 border-b flex items-baseline justify-between gap-4"
           style={{ background: config.bg, borderColor: config.border }}
@@ -232,7 +232,7 @@ export function MustDoModal({
             </span>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-[#181818]/40"
+              className="p-1 rounded-lg hover:bg-surface/40"
               style={{ color: config.color }}
               aria-label="Close"
             >
@@ -243,12 +243,12 @@ export function MustDoModal({
 
         <div className="px-6 py-5">
           {config.hasPreviewUrls && (
-            <div className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4">
+            <div className="mb-5 rounded-lg border border-border bg-background p-4">
               <div className="flex items-baseline justify-between mb-1">
-                <p className="text-[12px] font-semibold text-[#E5E5EA]">Preview URLs</p>
-                <span className="text-[10px] text-[#9CA3AF] tabular-nums">{previewUrls.length} added</span>
+                <p className="text-[12px] font-semibold text-foreground">Preview URLs</p>
+                <span className="text-[10px] text-muted tabular-nums">{previewUrls.length} added</span>
               </div>
-              <p className="text-[11px] text-[#9CA3AF] mb-3 leading-snug">
+              <p className="text-[11px] text-muted mb-3 leading-snug">
                 Add every page you're submitting for QA. These land in the internal Slack message on submit.
               </p>
               <div className="space-y-1.5">
@@ -259,7 +259,7 @@ export function MustDoModal({
                     </a>
                     <button
                       onClick={() => removePreviewUrl(i)}
-                      className="text-[#71757D] hover:text-[#C62828] p-1"
+                      className="text-subtle hover:text-danger p-1"
                       title="Remove"
                     >
                       <TrashIcon className="size-3.5" />
@@ -273,12 +273,12 @@ export function MustDoModal({
                     onChange={(e) => setUrlDraft(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addPreviewUrl(); } }}
                     placeholder="https://staging-..."
-                    className="flex-1 text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white bg-[#181818]"
+                    className="flex-1 text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
                   />
                   <button
                     onClick={addPreviewUrl}
                     disabled={!urlDraft.trim()}
-                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#E5E5EA] border border-[#2A2A2A] hover:border-white px-2 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed bg-[#181818]"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground border border-border hover:border-white px-2 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed bg-surface"
                   >
                     <PlusIcon className="size-3" />
                     Add URL
@@ -289,11 +289,11 @@ export function MustDoModal({
           )}
 
           <div className="flex items-baseline justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
               Checklist
             </p>
             {!config.categories && (
-              <span className="text-[11px] tabular-nums text-[#9CA3AF]">{checked}/{total} ticked</span>
+              <span className="text-[11px] tabular-nums text-muted">{checked}/{total} ticked</span>
             )}
           </div>
 
@@ -304,18 +304,18 @@ export function MustDoModal({
                 const { done, total: catTotal } = categoryProgress(cat);
                 const slice = config.items.slice(cat.startIndex, cat.startIndex + cat.count);
                 return (
-                  <div key={cat.label} className="rounded-lg border border-[#2A2A2A] bg-[#181818] overflow-hidden">
+                  <div key={cat.label} className="rounded-lg border border-border bg-surface overflow-hidden">
                     <button
                       onClick={() => toggleCategory(cat.label)}
-                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#0C0C0C] transition-colors"
+                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-background transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        {isOpen ? <ChevronDownIcon className="size-3.5 text-[#9CA3AF]" /> : <ChevronRightIcon className="size-3.5 text-[#9CA3AF]" />}
-                        <span className="text-[13px] font-medium text-[#E5E5EA]">{cat.label}</span>
+                        {isOpen ? <ChevronDownIcon className="size-3.5 text-muted" /> : <ChevronRightIcon className="size-3.5 text-muted" />}
+                        <span className="text-[13px] font-medium text-foreground">{cat.label}</span>
                       </div>
                       <span
                         className={`text-[11px] font-semibold tabular-nums ${
-                          done === catTotal ? "text-[#1B5E20]" : "text-[#9CA3AF]"
+                          done === catTotal ? "text-success" : "text-muted"
                         }`}
                       >
                         {done}/{catTotal}
@@ -338,7 +338,7 @@ export function MustDoModal({
 
           {config.linkLabel && (
             <div className="mt-5">
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-subtle mb-1.5">
                 {config.linkLabel}
               </label>
               <input
@@ -346,13 +346,13 @@ export function MustDoModal({
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 placeholder={config.linkPlaceholder}
-                className="w-full text-[13px] px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-white"
+                className="w-full text-[13px] px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-white"
               />
             </div>
           )}
 
           <div className="mt-5">
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-subtle mb-1.5">
               Notes
             </label>
             <textarea
@@ -360,34 +360,34 @@ export function MustDoModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What did you check, what to revisit, anything the next gate needs to know."
               rows={3}
-              className="w-full text-[13px] px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-white resize-y"
+              className="w-full text-[13px] px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-white resize-y"
             />
           </div>
 
           {wasComplete && (
-            <p className="mt-4 text-[11px] text-[#1B5E20]">
+            <p className="mt-4 text-[11px] text-success">
               Completed {new Date(gate!.completed_at!).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
             </p>
           )}
         </div>
 
-        <div className="sticky bottom-0 px-6 py-4 border-t border-[#2A2A2A] bg-[#181818] flex items-center justify-end gap-2">
+        <div className="sticky bottom-0 px-6 py-4 border-t border-border bg-surface flex items-center justify-end gap-2">
           <button
             onClick={onClose}
-            className="text-[12px] text-[#9CA3AF] hover:text-[#E5E5EA] px-3 py-2"
+            className="text-[12px] text-muted hover:text-foreground px-3 py-2"
           >
             Cancel
           </button>
           <button
             onClick={handleSaveProgress}
-            className="text-[12px] font-medium text-[#E5E5EA] border border-[#2A2A2A] hover:border-white px-3 py-2 rounded-lg"
+            className="text-[12px] font-medium text-foreground border border-border hover:border-white px-3 py-2 rounded-lg"
           >
             Save progress
           </button>
           <button
             onClick={handleComplete}
             disabled={!allTicked}
-            className="text-[12px] font-semibold text-white bg-[#1B5E20] hover:bg-[#0E3D11] disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg"
+            className="text-[12px] font-semibold text-white bg-success hover:bg-[#0E3D11] disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg"
           >
             {wasComplete ? "Update completion" : "Mark complete"}
           </button>

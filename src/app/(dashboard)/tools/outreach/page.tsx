@@ -328,19 +328,19 @@ export default function OutreachPage() {
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
             Outreach Generator
           </h1>
-          <p className="text-[#71757D]">
+          <p className="text-subtle">
             Generate personalised outreach copy for Shopify brand prospects
           </p>
         </div>
 
         {/* Mode toggle */}
-        <div className="flex items-center gap-1 mb-8 bg-[#222222] rounded-lg p-1 w-fit">
+        <div className="flex items-center gap-1 mb-8 bg-surface-raised rounded-lg p-1 w-fit">
           <button
             onClick={() => setMode("single")}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               mode === "single"
-                ? "bg-[#181818] text-[#E5E5EA] shadow-sm"
-                : "text-[#71757D] hover:text-[#E5E5EA]"
+                ? "bg-surface text-foreground shadow-sm"
+                : "text-subtle hover:text-foreground"
             }`}
           >
             <span className="flex items-center gap-1.5">
@@ -352,8 +352,8 @@ export default function OutreachPage() {
             onClick={() => setMode("sequence")}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               mode === "sequence"
-                ? "bg-[#181818] text-[#E5E5EA] shadow-sm"
-                : "text-[#71757D] hover:text-[#E5E5EA]"
+                ? "bg-surface text-foreground shadow-sm"
+                : "text-subtle hover:text-foreground"
             }`}
           >
             <span className="flex items-center gap-1.5">
@@ -385,7 +385,7 @@ export default function OutreachPage() {
         )}
 
         {/* ═══ Shared Input Form ═══ */}
-        <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5 space-y-5 mb-10">
+        <div className="bg-surface-raised border border-border rounded-lg p-5 space-y-5 mb-10">
           {/* Brand + Contact */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -420,7 +420,7 @@ export default function OutreachPage() {
               placeholder="e.g. ecomlanders.app"
               className={inputClass}
             />
-            <p className="text-[10px] text-[#71757D] mt-1">
+            <p className="text-[10px] text-subtle mt-1">
               Optional — if provided, we&apos;ll run a quick crawl for extra context
             </p>
           </div>
@@ -443,7 +443,7 @@ export default function OutreachPage() {
               {/* Outreach Type */}
               <div>
                 <label className={labelClass}>Outreach Type</label>
-                <div className="inline-flex rounded-md border border-[#2A2A2A] bg-[#181818] p-0.5">
+                <div className="inline-flex rounded-md border border-border bg-surface p-0.5">
                   {outreachTypes.map((t) => (
                     <button
                       key={t.value}
@@ -451,8 +451,8 @@ export default function OutreachPage() {
                       onClick={() => setOutreachType(t.value)}
                       className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                         outreachType === t.value
-                          ? "bg-white text-[#0C0C0C]"
-                          : "text-[#71757D] hover:text-[#E5E5EA]"
+                          ? "bg-white text-background"
+                          : "text-subtle hover:text-foreground"
                       }`}
                     >
                       {t.label}
@@ -464,7 +464,7 @@ export default function OutreachPage() {
               {/* Tone */}
               <div>
                 <label className={labelClass}>Tone</label>
-                <div className="inline-flex rounded-md border border-[#2A2A2A] bg-[#181818] p-0.5">
+                <div className="inline-flex rounded-md border border-border bg-surface p-0.5">
                   {tones.map((t) => (
                     <button
                       key={t.value}
@@ -472,8 +472,8 @@ export default function OutreachPage() {
                       onClick={() => setTone(t.value)}
                       className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                         tone === t.value
-                          ? "bg-white text-[#0C0C0C]"
-                          : "text-[#71757D] hover:text-[#E5E5EA]"
+                          ? "bg-white text-background"
+                          : "text-subtle hover:text-foreground"
                       }`}
                     >
                       {t.label}
@@ -487,7 +487,7 @@ export default function OutreachPage() {
                 type="button"
                 onClick={generate}
                 disabled={!canSubmit}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -515,7 +515,7 @@ export default function OutreachPage() {
                     <button
                       type="button"
                       onClick={() => setShowSaved(!showSaved)}
-                      className="text-xs text-[#71757D] hover:text-[#E5E5EA] underline"
+                      className="text-xs text-subtle hover:text-foreground underline"
                     >
                       {showSaved ? "Hide saved" : `Saved (${savedSequences.length})`}
                     </button>
@@ -524,25 +524,25 @@ export default function OutreachPage() {
 
                 {/* Saved sequences drawer */}
                 {showSaved && savedSequences.length > 0 && (
-                  <div className="mb-4 bg-[#181818] border border-[#2A2A2A] rounded-lg divide-y divide-[#2A2A2A]">
+                  <div className="mb-4 bg-surface border border-border rounded-lg divide-y divide-border">
                     {savedSequences.map((seq) => (
                       <div key={seq.id} className="px-4 py-3 flex items-center justify-between">
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{seq.brand_name}</p>
-                          <p className="text-[10px] text-[#71757D]">
+                          <p className="text-[10px] text-subtle">
                             {seq.steps.length} steps · {new Date(seq.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <button
                             onClick={() => loadSequence(seq)}
-                            className="px-2.5 py-1 text-[10px] font-semibold bg-[#222222] text-[#71757D] rounded-md hover:bg-[#2A2A2A] transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-semibold bg-surface-raised text-subtle rounded-md hover:bg-border transition-colors"
                           >
                             Load
                           </button>
                           <button
                             onClick={() => handleDeleteSequence(seq.id)}
-                            className="p-1 text-[#C5C5C5] hover:text-red-400 transition-colors"
+                            className="p-1 text-muted hover:text-red-400 transition-colors"
                           >
                             <TrashIcon className="size-3" />
                           </button>
@@ -556,13 +556,13 @@ export default function OutreachPage() {
                   {seqSteps.map((step, i) => {
                     const typeLabel = outreachTypes.find((t) => t.value === step.outreachType)?.label || step.outreachType;
                     return (
-                      <div key={step.id} className="flex items-center gap-3 bg-[#181818] rounded-lg border border-[#2A2A2A] px-4 py-3">
+                      <div key={step.id} className="flex items-center gap-3 bg-surface rounded-lg border border-border px-4 py-3">
                         {/* Step number + timeline dot */}
                         <div className="flex items-center gap-2 shrink-0">
                           <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
                             step.generated
                               ? "bg-emerald-100 text-emerald-600"
-                              : "bg-[#222222] text-[#999999]"
+                              : "bg-surface-raised text-subtle"
                           }`}>
                             {step.generated ? "✓" : i + 1}
                           </div>
@@ -570,23 +570,23 @@ export default function OutreachPage() {
 
                         {/* Day */}
                         <div className="shrink-0">
-                          <label className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D] block mb-0.5">Day</label>
+                          <label className="text-[9px] font-semibold uppercase tracking-wider text-subtle block mb-0.5">Day</label>
                           <input
                             type="number"
                             value={step.day}
                             onChange={(e) => updateStep(step.id, { day: parseInt(e.target.value) || 0 })}
-                            className="w-14 px-2 py-1 text-xs border border-[#2A2A2A] rounded-md focus:outline-none focus:border-[#999999] text-center"
+                            className="w-14 px-2 py-1 text-xs border border-border rounded-md focus:outline-none focus:border-subtle text-center"
                             min={0}
                           />
                         </div>
 
                         {/* Type */}
                         <div className="flex-1 min-w-0">
-                          <label className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D] block mb-0.5">Type</label>
+                          <label className="text-[9px] font-semibold uppercase tracking-wider text-subtle block mb-0.5">Type</label>
                           <select
                             value={step.outreachType}
                             onChange={(e) => updateStep(step.id, { outreachType: e.target.value as OutreachType })}
-                            className="w-full px-2 py-1 text-xs border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#999999]"
+                            className="w-full px-2 py-1 text-xs border border-border rounded-md bg-surface focus:outline-none focus:border-subtle"
                           >
                             {outreachTypes.map((t) => (
                               <option key={t.value} value={t.value}>{t.label}</option>
@@ -596,11 +596,11 @@ export default function OutreachPage() {
 
                         {/* Tone */}
                         <div className="flex-1 min-w-0">
-                          <label className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D] block mb-0.5">Tone</label>
+                          <label className="text-[9px] font-semibold uppercase tracking-wider text-subtle block mb-0.5">Tone</label>
                           <select
                             value={step.tone}
                             onChange={(e) => updateStep(step.id, { tone: e.target.value as ToneType })}
-                            className="w-full px-2 py-1 text-xs border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#999999]"
+                            className="w-full px-2 py-1 text-xs border border-border rounded-md bg-surface focus:outline-none focus:border-subtle"
                           >
                             {tones.map((t) => (
                               <option key={t.value} value={t.value}>{t.label}</option>
@@ -612,7 +612,7 @@ export default function OutreachPage() {
                         {seqSteps.length > 1 && (
                           <button
                             onClick={() => removeStep(step.id)}
-                            className="p-1 text-[#C5C5C5] hover:text-red-400 transition-colors mt-3"
+                            className="p-1 text-muted hover:text-red-400 transition-colors mt-3"
                           >
                             <TrashIcon className="size-3.5" />
                           </button>
@@ -625,7 +625,7 @@ export default function OutreachPage() {
                   <button
                     type="button"
                     onClick={addStep}
-                    className="flex items-center gap-1.5 px-4 py-2 text-xs text-[#71757D] hover:text-[#71757D] transition-colors w-full justify-center border border-dashed border-[#2A2A2A] rounded-lg hover:border-[#C5C5C5]"
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs text-subtle hover:text-subtle transition-colors w-full justify-center border border-dashed border-border rounded-lg hover:border-muted"
                   >
                     <PlusIcon className="size-3" />
                     Add Step
@@ -638,7 +638,7 @@ export default function OutreachPage() {
                 type="button"
                 onClick={generateAllSteps}
                 disabled={!canGenerateSequence}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {seqLoading ? (
                   <>
@@ -661,26 +661,26 @@ export default function OutreachPage() {
           <div className="space-y-4">
             {/* Subject line */}
             {hasSubject && result.subjectLine && (
-              <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg px-5 py-4">
+              <div className="bg-surface-raised border border-border rounded-lg px-5 py-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] block mb-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle block mb-1">
                       Subject Line
                     </span>
-                    <p className="text-sm font-semibold text-[#E5E5EA]">
+                    <p className="text-sm font-semibold text-foreground">
                       {result.subjectLine}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={copySubject}
-                    className="shrink-0 p-2 rounded-md border border-[#2A2A2A] bg-[#181818] hover:bg-[#222222] transition-colors"
+                    className="shrink-0 p-2 rounded-md border border-border bg-surface hover:bg-surface-raised transition-colors"
                     title="Copy subject line"
                   >
                     {copiedSubject ? (
                       <CheckIcon className="size-3.5 text-emerald-600" />
                     ) : (
-                      <ClipboardDocumentIcon className="size-3.5 text-[#71757D]" />
+                      <ClipboardDocumentIcon className="size-3.5 text-subtle" />
                     )}
                   </button>
                 </div>
@@ -688,9 +688,9 @@ export default function OutreachPage() {
             )}
 
             {/* Body */}
-            <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-6">
+            <div className="bg-surface border border-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                   {outreachType === "loom-script"
                     ? "Loom Script"
                     : outreachType === "linkedin-dm"
@@ -698,7 +698,7 @@ export default function OutreachPage() {
                     : "Email Body"}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-[#C5C5C5]">
+                  <span className="text-[10px] text-muted">
                     {result.tone} · {outreachTypes.find((t) => t.value === result.outreachType)?.label}
                   </span>
                 </div>
@@ -714,7 +714,7 @@ export default function OutreachPage() {
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border transition-all duration-200 ${
                   copiedAll
                     ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                    : "bg-white border-[#0C0C0C] text-[#0C0C0C] hover:bg-[#F3F4F6]"
+                    : "bg-white border-background text-background hover:bg-foreground"
                 }`}
               >
                 {copiedAll ? (
@@ -733,7 +733,7 @@ export default function OutreachPage() {
                 type="button"
                 onClick={generate}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:border-[#C5C5C5] hover:text-[#E5E5EA] transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border border-border bg-surface text-subtle hover:border-muted hover:text-foreground transition-colors disabled:opacity-40"
               >
                 <ArrowPathIcon className="size-3.5" />
                 Regenerate
@@ -751,14 +751,14 @@ export default function OutreachPage() {
                 {allGenerated && (
                   <button
                     onClick={saveSequence}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#222222] text-[#71757D] rounded-md hover:bg-[#2A2A2A] transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-surface-raised text-subtle rounded-md hover:bg-border transition-colors"
                   >
                     Save Sequence
                   </button>
                 )}
                 <button
                   onClick={copyFullSequence}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white text-[#0C0C0C] rounded-md hover:bg-[#F3F4F6] transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white text-background rounded-md hover:bg-foreground transition-colors"
                 >
                   <ClipboardDocumentIcon className="size-3" />
                   Copy All
@@ -769,7 +769,7 @@ export default function OutreachPage() {
             {/* Timeline */}
             <div className="relative">
               {/* Timeline line */}
-              <div className="absolute left-[19px] top-8 bottom-4 w-px bg-[#2A2A2A]" />
+              <div className="absolute left-[19px] top-8 bottom-4 w-px bg-border" />
 
               <div className="space-y-4">
                 {seqSteps.map((step, i) => {
@@ -785,21 +785,21 @@ export default function OutreachPage() {
                         <CheckIcon className="size-2.5 text-emerald-600" />
                       </div>
 
-                      <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden">
+                      <div className="bg-surface border border-border rounded-lg overflow-hidden">
                         {/* Step header */}
-                        <div className="flex items-center justify-between px-5 py-3 bg-[#0C0C0C] border-b border-[#2A2A2A]">
+                        <div className="flex items-center justify-between px-5 py-3 bg-background border-b border-border">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-semibold">Step {i + 1}</span>
-                            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#222222] text-[#71757D] rounded-full">
+                            <span className="px-2 py-0.5 text-[10px] font-medium bg-surface-raised text-subtle rounded-full">
                               {typeLabel}
                             </span>
-                            <span className="text-[10px] text-[#71757D]">
+                            <span className="text-[10px] text-subtle">
                               Day {step.day}
                             </span>
                           </div>
                           <button
                             onClick={() => copyStep(step)}
-                            className="p-1.5 text-[#C5C5C5] hover:text-[#71757D] transition-colors"
+                            className="p-1.5 text-muted hover:text-subtle transition-colors"
                             title="Copy this step"
                           >
                             <ClipboardDocumentIcon className="size-3.5" />
@@ -808,8 +808,8 @@ export default function OutreachPage() {
 
                         {/* Subject line */}
                         {hasStepSubject && step.subjectLine && (
-                          <div className="px-5 py-2.5 border-b border-[#2A2A2A] bg-[#0C0C0C]">
-                            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">Subject: </span>
+                          <div className="px-5 py-2.5 border-b border-border bg-background">
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-subtle">Subject: </span>
                             <span className="text-xs font-semibold">{step.subjectLine}</span>
                           </div>
                         )}
@@ -831,7 +831,7 @@ export default function OutreachPage() {
                 type="button"
                 onClick={generateAllSteps}
                 disabled={seqLoading}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:border-[#C5C5C5] hover:text-[#E5E5EA] transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border border-border bg-surface text-subtle hover:border-muted hover:text-foreground transition-colors disabled:opacity-40"
               >
                 <ArrowPathIcon className="size-3.5" />
                 Regenerate All
@@ -854,7 +854,7 @@ function MarkdownRenderer({ content }: { content: string }) {
     )
     .replace(
       /^## (.*$)/gm,
-      '<h2 class="text-lg font-bold mt-8 mb-3 pb-2 border-b border-[#2A2A2A]">$1</h2>'
+      '<h2 class="text-lg font-bold mt-8 mb-3 pb-2 border-b border-border">$1</h2>'
     )
     .replace(
       /^# (.*$)/gm,
@@ -873,7 +873,7 @@ function MarkdownRenderer({ content }: { content: string }) {
     )
     .replace(
       /\[([^\]]+)\]\s*$/gm,
-      '<span class="inline-block mt-4 mb-1 text-xs font-semibold uppercase tracking-wider text-[#71757D]">$1</span>'
+      '<span class="inline-block mt-4 mb-1 text-xs font-semibold uppercase tracking-wider text-subtle">$1</span>'
     )
     .replace(/\n\n/g, '</p><p class="text-sm leading-relaxed mb-3">')
     .replace(/\n/g, "<br/>");

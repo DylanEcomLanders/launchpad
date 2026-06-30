@@ -86,20 +86,20 @@ export default function LeadsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-[#1B1B1B]">Leads</h1>
-            <p className="text-sm text-[#999] mt-1">Track prospects and outreach status</p>
+            <h1 className="text-2xl font-bold text-foreground">Leads</h1>
+            <p className="text-sm text-subtle mt-1">Track prospects and outreach status</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={load}
-              className="p-2 text-[#999] hover:text-[#1B1B1B] transition-colors"
+              className="p-2 text-subtle hover:text-foreground transition-colors"
               title="Refresh"
             >
               <ArrowPathIcon className="size-4" />
             </button>
             <button
               onClick={addProspect}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors"
             >
               <PlusIcon className="size-3.5" />
               Add Lead
@@ -108,32 +108,32 @@ export default function LeadsPage() {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-1 mb-6 border-b border-[#F0F0F0]">
+        <div className="flex gap-1 mb-6 border-b border-foreground">
           {(["all", "new", "reached_out", "responded"] as const).map(s => (
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
               className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 filterStatus === s
-                  ? "border-[#1B1B1B] text-[#1B1B1B]"
-                  : "border-transparent text-[#999] hover:text-[#666]"
+                  ? "border-surface text-foreground"
+                  : "border-transparent text-subtle hover:text-subtle"
               }`}
             >
               {s === "all" ? "All" : PROSPECT_STATUSES[s].label}
-              <span className="ml-1.5 text-[10px] text-[#999]">{counts[s]}</span>
+              <span className="ml-1.5 text-[10px] text-subtle">{counts[s]}</span>
             </button>
           ))}
         </div>
 
         {/* Table */}
         {loading ? (
-          <div className="text-center py-20 text-sm text-[#999]">Loading...</div>
+          <div className="text-center py-20 text-sm text-subtle">Loading...</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-sm text-[#999]">No leads yet</p>
+            <p className="text-sm text-subtle">No leads yet</p>
             <button
               onClick={addProspect}
-              className="mt-3 text-xs text-[#1B1B1B] font-medium hover:underline"
+              className="mt-3 text-xs text-foreground font-medium hover:underline"
             >
               + Add your first lead
             </button>
@@ -142,14 +142,14 @@ export default function LeadsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#F0F0F0]">
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider w-5"></th>
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Name</th>
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Brand</th>
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">URL</th>
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Rev</th>
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Email</th>
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Status</th>
+                <tr className="border-b border-foreground">
+                  <th className="text-left py-3 px-3 text-xs font-medium text-subtle uppercase tracking-wider w-5"></th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-subtle uppercase tracking-wider">Name</th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-subtle uppercase tracking-wider">Brand</th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-subtle uppercase tracking-wider">URL</th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-subtle uppercase tracking-wider">Rev</th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-subtle uppercase tracking-wider">Email</th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-subtle uppercase tracking-wider">Status</th>
                   <th className="w-10"></th>
                 </tr>
               </thead>
@@ -160,7 +160,7 @@ export default function LeadsPage() {
                   return (
                     <tr
                       key={p.id}
-                      className="border-b border-[#F8F8F8] hover:bg-[#FAFAFA] transition-colors cursor-pointer"
+                      className="border-b border-[#F8F8F8] hover:bg-surface-raised transition-colors cursor-pointer"
                       onClick={() => { if (!isEditing) setEditingId(p.id); }}
                     >
                       {/* Priority flag */}
@@ -176,10 +176,10 @@ export default function LeadsPage() {
                             onBlur={() => saveRow(p.id)}
                             onKeyDown={e => e.key === "Enter" && saveRow(p.id)}
                             placeholder="Contact name"
-                            className="w-full px-2 py-1 text-sm border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+                            className="w-full px-2 py-1 text-sm border border-foreground rounded focus:outline-none focus:border-surface"
                           />
                         ) : (
-                          <span className={p.name ? "text-[#1B1B1B]" : "text-[#CCC]"}>
+                          <span className={p.name ? "text-foreground" : "text-muted"}>
                             {p.name || "---"}
                           </span>
                         )}
@@ -192,10 +192,10 @@ export default function LeadsPage() {
                             onBlur={() => saveRow(p.id)}
                             onKeyDown={e => e.key === "Enter" && saveRow(p.id)}
                             placeholder="Brand name"
-                            className="w-full px-2 py-1 text-sm border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+                            className="w-full px-2 py-1 text-sm border border-foreground rounded focus:outline-none focus:border-surface"
                           />
                         ) : (
-                          <span className={p.brand ? "text-[#1B1B1B] font-medium" : "text-[#CCC]"}>
+                          <span className={p.brand ? "text-foreground font-medium" : "text-muted"}>
                             {p.brand || "---"}
                           </span>
                         )}
@@ -208,7 +208,7 @@ export default function LeadsPage() {
                             onBlur={() => saveRow(p.id)}
                             onKeyDown={e => e.key === "Enter" && saveRow(p.id)}
                             placeholder="https://..."
-                            className="w-full px-2 py-1 text-sm border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+                            className="w-full px-2 py-1 text-sm border border-foreground rounded focus:outline-none focus:border-surface"
                           />
                         ) : p.url ? (
                           <a
@@ -221,7 +221,7 @@ export default function LeadsPage() {
                             {p.url.replace(/^https?:\/\//, "")}
                           </a>
                         ) : (
-                          <span className="text-[#CCC]">---</span>
+                          <span className="text-muted">---</span>
                         )}
                       </td>
                       <td className="py-2.5 px-3">
@@ -232,10 +232,10 @@ export default function LeadsPage() {
                             onBlur={() => saveRow(p.id)}
                             onKeyDown={e => e.key === "Enter" && saveRow(p.id)}
                             placeholder="e.g. 500k/mo"
-                            className="w-full px-2 py-1 text-sm border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+                            className="w-full px-2 py-1 text-sm border border-foreground rounded focus:outline-none focus:border-surface"
                           />
                         ) : (
-                          <span className={p.rev_estimate ? "text-[#1B1B1B]" : "text-[#CCC]"}>
+                          <span className={p.rev_estimate ? "text-foreground" : "text-muted"}>
                             {p.rev_estimate || "---"}
                           </span>
                         )}
@@ -250,7 +250,7 @@ export default function LeadsPage() {
                             {p.email}
                           </a>
                         ) : (
-                          <span className="text-[#CCC] text-xs">---</span>
+                          <span className="text-muted text-xs">---</span>
                         )}
                       </td>
                       <td className="py-2.5 px-3">
@@ -279,7 +279,7 @@ export default function LeadsPage() {
                       <td className="py-2.5 px-1">
                         <button
                           onClick={e => { e.stopPropagation(); deleteProspect(p.id); }}
-                          className="p-1.5 text-[#CCC] hover:text-red-500 transition-colors"
+                          className="p-1.5 text-muted hover:text-red-500 transition-colors"
                           title="Delete"
                         >
                           <TrashIcon className="size-3.5" />

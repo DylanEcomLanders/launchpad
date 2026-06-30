@@ -208,25 +208,25 @@ export default function PageCopyAuditPage() {
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">Copy Checker</h1>
-        <p className="text-sm text-[#71757D] mt-1">
+        <h1 className="text-[28px] leading-tight font-bold text-foreground">Copy Checker</h1>
+        <p className="text-sm text-subtle mt-1">
           Flag weak phrases, missing elements, and copy that shouldn&apos;t ship
         </p>
       </div>
 
       {/* ── Brief + Brand ── */}
-      <div className={`border rounded-xl bg-[#181818] p-5 mb-6 ${briefLocked ? "border-emerald-200" : "border-[#2A2A2A]"}`}>
+      <div className={`border rounded-xl bg-surface p-5 mb-6 ${briefLocked ? "border-emerald-200" : "border-border"}`}>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-sm font-semibold text-[#E5E5EA]">Client Brief</h2>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">
+            <h2 className="text-sm font-semibold text-foreground">Client Brief</h2>
+            <p className="text-xs text-muted mt-0.5">
               {briefLocked ? "Brief locked — analysing against this context" : "Paste or type the full brief before analysing"}
             </p>
           </div>
           {briefLocked ? (
             <button
               onClick={() => setBriefLocked(false)}
-              className="px-3 py-1.5 text-[11px] font-medium text-[#71757D] border border-[#2A2A2A] rounded-lg hover:bg-[#222222]"
+              className="px-3 py-1.5 text-[11px] font-medium text-subtle border border-border rounded-lg hover:bg-surface-raised"
             >
               Edit Brief
             </button>
@@ -238,7 +238,7 @@ export default function PageCopyAuditPage() {
                 if (brandName.trim()) runVoc(brandName);
               }}
               disabled={!brief.trim()}
-              className="px-4 py-1.5 text-[11px] font-medium bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] disabled:opacity-30"
+              className="px-4 py-1.5 text-[11px] font-medium bg-white text-background rounded-lg hover:bg-foreground disabled:opacity-30"
             >
               Lock Brief & Start
             </button>
@@ -256,7 +256,7 @@ export default function PageCopyAuditPage() {
               className={inputClass}
               placeholder="e.g. Ecomlanders"
             />
-            {vocLoading && <p className="text-[10px] text-[#9CA3AF] mt-1">Researching VOC...</p>}
+            {vocLoading && <p className="text-[10px] text-muted mt-1">Researching VOC...</p>}
             {vocDone && vocData && <p className="text-[10px] text-emerald-600 mt-1">VOC data loaded ✓</p>}
           </div>
           <div>
@@ -274,10 +274,10 @@ export default function PageCopyAuditPage() {
 
       {/* ── Chat ── */}
       {briefReady && (
-        <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] mb-6 overflow-hidden">
-          <div className="px-5 py-3 border-b border-[#2A2A2A]">
-            <p className="text-xs font-semibold text-[#E5E5EA]">Ask about the copy</p>
-            <p className="text-[10px] text-[#9CA3AF] mt-0.5">Has full context of your brief{vocData ? " + VOC research" : ""}</p>
+        <div className="border border-border rounded-xl bg-surface mb-6 overflow-hidden">
+          <div className="px-5 py-3 border-b border-border">
+            <p className="text-xs font-semibold text-foreground">Ask about the copy</p>
+            <p className="text-[10px] text-muted mt-0.5">Has full context of your brief{vocData ? " + VOC research" : ""}</p>
           </div>
 
           {/* Messages */}
@@ -287,8 +287,8 @@ export default function PageCopyAuditPage() {
                 <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[85%] px-3.5 py-2.5 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
                     msg.role === "user"
-                      ? "bg-white text-[#0C0C0C] rounded-br-sm"
-                      : "bg-[#222222] text-[#E5E5EA] rounded-bl-sm"
+                      ? "bg-white text-background rounded-br-sm"
+                      : "bg-surface-raised text-foreground rounded-bl-sm"
                   }`}>
                     {msg.content}
                   </div>
@@ -296,11 +296,11 @@ export default function PageCopyAuditPage() {
               ))}
               {chatLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-[#222222] px-4 py-3 rounded-xl rounded-bl-sm">
+                  <div className="bg-surface-raised px-4 py-3 rounded-xl rounded-bl-sm">
                     <div className="flex gap-1">
-                      <div className="size-1.5 bg-[#AAA] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="size-1.5 bg-[#AAA] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="size-1.5 bg-[#AAA] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      <div className="size-1.5 bg-muted rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="size-1.5 bg-muted rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <div className="size-1.5 bg-muted rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
                   </div>
                 </div>
@@ -310,19 +310,19 @@ export default function PageCopyAuditPage() {
           )}
 
           {/* Input */}
-          <div className="flex items-center gap-2 px-4 py-3 border-t border-[#2A2A2A]">
+          <div className="flex items-center gap-2 px-4 py-3 border-t border-border">
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
               placeholder="Ask about the copy, angles, structure, VOC insights..."
-              className="flex-1 px-3 py-2 text-xs border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD]"
+              className="flex-1 px-3 py-2 text-xs border border-border rounded-lg focus:outline-none focus:border-subtle placeholder:text-muted"
             />
             <button
               onClick={sendChat}
               disabled={!chatInput.trim() || chatLoading}
-              className="px-4 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] disabled:opacity-30"
+              className="px-4 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground disabled:opacity-30"
             >
               Send
             </button>
@@ -332,19 +332,19 @@ export default function PageCopyAuditPage() {
 
       {/* ── VOC Data (collapsed) ── */}
       {vocData && (
-        <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] mb-6 overflow-hidden">
+        <div className="border border-border rounded-xl bg-surface mb-6 overflow-hidden">
           <details>
-            <summary className="px-5 py-3 cursor-pointer text-xs font-semibold text-[#E5E5EA] hover:bg-[#0C0C0C]">
+            <summary className="px-5 py-3 cursor-pointer text-xs font-semibold text-foreground hover:bg-background">
               Voice of Customer Data — {vocData.painPoints.length} pain points, {vocData.objections.length} objections, {vocData.keyPhrases.length} key phrases
             </summary>
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#2A2A2A] border-t border-[#2A2A2A]">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border border-t border-border">
               <div className="p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500 mb-2">Pain Points</p>
-                {vocData.painPoints.map((p, i) => <p key={i} className="text-xs text-[#C7C9CD] italic mb-1.5 leading-relaxed">{p}</p>)}
+                {vocData.painPoints.map((p, i) => <p key={i} className="text-xs text-muted italic mb-1.5 leading-relaxed">{p}</p>)}
               </div>
               <div className="p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 mb-2">Objections</p>
-                {vocData.objections.map((o, i) => <p key={i} className="text-xs text-[#C7C9CD] italic mb-1.5 leading-relaxed">{o}</p>)}
+                {vocData.objections.map((o, i) => <p key={i} className="text-xs text-muted italic mb-1.5 leading-relaxed">{o}</p>)}
               </div>
               <div className="p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 mb-2">Key Phrases</p>
@@ -359,7 +359,7 @@ export default function PageCopyAuditPage() {
 
       {/* ── Upload Section ── */}
       {briefReady && (
-        <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] p-5 mb-6">
+        <div className="border border-border rounded-xl bg-surface p-5 mb-6">
           <div className="flex items-end gap-3 mb-4">
             <div className="flex-1">
               <label className={labelClass}>Section</label>
@@ -371,7 +371,7 @@ export default function PageCopyAuditPage() {
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
               <button
                 onClick={() => fileRef.current?.click()}
-                className="px-4 py-2 text-xs font-medium text-[#71757D] border border-[#2A2A2A] rounded-lg hover:bg-[#222222]"
+                className="px-4 py-2 text-xs font-medium text-subtle border border-border rounded-lg hover:bg-surface-raised"
               >
                 Choose File
               </button>
@@ -380,20 +380,20 @@ export default function PageCopyAuditPage() {
 
           {/* Staged preview + analyse */}
           {pendingPreview ? (
-            <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
-              <img src={pendingPreview} alt="Preview" className="w-full max-h-64 object-contain bg-[#0C0C0C]" />
-              <div className="flex items-center justify-between px-4 py-3 border-t border-[#2A2A2A]">
-                <p className="text-xs text-[#9CA3AF]">{sectionName}</p>
+            <div className="border border-border rounded-lg overflow-hidden">
+              <img src={pendingPreview} alt="Preview" className="w-full max-h-64 object-contain bg-background" />
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                <p className="text-xs text-muted">{sectionName}</p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => { setPendingFile(null); setPendingPreview(null); }}
-                    className="px-3 py-1.5 text-[11px] text-[#9CA3AF] hover:text-[#E5E5EA]"
+                    className="px-3 py-1.5 text-[11px] text-muted hover:text-foreground"
                   >
                     Clear
                   </button>
                   <button
                     onClick={handleAnalyse}
-                    className="px-5 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6]"
+                    className="px-5 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground"
                   >
                     Analyse
                   </button>
@@ -402,11 +402,11 @@ export default function PageCopyAuditPage() {
             </div>
           ) : (
             <div
-              className="border-2 border-dashed border-[#2A2A2A] rounded-lg p-8 text-center cursor-pointer hover:border-[#999] transition-colors"
+              className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-subtle transition-colors"
               onClick={() => fileRef.current?.click()}
             >
-              <p className="text-sm text-[#9CA3AF]">Paste a screenshot (Cmd+V) or click to upload</p>
-              <p className="text-xs text-[#C7C9CD] mt-1">Screenshot each section of your design individually</p>
+              <p className="text-sm text-muted">Paste a screenshot (Cmd+V) or click to upload</p>
+              <p className="text-xs text-muted mt-1">Screenshot each section of your design individually</p>
             </div>
           )}
         </div>
@@ -416,30 +416,30 @@ export default function PageCopyAuditPage() {
       {sections.length > 0 && (
         <div className="space-y-6">
           {[...sections].reverse().map((s) => (
-            <div key={s.id} className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
+            <div key={s.id} className="border border-border rounded-xl bg-surface overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-[#2A2A2A]">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <p className="text-sm font-semibold text-[#E5E5EA]">{s.name}</p>
+                  <p className="text-sm font-semibold text-foreground">{s.name}</p>
                   {s.analysis && (
-                    <span className="text-[11px] text-[#9CA3AF]">{s.analysis.summary}</span>
+                    <span className="text-[11px] text-muted">{s.analysis.summary}</span>
                   )}
                 </div>
-                <button onClick={() => removeSection(s.id)} className="text-[10px] text-[#C7C9CD] hover:text-red-500">Remove</button>
+                <button onClick={() => removeSection(s.id)} className="text-[10px] text-muted hover:text-red-500">Remove</button>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
                 {/* Screenshot */}
-                <div className="border-b lg:border-b-0 lg:border-r border-[#2A2A2A]">
-                  <img src={s.previewUrl} alt={s.name} className="w-full h-auto max-h-96 object-contain bg-[#0C0C0C] p-2" />
+                <div className="border-b lg:border-b-0 lg:border-r border-border">
+                  <img src={s.previewUrl} alt={s.name} className="w-full h-auto max-h-96 object-contain bg-background p-2" />
                 </div>
 
                 {/* Analysis */}
                 <div className="p-5">
                   {s.analysing && (
                     <div className="flex items-center gap-3 py-8 justify-center">
-                      <div className="animate-spin size-5 border-2 border-[#2A2A2A] border-t-[#1A1A1A] rounded-full" />
-                      <p className="text-xs text-[#9CA3AF]">Checking copy...</p>
+                      <div className="animate-spin size-5 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+                      <p className="text-xs text-muted">Checking copy...</p>
                     </div>
                   )}
 
@@ -457,9 +457,9 @@ export default function PageCopyAuditPage() {
                           <div className="space-y-2">
                             {s.analysis.redFlags.map((flag, i) => (
                               <div key={i} className="border border-red-100 bg-red-50/30 rounded-lg px-3.5 py-2.5">
-                                <p className="text-xs font-medium text-[#E5E5EA] italic mb-1">&ldquo;{flag.quote}&rdquo;</p>
+                                <p className="text-xs font-medium text-foreground italic mb-1">&ldquo;{flag.quote}&rdquo;</p>
                                 <p className="text-[10px] font-semibold text-red-500 mb-0.5">{flag.rule}</p>
-                                <p className="text-xs text-[#9CA3AF] leading-relaxed">{flag.why}</p>
+                                <p className="text-xs text-muted leading-relaxed">{flag.why}</p>
                               </div>
                             ))}
                           </div>
@@ -478,9 +478,9 @@ export default function PageCopyAuditPage() {
                           <div className="space-y-2">
                             {s.analysis.warnings.map((warn, i) => (
                               <div key={i} className="border border-amber-100 bg-amber-50/30 rounded-lg px-3.5 py-2.5">
-                                <p className="text-xs font-medium text-[#E5E5EA] italic mb-1">&ldquo;{warn.quote}&rdquo;</p>
+                                <p className="text-xs font-medium text-foreground italic mb-1">&ldquo;{warn.quote}&rdquo;</p>
                                 <p className="text-[10px] font-semibold text-amber-600 mb-0.5">{warn.rule}</p>
-                                <p className="text-xs text-[#9CA3AF] leading-relaxed">{warn.why}</p>
+                                <p className="text-xs text-muted leading-relaxed">{warn.why}</p>
                               </div>
                             ))}
                           </div>
@@ -503,8 +503,8 @@ export default function PageCopyAuditPage() {
                                   <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                                 </svg>
                                 <div>
-                                  <p className="text-xs font-medium text-[#E5E5EA]">{pass.element}</p>
-                                  <p className="text-[10px] text-[#9CA3AF]">{pass.why}</p>
+                                  <p className="text-xs font-medium text-foreground">{pass.element}</p>
+                                  <p className="text-[10px] text-muted">{pass.why}</p>
                                 </div>
                               </div>
                             ))}
@@ -518,7 +518,7 @@ export default function PageCopyAuditPage() {
                           <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 mb-2">VOC Gaps — Customer Language Not Used</p>
                           <div className="space-y-1">
                             {s.analysis.vocGaps.map((gap, i) => (
-                              <p key={i} className="text-xs text-[#C7C9CD] leading-relaxed">• {gap}</p>
+                              <p key={i} className="text-xs text-muted leading-relaxed">• {gap}</p>
                             ))}
                           </div>
                         </div>
@@ -541,9 +541,9 @@ export default function PageCopyAuditPage() {
 
       {/* Empty state */}
       {sections.length === 0 && !briefReady && (
-        <div className="border-2 border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#9CA3AF]">Lock your brief to get started</p>
-          <p className="text-xs text-[#C7C9CD] mt-1">Then upload screenshots section by section to check for issues</p>
+        <div className="border-2 border-dashed border-border rounded-xl p-12 text-center">
+          <p className="text-sm text-muted">Lock your brief to get started</p>
+          <p className="text-xs text-muted mt-1">Then upload screenshots section by section to check for issues</p>
         </div>
       )}
     </div>

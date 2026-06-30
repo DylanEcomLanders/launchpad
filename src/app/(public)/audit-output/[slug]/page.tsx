@@ -48,7 +48,7 @@ export default function AuditOutputPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="size-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
       </div>
     );
@@ -56,12 +56,12 @@ export default function AuditOutputPage({
 
   if (!audit) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-semibold text-[#E5E5EA] mb-3">
+          <h1 className="text-2xl font-semibold text-foreground mb-3">
             Audit not found
           </h1>
-          <p className="text-sm text-[#9CA3AF]">
+          <p className="text-sm text-muted">
             This link may have moved or been removed. Reach out and we&apos;ll
             send you the new one.
           </p>
@@ -75,7 +75,7 @@ export default function AuditOutputPage({
   );
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Subtle background blob to match the Hero Offer chrome */}
       <div
         className="pointer-events-none fixed inset-0 -z-10 opacity-50"
@@ -111,12 +111,12 @@ export default function AuditOutputPage({
               href={audit.brand_url.startsWith("http") ? audit.brand_url : `https://${audit.brand_url}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-base text-[#9CA3AF] hover:text-emerald-300"
+              className="text-base text-muted hover:text-emerald-300"
             >
               {audit.brand_url} ↗
             </a>
           )}
-          <div className="mt-6 flex items-center gap-4 flex-wrap text-[12px] text-[#71757D]">
+          <div className="mt-6 flex items-center gap-4 flex-wrap text-[12px] text-subtle">
             {audit.revenue_band && <Pill>{audit.revenue_band}</Pill>}
             {audit.primary_device && <Pill>{audit.primary_device} first</Pill>}
             {audit.primary_traffic_source && <Pill>{audit.primary_traffic_source}</Pill>}
@@ -170,20 +170,20 @@ export default function AuditOutputPage({
               {sortedFindings.map((f, i) => (
                 <li
                   key={f.id}
-                  className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04]"
+                  className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]"
                 >
                   <div className="flex items-center gap-3 mb-3 flex-wrap">
-                    <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+                    <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold">
                       #{i + 1}
                     </span>
-                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#1A1A1A] text-[#9CA3AF]">
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-surface text-muted">
                       {STAGE_META[f.stage].label}
                     </span>
                     <span className="text-[11px] font-mono text-cyan-300" title="ICE score">
                       ICE {iceScore(f)}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#E5E5EA] mb-3">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">
                     {f.title || "Untitled finding"}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
@@ -275,12 +275,12 @@ export default function AuditOutputPage({
 
         {/* Footer */}
         <footer className="pt-8 pb-4 text-center border-t border-white/[0.04]">
-          <p className="text-[11px] text-[#71757D]">
+          <p className="text-[11px] text-subtle">
             Built by Ecom Landers · Conversion engine for Shopify brands
           </p>
           <Link
             href="/"
-            className="text-[11px] text-[#71757D] hover:text-emerald-300 transition-colors"
+            className="text-[11px] text-subtle hover:text-emerald-300 transition-colors"
           >
             ecomlanders.app
           </Link>
@@ -311,12 +311,12 @@ function Slide({
     <section>
       <div className="flex items-center gap-2.5 mb-4">
         <span className={`size-2 rounded-full bg-gradient-to-br ${accentDot[accent]}`} />
-        <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-[#E5E5EA]">
+        <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground">
           {title}
         </h2>
       </div>
       {subtitle && (
-        <p className="text-xl md:text-2xl text-[#E5E5EA] font-medium leading-snug mb-5 max-w-3xl">
+        <p className="text-xl md:text-2xl text-foreground font-medium leading-snug mb-5 max-w-3xl">
           {subtitle}
         </p>
       )}
@@ -327,7 +327,7 @@ function Slide({
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="px-2.5 py-0.5 rounded-full bg-[#1A1A1A] text-[11px] uppercase tracking-wider text-[#9CA3AF]">
+    <span className="px-2.5 py-0.5 rounded-full bg-surface text-[11px] uppercase tracking-wider text-muted">
       {children}
     </span>
   );
@@ -335,7 +335,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 function SubLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[10px] uppercase tracking-wider font-semibold text-[#71757D] mb-1.5">
+    <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle mb-1.5">
       {children}
     </div>
   );
@@ -344,7 +344,7 @@ function SubLabel({ children }: { children: React.ReactNode }) {
 function Prose({ body, compact = false }: { body: string; compact?: boolean }) {
   return (
     <div
-      className={`prose prose-invert max-w-none prose-headings:text-[#E5E5EA] prose-p:text-[#9CA3AF] prose-li:text-[#9CA3AF] prose-strong:text-[#E5E5EA] prose-a:text-emerald-300 ${
+      className={`prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted prose-li:text-muted prose-strong:text-foreground prose-a:text-emerald-300 ${
         compact ? "prose-sm" : ""
       }`}
     >
@@ -363,26 +363,26 @@ function Stat({
   value: string;
 }) {
   return (
-    <div className="bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04]">
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold mb-1">
+    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04]">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-subtle font-semibold mb-1">
         <span className="text-cyan-300">{icon}</span>
         {label}
       </div>
-      <div className="text-2xl font-semibold text-[#E5E5EA]">{value}</div>
+      <div className="text-2xl font-semibold text-foreground">{value}</div>
     </div>
   );
 }
 
 function Horizon({ label, body }: { label: string; body: string }) {
   return (
-    <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04]">
+    <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]">
       <div className="text-[10px] uppercase tracking-wider font-semibold text-cyan-300 mb-2">
         {label}
       </div>
       {body.trim() ? (
         <Prose body={body} compact />
       ) : (
-        <p className="text-xs italic text-[#71757D]">Not detailed.</p>
+        <p className="text-xs italic text-subtle">Not detailed.</p>
       )}
     </div>
   );

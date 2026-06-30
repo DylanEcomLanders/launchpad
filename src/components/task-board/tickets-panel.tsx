@@ -176,18 +176,18 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
 
   return (
     <>
-      <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] overflow-hidden">
+      <div className="rounded-xl border border-border bg-surface overflow-hidden">
         {/* Header, counts are the always-visible pressure signal */}
-        <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#2A2A2A] bg-[#0C0C0C]">
+        <div className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-background">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#E5E5EA]">
+            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
               Tickets
             </h2>
-            <span className="text-[10px] font-medium text-[#71757D] tabular-nums">
+            <span className="text-[10px] font-medium text-subtle tabular-nums">
               {openCount} open
             </span>
             {staleCount > 0 && (
-              <span className="text-[10px] font-bold tabular-nums text-[#DC2626]">
+              <span className="text-[10px] font-bold tabular-nums text-danger">
                 · {staleCount} stale
               </span>
             )}
@@ -196,7 +196,7 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
             type="button"
             onClick={() => setTriaging(true)}
             disabled={openTickets.length === 0}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#1A1A1A] text-[#E5E5EA] hover:bg-[#1A1A1A] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-surface text-foreground hover:bg-surface hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <BoltIcon className="size-3" />
             Triage
@@ -204,18 +204,18 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
         </div>
 
         {/* Add button + view tabs */}
-        <div className="px-3 py-2 border-b border-[#2A2A2A]">
+        <div className="px-3 py-2 border-b border-border">
           <button
             type="button"
             onClick={() => setComposing(true)}
-            className="w-full flex items-center justify-center gap-1.5 px-2 py-2 text-[12px] font-semibold rounded border border-dashed border-[#2A2A2A] text-[#71757D] hover:border-[#1A1A1A] hover:text-[#E5E5EA] transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 px-2 py-2 text-[12px] font-semibold rounded border border-dashed border-border text-subtle hover:border-surface hover:text-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" />
             New ticket
           </button>
         </div>
 
-        <div className="flex border-b border-[#2A2A2A]">
+        <div className="flex border-b border-border">
           <ViewTab
             label={`Open (${openCount})`}
             active={view === "open"}
@@ -249,11 +249,11 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
         {/* List */}
         <div className="px-3 py-3 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
           {!hydrated ? (
-            <p className="text-[11px] text-[#9CA3AF] text-center py-6">
+            <p className="text-[11px] text-muted text-center py-6">
               Loading…
             </p>
           ) : visible.length === 0 ? (
-            <p className="text-[11px] text-[#9CA3AF] text-center py-6">
+            <p className="text-[11px] text-muted text-center py-6">
               {view === "open"
                 ? "No open tickets. Inbox zero."
                 : view === "done"
@@ -305,10 +305,10 @@ function ViewTab({
       onClick={onClick}
       className={`flex-1 px-2 py-2 text-[10px] font-semibold uppercase tracking-wider transition-colors border-b-2 ${
         active
-          ? "border-[#1A1A1A] text-[#E5E5EA]"
+          ? "border-surface text-foreground"
           : muted
-          ? "border-transparent text-[#9CA3AF] hover:text-[#71757D]"
-          : "border-transparent text-[#71757D] hover:text-[#E5E5EA]"
+          ? "border-transparent text-muted hover:text-subtle"
+          : "border-transparent text-subtle hover:text-foreground"
       }`}
     >
       {label}

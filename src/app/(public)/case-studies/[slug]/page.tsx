@@ -103,7 +103,7 @@ function CaseStudyRender({
   };
 
   return (
-    <div className="bg-[#F7F8FA] text-[#1B1B1B] min-h-screen">
+    <div className="bg-surface-raised text-foreground min-h-screen">
       {/* The (public) layout's animate-fadeInUp leaves a residual transform on
        * <main> that creates a containing block and breaks layout/screenshot
        * for long scrolling content. Strip it for case study pages. */}
@@ -121,7 +121,7 @@ function CaseStudyRender({
 
       {/* ── Top bar ──────────────────────────── */}
       <header className="px-6 md:px-10 py-6 flex items-center justify-center">
-        <Link href="/" className="text-[#1B1B1B]" aria-label="Ecom Landers">
+        <Link href="/" className="text-foreground" aria-label="Ecom Landers">
           <Logo height={20} />
         </Link>
       </header>
@@ -163,7 +163,7 @@ function CaseStudyRender({
 
       {/* ── Meta row ─────────────────────────── */}
       <MotionSection className="px-6 md:px-10 pb-14">
-        <div className="max-w-[1200px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-[#EDEDEF] pt-8">
+        <div className="max-w-[1200px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-border pt-8">
           <MetaItem label="Brand" value={study.meta.brandName} />
           {study.meta.industry && <MetaItem label="Niche" value={study.meta.industry} />}
           {study.meta.timeframe && <MetaItem label="Engagement" value={study.meta.timeframe} />}
@@ -194,7 +194,7 @@ function CaseStudyRender({
                     return (
                       <div
                         key={img.filename || i}
-                        className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg overflow-hidden border border-[#EDEDEF] bg-white`}
+                        className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg overflow-hidden border border-border bg-white`}
                         style={
                           useNaturalAspect
                             ? { aspectRatio: `${img.width} / ${img.height}` }
@@ -215,7 +215,7 @@ function CaseStudyRender({
                   return (
                     <div
                       key={`placeholder-${i}`}
-                      className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg border border-[#EDEDEF] bg-[#EDEDEF]/40`}
+                      className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg border border-border bg-border/40`}
                       style={!isRigidLayout ? { aspectRatio: "4 / 3" } : undefined}
                     />
                   );
@@ -230,7 +230,7 @@ function CaseStudyRender({
 
       {/* ── The Problem ──────────────────────── */}
       {(study.challenge.headline || study.challenge.prose) && (
-        <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
+        <MotionSection className="px-6 md:px-10 py-16 border-t border-border">
           <div className="max-w-[1200px] mx-auto">
             <Eyebrow color={brandRed}>The Problem</Eyebrow>
             {study.challenge.headline && (
@@ -251,11 +251,11 @@ function CaseStudyRender({
               <div className="mt-12 space-y-8">
                 {study.challenge.pullQuotes.map((q) => (
                   <blockquote key={q.id} className="max-w-3xl">
-                    <p className="text-xl md:text-2xl font-semibold tracking-tight text-[#1B1B1B] leading-snug">
+                    <p className="text-xl md:text-2xl font-semibold tracking-tight text-foreground leading-snug">
                       &ldquo;{q.text}&rdquo;
                     </p>
                     {q.attribution && (
-                      <cite className="block text-sm text-[#7A7A7A] not-italic mt-3">
+                      <cite className="block text-sm text-subtle not-italic mt-3">
                         — {q.attribution}
                       </cite>
                     )}
@@ -271,7 +271,7 @@ function CaseStudyRender({
 
       {/* ── The Solution ─────────────────────── */}
       {(study.approach.headline || study.approach.cards.length > 0) && (
-        <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
+        <MotionSection className="px-6 md:px-10 py-16 border-t border-border">
           <div className="max-w-[1200px] mx-auto">
             <Eyebrow color={sectionGreen}>The Solution</Eyebrow>
             {study.approach.headline && (
@@ -290,7 +290,7 @@ function CaseStudyRender({
                   <MotionItem
                     key={card.id}
                     delay={i * 0.08}
-                    className="bg-white border border-[#EDEDEF] rounded-xl p-6 shadow-[var(--shadow-soft)]"
+                    className="bg-white border border-border rounded-xl p-6 shadow-[var(--shadow-soft)]"
                   >
                     <div
                       className="text-[10px] font-semibold uppercase tracking-[0.16em]"
@@ -298,7 +298,7 @@ function CaseStudyRender({
                     >
                       {String(i + 1).padStart(2, "0")} ·
                     </div>
-                    <h3 className="mt-3 text-lg font-semibold text-[#1B1B1B] tracking-tight">
+                    <h3 className="mt-3 text-lg font-semibold text-foreground tracking-tight">
                       {card.title}
                     </h3>
                     <p className="mt-3 text-sm text-[#5C5C5C] leading-relaxed">
@@ -318,7 +318,7 @@ function CaseStudyRender({
       {(study.designs.headline ||
         study.designs.desktopSlices.length > 0 ||
         study.designs.mobileSlices.length > 0) && (
-        <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
+        <MotionSection className="px-6 md:px-10 py-16 border-t border-border">
           <div className="max-w-[1200px] mx-auto">
             <Eyebrow color={sectionGrey}>The Design</Eyebrow>
             {study.designs.headline && (
@@ -352,7 +352,7 @@ function CaseStudyRender({
 
       {/* ── The Full Results ─────────────────── */}
       {study.compoundedResults.length > 0 && (
-        <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
+        <MotionSection className="px-6 md:px-10 py-16 border-t border-border">
           <div className="max-w-[1200px] mx-auto">
             <Eyebrow color={sectionGrey}>The Full Results</Eyebrow>
             <h2 className="mt-4 text-2xl md:text-[32px] font-semibold tracking-tight leading-[1.15] max-w-3xl">
@@ -376,7 +376,7 @@ function CaseStudyRender({
        * vertical CTA card right). Testimonial missing → CTA spans full
        * width as a horizontal bar (headline left, buttons right) instead
        * of leaving the right half empty. */}
-      <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
+      <MotionSection className="px-6 md:px-10 py-16 border-t border-border">
         {(() => {
           const hasTestimonial = !!study.testimonial?.quote;
           return (
@@ -386,9 +386,9 @@ function CaseStudyRender({
               }`}
             >
               {hasTestimonial && study.testimonial && (
-                <div className="bg-white border border-[#EDEDEF] rounded-xl p-8 shadow-[var(--shadow-soft)]">
+                <div className="bg-white border border-border rounded-xl p-8 shadow-[var(--shadow-soft)]">
                   <Eyebrow color={sectionGrey}>The Client&apos;s Thoughts</Eyebrow>
-                  <blockquote className="mt-5 text-lg md:text-xl font-semibold tracking-tight leading-snug text-[#1B1B1B]">
+                  <blockquote className="mt-5 text-lg md:text-xl font-semibold tracking-tight leading-snug text-foreground">
                     &ldquo;{study.testimonial.quote}&rdquo;
                   </blockquote>
                   <div className="flex items-center gap-3 mt-6">
@@ -401,15 +401,15 @@ function CaseStudyRender({
                       />
                     )}
                     <div>
-                      <div className="text-sm font-semibold text-[#1B1B1B]">{study.testimonial.name}</div>
-                      <div className="text-xs text-[#7A7A7A]">{study.testimonial.role}</div>
+                      <div className="text-sm font-semibold text-foreground">{study.testimonial.name}</div>
+                      <div className="text-xs text-subtle">{study.testimonial.role}</div>
                     </div>
                   </div>
                 </div>
               )}
 
               <div
-                className={`bg-[#1B1B1B] text-white rounded-xl p-8 ${
+                className={`bg-surface text-white rounded-xl p-8 ${
                   hasTestimonial
                     ? "flex flex-col justify-between min-h-[260px]"
                     : "flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-10"
@@ -430,7 +430,7 @@ function CaseStudyRender({
                 >
                   <Link
                     href={study.cta.buttonHref || "/audit"}
-                    className="flex items-center justify-center px-4 py-3 bg-white text-[#1B1B1B] text-sm font-semibold rounded-lg hover:bg-[#F3F3F5] transition-colors whitespace-nowrap"
+                    className="flex items-center justify-center px-4 py-3 bg-white text-foreground text-sm font-semibold rounded-lg hover:bg-surface-raised transition-colors whitespace-nowrap"
                   >
                     {study.cta.buttonLabel || "Book a call"}
                     <span className="ml-2">↗</span>
@@ -453,14 +453,14 @@ function CaseStudyRender({
 
       {/* ── Tech stack (if any) ──────────────── */}
       {study.techStack.length > 0 && (
-        <MotionSection className="px-6 md:px-10 py-12 border-t border-[#EDEDEF]">
+        <MotionSection className="px-6 md:px-10 py-12 border-t border-border">
           <div className="max-w-[1200px] mx-auto flex items-center gap-4 flex-wrap">
             <Eyebrow color={sectionGrey}>Built with</Eyebrow>
             <div className="flex flex-wrap gap-1.5">
               {study.techStack.map((t) => (
                 <span
                   key={t}
-                  className="text-xs font-semibold px-3 py-1 bg-white text-[#1B1B1B] rounded-full border border-[#EDEDEF]"
+                  className="text-xs font-semibold px-3 py-1 bg-white text-foreground rounded-full border border-border"
                 >
                   {t}
                 </span>
@@ -472,7 +472,7 @@ function CaseStudyRender({
 
       {/* ── Related ───────────────────────────── */}
       {related.length > 0 && (
-        <section className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
+        <section className="px-6 md:px-10 py-16 border-t border-border">
           <div className="max-w-[1200px] mx-auto">
             <Eyebrow color={sectionGrey}>More work</Eyebrow>
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -480,12 +480,12 @@ function CaseStudyRender({
                 <Link
                   key={r.id}
                   href={`/case-studies/${r.slug}`}
-                  className="group block bg-white border border-[#EDEDEF] rounded-xl p-6 hover:shadow-[var(--shadow-card)] transition-shadow"
+                  className="group block bg-white border border-border rounded-xl p-6 hover:shadow-[var(--shadow-card)] transition-shadow"
                 >
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                     {r.meta.brandName}
                   </div>
-                  <div className="text-base font-semibold text-[#1B1B1B] mt-2 leading-snug">
+                  <div className="text-base font-semibold text-foreground mt-2 leading-snug">
                     {r.hero.headline}
                   </div>
                 </Link>
@@ -496,8 +496,8 @@ function CaseStudyRender({
       )}
 
       {/* ── Footer ────────────────────────────── */}
-      <footer className="px-6 md:px-10 py-10 border-t border-[#EDEDEF] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#7A7A7A]">
-        <Link href="/" className="text-[#1B1B1B] hover:text-[#1B1B1B]">
+      <footer className="px-6 md:px-10 py-10 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-subtle">
+        <Link href="/" className="text-foreground hover:text-foreground">
           <Logo height={16} />
         </Link>
         <div>© {new Date().getFullYear()} Ecom Landers. All rights reserved.</div>
@@ -522,10 +522,10 @@ function Eyebrow({ color, children }: { color: string; children: React.ReactNode
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
         {label}
       </div>
-      <div className="mt-1.5 text-base font-semibold text-[#1B1B1B]">{value}</div>
+      <div className="mt-1.5 text-base font-semibold text-foreground">{value}</div>
     </div>
   );
 }
@@ -533,17 +533,17 @@ function MetaItem({ label, value }: { label: string; value: string }) {
 function StatCard({ stat, delayMs = 0 }: { stat: HeadlineStat; delayMs?: number }) {
   const parsed = parseStatValue(stat.value);
   return (
-    <div className="relative bg-white border border-[#EDEDEF] rounded-xl px-5 py-6 shadow-[var(--shadow-soft)] h-full">
+    <div className="relative bg-white border border-border rounded-xl px-5 py-6 shadow-[var(--shadow-soft)] h-full">
       {/* Win chip — every headline stat is an improvement */}
       <span
-        className="absolute top-4 right-4 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[#E8F5EE] text-[#16a34a] text-[10px] font-semibold leading-none"
+        className="absolute top-4 right-4 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[#E8F5EE] text-success text-[10px] font-semibold leading-none"
         aria-label="Improvement"
       >
         <svg viewBox="0 0 12 12" className="size-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 10V2M2.5 5.5L6 2l3.5 3.5" />
         </svg>
       </span>
-      <div className="text-3xl md:text-4xl font-semibold tracking-tight tabular-nums text-[#1B1B1B] leading-none">
+      <div className="text-3xl md:text-4xl font-semibold tracking-tight tabular-nums text-foreground leading-none">
         {parsed ? (
           <AnimatedCounter
             value={parsed.value}
@@ -556,7 +556,7 @@ function StatCard({ stat, delayMs = 0 }: { stat: HeadlineStat; delayMs?: number 
           stat.value
         )}
       </div>
-      <div className="mt-3 text-[11px] text-[#7A7A7A] leading-snug">{stat.label}</div>
+      <div className="mt-3 text-[11px] text-subtle leading-snug">{stat.label}</div>
     </div>
   );
 }
@@ -564,13 +564,13 @@ function StatCard({ stat, delayMs = 0 }: { stat: HeadlineStat; delayMs?: number 
 function ComparisonCard({ row }: { row: ResultComparison }) {
   const isUp = row.deltaDirection !== "down";
   return (
-    <div className="bg-white border border-[#EDEDEF] rounded-xl px-5 py-6 shadow-[var(--shadow-soft)]">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] truncate">
+    <div className="bg-white border border-border rounded-xl px-5 py-6 shadow-[var(--shadow-soft)]">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle truncate">
         {row.label}
       </div>
       <div className="mt-4 flex items-baseline gap-2">
-        <span className="text-sm text-[#A0A0A0] line-through tabular-nums">{row.before}</span>
-        <span className="text-2xl md:text-3xl font-semibold tracking-tight text-[#1B1B1B] tabular-nums leading-none">
+        <span className="text-sm text-muted line-through tabular-nums">{row.before}</span>
+        <span className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground tabular-nums leading-none">
           {row.after}
         </span>
       </div>
@@ -588,7 +588,7 @@ function HeroCollage({ images }: { images: { url: string; alt?: string; filename
   const img = images[0];
   if (!img) {
     return (
-      <div className="aspect-[4/3] rounded-xl border border-dashed border-[#E5E5EA] bg-white" />
+      <div className="aspect-[4/3] rounded-xl border border-dashed border-foreground bg-white" />
     );
   }
   return (

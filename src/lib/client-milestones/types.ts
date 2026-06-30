@@ -46,7 +46,7 @@ export const STATUS_LABEL: Record<MilestoneStatus, string> = {
 };
 
 export const STATUS_TINT: Record<MilestoneStatus, string> = {
-  upcoming: "bg-[#222222] text-[#9CA3AF]",
+  upcoming: "bg-surface-raised text-muted",
   due: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
   in_progress: "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-500/30",
   completed: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",

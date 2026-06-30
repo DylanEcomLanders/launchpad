@@ -77,17 +77,17 @@ export default function ResetPasswordPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA] flex items-center justify-center px-6">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#181818] border border-[#2A2A2A] mb-5">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-surface border border-border mb-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/el-logo.svg"
@@ -96,21 +96,21 @@ export default function ResetPasswordPage() {
             />
           </div>
           <h1 className="text-2xl font-semibold">Reset your password</h1>
-          <p className="text-sm text-[#71757D] mt-1.5">Launchpad team account</p>
+          <p className="text-sm text-subtle mt-1.5">Launchpad team account</p>
         </div>
 
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-2xl p-6">
+        <div className="bg-surface border border-border rounded-2xl p-6">
           {!hasToken ? (
             <div className="text-center space-y-3">
-              <p className="text-sm text-[#E5E5EA] font-medium">
+              <p className="text-sm text-foreground font-medium">
                 Link expired or invalid
               </p>
-              <p className="text-xs text-[#71757D] leading-relaxed">
+              <p className="text-xs text-subtle leading-relaxed">
                 Head back to sign in and request a fresh reset link.
               </p>
               <Link
                 href="/"
-                className="inline-block mt-3 px-4 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-xl hover:bg-[#E5E5EA] transition-colors"
+                className="inline-block mt-3 px-4 py-2 bg-white text-background text-sm font-semibold rounded-xl hover:bg-foreground transition-colors"
               >
                 Back to sign in
               </Link>
@@ -132,13 +132,13 @@ export default function ResetPasswordPage() {
                   />
                 </svg>
               </div>
-              <p className="text-sm text-[#E5E5EA] font-medium">Password updated</p>
-              <p className="text-xs text-[#71757D]">Sending you in...</p>
+              <p className="text-sm text-foreground font-medium">Password updated</p>
+              <p className="text-xs text-subtle">Sending you in...</p>
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.12em] text-[#71757D] mb-2 font-medium">
+                <label className="block text-[11px] uppercase tracking-[0.12em] text-subtle mb-2 font-medium">
                   New password
                 </label>
                 <input
@@ -150,11 +150,11 @@ export default function ResetPasswordPage() {
                   }}
                   placeholder="At least 8 characters"
                   autoFocus
-                  className="w-full px-4 py-3 bg-[#0C0C0C] border border-[#2A2A2A] focus:border-[#383838] rounded-xl text-sm text-white focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border focus:border-border rounded-xl text-sm text-white focus:outline-none transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.12em] text-[#71757D] mb-2 font-medium">
+                <label className="block text-[11px] uppercase tracking-[0.12em] text-subtle mb-2 font-medium">
                   Confirm new password
                 </label>
                 <input
@@ -164,7 +164,7 @@ export default function ResetPasswordPage() {
                     setConfirm(e.target.value);
                     setError("");
                   }}
-                  className="w-full px-4 py-3 bg-[#0C0C0C] border border-[#2A2A2A] focus:border-[#383838] rounded-xl text-sm text-white focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border focus:border-border rounded-xl text-sm text-white focus:outline-none transition-colors"
                 />
                 {error && (
                   <p className="text-xs text-red-300 mt-2">{error}</p>
@@ -173,7 +173,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full px-4 py-3 bg-white text-[#0C0C0C] text-sm font-semibold rounded-xl hover:bg-[#E5E5EA] disabled:opacity-60 transition-colors"
+                className="w-full px-4 py-3 bg-white text-background text-sm font-semibold rounded-xl hover:bg-foreground disabled:opacity-60 transition-colors"
               >
                 {submitting ? "Updating..." : "Set new password"}
               </button>

@@ -172,7 +172,7 @@ export default function RdDashboardClient() {
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-16">
-        <div className="text-[13px] text-[#71757D]">Loading R&amp;D tracker...</div>
+        <div className="text-[13px] text-subtle">Loading R&amp;D tracker...</div>
       </div>
     );
   }
@@ -188,16 +188,16 @@ export default function RdDashboardClient() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+          <h1 className="text-2xl font-semibold text-foreground">
             Initiatives
           </h1>
-          <p className="text-[13px] text-[#71757D] mt-1">
+          <p className="text-[13px] text-subtle mt-1">
             {totals.active} active · {totals.parked} parked · {totals.shipped} shipped
           </p>
         </div>
         <button
           onClick={() => setNewInitiativeOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#E5E5EA] text-[#181818] text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
         >
           <PlusIcon className="size-4" />
           New initiative
@@ -237,9 +237,9 @@ export default function RdDashboardClient() {
               className="flex items-center gap-2 w-full text-left group"
             >
               <ChevronDownIcon
-                className={`size-3.5 text-[#71757D] transition-transform ${open ? "" : "-rotate-90"}`}
+                className={`size-3.5 text-subtle transition-transform ${open ? "" : "-rotate-90"}`}
               />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] group-hover:text-[#E5E5EA] transition-colors">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle group-hover:text-foreground transition-colors">
                 {status} ({items.length})
               </span>
             </button>
@@ -262,25 +262,25 @@ export default function RdDashboardClient() {
       <div className="mt-14">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-[#E5E5EA] flex items-center gap-2">
-              <LightBulbIcon className="size-4 text-[#E5E5EA]" />
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <LightBulbIcon className="size-4 text-foreground" />
               Ideas from the team
             </h2>
-            <p className="text-[13px] text-[#71757D] mt-1">
+            <p className="text-[13px] text-subtle mt-1">
               {inboxIdeas.length} unreviewed · review weekly
             </p>
           </div>
           <button
             onClick={() => setAddIdeaOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-[12px] font-medium rounded-lg hover:border-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border text-foreground text-[12px] font-medium rounded-lg hover:border-white transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add idea
           </button>
         </div>
-        <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-2xl p-3 md:p-4">
+        <div className="bg-background border border-border rounded-2xl p-3 md:p-4">
           {inboxIdeas.length === 0 ? (
-            <div className="px-3 py-10 text-center text-[13px] text-[#71757D]">
+            <div className="px-3 py-10 text-center text-[13px] text-subtle">
               Nothing in the inbox. The team can drop ideas with the button
               above.
             </div>
@@ -328,14 +328,14 @@ function InitiativeCard({
   return (
     <Link
       href={`/rd/${initiative.id}`}
-      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-white/30 hover:shadow-[var(--shadow-soft)] transition-all"
+      className="block bg-surface border border-border rounded-xl p-4 hover:border-white/30 hover:shadow-[var(--shadow-soft)] transition-all"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-medium text-[#E5E5EA] truncate">
+          <div className="text-[15px] font-medium text-foreground truncate">
             {initiative.name}
           </div>
-          <div className="text-[11px] text-[#71757D] mt-0.5">
+          <div className="text-[11px] text-subtle mt-0.5">
             {firstName(initiative.owner)} · {timeAgo(last)}
           </div>
         </div>
@@ -343,15 +343,15 @@ function InitiativeCard({
       </div>
       <ProgressBar pct={pct} />
       <div className="flex items-center justify-between mt-2">
-        <span className="text-[11px] text-[#71757D]">
+        <span className="text-[11px] text-subtle">
           {done} of {total} sub-points
         </span>
         {stale ? (
-          <span className="text-[11px] font-semibold text-[#B22B2B] uppercase tracking-wider">
+          <span className="text-[11px] font-semibold text-danger uppercase tracking-wider">
             Stale
           </span>
         ) : (
-          <span className="text-[11px] font-medium text-[#E5E5EA] tabular-nums">
+          <span className="text-[11px] font-medium text-foreground tabular-nums">
             {pct}%
           </span>
         )}
@@ -364,18 +364,18 @@ function IdeaCard({ idea }: { idea: Idea }) {
   return (
     <Link
       href={`/rd/ideas/${idea.id}`}
-      className="block bg-[#181818] border border-[#2A2A2A] rounded-lg p-3 hover:border-white/30 transition-colors"
+      className="block bg-surface border border-border rounded-lg p-3 hover:border-white/30 transition-colors"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="text-[14px] font-medium text-[#E5E5EA] flex-1 min-w-0">
+        <div className="text-[14px] font-medium text-foreground flex-1 min-w-0">
           {idea.title}
         </div>
-        <div className="text-[11px] text-[#71757D] shrink-0">
+        <div className="text-[11px] text-subtle shrink-0">
           {firstName(idea.submitted_by)} · {timeAgo(idea.created_at)}
         </div>
       </div>
       {idea.why && (
-        <p className="text-[13px] text-[#C7C9CD] leading-relaxed line-clamp-2">
+        <p className="text-[13px] text-muted leading-relaxed line-clamp-2">
           {idea.why}
         </p>
       )}
@@ -398,12 +398,12 @@ function EmptyState({
   cta: { label: string; onClick: () => void };
 }) {
   return (
-    <div className="bg-[#0C0C0C] border border-dashed border-[#2A2A2A] rounded-2xl p-10 text-center">
-      <div className="text-[15px] font-medium text-[#E5E5EA] mb-1">{title}</div>
-      <div className="text-[13px] text-[#71757D] mb-5">{body}</div>
+    <div className="bg-background border border-dashed border-border rounded-2xl p-10 text-center">
+      <div className="text-[15px] font-medium text-foreground mb-1">{title}</div>
+      <div className="text-[13px] text-subtle mb-5">{body}</div>
       <button
         onClick={cta.onClick}
-        className="inline-flex items-center px-4 py-2 bg-[#E5E5EA] text-[#181818] text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
+        className="inline-flex items-center px-4 py-2 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
       >
         {cta.label}
       </button>

@@ -136,29 +136,29 @@ export default function MeClient() {
     <div className="mx-auto max-w-3xl px-4 py-6">
       <div className="mb-6 flex items-baseline justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Today
           </p>
-          <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+          <h1 className="text-2xl font-semibold text-foreground">
             {me ? `What's on ${me.name}'s plate` : "Pick yourself"}
           </h1>
         </div>
         <Link
           href={linkBase}
-          className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
+          className="text-[11px] text-subtle hover:text-foreground hover:underline"
         >
           ← All pods
         </Link>
       </div>
 
-      <div className="mb-5 rounded-xl border border-[#2A2A2A] bg-[#181818] p-3">
-        <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="mb-5 rounded-xl border border-border bg-surface p-3">
+        <label className="block text-[10px] font-semibold uppercase tracking-wider text-subtle">
           I&apos;m…
         </label>
         <select
           value={meId}
           onChange={(e) => setMe(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-sm"
+          className="mt-1 w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm"
         >
           <option value="">, choose your name ,</option>
           {members.map((m) => (
@@ -168,13 +168,13 @@ export default function MeClient() {
             </option>
           ))}
         </select>
-        <p className="mt-1 text-[10px] text-[#71757D]">
+        <p className="mt-1 text-[10px] text-subtle">
           Saved on this device. Change anytime.
         </p>
       </div>
 
       {!meId ? (
-        <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#0C0C0C] px-4 py-12 text-center text-sm text-[#71757D]">
+        <div className="rounded-xl border border-dashed border-border bg-background px-4 py-12 text-center text-sm text-subtle">
           Pick your name above to see your tasks.
         </div>
       ) : myTasks.length === 0 ? (
@@ -250,17 +250,17 @@ function Section({
         ? "bg-amber-500"
         : tone === "blue"
           ? "bg-blue-500"
-          : "bg-[#A0A0A0]";
+          : "bg-muted";
   return (
     <div>
       <div className="mb-2 flex items-center gap-2">
         <span className={`size-2 rounded-full ${dot}`} />
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
           {title}
         </h2>
-        <span className="text-[10px] tabular-nums text-[#71757D]">{tasks.length}</span>
+        <span className="text-[10px] tabular-nums text-subtle">{tasks.length}</span>
       </div>
-      <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818]">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {tasks.map((t, i) => {
           const project = projectById.get(t.project_id);
           const client = project ? clientById.get(project.client_id) : undefined;
@@ -269,7 +269,7 @@ function Section({
           return (
             <div
               key={t.id}
-              className={`flex items-center gap-3 px-3 py-2 ${i > 0 ? "border-t border-[#2A2A2A]" : ""}`}
+              className={`flex items-center gap-3 px-3 py-2 ${i > 0 ? "border-t border-border" : ""}`}
             >
               <button
                 onClick={(e) => {
@@ -305,8 +305,8 @@ function Section({
                 }}
                 className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
                   t.status === "in_progress"
-                    ? "border-blue-500 bg-[#181818]"
-                    : "border-[#2A2A2A] bg-[#181818] hover:border-white"
+                    ? "border-blue-500 bg-surface"
+                    : "border-border bg-surface hover:border-white"
                 }`}
                 title="Click to advance · Shift-click or right-click to step back"
               >
@@ -315,11 +315,11 @@ function Section({
                 )}
               </button>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-[#E5E5EA]">{t.title}</div>
+                <div className="truncate text-sm font-medium text-foreground">{t.title}</div>
                 {(client || project) && (
-                  <div className="mt-0.5 truncate text-[11px] text-[#71757D]">
-                    {client && <span className="font-medium text-[#E5E5EA]">{client.name}</span>}
-                    {client && project && <span className="text-[#C5C5C5]"> · </span>}
+                  <div className="mt-0.5 truncate text-[11px] text-subtle">
+                    {client && <span className="font-medium text-foreground">{client.name}</span>}
+                    {client && project && <span className="text-muted"> · </span>}
                     {project && <span>{project.name}</span>}
                   </div>
                 )}
@@ -331,7 +331,7 @@ function Section({
                       ? "font-semibold text-rose-700"
                       : due === today
                         ? "font-semibold text-amber-700"
-                        : "text-[#71757D]"
+                        : "text-subtle"
                   }`}
                 >
                   {formatDayMonth(due)}

@@ -71,10 +71,10 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto px-6 md:px-10 py-10">
-        <div className="h-8 w-48 bg-[#2A2A2A] rounded animate-pulse mb-6" />
+        <div className="h-8 w-48 bg-border rounded animate-pulse mb-6" />
         <div className="grid md:grid-cols-[280px_1fr] gap-6">
-          <div className="h-[400px] rounded-xl border border-[#2A2A2A] bg-[#181818] animate-pulse" />
-          <div className="h-[400px] rounded-xl border border-[#2A2A2A] bg-[#181818] animate-pulse" />
+          <div className="h-[400px] rounded-xl border border-border bg-surface animate-pulse" />
+          <div className="h-[400px] rounded-xl border border-border bg-surface animate-pulse" />
         </div>
       </div>
     );
@@ -83,12 +83,12 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
   if (!agent) {
     return (
       <div className="max-w-5xl mx-auto px-6 md:px-10 py-10">
-        <button onClick={() => router.push("/agents")} className="mb-6 inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA]">
+        <button onClick={() => router.push("/agents")} className="mb-6 inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground">
           <ArrowLeftIcon className="size-4" /> Mission Control
         </button>
-        <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818]/40 p-12 text-center">
-          <h1 className="text-lg font-semibold text-[#E5E5EA] mb-1">Agent not found</h1>
-          <p className="text-sm text-[#71757D]">No agent with id <code className="font-mono">{agentId}</code>.</p>
+        <div className="rounded-xl border border-dashed border-border bg-surface/40 p-12 text-center">
+          <h1 className="text-lg font-semibold text-foreground mb-1">Agent not found</h1>
+          <p className="text-sm text-subtle">No agent with id <code className="font-mono">{agentId}</code>.</p>
         </div>
       </div>
     );
@@ -101,7 +101,7 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
     <div className="max-w-5xl mx-auto px-6 md:px-10 py-10">
       <Link
         href="/agents"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground"
       >
         <ArrowLeftIcon className="size-4" /> Mission Control
       </Link>
@@ -109,28 +109,28 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
       <div className="grid md:grid-cols-[280px_1fr] gap-6">
         {/* ── Left column: portrait + bio ── */}
         <aside className="space-y-4">
-          <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)]">
+          <div className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
             <div className="flex justify-center mb-4">
               <PixelPortrait agent={agent} size={192} />
             </div>
             <div className="text-center mb-3">
-              <h1 className="text-xl font-semibold text-[#E5E5EA]">{agent.name}</h1>
-              <p className="text-xs uppercase tracking-wider text-[#71757D]">{agent.role}</p>
+              <h1 className="text-xl font-semibold text-foreground">{agent.name}</h1>
+              <p className="text-xs uppercase tracking-wider text-subtle">{agent.role}</p>
             </div>
             <div className="flex items-center justify-center gap-2 mb-4">
               <StatusDot status={agent.status} size={8} />
-              <span className="text-xs font-medium text-[#E5E5EA]">{statusMeta.label}</span>
+              <span className="text-xs font-medium text-foreground">{statusMeta.label}</span>
             </div>
-            <p className="text-[13px] leading-relaxed text-[#4A4A4A]">{agent.description}</p>
+            <p className="text-[13px] leading-relaxed text-border">{agent.description}</p>
           </div>
 
-          <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)] space-y-3">
+          <div className="rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] space-y-3">
             <Field label="Model" value={modelLabel} />
             <Field label="Tools" value={agent.tools.length === 0 ? "none" : `${agent.tools.length} configured`} />
             <Field label="Tasks run" value={String(tasks.length)} />
             {canEdit && (
               <div>
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">Set status</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5">Set status</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {(Object.keys(AGENT_STATUS_META) as Array<keyof typeof AGENT_STATUS_META>).map((s) => (
                     <button
@@ -141,8 +141,8 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
                       }}
                       className={`flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium transition-all ${
                         agent.status === s
-                          ? "bg-white text-[#0C0C0C]"
-                          : "border border-[#2A2A2A] text-[#71757D] hover:text-[#E5E5EA] hover:border-white"
+                          ? "bg-white text-background"
+                          : "border border-border text-subtle hover:text-foreground hover:border-white"
                       }`}
                     >
                       <StatusDot status={s} size={6} withRing={false} />
@@ -157,15 +157,15 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
 
         {/* ── Right column: tabs ── */}
         <main>
-          <div className="mb-4 flex border-b border-[#2A2A2A]">
+          <div className="mb-4 flex border-b border-border">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
                 className={`px-3 py-2 text-sm font-medium transition-colors ${
                   tab === t.key
-                    ? "border-b-2 border-white text-[#E5E5EA]"
-                    : "text-[#71757D] hover:text-[#E5E5EA]"
+                    ? "border-b-2 border-white text-foreground"
+                    : "text-subtle hover:text-foreground"
                 }`}
               >
                 {t.label}
@@ -194,8 +194,8 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between text-xs">
-      <span className="font-semibold uppercase tracking-wider text-[#71757D]">{label}</span>
-      <span className="text-[#E5E5EA]">{value}</span>
+      <span className="font-semibold uppercase tracking-wider text-subtle">{label}</span>
+      <span className="text-foreground">{value}</span>
     </div>
   );
 }

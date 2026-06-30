@@ -104,12 +104,12 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
       <div className="min-h-screen bg-white flex items-center justify-center px-6" style={{ background: "white" }}>
         <div className="max-w-md w-full text-center">
           <div className="w-16 h-16 bg-[#D1FF4C]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-[#1B1B1B]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+            <svg className="w-8 h-8 text-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-[#1B1B1B] tracking-tight mb-3">You&apos;re in.</h1>
-          <p className="text-[#666] leading-relaxed text-lg">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight mb-3">You&apos;re in.</h1>
+          <p className="text-subtle leading-relaxed text-lg">
             We&apos;ll review your product page and send over a detailed 8-point audit within 48 hours. Keep an eye on your inbox.
           </p>
         </div>
@@ -118,11 +118,11 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
   }
 
   return (
-    <div className="min-h-screen bg-[#1B1B1B] flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       {/* ── Nav ── */}
-      <nav className="w-full border-b border-[#F0F0F0] bg-white">
+      <nav className="w-full border-b border-foreground bg-white">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
-          <Logo height={18} className="text-[#1B1B1B]" />
+          <Logo height={18} className="text-foreground" />
         </div>
       </nav>
 
@@ -131,61 +131,61 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
         <div className="w-full max-w-5xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-12 text-center">
           {/* Badges */}
           <div className="flex items-center justify-center gap-3 mb-8">
-            <span className="flex items-center gap-1.5 text-sm text-[#666]">
-              <svg className="w-3.5 h-3.5 text-[#1B1B1B]" viewBox="0 0 20 20" fill="currentColor"><path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" /></svg>
+            <span className="flex items-center gap-1.5 text-sm text-subtle">
+              <svg className="w-3.5 h-3.5 text-foreground" viewBox="0 0 20 20" fill="currentColor"><path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" /></svg>
               30 Second Form
             </span>
-            <span className="text-[#DDD]">&middot;</span>
-            <span className="flex items-center gap-1.5 text-sm text-[#666]">
-              <svg className="w-3.5 h-3.5 text-[#1B1B1B]" viewBox="0 0 20 20" fill="currentColor"><path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" /></svg>
+            <span className="text-muted">&middot;</span>
+            <span className="flex items-center gap-1.5 text-sm text-subtle">
+              <svg className="w-3.5 h-3.5 text-foreground" viewBox="0 0 20 20" fill="currentColor"><path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" /></svg>
               48 Hour Delivery
             </span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-3xl md:text-[3.5rem] font-bold text-[#1B1B1B] leading-[1.08] tracking-tight mb-8 uppercase" style={{ fontFamily: "var(--font-heading)" }}>
+          <h1 className="text-3xl md:text-[3.5rem] font-bold text-foreground leading-[1.08] tracking-tight mb-8 uppercase" style={{ fontFamily: "var(--font-heading)" }}>
             Claim Your <span className="bg-[#D1FF4C] px-2 py-0.5 rounded">Free</span> 8-Point Shopify Product Page Audit
           </h1>
 
           {/* Subtext */}
-          <p className="text-[15px] md:text-lg text-[#666] leading-[1.7] max-w-3xl mx-auto mb-10" style={{ fontFamily: "var(--font-body)" }}>
-            We&apos;ve built and delivered over <strong className="text-[#1B1B1B]">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world. Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
+          <p className="text-[15px] md:text-lg text-subtle leading-[1.7] max-w-3xl mx-auto mb-10" style={{ fontFamily: "var(--font-body)" }}>
+            We&apos;ve built and delivered over <strong className="text-foreground">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world. Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
           </p>
 
           {/* ── Form ── */}
           <form id="form" onSubmit={handleSubmit} className="max-w-md mx-auto space-y-5" style={{ fontFamily: "var(--font-body)" }}>
             <div>
-              <label className="block text-sm font-medium text-[#1B1B1B] mb-2">What&apos;s your name?</label>
+              <label className="block text-sm font-medium text-foreground mb-2">What&apos;s your name?</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
-                className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+                className="w-full px-4 py-3 bg-white border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1B1B1B] mb-2">Where should we send your audit?</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Where should we send your audit?</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+                className="w-full px-4 py-3 bg-white border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1B1B1B] mb-2">Which page should we audit?</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Which page should we audit?</label>
               <input
                 type="text"
                 required
                 value={storeUrl}
                 onChange={(e) => setStoreUrl(e.target.value)}
                 placeholder="Enter your brand URL"
-                className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+                className="w-full px-4 py-3 bg-white border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
               />
             </div>
 
@@ -196,7 +196,7 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
             <button
               type="submit"
               disabled={loading || !email.trim() || !storeUrl.trim()}
-              className="w-full py-3.5 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? "Submitting..." : (
                 <>
@@ -210,9 +210,9 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
 
             {/* Social proof counter */}
             <p className="text-sm text-center pt-2">
-              <strong className="text-[#1B1B1B]">456+ audits</strong>{" "}
-              <span className="text-[#999]">delivered as of </span>
-              <strong className="text-[#1B1B1B]">{new Date().toLocaleDateString("en-GB", { month: "long", day: "numeric" })}</strong>
+              <strong className="text-foreground">456+ audits</strong>{" "}
+              <span className="text-subtle">delivered as of </span>
+              <strong className="text-foreground">{new Date().toLocaleDateString("en-GB", { month: "long", day: "numeric" })}</strong>
             </p>
           </form>
         </div>
@@ -231,13 +231,13 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
                     fetchPriority={idx < 4 ? "high" : "auto"}
                     width={160}
                     height={472}
-                    className="shrink-0 w-[160px] h-[472px] object-cover rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[472px] object-cover rounded-xl border border-border"
                   />
                 ))
               : Array.from({ length: 20 }, (_, idx) => (
                   <div
                     key={idx}
-                    className="shrink-0 w-[160px] h-[472px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[472px] bg-surface-raised rounded-xl border border-border"
                   />
                 ))}
           </div>

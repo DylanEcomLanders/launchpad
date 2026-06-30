@@ -321,14 +321,14 @@ export default function ResearchPage() {
             <h1 className="text-2xl md:text-3xl font-bold mb-1">
               Research & Intel
             </h1>
-            <p className="text-sm text-[#71757D]">
+            <p className="text-sm text-subtle">
               Paste a client brief — get deep strategic research for the page build
             </p>
           </div>
           {savedProfiles.length > 0 && (
             <button
               onClick={() => setShowSaved(!showSaved)}
-              className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] px-3 py-1.5 border border-[#2A2A2A] rounded-md hover:border-[#1B1B1B] transition-colors"
+              className="text-xs font-medium text-subtle hover:text-foreground px-3 py-1.5 border border-border rounded-md hover:border-surface transition-colors"
             >
               Saved ({savedProfiles.length})
             </button>
@@ -337,26 +337,26 @@ export default function ResearchPage() {
 
         {/* Saved Profiles Panel */}
         {showSaved && savedProfiles.length > 0 && (
-          <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 mb-6">
+          <div className="bg-surface border border-border rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-subtle">
                 Saved Research
               </h3>
               <button onClick={() => setShowSaved(false)}>
-                <XMarkIcon className="size-4 text-[#71757D] hover:text-[#E5E5EA]" />
+                <XMarkIcon className="size-4 text-subtle hover:text-foreground" />
               </button>
             </div>
             <div className="space-y-2">
               {savedProfiles.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between py-2 px-3 bg-[#222222] rounded-md"
+                  className="flex items-center justify-between py-2 px-3 bg-surface-raised rounded-md"
                 >
                   <div>
-                    <span className="text-sm font-medium text-[#E5E5EA]">
+                    <span className="text-sm font-medium text-foreground">
                       {p.project_name}
                     </span>
-                    <span className="text-[11px] text-[#71757D] ml-2">
+                    <span className="text-[11px] text-subtle ml-2">
                       {new Date(p.last_researched).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -367,13 +367,13 @@ export default function ResearchPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => loadProfile(p)}
-                      className="text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA] px-2 py-1 border border-[#2A2A2A] rounded hover:border-[#1B1B1B] transition-colors"
+                      className="text-[11px] font-medium text-subtle hover:text-foreground px-2 py-1 border border-border rounded hover:border-surface transition-colors"
                     >
                       Load
                     </button>
                     <button
                       onClick={() => deleteProfile(p.id)}
-                      className="p-1 text-[#C5C5C5] hover:text-red-500 transition-colors"
+                      className="p-1 text-muted hover:text-red-500 transition-colors"
                     >
                       <TrashIcon className="size-3.5" />
                     </button>
@@ -385,7 +385,7 @@ export default function ResearchPage() {
         )}
 
         {/* Input Form */}
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-5 mb-6">
+        <div className="bg-surface border border-border rounded-lg p-5 mb-6">
           {/* Project name */}
           <div className="mb-4">
             <label className={labelClass}>Project Name</label>
@@ -410,7 +410,7 @@ export default function ResearchPage() {
               rows={10}
               disabled={isRunning}
             />
-            <p className="text-[11px] text-[#71757D] mt-1.5">
+            <p className="text-[11px] text-subtle mt-1.5">
               Include product links, goals, objections, and any context — Claude will extract what it needs
             </p>
           </div>
@@ -420,7 +420,7 @@ export default function ResearchPage() {
               <button
                 onClick={startResearch}
                 disabled={!brief.trim() || brief.trim().length < 20}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A] text-sm font-medium rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-surface-raised text-foreground hover:bg-border text-sm font-medium rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <MagnifyingGlassIcon className="size-4" />
                 Run Research
@@ -438,7 +438,7 @@ export default function ResearchPage() {
             {isComplete && (
               <button
                 onClick={newResearch}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-[#2A2A2A] text-sm font-medium rounded-md hover:border-[#1B1B1B] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-border text-sm font-medium rounded-md hover:border-surface transition-colors"
               >
                 <ArrowPathIcon className="size-4" />
                 New Research
@@ -457,20 +457,20 @@ export default function ResearchPage() {
 
         {/* Progress */}
         {isRunning && steps.length > 0 && (
-          <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-5 mb-6">
+          <div className="bg-surface border border-border rounded-lg p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-subtle">
                 Researching
               </span>
-              <span className="text-[11px] text-[#71757D] tabular-nums">
+              <span className="text-[11px] text-subtle tabular-nums">
                 {completedSteps} / {totalSteps} steps
               </span>
             </div>
 
             {/* Progress bar */}
-            <div className="h-1 bg-[#222222] rounded-full mb-4 overflow-hidden">
+            <div className="h-1 bg-surface-raised rounded-full mb-4 overflow-hidden">
               <div
-                className="h-full bg-[#1B1B1B] rounded-full transition-all duration-500"
+                className="h-full bg-surface rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -484,7 +484,7 @@ export default function ResearchPage() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{step.icon}</span>
-                    <span className="text-sm text-[#71757D]">{step.label}</span>
+                    <span className="text-sm text-subtle">{step.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span
@@ -494,7 +494,7 @@ export default function ResearchPage() {
                           : step.status === "loading"
                             ? "text-amber-500"
                             : step.status === "empty"
-                              ? "text-[#71757D]"
+                              ? "text-subtle"
                               : "text-red-500"
                       }`}
                     >
@@ -511,7 +511,7 @@ export default function ResearchPage() {
                           : step.status === "loading"
                             ? "bg-amber-400 animate-pulse"
                             : step.status === "empty"
-                              ? "bg-[#C5C5C5]"
+                              ? "bg-muted"
                               : "bg-red-500"
                       }`}
                     />
@@ -522,10 +522,10 @@ export default function ResearchPage() {
 
             {/* Analysis status */}
             {analysisStarted && !isComplete && (
-              <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+              <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex items-center gap-2">
                   <div className="size-2 bg-violet-400 rounded-full animate-pulse" />
-                  <span className="text-xs text-[#71757D]">{analysisMessage}</span>
+                  <span className="text-xs text-subtle">{analysisMessage}</span>
                 </div>
               </div>
             )}
@@ -535,10 +535,10 @@ export default function ResearchPage() {
         {/* Stream Display (during analysis) */}
         {analysisStarted && !isComplete && streamText && (
           <div
-            className="bg-[#1a1a1a] border border-[#333] rounded-lg p-4 mb-6 max-h-72 overflow-y-auto"
+            className="bg-surface border border-border rounded-lg p-4 mb-6 max-h-72 overflow-y-auto"
             ref={streamDisplayRef}
           >
-            <pre className="text-xs text-[#C5C5C5] font-mono whitespace-pre-wrap leading-relaxed">
+            <pre className="text-xs text-muted font-mono whitespace-pre-wrap leading-relaxed">
               {streamText}
               <span className="animate-pulse text-white">▊</span>
             </pre>
@@ -550,21 +550,21 @@ export default function ResearchPage() {
           <div className="flex flex-wrap gap-2 mb-6">
             <button
               onClick={copyReport}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#2A2A2A] rounded-md text-xs font-medium text-[#71757D] hover:border-[#1B1B1B] hover:text-[#E5E5EA] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-md text-xs font-medium text-subtle hover:border-surface hover:text-foreground transition-colors"
             >
               <DocumentDuplicateIcon className="size-3.5" />
               {copied ? "Copied!" : "Copy Report"}
             </button>
             <button
               onClick={saveProfile}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#2A2A2A] rounded-md text-xs font-medium text-[#71757D] hover:border-[#1B1B1B] hover:text-[#E5E5EA] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-md text-xs font-medium text-subtle hover:border-surface hover:text-foreground transition-colors"
             >
               <BookmarkIcon className="size-3.5" />
               {saved ? "Saved!" : "Save Research"}
             </button>
             <button
               onClick={newResearch}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#2A2A2A] rounded-md text-xs font-medium text-[#71757D] hover:border-[#1B1B1B] hover:text-[#E5E5EA] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-md text-xs font-medium text-subtle hover:border-surface hover:text-foreground transition-colors"
             >
               <ArrowPathIcon className="size-3.5" />
               New Research
@@ -579,7 +579,7 @@ export default function ResearchPage() {
               const meta = SECTION_META[idx] || {
                 label: `Section ${idx + 1}`,
                 border: "border-l-gray-400",
-                headerBg: "bg-[#222222]",
+                headerBg: "bg-surface-raised",
               };
               const isCollapsed = collapsedSections.has(idx);
 
@@ -592,23 +592,23 @@ export default function ResearchPage() {
               return (
                 <div
                   key={idx}
-                  className={`bg-[#181818] border border-[#2A2A2A] border-l-4 ${meta.border} rounded-lg overflow-hidden`}
+                  className={`bg-surface border border-border border-l-4 ${meta.border} rounded-lg overflow-hidden`}
                 >
                   <button
                     onClick={() => toggleSection(idx)}
                     className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${meta.headerBg} hover:brightness-110 transition-all`}
                   >
-                    <span className="text-sm font-semibold text-[#E5E5EA]">
+                    <span className="text-sm font-semibold text-foreground">
                       {title}
                     </span>
                     <ChevronDownIcon
-                      className={`size-4 text-[#71757D] transition-transform duration-200 ${
+                      className={`size-4 text-subtle transition-transform duration-200 ${
                         isCollapsed ? "-rotate-90" : ""
                       }`}
                     />
                   </button>
                   {!isCollapsed && (
-                    <div className="px-5 py-4 prose prose-sm max-w-none text-[#E5E5EA] leading-relaxed">
+                    <div className="px-5 py-4 prose prose-sm max-w-none text-foreground leading-relaxed">
                       <ReportMarkdown content={body} />
                     </div>
                   )}
@@ -639,7 +639,7 @@ function ReportMarkdown({ content }: { content: string }) {
 
     // Horizontal rule
     if (/^---+$/.test(line.trim())) {
-      elements.push(<hr key={i} className="my-4 border-[#2A2A2A]" />);
+      elements.push(<hr key={i} className="my-4 border-border" />);
       i++;
       continue;
     }
@@ -647,7 +647,7 @@ function ReportMarkdown({ content }: { content: string }) {
     // H3
     if (line.startsWith("### ")) {
       elements.push(
-        <h3 key={i} className="text-sm font-semibold text-[#E5E5EA] mt-4 mb-2">
+        <h3 key={i} className="text-sm font-semibold text-foreground mt-4 mb-2">
           {inlineFormat(line.slice(4))}
         </h3>
       );
@@ -674,11 +674,11 @@ function ReportMarkdown({ content }: { content: string }) {
       );
       elements.push(
         <div key={`table-${i}`} className="overflow-x-auto my-3">
-          <table className="w-full text-xs border border-[#2A2A2A] rounded">
+          <table className="w-full text-xs border border-border rounded">
             <thead>
-              <tr className="bg-[#222222]">
+              <tr className="bg-surface-raised">
                 {headerCells.map((cell, j) => (
-                  <th key={j} className="px-3 py-2 text-left font-semibold text-[#E5E5EA] border-b border-[#2A2A2A]">
+                  <th key={j} className="px-3 py-2 text-left font-semibold text-foreground border-b border-border">
                     {cell}
                   </th>
                 ))}
@@ -686,9 +686,9 @@ function ReportMarkdown({ content }: { content: string }) {
             </thead>
             <tbody>
               {bodyRows.map((row, ri) => (
-                <tr key={ri} className="border-b border-[#2A2A2A] last:border-0">
+                <tr key={ri} className="border-b border-border last:border-0">
                   {row.map((cell, ci) => (
-                    <td key={ci} className="px-3 py-2 text-[#E5E5EA]">
+                    <td key={ci} className="px-3 py-2 text-foreground">
                       {inlineFormat(cell)}
                     </td>
                   ))}
@@ -711,7 +711,7 @@ function ReportMarkdown({ content }: { content: string }) {
       elements.push(
         <blockquote
           key={`bq-${i}`}
-          className="border-l-2 border-[#2A2A2A] pl-3 my-2 text-[#71757D] italic text-xs"
+          className="border-l-2 border-border pl-3 my-2 text-subtle italic text-xs"
         >
           {inlineFormat(quoteLines.join(" "))}
         </blockquote>
@@ -730,7 +730,7 @@ function ReportMarkdown({ content }: { content: string }) {
         <ul key={`ul-${i}`} className="space-y-1 my-2">
           {items.map((item, j) => (
             <li key={j} className="flex gap-1.5 text-xs leading-relaxed">
-              <span className="text-[#C5C5C5] mt-0.5 shrink-0">•</span>
+              <span className="text-muted mt-0.5 shrink-0">•</span>
               <span>{inlineFormat(item)}</span>
             </li>
           ))}
@@ -750,7 +750,7 @@ function ReportMarkdown({ content }: { content: string }) {
         <ol key={`ol-${i}`} className="space-y-1 my-2">
           {items.map((item, j) => (
             <li key={j} className="flex gap-1.5 text-xs leading-relaxed">
-              <span className="text-[#71757D] font-mono text-[10px] mt-0.5 shrink-0 w-3">
+              <span className="text-subtle font-mono text-[10px] mt-0.5 shrink-0 w-3">
                 {j + 1}.
               </span>
               <span>{inlineFormat(item)}</span>
@@ -775,7 +775,7 @@ function ReportMarkdown({ content }: { content: string }) {
     // Italic line
     if (line.startsWith("*") && !line.startsWith("**")) {
       elements.push(
-        <p key={i} className="text-[11px] text-[#71757D] italic my-1">
+        <p key={i} className="text-[11px] text-subtle italic my-1">
           {inlineFormat(line)}
         </p>
       );
@@ -825,13 +825,13 @@ function inlineFormat(text: string): React.ReactNode {
 
     if (first.type === "bold") {
       parts.push(
-        <strong key={`b-${keyIdx++}`} className="font-semibold text-[#E5E5EA]">
+        <strong key={`b-${keyIdx++}`} className="font-semibold text-foreground">
           {first.match![1]}
         </strong>
       );
     } else if (first.type === "italic") {
       parts.push(
-        <em key={`i-${keyIdx++}`} className="italic text-[#71757D]">
+        <em key={`i-${keyIdx++}`} className="italic text-subtle">
           {first.match![1]}
         </em>
       );
@@ -839,7 +839,7 @@ function inlineFormat(text: string): React.ReactNode {
       parts.push(
         <code
           key={`c-${keyIdx++}`}
-          className="px-1 py-0.5 bg-[#222222] rounded text-[10px] font-mono"
+          className="px-1 py-0.5 bg-surface-raised rounded text-[10px] font-mono"
         >
           {first.match![1]}
         </code>

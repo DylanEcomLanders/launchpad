@@ -52,7 +52,7 @@ export default function HeroOfferLayout({
   }
 
   return (
-    <div className="min-h-full bg-[#080808] relative">
+    <div className="min-h-full bg-background relative">
       {/* Soft accent blob - gives the page a quiet identity tint without
        * dominating. Sits behind everything, fixed to scroll with the
        * page chrome only. */}
@@ -67,14 +67,14 @@ export default function HeroOfferLayout({
 
       {/* Header sits flush with the page bg, no border line. Tab strip
        * carries the separation. */}
-      <div className="sticky top-0 z-10 bg-[#080808]/80 backdrop-blur-md">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
           <h1 className="text-2xl font-semibold mb-1">
             <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
               Hero Offer
             </span>
           </h1>
-          <p className="text-sm text-[#71757D] mb-5">
+          <p className="text-sm text-subtle mb-5">
             The conversion engine playbook: how to win the deal, how to wow on delivery, how to make it last.
           </p>
           <nav className="flex gap-1 overflow-x-auto pb-3">
@@ -88,7 +88,7 @@ export default function HeroOfferLayout({
                   className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-all ${
                     active
                       ? "bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 text-white font-medium shadow-[0_4px_24px_rgba(14,165,233,0.35)]"
-                      : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04]"
+                      : "text-subtle hover:text-foreground hover:bg-white/[0.04]"
                   }`}
                 >
                   <Icon className="size-4" />

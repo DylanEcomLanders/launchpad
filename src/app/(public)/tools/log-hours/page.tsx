@@ -166,7 +166,7 @@ export default function LogHoursPage() {
       <div className="relative z-10 max-w-xl mx-auto px-6 py-16 md:py-24">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo height={18} className="text-[#1B1B1B]" />
+          <Logo height={18} className="text-foreground" />
         </div>
 
         {/* Header */}
@@ -174,7 +174,7 @@ export default function LogHoursPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
             Log Hours
           </h1>
-          <p className="text-[#7A7A7A] text-sm">
+          <p className="text-subtle text-sm">
             Log your out-of-scope development hours
           </p>
         </div>
@@ -203,11 +203,11 @@ export default function LogHoursPage() {
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-xl p-5 space-y-4"
+          className="bg-surface-raised border border-foreground rounded-xl p-5 space-y-4"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-[#7A7A7A] mb-1">
+              <label className="block text-xs text-subtle mb-1">
                 Your Name *
               </label>
               <select
@@ -227,7 +227,7 @@ export default function LogHoursPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-[#7A7A7A] mb-1">
+              <label className="block text-xs text-subtle mb-1">
                 Client *
               </label>
               <input
@@ -250,7 +250,7 @@ export default function LogHoursPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-[#7A7A7A] mb-1">
+            <label className="block text-xs text-subtle mb-1">
               Project
             </label>
             <input
@@ -266,7 +266,7 @@ export default function LogHoursPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-[#7A7A7A] mb-1">
+              <label className="block text-xs text-subtle mb-1">
                 Hours *
               </label>
               <input
@@ -285,7 +285,7 @@ export default function LogHoursPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-[#7A7A7A] mb-1">
+              <label className="block text-xs text-subtle mb-1">
                 Date *
               </label>
               <input
@@ -301,7 +301,7 @@ export default function LogHoursPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-[#7A7A7A] mb-1">
+            <label className="block text-xs text-subtle mb-1">
               What did you work on?
             </label>
             <input
@@ -316,7 +316,7 @@ export default function LogHoursPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-[#7A7A7A] mb-1">
+            <label className="block text-xs text-subtle mb-1">
               Why is this out of scope? *
             </label>
             <textarea
@@ -326,7 +326,7 @@ export default function LogHoursPage() {
               className={`${inputClass} min-h-[80px] resize-y`}
               required
             />
-            <p className="text-[10px] text-[#A0A0A0] mt-1">
+            <p className="text-[10px] text-muted mt-1">
               Include what the client asked for and why it falls outside the
               agreed scope
             </p>
@@ -341,7 +341,7 @@ export default function LogHoursPage() {
               form.hours <= 0 ||
               !context.trim()
             }
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-surface text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>
@@ -361,7 +361,7 @@ export default function LogHoursPage() {
         {form.dev_name && (
           <div className="mt-10">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">
                 {formatMonthLabel(month)}
               </h2>
               <span className="text-sm font-semibold tabular-nums">
@@ -369,7 +369,7 @@ export default function LogHoursPage() {
               </span>
             </div>
             {myEntries.length === 0 ? (
-              <p className="text-sm text-[#A0A0A0] py-4 text-center">
+              <p className="text-sm text-muted py-4 text-center">
                 No hours logged this month yet
               </p>
             ) : (
@@ -377,24 +377,24 @@ export default function LogHoursPage() {
                 {myEntries.map((entry) => (
                   <div
                     key={entry.id}
-                    className="bg-white border border-[#E5E5EA] rounded-md px-4 py-3"
+                    className="bg-white border border-foreground rounded-md px-4 py-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xs text-[#A0A0A0] tabular-nums shrink-0">
+                        <span className="text-xs text-muted tabular-nums shrink-0">
                           {formatDisplayDate(entry.date)}
                         </span>
-                        <span className="text-sm text-[#1B1B1B] truncate">
+                        <span className="text-sm text-foreground truncate">
                           {entry.client_name}
                           {entry.project_name && ` — ${entry.project_name}`}
                         </span>
                       </div>
-                      <span className="text-sm font-semibold tabular-nums text-[#1B1B1B] shrink-0 ml-3">
+                      <span className="text-sm font-semibold tabular-nums text-foreground shrink-0 ml-3">
                         {Number(entry.hours).toFixed(1)}h
                       </span>
                     </div>
                     {entry.description && (
-                      <p className="text-xs text-[#A0A0A0] mt-1">
+                      <p className="text-xs text-muted mt-1">
                         {entry.description}
                       </p>
                     )}

@@ -93,13 +93,13 @@ export default function DesignSystemPage() {
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Design System Generator</h1>
-        <p className="text-sm text-[#71757D] mt-1">
+        <p className="text-sm text-subtle mt-1">
           Feed it a store URL or screenshots — get a complete design system in seconds
         </p>
       </div>
 
       {/* Input */}
-      <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] p-5 mb-6 space-y-4">
+      <div className="border border-border rounded-xl bg-surface p-5 mb-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Store URL</label>
@@ -121,7 +121,7 @@ export default function DesignSystemPage() {
           <div className="flex items-center gap-3 flex-wrap">
             {imagePreviews.map((src, i) => (
               <div key={i} className="relative">
-                <img src={src} alt="" className="h-16 w-auto rounded border border-[#2A2A2A]" />
+                <img src={src} alt="" className="h-16 w-auto rounded border border-border" />
                 <button
                   onClick={() => {
                     setImages((prev) => prev.filter((_, idx) => idx !== i));
@@ -137,7 +137,7 @@ export default function DesignSystemPage() {
               Array.from(e.target.files || []).forEach(addImage);
               if (fileRef.current) fileRef.current.value = "";
             }} />
-            <button onClick={() => fileRef.current?.click()} className="h-16 px-4 border-2 border-dashed border-[#2A2A2A] rounded text-xs text-[#9CA3AF] hover:border-[#999]">
+            <button onClick={() => fileRef.current?.click()} className="h-16 px-4 border-2 border-dashed border-border rounded text-xs text-muted hover:border-subtle">
               + Upload
             </button>
           </div>
@@ -146,7 +146,7 @@ export default function DesignSystemPage() {
         <button
           onClick={handleGenerate}
           disabled={generating || (!url.trim() && images.length === 0)}
-          className="px-5 py-2.5 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] disabled:opacity-30"
+          className="px-5 py-2.5 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground disabled:opacity-30"
         >
           {generating ? "Generating..." : "Generate Design System"}
         </button>
@@ -160,8 +160,8 @@ export default function DesignSystemPage() {
 
       {generating && (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin size-6 border-2 border-[#2A2A2A] border-t-[#1A1A1A] rounded-full mr-3" />
-          <p className="text-sm text-[#9CA3AF]">Analysing brand and generating design system...</p>
+          <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full mr-3" />
+          <p className="text-sm text-muted">Analysing brand and generating design system...</p>
         </div>
       )}
 
@@ -169,49 +169,49 @@ export default function DesignSystemPage() {
       {result && (
         <div className="space-y-6">
           {/* Brand Analysis */}
-          <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">Brand Analysis</p>
-            <p className="text-sm text-[#E5E5EA] leading-relaxed">{result.brand_analysis}</p>
+          <div className="border border-border rounded-xl bg-surface p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">Brand Analysis</p>
+            <p className="text-sm text-foreground leading-relaxed">{result.brand_analysis}</p>
           </div>
 
           {/* Colour Palette */}
-          <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
-            <div className="px-5 py-3 border-b border-[#2A2A2A]">
+          <div className="border border-border rounded-xl bg-surface overflow-hidden">
+            <div className="px-5 py-3 border-b border-border">
               <p className="text-sm font-semibold">Colour Palette</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-0">
               {paletteEntries.map(([key, colour]) => (
-                <div key={key} className="border-b md:border-b-0 md:border-r border-[#2A2A2A] last:border-0 p-4">
+                <div key={key} className="border-b md:border-b-0 md:border-r border-border last:border-0 p-4">
                   <div
-                    className="w-full aspect-square rounded-lg mb-3 border border-[#2A2A2A]"
+                    className="w-full aspect-square rounded-lg mb-3 border border-border"
                     style={{ backgroundColor: colour.hex }}
                   />
-                  <p className="text-xs font-semibold text-[#E5E5EA] font-mono">{colour.hex}</p>
-                  <p className="text-[10px] text-[#9CA3AF] mt-0.5">{colour.name || key.replace(/_/g, " ")}</p>
-                  <p className="text-[10px] text-[#9CA3AF] mt-0.5">{colour.usage}</p>
+                  <p className="text-xs font-semibold text-foreground font-mono">{colour.hex}</p>
+                  <p className="text-[10px] text-muted mt-0.5">{colour.name || key.replace(/_/g, " ")}</p>
+                  <p className="text-[10px] text-muted mt-0.5">{colour.usage}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Fonts */}
-          <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
-            <div className="px-5 py-3 border-b border-[#2A2A2A]">
+          <div className="border border-border rounded-xl bg-surface overflow-hidden">
+            <div className="px-5 py-3 border-b border-border">
               <p className="text-sm font-semibold">Typography</p>
             </div>
-            <div className="divide-y divide-[#2A2A2A]">
+            <div className="divide-y divide-border">
               {fontEntries.map(([role, font]) => (
                 <div key={role} className="px-5 py-4 flex items-start justify-between">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">{role}</p>
-                    <p className="text-lg font-semibold text-[#E5E5EA] mt-1" style={{ fontFamily: font.name }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{role}</p>
+                    <p className="text-lg font-semibold text-foreground mt-1" style={{ fontFamily: font.name }}>
                       {font.name}
                     </p>
-                    <p className="text-xs text-[#9CA3AF] mt-0.5">{font.style}</p>
+                    <p className="text-xs text-muted mt-0.5">{font.style}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-mono text-[#71757D]">Weight: {font.weight}</p>
-                    <p className="text-[10px] text-[#C7C9CD] mt-0.5">{font.fallback}</p>
+                    <p className="text-xs font-mono text-subtle">Weight: {font.weight}</p>
+                    <p className="text-[10px] text-muted mt-0.5">{font.fallback}</p>
                   </div>
                 </div>
               ))}
@@ -220,15 +220,15 @@ export default function DesignSystemPage() {
 
           {/* Typography Scale */}
           {result.typography_scale && (
-            <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
-              <div className="px-5 py-3 border-b border-[#2A2A2A]">
+            <div className="border border-border rounded-xl bg-surface overflow-hidden">
+              <div className="px-5 py-3 border-b border-border">
                 <p className="text-sm font-semibold">Type Scale</p>
               </div>
-              <div className="divide-y divide-[#2A2A2A]">
+              <div className="divide-y divide-border">
                 {Object.entries(result.typography_scale).map(([level, size]) => (
                   <div key={level} className="px-5 py-3 flex items-center justify-between">
-                    <p className="text-xs font-medium text-[#E5E5EA] uppercase tracking-wider">{level}</p>
-                    <p className="text-sm font-mono text-[#9CA3AF]">{size}</p>
+                    <p className="text-xs font-medium text-foreground uppercase tracking-wider">{level}</p>
+                    <p className="text-sm font-mono text-muted">{size}</p>
                   </div>
                 ))}
               </div>
@@ -237,8 +237,8 @@ export default function DesignSystemPage() {
 
           {/* Buttons */}
           {result.buttons && (
-            <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
-              <div className="px-5 py-3 border-b border-[#2A2A2A]">
+            <div className="border border-border rounded-xl bg-surface overflow-hidden">
+              <div className="px-5 py-3 border-b border-border">
                 <p className="text-sm font-semibold">Buttons</p>
               </div>
               <div className="px-5 py-4 space-y-4">
@@ -256,8 +256,8 @@ export default function DesignSystemPage() {
                       {type.charAt(0).toUpperCase() + type.slice(1)} Button
                     </button>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">{type}</p>
-                      <p className="text-xs text-[#9CA3AF]">{btn.style}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{type}</p>
+                      <p className="text-xs text-muted">{btn.style}</p>
                     </div>
                   </div>
                 ))}
@@ -267,15 +267,15 @@ export default function DesignSystemPage() {
 
           {/* Spacing */}
           {result.spacing && (
-            <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
-              <div className="px-5 py-3 border-b border-[#2A2A2A]">
+            <div className="border border-border rounded-xl bg-surface overflow-hidden">
+              <div className="px-5 py-3 border-b border-border">
                 <p className="text-sm font-semibold">Spacing</p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-[#2A2A2A]">
+              <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-border">
                 {Object.entries(result.spacing).map(([key, val]) => (
                   <div key={key} className="p-4 text-center">
-                    <p className="text-lg font-mono font-bold text-[#E5E5EA]">{val}</p>
-                    <p className="text-[10px] text-[#9CA3AF] mt-1">{key.replace(/_/g, " ")}</p>
+                    <p className="text-lg font-mono font-bold text-foreground">{val}</p>
+                    <p className="text-[10px] text-muted mt-1">{key.replace(/_/g, " ")}</p>
                   </div>
                 ))}
               </div>
@@ -285,21 +285,21 @@ export default function DesignSystemPage() {
           {/* Design Direction + Avoid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {result.design_direction?.length > 0 && (
-              <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] p-5">
+              <div className="border border-border rounded-xl bg-surface p-5">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-3">Design Direction</p>
                 <div className="space-y-2">
                   {result.design_direction.map((d, i) => (
-                    <p key={i} className="text-xs text-[#C7C9CD] leading-relaxed">• {d}</p>
+                    <p key={i} className="text-xs text-muted leading-relaxed">• {d}</p>
                   ))}
                 </div>
               </div>
             )}
             {result.avoid?.length > 0 && (
-              <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] p-5">
+              <div className="border border-border rounded-xl bg-surface p-5">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500 mb-3">Avoid</p>
                 <div className="space-y-2">
                   {result.avoid.map((a, i) => (
-                    <p key={i} className="text-xs text-[#C7C9CD] leading-relaxed">• {a}</p>
+                    <p key={i} className="text-xs text-muted leading-relaxed">• {a}</p>
                   ))}
                 </div>
               </div>

@@ -221,25 +221,25 @@ export default function PodsIndexClient() {
     <div className="mx-auto max-w-7xl px-6 py-8 md:px-10">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
             Operating system
           </p>
           <h1 className="mt-1 text-3xl font-medium">Pod Overview</h1>
-          <p className="mt-1 max-w-xl text-sm text-[#71757D]">
+          <p className="mt-1 max-w-xl text-sm text-subtle">
             Three pods. One cadence. Mondays kick off, Thursdays ship.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`${linkBase}/me`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-xs font-medium text-[#E5E5EA] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#222222]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground shadow-[var(--shadow-soft)] transition-colors hover:bg-surface-raised"
             title="Your tasks today, focused"
           >
             Today
           </Link>
           <Link
             href={`${linkBase}/standup`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-xs font-medium text-[#E5E5EA] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#222222]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground shadow-[var(--shadow-soft)] transition-colors hover:bg-surface-raised"
             title="What changed in the last 24h"
           >
             Standup
@@ -248,14 +248,14 @@ export default function PodsIndexClient() {
             <>
               <Link
                 href="/pods-v2/new-project"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F4F6]"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-surface px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-foreground"
               >
                 <PlusIcon className="size-3.5" />
                 New project
               </Link>
               <Link
                 href="/pods-v2/admin"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-xs font-medium text-[#E5E5EA] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#222222]"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground shadow-[var(--shadow-soft)] transition-colors hover:bg-surface-raised"
               >
                 <ShieldCheckIcon className="size-3.5" />
                 Admin view
@@ -266,13 +266,13 @@ export default function PodsIndexClient() {
       </div>
 
       {/* Top-level toggle: Overview vs Pipeline */}
-      <div className="mt-6 inline-flex rounded-lg border border-[#2A2A2A] bg-[#181818] p-0.5 text-xs">
+      <div className="mt-6 inline-flex rounded-lg border border-border bg-surface p-0.5 text-xs">
         <button
           onClick={() => setView("overview")}
           className={`rounded-md px-3 py-1.5 transition-colors ${
             view === "overview"
-              ? "bg-[#E5E5EA] text-[#181818]"
-              : "text-[#71757D] hover:text-[#E5E5EA]"
+              ? "bg-foreground text-surface"
+              : "text-subtle hover:text-foreground"
           }`}
         >
           Overview
@@ -281,8 +281,8 @@ export default function PodsIndexClient() {
           onClick={() => setView("pipeline")}
           className={`rounded-md px-3 py-1.5 transition-colors ${
             view === "pipeline"
-              ? "bg-[#E5E5EA] text-[#181818]"
-              : "text-[#71757D] hover:text-[#E5E5EA]"
+              ? "bg-foreground text-surface"
+              : "text-subtle hover:text-foreground"
           }`}
         >
           Pipeline
@@ -291,8 +291,8 @@ export default function PodsIndexClient() {
           onClick={() => setView("strategy")}
           className={`rounded-md px-3 py-1.5 transition-colors ${
             view === "strategy"
-              ? "bg-[#E5E5EA] text-[#181818]"
-              : "text-[#71757D] hover:text-[#E5E5EA]"
+              ? "bg-foreground text-surface"
+              : "text-subtle hover:text-foreground"
           }`}
         >
           Strategy
@@ -342,7 +342,7 @@ export default function PodsIndexClient() {
                 window.location.reload();
               }
             }}
-            className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-rose-700"
+            className="text-[11px] uppercase tracking-wider text-subtle hover:text-rose-700"
           >
             Wipe all data
           </button>
@@ -451,16 +451,16 @@ function Overview({
             <Link
               key={pod.id}
               href={`${linkBase}/${pod.id}`}
-              className="group rounded-2xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)] transition-all hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
+              className="group rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)] transition-all hover:border-muted hover:shadow-[var(--shadow-card)]"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-2xl font-medium leading-none text-[#E5E5EA]">
+                  <h2 className="text-2xl font-medium leading-none text-foreground">
                     {pod.name}
                   </h2>
-                  <p className="mt-1 text-xs text-[#71757D]">{pod.tagline}</p>
+                  <p className="mt-1 text-xs text-subtle">{pod.tagline}</p>
                 </div>
-                <ArrowRightIcon className="size-4 text-[#71757D] transition-transform group-hover:translate-x-0.5" />
+                <ArrowRightIcon className="size-4 text-subtle transition-transform group-hover:translate-x-0.5" />
               </div>
 
               <div className="mt-4 flex -space-x-2">
@@ -469,9 +469,9 @@ function Overview({
                 ))}
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2.5 text-[12px]">
-                <span className="text-[#71757D]">
-                  <span className="font-semibold tabular-nums text-[#E5E5EA]">{dueThisWeek}</span> due this week
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-background px-3 py-2.5 text-[12px]">
+                <span className="text-subtle">
+                  <span className="font-semibold tabular-nums text-foreground">{dueThisWeek}</span> due this week
                 </span>
                 {behind > 0 ? (
                   <span className="font-semibold tabular-nums text-rose-600">· {behind} behind</span>
@@ -482,10 +482,10 @@ function Overview({
                   <span className="ml-auto tabular-nums text-amber-700">{activeBlockers} blocked</span>
                 )}
               </div>
-              <div className="mt-2 flex items-center justify-between text-[11px] text-[#71757D]">
+              <div className="mt-2 flex items-center justify-between text-[11px] text-subtle">
                 <span>
                   {clientCount} {clientCount === 1 ? "client" : "clients"}
-                  {dueNextWeek > 0 && <span className="text-[#C5C5C5]"> · +{dueNextWeek} next week</span>}
+                  {dueNextWeek > 0 && <span className="text-muted"> · +{dueNextWeek} next week</span>}
                 </span>
                 <span
                   className={`rounded-md px-1.5 py-0.5 font-medium tabular-nums ${
@@ -517,20 +517,20 @@ function Overview({
       <div className="mt-10">
         <div className="flex items-baseline justify-between gap-3">
           <div>
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
               Onboarding in purgatory
             </h2>
-            <p className="mt-0.5 text-xs text-[#71757D]">
+            <p className="mt-0.5 text-xs text-subtle">
               Onboarding forms that have been processed but no tasks are assigned yet. Action: spin up a project + assign work.
             </p>
           </div>
-          <span className="text-[11px] tabular-nums text-[#71757D]">
+          <span className="text-[11px] tabular-nums text-subtle">
             {purgatoryOnboardings.length} {purgatoryOnboardings.length === 1 ? "form" : "forms"}
           </span>
         </div>
-        <div className="mt-3 overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="border-b border-[#2A2A2A] bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <thead className="border-b border-border bg-background text-[10px] font-semibold uppercase tracking-wider text-subtle">
               <tr>
                 <th className="px-3 py-2 text-left">Client</th>
                 <th className="px-3 py-2 text-left">Status</th>
@@ -540,12 +540,12 @@ function Overview({
                 <th className="px-3 py-2 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A2A2A]">
+            <tbody className="divide-y divide-border">
               {purgatoryOnboardings.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-3 py-6 text-center text-[12px] text-[#71757D]"
+                    className="px-3 py-6 text-center text-[12px] text-subtle"
                   >
                     No onboardings in purgatory. Everything processed has work assigned.
                   </td>
@@ -558,14 +558,14 @@ function Overview({
                   daysBetween(processedAt.slice(0, 10), today),
                 );
                 return (
-                  <tr key={o.id} className="hover:bg-[#0C0C0C]">
+                  <tr key={o.id} className="hover:bg-background">
                     <td className="px-3 py-2">
                       <div className="text-[13px] font-medium">{o.company_name || "Untitled"}</div>
                       {o.website_url && (
-                        <div className="truncate text-[10px] text-[#71757D]">{o.website_url}</div>
+                        <div className="truncate text-[10px] text-subtle">{o.website_url}</div>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-[12px] text-[#71757D] capitalize">
+                    <td className="px-3 py-2 text-[12px] text-subtle capitalize">
                       {o.status.replace("-", " ")}
                     </td>
                     <td className="px-3 py-2 text-[12px]">
@@ -575,7 +575,7 @@ function Overview({
                           return (
                             <Link
                               href={`/engagements/${engagementClient.id}`}
-                              className="text-[#E5E5EA] hover:underline"
+                              className="text-foreground hover:underline"
                             >
                               Open engagement →
                             </Link>
@@ -585,17 +585,17 @@ function Overview({
                           return (
                             <Link
                               href={`/tools/client-portal/${o.assigned_portal_id}`}
-                              className="text-[#E5E5EA] hover:underline"
+                              className="text-foreground hover:underline"
                               title="Legacy portal"
                             >
                               View portal →
                             </Link>
                           );
                         }
-                        return <span className="text-[#71757D]">-</span>;
+                        return <span className="text-subtle">-</span>;
                       })()}
                     </td>
-                    <td className="px-3 py-2 text-right text-[12px] text-[#71757D] tabular-nums">
+                    <td className="px-3 py-2 text-right text-[12px] text-subtle tabular-nums">
                       {formatDayMonth(processedAt.slice(0, 10))}
                     </td>
                     <td
@@ -608,7 +608,7 @@ function Overview({
                     <td className="px-3 py-2 text-right">
                       <button
                         onClick={() => onAssign(o)}
-                        className="inline-flex items-center gap-1 rounded-md bg-[#1B1B1B] px-2 py-1 text-[10px] font-medium text-white hover:bg-[#F3F4F6]"
+                        className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-1 text-[10px] font-medium text-white hover:bg-foreground"
                       >
                         Assign to pod
                       </button>
@@ -619,8 +619,8 @@ function Overview({
             </tbody>
           </table>
           {purgatoryOnboardings.length > 0 && (
-            <div className="border-t border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2 text-right">
-              <Link href="/tools/onboarding-inbox" className="text-[11px] font-medium text-[#E5E5EA] hover:underline">
+            <div className="border-t border-border bg-background px-3 py-2 text-right">
+              <Link href="/tools/onboarding-inbox" className="text-[11px] font-medium text-foreground hover:underline">
                 Open onboarding inbox →
               </Link>
             </div>
@@ -977,28 +977,28 @@ function AssignToPodModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl bg-surface p-5 shadow-2xl">
         <div className="mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Assign to pod
           </p>
-          <h2 className="text-lg font-semibold text-[#E5E5EA]">
+          <h2 className="text-lg font-semibold text-foreground">
             {onboarding.company_name || "Untitled"}
           </h2>
           {onboarding.website_url && (
-            <p className="mt-0.5 truncate text-[11px] text-[#71757D]">{onboarding.website_url}</p>
+            <p className="mt-0.5 truncate text-[11px] text-subtle">{onboarding.website_url}</p>
           )}
         </div>
 
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Pod
             </label>
             <select
               value={podId}
               onChange={(e) => setPodId(e.target.value)}
-              className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
             >
               {eligiblePods.map((p) => {
                 const load = podLoads.get(p.id);
@@ -1013,29 +1013,29 @@ function AssignToPodModal({
                 );
               })}
             </select>
-            <p className="mt-1 text-[10px] text-[#71757D]">
+            <p className="mt-1 text-[10px] text-subtle">
               Defaults to the lightest-loaded pod for this month. Pre-selected: <strong>{eligiblePods.find((p) => p.id === lightestPodId)?.name ?? ","}</strong>.
             </p>
           </div>
 
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Signoff date
             </label>
             <input
               type="date"
               value={signoffDate}
               onChange={(e) => setSignoffDate(e.target.value)}
-              className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
             />
-            <p className="mt-1 text-[10px] text-[#71757D]">
+            <p className="mt-1 text-[10px] text-subtle">
               Kickoff rolls forward to the next Monday. Design due Friday week 1; dev due delivery Thursday.
             </p>
           </div>
 
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              conversionEngine ? "border-[#16A34A] bg-emerald-50" : "border-[#2A2A2A]"
+              conversionEngine ? "border-success bg-emerald-50" : "border-border"
             }`}
           >
             <input
@@ -1045,10 +1045,10 @@ function AssignToPodModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#E5E5EA]">
+              <div className="text-xs font-medium text-foreground">
                 Conversion Engine retainer
               </div>
-              <div className="text-[10px] text-[#71757D]">
+              <div className="text-[10px] text-subtle">
                 Pre-seeds the full 90-day cycle: 3 months × W1 strategy → W2 design → W3 build → W4 test, autopaired across designer + dev. Project delivery moves to W12 Thu.
               </div>
             </div>
@@ -1056,7 +1056,7 @@ function AssignToPodModal({
 
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              rush ? "border-rose-400 bg-rose-50" : "border-[#2A2A2A]"
+              rush ? "border-rose-400 bg-rose-50" : "border-border"
             }`}
           >
             <input
@@ -1066,10 +1066,10 @@ function AssignToPodModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#E5E5EA]">
+              <div className="text-xs font-medium text-foreground">
                 Rush, exception flow
               </div>
-              <div className="text-[10px] text-[#71757D]">
+              <div className="text-[10px] text-subtle">
                 Skips the Monday-snap (kickoff = signoff date) and halves bucket duration. Use sparingly, pod cards track rush count so heavy use shows up in the operating model.
               </div>
             </div>
@@ -1077,10 +1077,10 @@ function AssignToPodModal({
 
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                 Deliverables, confirm before assigning
               </label>
-              <span className="text-[10px] text-[#71757D]">
+              <span className="text-[10px] text-subtle">
                 {items.length} {items.length === 1 ? "item" : "items"}
               </span>
             </div>
@@ -1110,7 +1110,7 @@ function AssignToPodModal({
                   <select
                     value={it.type}
                     onChange={(e) => updateItem(it.id, { type: e.target.value as PageType })}
-                    className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
+                    className="rounded-md border border-border bg-surface px-2 py-1 text-[11px]"
                   >
                     {(Object.keys(PAGE_LABEL) as PageType[]).map((p) => (
                       <option key={p} value={p}>
@@ -1122,11 +1122,11 @@ function AssignToPodModal({
                     value={it.label}
                     onChange={(e) => updateItem(it.id, { label: e.target.value })}
                     placeholder="Variant label"
-                    className="flex-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] placeholder:text-[#C7C9CD]"
+                    className="flex-1 rounded-md border border-border bg-surface px-2 py-1 text-[11px] placeholder:text-muted"
                   />
                   <button
                     onClick={() => removeItem(it.id)}
-                    className="p-1 text-[#71757D] hover:text-rose-600"
+                    className="p-1 text-subtle hover:text-rose-600"
                     title="Remove"
                     type="button"
                   >
@@ -1138,7 +1138,7 @@ function AssignToPodModal({
             <button
               type="button"
               onClick={addItem}
-              className="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-[#2A2A2A] px-2 py-1 text-[10px] text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
+              className="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-[10px] text-subtle hover:border-white hover:text-foreground"
             >
               + Add deliverable
             </button>
@@ -1148,14 +1148,14 @@ function AssignToPodModal({
         <div className="mt-4 flex justify-end gap-2">
           <button
             onClick={onCancel}
-            className="rounded px-3 py-1.5 text-[11px] text-[#71757D] hover:text-[#E5E5EA]"
+            className="rounded px-3 py-1.5 text-[11px] text-subtle hover:text-foreground"
           >
             Cancel
           </button>
           <button
             onClick={submit}
             disabled={submitting || !podId || items.length === 0}
-            className="rounded bg-[#E5E5EA] text-[#181818] px-3 py-1.5 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:opacity-50"
+            className="rounded bg-foreground text-surface px-3 py-1.5 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
           >
             {submitting ? "Assigning…" : `Confirm & assign · ${items.length} deliverable${items.length === 1 ? "" : "s"}`}
           </button>
@@ -1284,22 +1284,22 @@ function PodHealthRow({
       ? "bg-rose-50 text-rose-800"
       : t === "amber"
         ? "bg-amber-50 text-amber-800"
-        : "bg-[#0C0C0C] text-[#E5E5EA]";
+        : "bg-background text-foreground";
   }
 
   return (
-    <div className="mt-6 rounded-2xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+    <div className="mt-6 rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
       <div className="flex items-baseline justify-between">
         <div className="flex items-center gap-2">
           <span className={`size-2 rounded-full ${toneClass(overallTone)}`} />
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
             Agency health
           </h2>
           <span className={`text-[11px] font-semibold ${toneText(overallTone)}`}>
             {overallLabel}
           </span>
         </div>
-        <span className="text-[10px] text-[#71757D]">
+        <span className="text-[10px] text-subtle">
           Capacity · Slips this quarter · Blockers · OOO
         </span>
       </div>
@@ -1307,11 +1307,11 @@ function PodHealthRow({
         {cells.map((c) => (
           <div
             key={c.pod.id}
-            className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-3"
+            className="rounded-xl border border-border bg-surface p-3"
           >
             <div className="flex items-center gap-2 mb-2.5">
               <span className={`size-2 rounded-full ${toneClass(c.overall)}`} />
-              <span className="text-sm font-semibold text-[#E5E5EA]">{c.pod.name}</span>
+              <span className="text-sm font-semibold text-foreground">{c.pod.name}</span>
             </div>
             <div className="grid grid-cols-4 gap-1.5">
               <HealthStat label="Capacity" value={`${c.utilPct}%`} tone={c.utilTone} toneTile={toneTile} />
@@ -1433,7 +1433,7 @@ function FridayDigestPanel({
       <div className="mt-10">
         <button
           onClick={() => setForceShow(true)}
-          className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
+          className="text-[11px] text-subtle hover:text-foreground hover:underline"
         >
           + Show Friday digest (off-day preview)
         </button>
@@ -1445,17 +1445,17 @@ function FridayDigestPanel({
     <div className="mt-10">
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
             Friday digest{!isFriday && ", preview"}
           </h2>
-          <p className="mt-0.5 text-xs text-[#71757D]">
+          <p className="mt-0.5 text-xs text-subtle">
             What each pod shipped this week, what&apos;s still open, what&apos;s stale. One click posts the formatted summary to the pod&apos;s Slack channel.
           </p>
         </div>
         {!isFriday && (
           <button
             onClick={() => setForceShow(false)}
-            className="text-[10px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
+            className="text-[10px] text-subtle hover:text-foreground hover:underline"
           >
             Hide
           </button>
@@ -1465,24 +1465,24 @@ function FridayDigestPanel({
         {summaries.map((s) => (
           <div
             key={s.pod.id}
-            className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-3 shadow-[var(--shadow-soft)]"
+            className="rounded-xl border border-border bg-surface p-3 shadow-[var(--shadow-soft)]"
           >
             <div className="flex items-baseline justify-between">
-              <h3 className="text-sm font-semibold text-[#E5E5EA]">{s.pod.name}</h3>
+              <h3 className="text-sm font-semibold text-foreground">{s.pod.name}</h3>
               <button
                 disabled={posting === s.pod.id || !s.pod.slack_channel_id}
                 onClick={() => postPodDigest(s)}
                 className={`rounded-md px-2 py-1 text-[10px] font-medium ${
                   s.pod.slack_channel_id
-                    ? "bg-[#E5E5EA] text-[#181818] hover:bg-white"
-                    : "cursor-not-allowed bg-[#2A2A2A] text-[#71757D]"
+                    ? "bg-foreground text-surface hover:bg-white"
+                    : "cursor-not-allowed bg-border text-subtle"
                 } ${posting === s.pod.id ? "opacity-60" : ""}`}
                 title={s.pod.slack_channel_id ? "Post to Slack" : "No channel configured for this pod"}
               >
                 {posting === s.pod.id ? "Posting…" : "Post to Slack"}
               </button>
             </div>
-            <pre className="mt-2 whitespace-pre-wrap text-[11px] leading-relaxed text-[#E5E5EA]" style={{ fontFamily: "inherit" }}>
+            <pre className="mt-2 whitespace-pre-wrap text-[11px] leading-relaxed text-foreground" style={{ fontFamily: "inherit" }}>
               {formatSlackMessage(s)}
             </pre>
           </div>
@@ -1566,21 +1566,21 @@ function CroPipeline({
     <div className="mt-10">
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
             CRO Pipeline
           </h2>
-          <p className="mt-0.5 text-xs text-[#71757D]">
+          <p className="mt-0.5 text-xs text-subtle">
             {dan.name}&apos;s strategy + wireframe work across all pods. Pre-seeded for the full 90-day cycle on Conversion Engine retainers, grouped by month so the runway is visible at a glance.
           </p>
         </div>
-        <span className="text-[11px] tabular-nums text-[#71757D]">
+        <span className="text-[11px] tabular-nums text-subtle">
           {danTasks.filter((t) => t.status !== "done").length} open · {danTasks.length} total
         </span>
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
+      <div className="mt-3 overflow-hidden rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
         {/* Dan's header strip */}
-        <div className="flex items-center justify-between gap-3 border-b border-[#2A2A2A] bg-[#0C0C0C] px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-background px-4 py-3">
           <div className="flex items-center gap-3">
             <MemberAvatar
               member={dan}
@@ -1590,14 +1590,14 @@ function CroPipeline({
               }}
             />
             <div>
-              <div className="text-sm font-semibold text-[#E5E5EA]">{dan.name}</div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">CRO lead</div>
+              <div className="text-sm font-semibold text-foreground">{dan.name}</div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">CRO lead</div>
             </div>
           </div>
           {isAdmin && allProjects.length > 0 && (
             <button
               onClick={() => setAdding(true)}
-              className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] font-medium text-[#E5E5EA] hover:border-white"
+              className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:border-white"
             >
               + Add strategy task
             </button>
@@ -1606,19 +1606,19 @@ function CroPipeline({
 
         {/* Add-task form */}
         {adding && (
-          <div className="border-b border-[#2A2A2A] bg-[#0C0C0C] px-4 py-3">
+          <div className="border-b border-border bg-background px-4 py-3">
             <div className="flex flex-wrap items-center gap-1.5">
               <input
                 autoFocus
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
                 placeholder="Strategy task (e.g. Wireframe, PDP, Sling Carrier)"
-                className="flex-1 min-w-[280px] rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-xs"
+                className="flex-1 min-w-[280px] rounded-md border border-border bg-surface px-2 py-1 text-xs"
               />
               <select
                 value={taskProjectId || allProjects[0]?.id || ""}
                 onChange={(e) => setTaskProjectId(e.target.value)}
-                className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-xs"
+                className="rounded-md border border-border bg-surface px-2 py-1 text-xs"
               >
                 {allProjects.map((p) => {
                   const c = clientById.get(p.client_id);
@@ -1634,7 +1634,7 @@ function CroPipeline({
                   setAdding(false);
                   setTaskTitle("");
                 }}
-                className="px-2 py-1 text-[11px] text-[#71757D] hover:text-[#E5E5EA]"
+                className="px-2 py-1 text-[11px] text-subtle hover:text-foreground"
               >
                 Cancel
               </button>
@@ -1654,7 +1654,7 @@ function CroPipeline({
                   setAdding(false);
                   onMutate();
                 }}
-                className="rounded-md bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6]"
+                className="rounded-md bg-surface px-2 py-1 text-[11px] font-medium text-white hover:bg-foreground"
               >
                 Add
               </button>
@@ -1664,7 +1664,7 @@ function CroPipeline({
 
         {/* Task list grouped by pod */}
         {danTasks.length === 0 ? (
-          <div className="px-4 py-8 text-center text-xs text-[#71757D]">
+          <div className="px-4 py-8 text-center text-xs text-subtle">
             No strategy tasks on Dan&apos;s plate. As retainers come in, week-1 strategy work lands here.
           </div>
         ) : (
@@ -1673,8 +1673,8 @@ function CroPipeline({
               const pod = pods.find((p) => p.id === podId);
               const groups = subGroupByMonth(podTasks);
               return (
-                <div key={podId} className="border-b border-[#2A2A2A] last:border-b-0">
-                  <div className="bg-[#0C0C0C] px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                <div key={podId} className="border-b border-border last:border-b-0">
+                  <div className="bg-background px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
                     {pod?.name || "Unassigned pod"}
                   </div>
                   {groups.map((g) => {
@@ -1684,7 +1684,7 @@ function CroPipeline({
                         {showHeader && (
                           <div className="bg-emerald-50/40 px-4 py-1 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
                             {g.label}
-                            <span className="ml-1.5 text-[#71757D]">
+                            <span className="ml-1.5 text-subtle">
                               · {g.tasks.filter((t) => t.status !== "done").length} open
                             </span>
                           </div>
@@ -1699,7 +1699,7 @@ function CroPipeline({
                           return (
                             <div
                               key={t.id}
-                              className={`group flex items-center gap-3 px-4 py-2 hover:bg-[#0C0C0C] ${isDone ? "opacity-50" : ""}`}
+                              className={`group flex items-center gap-3 px-4 py-2 hover:bg-background ${isDone ? "opacity-50" : ""}`}
                             >
                               <button
                                 onClick={(e) => {
@@ -1738,8 +1738,8 @@ function CroPipeline({
                                   isDone
                                     ? "border-emerald-500 bg-emerald-500 text-white"
                                     : t.status === "in_progress"
-                                      ? "border-blue-500 bg-[#181818] text-blue-500"
-                                      : "border-[#2A2A2A] bg-[#181818] hover:border-white"
+                                      ? "border-blue-500 bg-surface text-blue-500"
+                                      : "border-border bg-surface hover:border-white"
                                 }`}
                                 title="Click to advance · Shift-click or right-click to step back"
                               >
@@ -1751,13 +1751,13 @@ function CroPipeline({
                                 {t.status === "in_progress" && <span className="size-1.5 rounded-full bg-blue-500" />}
                               </button>
                               <div className="min-w-0 flex-1">
-                                <div className={`truncate text-sm leading-tight ${isDone ? "text-[#71757D] line-through" : "text-[#E5E5EA]"}`}>
+                                <div className={`truncate text-sm leading-tight ${isDone ? "text-subtle line-through" : "text-foreground"}`}>
                                   {t.title}
                                 </div>
                                 {client && (
-                                  <div className="mt-0.5 truncate text-[11px] text-[#71757D]">
-                                    <span className="font-medium text-[#E5E5EA]">{client.name}</span>
-                                    {project && <span className="text-[#71757D]"> · {project.name}</span>}
+                                  <div className="mt-0.5 truncate text-[11px] text-subtle">
+                                    <span className="font-medium text-foreground">{client.name}</span>
+                                    {project && <span className="text-subtle"> · {project.name}</span>}
                                   </div>
                                 )}
                               </div>
@@ -1775,7 +1775,7 @@ function CroPipeline({
                                   className="opacity-0 transition-opacity group-hover:opacity-100"
                                   title="Delete task"
                                 >
-                                  <span className="text-[#71757D] hover:text-rose-600">×</span>
+                                  <span className="text-subtle hover:text-rose-600">×</span>
                                 </button>
                               )}
                             </div>
@@ -1805,7 +1805,7 @@ function PodStat({
 }) {
   const cls = alert
     ? "bg-rose-50 text-rose-800"
-    : "bg-[#0C0C0C] text-[#E5E5EA]";
+    : "bg-background text-foreground";
   return (
     <div className={`rounded-lg px-3 py-2 ${cls}`}>
       <div className="text-[10px] font-semibold uppercase tracking-wider opacity-70">

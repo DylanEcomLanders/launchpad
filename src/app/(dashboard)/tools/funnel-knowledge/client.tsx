@@ -127,12 +127,12 @@ export default function FunnelKnowledgeClient({
     <div className="flex h-full">
       {/* Internal sub-nav */}
       <div
-        className={`border-r border-[#2A2A2A] bg-[#0C0C0C] flex-shrink-0 overflow-y-auto transition-all duration-200 ${
+        className={`border-r border-border bg-background flex-shrink-0 overflow-y-auto transition-all duration-200 ${
           navOpen ? "w-52" : "w-0 overflow-hidden"
         }`}
       >
         <div className="p-3 pb-2">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] px-2">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle px-2">
             Funnel Layers
           </h2>
         </div>
@@ -149,16 +149,16 @@ export default function FunnelKnowledgeClient({
                 }}
                 className={`flex items-center gap-2 w-full px-2.5 py-[6px] text-[13px] rounded-md transition-all duration-150 text-left ${
                   isActive
-                    ? "text-[#E5E5EA] font-medium bg-[#181818] shadow-[var(--shadow-soft)]"
-                    : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818]/50"
+                    ? "text-foreground font-medium bg-surface shadow-[var(--shadow-soft)]"
+                    : "text-subtle hover:text-foreground hover:bg-surface/50"
                 }`}
               >
-                <span className="flex-shrink-0 text-[#71757D]">
+                <span className="flex-shrink-0 text-subtle">
                   {iconMap[m.icon]}
                 </span>
                 <span className="truncate">
                   {m.layer !== "0" && (
-                    <span className="text-[#C5C5C5] text-[11px] font-mono mr-1">
+                    <span className="text-muted text-[11px] font-mono mr-1">
                       {m.layer}.
                     </span>
                   )}
@@ -170,7 +170,7 @@ export default function FunnelKnowledgeClient({
         </div>
 
         <div className="p-3 pb-2">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] px-2">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle px-2">
             Reference
           </h2>
         </div>
@@ -187,11 +187,11 @@ export default function FunnelKnowledgeClient({
                 }}
                 className={`flex items-center gap-2 w-full px-2.5 py-[6px] text-[13px] rounded-md transition-all duration-150 text-left ${
                   isActive
-                    ? "text-[#E5E5EA] font-medium bg-[#181818] shadow-[var(--shadow-soft)]"
-                    : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818]/50"
+                    ? "text-foreground font-medium bg-surface shadow-[var(--shadow-soft)]"
+                    : "text-subtle hover:text-foreground hover:bg-surface/50"
                 }`}
               >
-                <span className="flex-shrink-0 text-[#71757D]">
+                <span className="flex-shrink-0 text-subtle">
                   {iconMap[m.icon]}
                 </span>
                 <span className="truncate">{m.shortTitle}</span>
@@ -204,23 +204,23 @@ export default function FunnelKnowledgeClient({
       {/* Main content */}
       <div className="flex-1 overflow-y-auto">
         {/* Toolbar */}
-        <div className="sticky top-0 z-10 bg-[#181818]/95 backdrop-blur-sm border-b border-[#2A2A2A] px-6 py-3">
+        <div className="sticky top-0 z-10 bg-surface/95 backdrop-blur-sm border-b border-border px-6 py-3">
           <div className="flex items-center gap-3 flex-wrap">
             {/* Nav toggle */}
             <button
               onClick={() => setNavOpen(!navOpen)}
-              className="p-1.5 rounded-lg hover:bg-[#222222] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-surface-raised transition-colors"
               title={navOpen ? "Hide navigation" : "Show navigation"}
             >
               <ChevronRightIcon
-                className={`size-4 text-[#71757D] transition-transform duration-200 ${
+                className={`size-4 text-subtle transition-transform duration-200 ${
                   navOpen ? "rotate-180" : ""
                 }`}
               />
             </button>
 
             {/* Mode switcher */}
-            <div className="flex gap-0.5 bg-[#222222] rounded-lg p-0.5">
+            <div className="flex gap-0.5 bg-surface-raised rounded-lg p-0.5">
               {(
                 [
                   { key: "full", label: "Full" },
@@ -233,8 +233,8 @@ export default function FunnelKnowledgeClient({
                   onClick={() => setViewMode(key)}
                   className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-all duration-150 ${
                     viewMode === key
-                      ? "bg-[#181818] text-[#E5E5EA] shadow-[var(--shadow-soft)]"
-                      : "text-[#71757D] hover:text-[#E5E5EA]"
+                      ? "bg-surface text-foreground shadow-[var(--shadow-soft)]"
+                      : "text-subtle hover:text-foreground"
                   }`}
                 >
                   {label}
@@ -244,44 +244,44 @@ export default function FunnelKnowledgeClient({
 
             {/* Search */}
             <div className="relative flex-1 max-w-xs">
-              <MagnifyingGlassIcon className="absolute left-2.5 top-2 size-4 text-[#C5C5C5]" />
+              <MagnifyingGlassIcon className="absolute left-2.5 top-2 size-4 text-muted" />
               <input
                 type="text"
                 placeholder="Search this module..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-[#2A2A2A] rounded-lg bg-[#181818] focus:outline-none focus:ring-2 focus:ring-[#2A2A2A] focus:border-[#C5C5C5] placeholder:text-[#C5C5C5]"
+                className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-border focus:border-muted placeholder:text-muted"
               />
             </div>
 
             {/* Current module title */}
-            <span className="text-[12px] text-[#71757D] hidden lg:block ml-auto">
+            <span className="text-[12px] text-subtle hidden lg:block ml-auto">
               {activeModule.title}
             </span>
           </div>
 
           {/* Search results dropdown */}
           {searchResults && searchResults.length > 0 && (
-            <div className="mt-2 p-2 bg-[#181818] border border-[#2A2A2A] rounded-lg max-h-40 overflow-y-auto shadow-[var(--shadow-card)]">
-              <p className="text-[11px] text-[#71757D] mb-1 px-1">
+            <div className="mt-2 p-2 bg-surface border border-border rounded-lg max-h-40 overflow-y-auto shadow-[var(--shadow-card)]">
+              <p className="text-[11px] text-subtle mb-1 px-1">
                 {searchResults.length} matches
               </p>
               {searchResults.map((r, i) => (
                 <div
                   key={i}
-                  className="text-[12px] py-1 px-1 border-b border-[#F3F3F5] last:border-0"
+                  className="text-[12px] py-1 px-1 border-b border-surface-raised last:border-0"
                 >
-                  <span className="text-[11px] text-[#71757D] font-medium">
+                  <span className="text-[11px] text-subtle font-medium">
                     {r.heading}
                   </span>
-                  <p className="text-[#E5E5EA] truncate">{r.text}</p>
+                  <p className="text-foreground truncate">{r.text}</p>
                 </div>
               ))}
             </div>
           )}
           {searchResults && searchResults.length === 0 && searchQuery.trim() && (
-            <div className="mt-2 p-2 bg-[#181818] border border-[#2A2A2A] rounded-lg">
-              <p className="text-[12px] text-[#71757D]">
+            <div className="mt-2 p-2 bg-surface border border-border rounded-lg">
+              <p className="text-[12px] text-subtle">
                 No results for &ldquo;{searchQuery}&rdquo;
               </p>
             </div>

@@ -146,26 +146,26 @@ export default function StandupClient() {
     <div className="mx-auto max-w-4xl px-4 py-6">
       <div className="mb-6 flex items-baseline justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Standup
           </p>
-          <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+          <h1 className="text-2xl font-semibold text-foreground">
             What changed in the last 24h
           </h1>
-          <p className="mt-1 text-xs text-[#71757D]">
+          <p className="mt-1 text-xs text-subtle">
             One-screen agency-wide brief. Read top-to-bottom in standup; nothing to click.
           </p>
         </div>
         <Link
           href={linkBase}
-          className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
+          className="text-[11px] text-subtle hover:text-foreground hover:underline"
         >
           ← All pods
         </Link>
       </div>
 
       {totalEvents === 0 && (
-        <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#0C0C0C] px-4 py-12 text-center text-sm text-[#71757D]">
+        <div className="rounded-xl border border-dashed border-border bg-background px-4 py-12 text-center text-sm text-subtle">
           No notable activity in the last 24 hours.
         </div>
       )}
@@ -178,8 +178,8 @@ export default function StandupClient() {
             const owner = memberById.get(t.assigned_to);
             return (
               <Row key={t.id}>
-                <span className="text-sm font-medium text-[#E5E5EA]">{t.title}</span>
-                <span className="text-[11px] text-[#71757D]">
+                <span className="text-sm font-medium text-foreground">{t.title}</span>
+                <span className="text-[11px] text-subtle">
                   {client?.name ? `${client.name} · ` : ""}
                   {owner ? owner.name : ""}
                   {owner ? ` (${owner.pod})` : ""}
@@ -188,7 +188,7 @@ export default function StandupClient() {
             );
           })}
           {newTasks.length > 12 && (
-            <div className="px-3 py-2 text-[10px] text-[#71757D]">
+            <div className="px-3 py-2 text-[10px] text-subtle">
               + {newTasks.length - 12} more
             </div>
           )}
@@ -199,8 +199,8 @@ export default function StandupClient() {
         <Lane title="Blockers raised" tone="red" count={blockersRaised.length}>
           {blockersRaised.map(({ blocker, pod }) => (
             <Row key={blocker.id}>
-              <span className="text-sm font-medium text-[#E5E5EA]">{blocker.title}</span>
-              <span className="text-[11px] text-[#71757D]">
+              <span className="text-sm font-medium text-foreground">{blocker.title}</span>
+              <span className="text-[11px] text-subtle">
                 {pod.name}
                 {blocker.raised_by ? ` · ${blocker.raised_by}` : ""}
                 {blocker.description ? ` · ${blocker.description}` : ""}
@@ -214,8 +214,8 @@ export default function StandupClient() {
         <Lane title="Blockers resolved" tone="green" count={blockersResolved.length}>
           {blockersResolved.map(({ blocker, pod }) => (
             <Row key={blocker.id}>
-              <span className="text-sm font-medium text-[#E5E5EA]">{blocker.title}</span>
-              <span className="text-[11px] text-[#71757D]">
+              <span className="text-sm font-medium text-foreground">{blocker.title}</span>
+              <span className="text-[11px] text-subtle">
                 {pod.name}
                 {blocker.resolved_by ? ` · resolved by ${blocker.resolved_by}` : ""}
               </span>
@@ -231,8 +231,8 @@ export default function StandupClient() {
             const pod = podById.get(p.pod_id);
             return (
               <Row key={p.id}>
-                <span className="text-sm font-medium text-[#E5E5EA]">{p.name}</span>
-                <span className="text-[11px] text-[#71757D]">
+                <span className="text-sm font-medium text-foreground">{p.name}</span>
+                <span className="text-[11px] text-subtle">
                   {client?.name ? `${client.name} · ` : ""}
                   {pod?.name ? `${pod.name} · ` : ""}
                   Due {formatDayMonth(p.delivery_date)}
@@ -250,8 +250,8 @@ export default function StandupClient() {
             const pod = podById.get(p.pod_id);
             return (
               <Row key={p.id}>
-                <span className="text-sm font-medium text-[#E5E5EA]">{p.name}</span>
-                <span className="text-[11px] text-[#71757D]">
+                <span className="text-sm font-medium text-foreground">{p.name}</span>
+                <span className="text-[11px] text-subtle">
                   {client?.name ? `${client.name} · ` : ""}
                   {pod?.name ? `${pod.name} · ` : ""}
                   Was due {formatDayMonth(p.delivery_date)}
@@ -286,17 +286,17 @@ function Lane({
           ? "bg-blue-500"
           : tone === "green"
             ? "bg-emerald-500"
-            : "bg-[#A0A0A0]";
+            : "bg-muted";
   return (
     <div className="mb-5">
       <div className="mb-2 flex items-center gap-2">
         <span className={`size-2 rounded-full ${dot}`} />
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
           {title}
         </h2>
-        <span className="text-[10px] tabular-nums text-[#71757D]">{count}</span>
+        <span className="text-[10px] tabular-nums text-subtle">{count}</span>
       </div>
-      <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818]">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {children}
       </div>
     </div>
@@ -305,7 +305,7 @@ function Lane({
 
 function Row({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-0.5 border-b border-[#2A2A2A] px-3 py-2 last:border-b-0">
+    <div className="flex flex-col gap-0.5 border-b border-border px-3 py-2 last:border-b-0">
       {children}
     </div>
   );

@@ -22,12 +22,12 @@ function NodeShell({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#181818] rounded-xl shadow-md border border-[#2A2A2A] min-w-[200px] max-w-[240px] overflow-hidden">
-      <Handle type="target" position={Position.Left} className="!w-2 !h-2 !bg-[#999] !border-white !border-2" />
-      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !bg-[#999] !border-white !border-2" />
+    <div className="bg-surface rounded-xl shadow-md border border-border min-w-[200px] max-w-[240px] overflow-hidden">
+      <Handle type="target" position={Position.Left} className="!w-2 !h-2 !bg-subtle !border-white !border-2" />
+      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !bg-subtle !border-white !border-2" />
 
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#0C0C0C] border-b border-[#2A2A2A]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-background border-b border-border">
         <span className="text-[9px] font-bold uppercase tracking-wider text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: badgeColor }}>
           {badge}
         </span>
@@ -36,15 +36,15 @@ function NodeShell({
 
       {/* Body */}
       <div className="px-3 py-2.5">
-        <p className="text-xs font-semibold text-[#E5E5EA] leading-tight">{label}</p>
-        {subtitle && <p className="text-[10px] text-[#71757D] mt-0.5">{subtitle}</p>}
+        <p className="text-xs font-semibold text-foreground leading-tight">{label}</p>
+        {subtitle && <p className="text-[10px] text-subtle mt-0.5">{subtitle}</p>}
 
         {metrics && metrics.length > 0 && (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2 pt-2 border-t border-[#2A2A2A]">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2 pt-2 border-t border-border">
             {metrics.map((m) => (
               <div key={m.label}>
-                <p className="text-[8px] uppercase text-[#9CA3AF]">{m.label}</p>
-                <p className="text-[11px] font-semibold text-[#E5E5EA]">{m.value}</p>
+                <p className="text-[8px] uppercase text-muted">{m.label}</p>
+                <p className="text-[11px] font-semibold text-foreground">{m.value}</p>
               </div>
             ))}
           </div>
@@ -58,7 +58,7 @@ function NodeShell({
 
 /* ── Status dot helper ── */
 const statusDot = (status: string) =>
-  status === "live" ? "bg-emerald-500" : status === "in-progress" ? "bg-blue-500" : "bg-[#CCC]";
+  status === "live" ? "bg-emerald-500" : status === "in-progress" ? "bg-blue-500" : "bg-muted";
 
 /* ── Content Node ── */
 export const ContentNode = memo(({ data }: NodeProps) => {

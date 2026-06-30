@@ -95,7 +95,7 @@ export default function LifecyclePage() {
       .sort((a, b) => a.due_at.localeCompare(b.due_at));
   }, [milestones]);
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
@@ -108,7 +108,7 @@ export default function LifecyclePage() {
             Lifecycle
           </h1>
         </div>
-        <p className="text-sm text-[#9CA3AF] max-w-2xl">
+        <p className="text-sm text-muted max-w-2xl">
           Day 30 / 90 / 180 / 365 milestones per client. Engagement-start derives from onboarding. Spawn each milestone close to its date; checklist + retro lives inside.
         </p>
       </header>
@@ -116,7 +116,7 @@ export default function LifecyclePage() {
       {/* Upcoming callouts */}
       {hydrated && upcoming.length > 0 && (
         <section>
-          <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+          <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
             Due / soon ({upcoming.length})
           </h2>
           <ul className="space-y-2">
@@ -124,22 +124,22 @@ export default function LifecyclePage() {
               const status = resolvedStatus(m);
               return (
                 <li key={m.id}>
-                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
+                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
                     <div className="flex items-center gap-3">
                       <div className="size-10 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex flex-col items-center justify-center text-center shadow-[0_8px_24px_rgba(14,165,233,0.3)] shrink-0">
                         <div className="text-sm font-bold text-white leading-none">{m.day}</div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="text-sm font-semibold text-[#E5E5EA] truncate">{m.client_name}</span>
+                          <span className="text-sm font-semibold text-foreground truncate">{m.client_name}</span>
                           <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${STATUS_TINT[status]}`}>
                             {STATUS_LABEL[status]}
                           </span>
                         </div>
-                        <div className="text-[12px] text-[#71757D]">
+                        <div className="text-[12px] text-subtle">
                           {MILESTONE_TITLE[m.day]}
                         </div>
-                        <div className="text-[11px] text-[#9CA3AF] mt-1">
+                        <div className="text-[11px] text-muted mt-1">
                           Due {new Date(m.due_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                           {(() => {
                             const d = daysUntilDue(m);
@@ -158,18 +158,18 @@ export default function LifecyclePage() {
 
       {/* Matrix - every engagement × every milestone day */}
       <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+        <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
           All clients
         </h2>
         {!hydrated ? (
-          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>
+          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-background rounded-xl animate-pulse" />)}</div>
         ) : matrix.length === 0 ? (
-          <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-            <p className="text-sm text-[#71757D]">No engagements yet. Create an onboarding first.</p>
+          <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+            <p className="text-sm text-subtle">No engagements yet. Create an onboarding first.</p>
           </div>
         ) : (
-          <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
-            <div className="grid grid-cols-[1fr_repeat(4,minmax(0,1fr))] gap-2 px-4 py-3 border-b border-white/[0.04] text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+          <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
+            <div className="grid grid-cols-[1fr_repeat(4,minmax(0,1fr))] gap-2 px-4 py-3 border-b border-white/[0.04] text-[10px] uppercase tracking-wider text-subtle font-semibold">
               <div>Client</div>
               <div>Day 30</div>
               <div>Day 90</div>
@@ -178,7 +178,7 @@ export default function LifecyclePage() {
             </div>
             {matrix.map(({ engagement, cells }) => (
               <div key={engagement.client_name} className="grid grid-cols-[1fr_repeat(4,minmax(0,1fr))] gap-2 px-4 py-3 border-b border-white/[0.04] items-center text-[13px] hover:bg-white/[0.02] transition-colors">
-                <div className="text-[#E5E5EA] truncate font-medium">{engagement.client_name}</div>
+                <div className="text-foreground truncate font-medium">{engagement.client_name}</div>
                 {cells.map(({ day, milestone }) => {
                   if (milestone) {
                     const s = resolvedStatus(milestone);
@@ -193,7 +193,7 @@ export default function LifecyclePage() {
                   const dueAt = new Date(new Date(engagement.started_at).getTime() + day * 86_400_000);
                   const daysLeft = Math.round((dueAt.getTime() - Date.now()) / 86_400_000);
                   return (
-                    <button key={day} onClick={() => spawn(engagement, day)} className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded text-[10px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] bg-[#1A1A1A] hover:bg-[#222222]">
+                    <button key={day} onClick={() => spawn(engagement, day)} className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded text-[10px] uppercase tracking-wider text-subtle hover:text-foreground bg-surface hover:bg-surface-raised">
                       <PlusIcon className="size-3" />
                       Spawn
                       <span className="font-mono normal-case text-[9px] opacity-50">{daysLeft >= 0 ? `${daysLeft}d` : `${-daysLeft}d ago`}</span>

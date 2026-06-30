@@ -130,7 +130,7 @@ export default function ContractDetailPage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12">
-        <div className="text-sm text-[#71757D]">Loading agreement...</div>
+        <div className="text-sm text-subtle">Loading agreement...</div>
       </div>
     );
   }
@@ -139,12 +139,12 @@ export default function ContractDetailPage() {
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12">
         <Link
           href="/company/contracts"
-          className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeftIcon className="size-4" />
           Back to contracts
         </Link>
-        <div className="text-[15px] text-[#E5E5EA]">Agreement not found.</div>
+        <div className="text-[15px] text-foreground">Agreement not found.</div>
       </div>
     );
   }
@@ -156,7 +156,7 @@ export default function ContractDetailPage() {
       {/* Back */}
       <Link
         href="/company/contracts"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeftIcon className="size-4" />
         Back to contracts
@@ -171,14 +171,14 @@ export default function ContractDetailPage() {
           >
             {meta.label}
           </span>
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA]">
+          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-surface-raised text-foreground">
             {AGREEMENT_KIND_LABEL[agreement.kind]}
           </span>
         </div>
-        <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+        <h1 className="text-2xl font-semibold text-foreground">
           {agreement.person_full_name}
         </h1>
-        <div className="text-[13px] text-[#71757D] mt-1">
+        <div className="text-[13px] text-subtle mt-1">
           {agreement.person_job_title || "—"} ·{" "}
           {agreement.person_employment_type === "employee" ? "Employee" : "Contractor"}
         </div>
@@ -186,13 +186,13 @@ export default function ContractDetailPage() {
 
       {/* Signing URL */}
       {agreement.status !== "terminated" && (
-        <div className="mb-6 p-4 bg-[#0F0F10] border border-white/[0.04] rounded-xl">
+        <div className="mb-6 p-4 bg-background border border-white/[0.04] rounded-xl">
           <div className={labelClass}>Signing link</div>
           <div className="flex gap-2">
             <input readOnly value={signingUrl} className={inputClass} />
             <button
               onClick={copySigningUrl}
-              className="inline-flex items-center gap-1.5 px-3 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors shrink-0"
             >
               {copied ? (
                 <>
@@ -211,7 +211,7 @@ export default function ContractDetailPage() {
              * modern browser does the rest. */}
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 bg-[#0F0F10] ring-1 ring-white/[0.08] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-white/[0.08] text-foreground text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0"
               title="Download PDF (Cmd+P → Save as PDF)"
             >
               <ArrowDownTrayIcon className="size-3.5" /> PDF
@@ -223,21 +223,21 @@ export default function ContractDetailPage() {
                 synced ??
                 "Push this agreement to Supabase. Fixes 'agreement not found' on the signing link"
               }
-              className="inline-flex items-center gap-1.5 px-3 bg-[#0F0F10] ring-1 ring-white/[0.08] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-white/[0.08] text-foreground text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0 disabled:opacity-50"
             >
               {syncing ? "Syncing…" : synced ? synced : "Sync to cloud"}
             </button>
           </div>
-          <p className="text-[11px] text-[#71757D] mt-2 leading-relaxed">
+          <p className="text-[11px] text-subtle mt-2 leading-relaxed">
             Share this URL with{" "}
-            <span className="text-[#E5E5EA] font-medium">{agreement.person_full_name}</span>{" "}
+            <span className="text-foreground font-medium">{agreement.person_full_name}</span>{" "}
             via Slack, email, or however you usually reach them. They open it, read,
             and sign in their browser.
           </p>
           {agreement.status === "draft" && (
             <button
               onClick={markAsSent}
-              className="inline-flex items-center gap-1.5 mt-3 text-[12px] text-[#E5E5EA] hover:underline"
+              className="inline-flex items-center gap-1.5 mt-3 text-[12px] text-foreground hover:underline"
             >
               <PaperAirplaneIcon className="size-3.5" />
               Mark as sent
@@ -257,7 +257,7 @@ export default function ContractDetailPage() {
           </div>
           <button
             onClick={() => setShowCounterSign(true)}
-            className="px-3 py-1.5 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            className="px-3 py-1.5 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             Counter-sign now
           </button>
@@ -266,8 +266,8 @@ export default function ContractDetailPage() {
 
       {/* Counter-sign form */}
       {showCounterSign && (
-        <div className="mb-6 p-4 bg-[#0F0F10] border border-white rounded-xl">
-          <div className="text-[13px] font-medium text-[#E5E5EA] mb-4">
+        <div className="mb-6 p-4 bg-background border border-white rounded-xl">
+          <div className="text-[13px] font-medium text-foreground mb-4">
             Counter-sign
           </div>
           <div className="space-y-3">
@@ -289,7 +289,7 @@ export default function ContractDetailPage() {
               />
               <button
                 onClick={() => setCounterSig("")}
-                className="text-[11px] text-[#71757D] hover:underline mt-1"
+                className="text-[11px] text-subtle hover:underline mt-1"
                 type="button"
               >
                 Clear signature
@@ -298,14 +298,14 @@ export default function ContractDetailPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowCounterSign(false)}
-                className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                className="px-3 py-1.5 text-[13px] text-subtle hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={counterSign}
                 disabled={!counterName.trim() || !counterSig || submitting}
-                className="px-3 py-1.5 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
               >
                 {submitting ? "Signing..." : "Sign and finalise"}
               </button>
@@ -339,13 +339,13 @@ export default function ContractDetailPage() {
         <div className="flex items-center gap-4">
           <Link
             href={`/company/people/${agreement.person_id}`}
-            className="text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:underline transition-colors"
+            className="text-[12px] text-subtle hover:text-foreground hover:underline transition-colors"
           >
             View person profile →
           </Link>
           <Link
             href="/company/contracts/templates"
-            className="text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:underline transition-colors"
+            className="text-[12px] text-subtle hover:text-foreground hover:underline transition-colors"
           >
             Edit master clauses →
           </Link>
@@ -354,7 +354,7 @@ export default function ContractDetailPage() {
           {agreement.status === "active" && !showTerminate && (
             <button
               onClick={() => setShowTerminate(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-[#B22B2B] hover:bg-[#FCE4E4] rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-danger hover:bg-[#FCE4E4] rounded-lg transition-colors"
             >
               <XCircleIcon className="size-3.5" />
               Terminate
@@ -362,7 +362,7 @@ export default function ContractDetailPage() {
           )}
           <button
             onClick={deleteAgreement}
-            className="text-[12px] text-[#71757D] hover:text-[#B22B2B] hover:underline transition-colors"
+            className="text-[12px] text-subtle hover:text-danger hover:underline transition-colors"
           >
             Delete
           </button>
@@ -371,8 +371,8 @@ export default function ContractDetailPage() {
 
       {/* Terminate form */}
       {showTerminate && (
-        <div className="mt-4 p-4 bg-[#0F0F10] border border-[#FCE4E4] rounded-xl">
-          <div className="text-[13px] font-medium text-[#B22B2B] mb-3">
+        <div className="mt-4 p-4 bg-background border border-[#FCE4E4] rounded-xl">
+          <div className="text-[13px] font-medium text-danger mb-3">
             Terminate this agreement
           </div>
           <textarea
@@ -385,14 +385,14 @@ export default function ContractDetailPage() {
           <div className="flex justify-end gap-2 mt-3">
             <button
               onClick={() => setShowTerminate(false)}
-              className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+              className="px-3 py-1.5 text-[13px] text-subtle hover:text-foreground transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={terminate}
               disabled={submitting}
-              className="px-3 py-1.5 bg-[#B22B2B] text-white text-[13px] font-medium rounded-lg hover:bg-[#8B1F1F] transition-colors disabled:opacity-40"
+              className="px-3 py-1.5 bg-danger text-white text-[13px] font-medium rounded-lg hover:bg-[#8B1F1F] transition-colors disabled:opacity-40"
             >
               {submitting ? "Terminating..." : "Confirm terminate"}
             </button>
@@ -458,23 +458,23 @@ function EngagementDetailsPanel({
   }
 
   return (
-    <div className="mb-6 bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="mb-6 bg-background rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
       >
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+          <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
             Engagement details
           </div>
-          <div className="text-[13px] text-[#E5E5EA] mt-0.5">
+          <div className="text-[13px] text-foreground mt-0.5">
             {isDraft
               ? "Edit the base fields - the contract below updates live"
               : "Locked: contract is past draft status"}
           </div>
         </div>
-        <span className="text-[#71757D] text-[18px]">{open ? "−" : "+"}</span>
+        <span className="text-subtle text-[18px]">{open ? "−" : "+"}</span>
       </button>
 
       {open && (
@@ -588,7 +588,7 @@ function EngagementDetailsPanel({
 
           {/* Engagement Schedule extras */}
           <div className="pt-2 border-t border-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+            <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold mb-3">
               Engagement Schedule
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -753,23 +753,23 @@ function ClausesEditor({
   }
 
   return (
-    <div className="mb-6 bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="mb-6 bg-background rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
       >
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+          <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
             Clauses ({clauses.length})
           </div>
-          <div className="text-[13px] text-[#E5E5EA] mt-0.5">
+          <div className="text-[13px] text-foreground mt-0.5">
             {isDraft
               ? "Edit clauses on THIS contract only - master template unchanged"
               : "Locked: contract is past draft status"}
           </div>
         </div>
-        <span className="text-[#71757D] text-[18px]">{open ? "−" : "+"}</span>
+        <span className="text-subtle text-[18px]">{open ? "−" : "+"}</span>
       </button>
 
       {open && (
@@ -780,7 +780,7 @@ function ClausesEditor({
               className="bg-black/30 rounded-lg ring-1 ring-white/[0.04] p-3"
             >
               <div className="flex items-start gap-2 mb-2">
-                <span className="text-[10px] font-mono text-[#71757D] pt-1.5 shrink-0 w-6 text-right">
+                <span className="text-[10px] font-mono text-subtle pt-1.5 shrink-0 w-6 text-right">
                   {String(idx + 1).padStart(2, "0")}
                 </span>
                 <input
@@ -791,7 +791,7 @@ function ClausesEditor({
                       patchClause(idx, { heading: e.target.value });
                     }
                   }}
-                  className="flex-1 h-8 px-2 bg-transparent text-[13px] font-semibold text-[#E5E5EA] focus:outline-none focus:bg-white/[0.04] rounded"
+                  className="flex-1 h-8 px-2 bg-transparent text-[13px] font-semibold text-foreground focus:outline-none focus:bg-white/[0.04] rounded"
                 />
                 {isDraft && (
                   <div className="flex items-center gap-1 shrink-0">
@@ -799,7 +799,7 @@ function ClausesEditor({
                       onClick={() => moveClause(idx, -1)}
                       disabled={idx === 0}
                       title="Move up"
-                      className="px-1.5 text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-30"
+                      className="px-1.5 text-subtle hover:text-foreground disabled:opacity-30"
                     >
                       ↑
                     </button>
@@ -807,14 +807,14 @@ function ClausesEditor({
                       onClick={() => moveClause(idx, 1)}
                       disabled={idx === clauses.length - 1}
                       title="Move down"
-                      className="px-1.5 text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-30"
+                      className="px-1.5 text-subtle hover:text-foreground disabled:opacity-30"
                     >
                       ↓
                     </button>
                     <button
                       onClick={() => removeClause(idx)}
                       title="Remove clause"
-                      className="px-1.5 text-[#71757D] hover:text-rose-400"
+                      className="px-1.5 text-subtle hover:text-rose-400"
                     >
                       ×
                     </button>
@@ -830,7 +830,7 @@ function ClausesEditor({
                   }
                 }}
                 rows={Math.min(12, Math.max(3, c.body.split("\n").length))}
-                className="w-full ml-8 px-2 py-1.5 bg-transparent text-[12px] text-[#C7C9CD] leading-relaxed focus:outline-none focus:bg-white/[0.04] rounded resize-y font-mono"
+                className="w-full ml-8 px-2 py-1.5 bg-transparent text-[12px] text-muted leading-relaxed focus:outline-none focus:bg-white/[0.04] rounded resize-y font-mono"
                 style={{ width: "calc(100% - 2rem)" }}
               />
             </div>
@@ -838,7 +838,7 @@ function ClausesEditor({
           {isDraft && (
             <button
               onClick={addClause}
-              className="w-full py-2 text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] rounded-lg ring-1 ring-dashed ring-white/[0.08] transition-colors"
+              className="w-full py-2 text-[12px] text-subtle hover:text-foreground hover:bg-white/[0.04] rounded-lg ring-1 ring-dashed ring-white/[0.08] transition-colors"
             >
               + Add clause
             </button>

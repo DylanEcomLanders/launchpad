@@ -135,11 +135,11 @@ export function WeeklyBoard({
   ).length;
 
   return (
-    <section className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-card)]">
+    <section className="rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-card)]">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold text-[#E5E5EA]">This week</h2>
-          <p className="text-[11px] text-[#71757D]">w/c {fmt(monday)} · internal dates are a day before the client sees them</p>
+          <h2 className="text-sm font-semibold text-foreground">This week</h2>
+          <p className="text-[11px] text-subtle">w/c {fmt(monday)} · internal dates are a day before the client sees them</p>
         </div>
         <div className="flex items-center gap-2">
           {behindCount > 0 ? (
@@ -171,16 +171,16 @@ function Column({
   onMutate?: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-2.5">
+    <div className="rounded-lg border border-border bg-background p-2.5">
       <div className="mb-2 flex items-baseline justify-between">
         <div>
-          <span className="text-[12px] font-semibold text-[#E5E5EA]">{title}</span>
-          <span className="ml-1.5 text-[10px] text-[#71757D]">{subtitle}</span>
+          <span className="text-[12px] font-semibold text-foreground">{title}</span>
+          <span className="ml-1.5 text-[10px] text-subtle">{subtitle}</span>
         </div>
-        <span className="text-[10px] tabular-nums text-[#71757D]">{rows.length}</span>
+        <span className="text-[10px] tabular-nums text-subtle">{rows.length}</span>
       </div>
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-[#2A2A2A] px-2 py-4 text-center text-[10px] text-[#C5C5C5]">
+        <div className="rounded-md border border-dashed border-border px-2 py-4 text-center text-[10px] text-muted">
           Nothing this slot
         </div>
       ) : (
@@ -200,12 +200,12 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
   return (
     <Link
       href={`/engagements/${clientId}`}
-      className={`block rounded-lg border bg-[#181818] p-2.5 shadow-[var(--shadow-soft)] transition-colors hover:border-[#C5C5C5] ${
-        behind ? "border-l-2 border-l-rose-500 border-rose-200" : "border-[#2A2A2A]"
+      className={`block rounded-lg border bg-surface p-2.5 shadow-[var(--shadow-soft)] transition-colors hover:border-muted ${
+        behind ? "border-l-2 border-l-rose-500 border-rose-200" : "border-border"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#E5E5EA]">{task.title}</span>
+        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-foreground">{task.title}</span>
         {behind && (
           <span className="shrink-0 rounded-md bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-rose-300">
             {daysBehind}d behind
@@ -216,16 +216,16 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
         {isRetainer && <Pill tone="emerald">Retainer</Pill>}
         <Pill tone="default">{ownerName}</Pill>
         <Pill tone="muted">{DISCIPLINE_LABEL[task.discipline] ?? task.discipline}</Pill>
-        <span className="text-[10px] text-[#71757D]">· {clientName}</span>
+        <span className="text-[10px] text-subtle">· {clientName}</span>
       </div>
       <div className="mt-1.5 flex items-center justify-between text-[10px] tabular-nums">
-        <span className={behind ? "font-semibold text-rose-600" : "text-[#71757D]"}>{reason}</span>
-        <span className="text-[#71757D]">
+        <span className={behind ? "font-semibold text-rose-600" : "text-subtle"}>{reason}</span>
+        <span className="text-subtle">
           internal {fmt(internalDue(task))} · client {fmt(clientDue(task))}
         </span>
       </div>
       <div className="mt-1 flex items-center justify-between gap-2">
-        <span className="text-[10px] text-[#71757D]">{DELIVERABLE_STATUS_LABEL[status]}</span>
+        <span className="text-[10px] text-subtle">{DELIVERABLE_STATUS_LABEL[status]}</span>
         {behind && (
           <span
             onClick={(e) => {
@@ -234,7 +234,7 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
             }}
             className="inline-flex items-center gap-1"
           >
-            <span className="text-[10px] text-[#71757D]">Why?</span>
+            <span className="text-[10px] text-subtle">Why?</span>
             <select
               value={task.slip_reason ?? ""}
               onChange={(e) => {
@@ -244,7 +244,7 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
               className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium focus:outline-none ${
                 task.slip_reason
                   ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
-                  : "border-[#2A2A2A] bg-[#181818] text-[#71757D]"
+                  : "border-border bg-surface text-subtle"
               }`}
             >
               <option value="">— pick —</option>

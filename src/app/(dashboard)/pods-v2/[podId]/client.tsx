@@ -93,7 +93,7 @@ import { selectClass } from "@/lib/form-styles";
 const TIER_PILL: Record<RetainerTier, { label: string; cls: string }> = {
   none: {
     label: "Project-only",
-    cls: "border-[#2A2A2A] bg-[#222222] text-[#71757D]",
+    cls: "border-border bg-surface-raised text-subtle",
   },
   "8k": {
     label: "£8k retainer",
@@ -115,7 +115,7 @@ const TASK_TYPE_LABEL: Record<TaskType, string> = {
 };
 
 const TASK_TYPE_BADGE: Record<TaskType, string> = {
-  core_deliverable: "border-white/15 bg-[#181818] text-[#E5E5EA]",
+  core_deliverable: "border-white/15 bg-surface text-foreground",
   revision: "border-blue-200 bg-blue-50 text-blue-800",
   bug: "border-rose-500/30 bg-rose-500/10 text-rose-300",
   desktop_fix: "border-purple-200 bg-purple-50 text-purple-800",
@@ -144,7 +144,7 @@ const STATUS_CYCLE_BACK: Record<TaskStatus, TaskStatus> = {
 };
 
 const PHASE_PILL: Record<TaskPhase, string> = {
-  onboarding: "bg-[#222222] text-[#C7C9CD] border-[#2A2A2A]",
+  onboarding: "bg-surface-raised text-muted border-border",
   research: "bg-[#ECFEFF] text-[#0E7490] border-[#A5F3FC]",
   wireframe: "bg-amber-500/15 text-[#92400E] border-[#FDE68A]",
   design: "bg-purple-500/15 text-[#6D28D9] border-[#DDD6FE]",
@@ -152,10 +152,10 @@ const PHASE_PILL: Record<TaskPhase, string> = {
   "external-design-review": "bg-[#FDF2F8] text-[#BE185D] border-[#FBCFE8]",
   "design-revision": "bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]",
   development: "bg-emerald-500/15 text-[#047857] border-[#A7F3D0]",
-  "development-qa": "bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]",
-  "external-dev-review": "bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]",
+  "development-qa": "bg-success text-[#166534] border-[#BBF7D0]",
+  "external-dev-review": "bg-[#FEF2F2] text-danger border-[#FECACA]",
   "dev-revision": "bg-amber-500/15 text-[#A16207] border-[#FDE68A]",
-  launch: "bg-[#E5E5EA] text-[#181818] border-[#E5E5EA]",
+  launch: "bg-foreground text-surface border-foreground",
 };
 
 const DISCIPLINE_BADGE: Record<TaskDisciplineLocal, string> = {
@@ -173,7 +173,7 @@ const PRIORITY_LABEL: Record<TaskPriority, string> = {
 };
 
 const PRIORITY_PILL: Record<TaskPriority, string> = {
-  low: "border-[#2A2A2A] bg-[#181818] text-[#71757D]",
+  low: "border-border bg-surface text-subtle",
   normal: "border-blue-200 bg-blue-50 text-blue-700",
   high: "border-amber-500/30 bg-amber-500/10 text-amber-300",
   urgent: "border-rose-500/30 bg-rose-500/10 text-rose-300",
@@ -494,7 +494,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
   if (loading || !pod) {
     return (
       <div className="mx-auto max-w-7xl px-6 py-12 md:px-10">
-        <div className="text-sm text-[#71757D]">Loading pod…</div>
+        <div className="text-sm text-subtle">Loading pod…</div>
       </div>
     );
   }
@@ -508,7 +508,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
       <div className="flex items-center justify-between">
         <Link
           href={linkBase}
-          className="inline-flex items-center gap-1 text-xs text-[#71757D] hover:text-[#E5E5EA]"
+          className="inline-flex items-center gap-1 text-xs text-subtle hover:text-foreground"
         >
           <ChevronLeftIcon className="size-3.5" />
           All pods
@@ -516,7 +516,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         {isAdmin && (
           <Link
             href="/pods-v2/new-project"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F4F6]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-surface px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-foreground"
           >
             <PlusIcon className="size-3.5" />
             New project
@@ -552,7 +552,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
 
       {/* HEADER STRIP */}
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr,360px]">
-        <div className="rounded-2xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)]">
+        <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
           <PodHeading name={pod.name} tagline={pod.tagline} />
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
             {pod.members.map((m) => {
@@ -598,7 +598,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
           flight · Shipping Thu) so the pod can see what lands when and hit
           the dates. Reuses the shared WeeksView, scoped to this pod. */}
       <div className="mt-10">
-        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-subtle">
           Weekly cadence
         </h2>
         <WeeksView
@@ -624,14 +624,14 @@ export default function PodDetailClient({ podId }: { podId: string }) {
        * done tasks. Useful when columns get full and you want to zoom
        * in on what matters. */}
       <div className="mt-10 flex flex-wrap items-center gap-2 text-[11px]">
-        <span className="font-semibold uppercase tracking-wider text-[#71757D]">
+        <span className="font-semibold uppercase tracking-wider text-subtle">
           Filter:
         </span>
         <select
           data-filter-client
           value={filterClient}
           onChange={(e) => setFilterClient(e.target.value)}
-          className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
+          className="rounded-md border border-border bg-surface px-2 py-1 text-[11px]"
         >
           <option value="">All clients</option>
           {clients.map((c) => (
@@ -640,7 +640,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
             </option>
           ))}
         </select>
-        <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1">
+        <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-border bg-surface px-2 py-1">
           <input
             type="checkbox"
             checked={hideDone}
@@ -662,7 +662,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         )}
         <button
           onClick={() => setHotkeyHelpOpen((v) => !v)}
-          className="ml-auto rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[10px] text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
+          className="ml-auto rounded-md border border-border bg-surface px-2 py-1 text-[10px] text-subtle hover:border-white hover:text-foreground"
           title="Show keyboard shortcuts (?)"
         >
           ? Hotkeys
@@ -670,31 +670,31 @@ export default function PodDetailClient({ podId }: { podId: string }) {
       </div>
 
       {hotkeyHelpOpen && (
-        <div className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-[#2A2A2A] bg-[#181818] p-3 text-[11px] md:grid-cols-3">
+        <div className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-border bg-surface p-3 text-[11px] md:grid-cols-3">
           <div>
-            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">j</kbd>
-            <kbd className="ml-1 rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">k</kbd>
-            <span className="ml-2 text-[#71757D]">Move focus down / up between tasks</span>
+            <kbd className="rounded border border-border bg-background px-1 font-mono text-[10px]">j</kbd>
+            <kbd className="ml-1 rounded border border-border bg-background px-1 font-mono text-[10px]">k</kbd>
+            <span className="ml-2 text-subtle">Move focus down / up between tasks</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">space</kbd>
-            <span className="ml-2 text-[#71757D]">Cycle focused task status</span>
+            <kbd className="rounded border border-border bg-background px-1 font-mono text-[10px]">space</kbd>
+            <span className="ml-2 text-subtle">Cycle focused task status</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">d</kbd>
-            <span className="ml-2 text-[#71757D]">Toggle Hide done</span>
+            <kbd className="rounded border border-border bg-background px-1 font-mono text-[10px]">d</kbd>
+            <span className="ml-2 text-subtle">Toggle Hide done</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">/</kbd>
-            <span className="ml-2 text-[#71757D]">Focus the client filter</span>
+            <kbd className="rounded border border-border bg-background px-1 font-mono text-[10px]">/</kbd>
+            <span className="ml-2 text-subtle">Focus the client filter</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">esc</kbd>
-            <span className="ml-2 text-[#71757D]">Clear filters / close popovers</span>
+            <kbd className="rounded border border-border bg-background px-1 font-mono text-[10px]">esc</kbd>
+            <span className="ml-2 text-subtle">Clear filters / close popovers</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">?</kbd>
-            <span className="ml-2 text-[#71757D]">Toggle this help</span>
+            <kbd className="rounded border border-border bg-background px-1 font-mono text-[10px]">?</kbd>
+            <span className="ml-2 text-subtle">Toggle this help</span>
           </div>
         </div>
       )}
@@ -754,7 +754,7 @@ function CapacityPanel({
   ).length;
 
   return (
-    <div className="rounded-2xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)]">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
           <CapacityMeter
@@ -774,8 +774,8 @@ function CapacityPanel({
         />
         <SnapshotStat label="Members" value={pod.members.length} />
       </div>
-      <div className="mt-4 border-t border-[#2A2A2A] pt-3">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="mt-4 border-t border-border pt-3">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
           Open tasks per member
         </div>
         <div className="mt-2 space-y-1.5">
@@ -786,12 +786,12 @@ function CapacityPanel({
             >
               <span
                 className={`truncate ${
-                  member.is_placeholder ? "italic text-[#71757D]" : ""
+                  member.is_placeholder ? "italic text-subtle" : ""
                 }`}
               >
                 {member.is_placeholder ? "TO HIRE" : member.name}
               </span>
-              <span className="tabular-nums text-[#71757D]">{count}</span>
+              <span className="tabular-nums text-subtle">{count}</span>
             </div>
           ))}
         </div>
@@ -812,7 +812,7 @@ function SnapshotStat({
   const cls =
     tone === "alert"
       ? "bg-rose-50 text-rose-900"
-      : "bg-[#0C0C0C] text-[#E5E5EA]";
+      : "bg-background text-foreground";
   return (
     <div className={`rounded-lg px-3 py-2 ${cls}`}>
       <div className="text-[9px] font-semibold uppercase tracking-wider opacity-70">
@@ -859,12 +859,12 @@ function SwimLane({
     <div className="mt-10">
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
             {title}
           </h2>
-          <p className="mt-0.5 text-xs text-[#71757D]">{subtitle}</p>
+          <p className="mt-0.5 text-xs text-subtle">{subtitle}</p>
         </div>
-        <div className="text-[11px] text-[#71757D]">
+        <div className="text-[11px] text-subtle">
           {tasks.length} task{tasks.length === 1 ? "" : "s"}
         </div>
       </div>
@@ -882,7 +882,7 @@ function SwimLane({
           return (
             <div
               key={member.id}
-              className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]"
+              className="rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]"
             >
               <div className="flex items-center justify-between">
                 <MemberRow
@@ -892,13 +892,13 @@ function SwimLane({
                     onMutate();
                   }}
                 />
-                <span className="text-[11px] tabular-nums text-[#71757D]">
+                <span className="text-[11px] tabular-nums text-subtle">
                   {myTasks.length}
                 </span>
               </div>
               <div className="mt-3 space-y-1.5">
                 {myTasks.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-[#2A2A2A] px-3 py-3 text-center text-[11px] text-[#71757D]">
+                  <div className="rounded-lg border border-dashed border-border px-3 py-3 text-center text-[11px] text-subtle">
                     No tasks
                   </div>
                 )}
@@ -992,7 +992,7 @@ function PrimaryTaskRow({
       ? "text-rose-700"
       : daysToDeadline <= 3
         ? "text-amber-700"
-        : "text-[#71757D]";
+        : "text-subtle";
 
   const dueLabel = `Due ${formatDayMonth(task.due_date)} · ${
     daysToDeadline < 0
@@ -1033,7 +1033,7 @@ function PrimaryTaskRow({
     <div
       data-task-id={task.id}
       tabIndex={-1}
-      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-[#0C0C0C] focus:bg-[#EEF2FF] focus:ring-2 focus:ring-[#1B1B1B]/20 ${
+      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-background focus:bg-[#EEF2FF] focus:ring-2 focus:ring-surface/20 ${
         task.status === "done" ? "opacity-50" : ""
       }`}
       ref={ref}
@@ -1069,8 +1069,8 @@ function PrimaryTaskRow({
           task.status === "done"
             ? "border-emerald-500 bg-emerald-500 text-white"
             : task.status === "in_progress"
-              ? "border-blue-500 bg-[#181818] text-blue-500"
-              : "border-[#2A2A2A] bg-[#181818] hover:border-white"
+              ? "border-blue-500 bg-surface text-blue-500"
+              : "border-border bg-surface hover:border-white"
         }`}
         title={`Current: ${task.status === "done" ? "Done" : task.status === "in_progress" ? "In progress" : "To do"}. Click to advance · Shift-click or right-click to step back.`}
       >
@@ -1086,7 +1086,7 @@ function PrimaryTaskRow({
       <div className="min-w-0 flex-1">
         <div
           className={`flex items-center gap-1.5 truncate text-sm leading-tight ${
-            task.status === "done" ? "text-[#71757D] line-through" : "text-[#E5E5EA]"
+            task.status === "done" ? "text-subtle line-through" : "text-foreground"
           }`}
         >
           <span className="truncate">{task.title}</span>
@@ -1113,10 +1113,10 @@ function PrimaryTaskRow({
                   : task.test_result?.status === "loser"
                     ? "border-rose-300 bg-rose-100 text-rose-900"
                     : task.test_result?.status === "inconclusive"
-                      ? "border-[#2A2A2A] bg-[#0C0C0C] text-[#71757D]"
+                      ? "border-border bg-background text-subtle"
                       : task.test_result?.status === "pending"
                         ? "border-amber-200 bg-amber-50 text-amber-800"
-                        : "border-dashed border-[#2A2A2A] bg-[#181818] text-[#71757D]"
+                        : "border-dashed border-border bg-surface text-subtle"
               }`}
               title="Click to edit test result"
             >
@@ -1131,22 +1131,22 @@ function PrimaryTaskRow({
           )}
           {task.points != null && (
             <span
-              className="shrink-0 rounded border border-[#2A2A2A] bg-[#181818] px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-[#71757D]"
+              className="shrink-0 rounded border border-border bg-surface px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-subtle"
               title={`${task.points} pt deliverable, covers design + dev together`}
             >
               {task.points}pt{task.points === 1 ? "" : "s"}
             </span>
           )}
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-[#71757D]">
+        <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-subtle">
           {client?.brand_warm && (
             <span
               className="size-1 shrink-0 rounded-full bg-orange-500"
               title="Brand-warm"
             />
           )}
-          {client && <span className="truncate font-medium text-[#E5E5EA]">{client.name}</span>}
-          {client && project && <span className="text-[#C5C5C5]">·</span>}
+          {client && <span className="truncate font-medium text-foreground">{client.name}</span>}
+          {client && project && <span className="text-muted">·</span>}
           {project && <span className="truncate">{project.name}</span>}
           {/* Phase pill (primary) or ticket-type pill (secondary) */}
           {task.phase ? (
@@ -1179,7 +1179,7 @@ function PrimaryTaskRow({
                 e.stopPropagation();
                 setPauseOpen((v) => !v);
               }}
-              className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
+              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-subtle hover:border-white hover:text-foreground"
               title="Click to resume"
             >
               ⏸ Waiting on {task.waiting_on === "client" ? "client" : "internal"}
@@ -1211,7 +1211,7 @@ function PrimaryTaskRow({
                   ? "text-amber-700"
                   : daysToDeadline <= 7
                     ? "text-emerald-700"
-                    : "text-[#71757D]"
+                    : "text-subtle"
             }`}
           >
             {formatDayMonth(task.due_date)}
@@ -1228,7 +1228,7 @@ function PrimaryTaskRow({
             className="opacity-0 transition-opacity group-hover:opacity-100"
             title="Delete task"
           >
-            <XMarkIcon className="size-3.5 text-[#71757D] hover:text-rose-600" />
+            <XMarkIcon className="size-3.5 text-subtle hover:text-rose-600" />
           </button>
         )}
       </div>
@@ -1348,8 +1348,8 @@ function ReassignPopover({
   onPick: (id: string) => void;
 }) {
   return (
-    <div className="absolute left-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+    <div className="absolute left-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
+      <div className="border-b border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
         Reassign to…
       </div>
       {members.map((m) => (
@@ -1357,12 +1357,12 @@ function ReassignPopover({
           key={m.id}
           disabled={m.is_placeholder}
           onClick={() => onPick(m.id)}
-          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C] ${
-            m.id === currentId ? "bg-[#222222] font-medium" : ""
+          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-background ${
+            m.id === currentId ? "bg-surface-raised font-medium" : ""
           } ${m.is_placeholder ? "cursor-not-allowed opacity-50" : ""}`}
         >
           <span>{m.is_placeholder ? "TO HIRE" : m.name}</span>
-          <span className="text-[10px] text-[#71757D]">
+          <span className="text-[10px] text-subtle">
             {m.role.replace("_", " ")}
           </span>
         </button>
@@ -1388,8 +1388,8 @@ function PhasePopover({
    * launch) surface for both lanes; research is design-side. */
   const applicable = phasesForDiscipline(discipline) as TaskPhase[];
   return (
-    <div className="absolute left-0 top-full z-30 mt-1 w-72 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+    <div className="absolute left-0 top-full z-30 mt-1 w-72 overflow-hidden rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
+      <div className="border-b border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
         Move to phase…
       </div>
       <div className="max-h-64 overflow-y-auto">
@@ -1397,8 +1397,8 @@ function PhasePopover({
           <button
             key={p}
             onClick={() => onPick(p)}
-            className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C] ${
-              p === currentPhase ? "bg-[#222222] font-medium" : ""
+            className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-background ${
+              p === currentPhase ? "bg-surface-raised font-medium" : ""
             }`}
           >
             <span>{TASK_PHASE_LABEL[p]}</span>
@@ -1411,8 +1411,8 @@ function PhasePopover({
         ))}
       </div>
       {hasHistory && (
-        <div className="border-t border-[#2A2A2A] bg-[#FAFBFD] px-3 py-3">
-          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+        <div className="border-t border-border bg-[#FAFBFD] px-3 py-3">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-subtle mb-2">
             Phase history
           </p>
           <PhaseTimeline history={history} compact />
@@ -1443,7 +1443,7 @@ function MemberOooEditor({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-[10px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
+        className="text-[10px] text-subtle hover:text-foreground hover:underline"
       >
         {hasOoo ? "Edit OOO" : "+ Set OOO"}
       </button>
@@ -1455,15 +1455,15 @@ function MemberOooEditor({
         type="date"
         value={start}
         onChange={(e) => setStart(e.target.value)}
-        className="rounded border border-[#2A2A2A] bg-[#181818] px-1 py-0.5 text-[10px]"
+        className="rounded border border-border bg-surface px-1 py-0.5 text-[10px]"
         title="OOO start"
       />
-      <span className="text-[#71757D]">→</span>
+      <span className="text-subtle">→</span>
       <input
         type="date"
         value={end}
         onChange={(e) => setEnd(e.target.value)}
-        className="rounded border border-[#2A2A2A] bg-[#181818] px-1 py-0.5 text-[10px]"
+        className="rounded border border-border bg-surface px-1 py-0.5 text-[10px]"
         title="OOO end"
       />
       <button
@@ -1472,7 +1472,7 @@ function MemberOooEditor({
           setOpen(false);
           onChange();
         }}
-        className="rounded bg-[#E5E5EA] text-[#181818] px-1.5 py-0.5 text-[10px] font-medium text-white hover:bg-[#F3F4F6]"
+        className="rounded bg-foreground text-surface px-1.5 py-0.5 text-[10px] font-medium text-white hover:bg-foreground"
       >
         Save
       </button>
@@ -1497,7 +1497,7 @@ function MemberOooEditor({
           setEnd(member.ooo_end || "");
           setOpen(false);
         }}
-        className="rounded px-1.5 py-0.5 text-[10px] text-[#71757D] hover:text-[#E5E5EA]"
+        className="rounded px-1.5 py-0.5 text-[10px] text-subtle hover:text-foreground"
       >
         Cancel
       </button>
@@ -1533,70 +1533,70 @@ function ClientMetricsEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="w-full max-w-md rounded-2xl bg-surface p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
           Client metrics
         </p>
-        <h2 className="mt-0.5 text-base font-semibold text-[#E5E5EA]">{client.name}</h2>
-        <p className="mt-1 text-[11px] text-[#71757D]">
+        <h2 className="mt-0.5 text-base font-semibold text-foreground">{client.name}</h2>
+        <p className="mt-1 text-[11px] text-subtle">
           Baseline at engagement start, current latest. Drives the renewal share-card and the % delta on the roster card.
         </p>
 
         <div className="mt-3 space-y-3">
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Conversion rate (%)
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-[#71757D]">Baseline</label>
+                <label className="text-[10px] text-subtle">Baseline</label>
                 <input
                   type="number"
                   step="0.01"
                   value={cvrBase}
                   onChange={(e) => setCvrBase(e.target.value)}
                   placeholder="2.4"
-                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[#71757D]">Current</label>
+                <label className="text-[10px] text-subtle">Current</label>
                 <input
                   type="number"
                   step="0.01"
                   value={cvrCur}
                   onChange={(e) => setCvrCur(e.target.value)}
                   placeholder="3.1"
-                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
                 />
               </div>
             </div>
           </div>
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Average order value (£)
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-[#71757D]">Baseline</label>
+                <label className="text-[10px] text-subtle">Baseline</label>
                 <input
                   type="number"
                   step="0.01"
                   value={aovBase}
                   onChange={(e) => setAovBase(e.target.value)}
                   placeholder="68"
-                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[#71757D]">Current</label>
+                <label className="text-[10px] text-subtle">Current</label>
                 <input
                   type="number"
                   step="0.01"
                   value={aovCur}
                   onChange={(e) => setAovCur(e.target.value)}
                   placeholder="74"
-                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
                 />
               </div>
             </div>
@@ -1606,7 +1606,7 @@ function ClientMetricsEditor({
         <div className="mt-4 flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="rounded-lg px-3 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA]"
+            className="rounded-lg px-3 py-1.5 text-xs text-subtle hover:text-foreground"
           >
             Cancel
           </button>
@@ -1621,7 +1621,7 @@ function ClientMetricsEditor({
               });
               onSave();
             }}
-            className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#F3F4F6]"
+            className="rounded-lg bg-surface px-3 py-1.5 text-xs font-medium text-white hover:bg-foreground"
           >
             Save
           </button>
@@ -1666,18 +1666,18 @@ function TestResultEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="w-full max-w-md rounded-2xl bg-surface p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
           Test result
         </p>
-        <h2 className="mt-0.5 text-base font-semibold text-[#E5E5EA]">{taskTitle}</h2>
-        <p className="mt-1 text-[11px] text-[#71757D]">
+        <h2 className="mt-0.5 text-base font-semibold text-foreground">{taskTitle}</h2>
+        <p className="mt-1 text-[11px] text-subtle">
           Captures the outcome so retainer renewals run on data, not vibes. Surfaces a chip on the task and feeds the share-card.
         </p>
 
         <div className="mt-3 space-y-3">
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Status
             </label>
             <div className="grid grid-cols-4 gap-1">
@@ -1692,9 +1692,9 @@ function TestResultEditor({
                         : s === "loser"
                           ? "border-rose-500 bg-rose-50 text-rose-900"
                           : s === "inconclusive"
-                            ? "border-white bg-[#0C0C0C] text-[#E5E5EA]"
+                            ? "border-white bg-background text-foreground"
                             : "border-amber-500 bg-amber-50 text-amber-900"
-                      : "border-[#2A2A2A] bg-[#181818] text-[#71757D]"
+                      : "border-border bg-surface text-subtle"
                   }`}
                 >
                   {s}
@@ -1705,7 +1705,7 @@ function TestResultEditor({
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-subtle">
                 Lift % vs control
               </label>
               <input
@@ -1714,12 +1714,12 @@ function TestResultEditor({
                 value={lift}
                 onChange={(e) => setLift(e.target.value)}
                 placeholder="e.g. 18.4"
-                className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
                 disabled={status === "pending"}
               />
             </div>
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-subtle">
                 Significance %
               </label>
               <input
@@ -1727,14 +1727,14 @@ function TestResultEditor({
                 value={sig}
                 onChange={(e) => setSig(e.target.value)}
                 placeholder="95"
-                className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
                 disabled={status === "pending"}
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Notes
             </label>
             <textarea
@@ -1742,7 +1742,7 @@ function TestResultEditor({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="Hypothesis, what changed, what to try next…"
-              className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
             />
           </div>
         </div>
@@ -1771,7 +1771,7 @@ function TestResultEditor({
           <div className="flex items-center gap-2">
             <button
               onClick={onCancel}
-              className="rounded-lg px-3 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA]"
+              className="rounded-lg px-3 py-1.5 text-xs text-subtle hover:text-foreground"
             >
               Cancel
             </button>
@@ -1784,7 +1784,7 @@ function TestResultEditor({
                   notes: notes.trim() || undefined,
                 })
               }
-              className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#F3F4F6]"
+              className="rounded-lg bg-surface px-3 py-1.5 text-xs font-medium text-white hover:bg-foreground"
             >
               Save
             </button>
@@ -1814,17 +1814,17 @@ function DesignHandoffModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-[#181818] p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
           Design → Dev handoff
         </p>
-        <h2 className="mt-0.5 text-base font-semibold text-[#E5E5EA]">{taskTitle}</h2>
-        <p className="mt-1 text-[11px] text-[#71757D]">
+        <h2 className="mt-0.5 text-base font-semibold text-foreground">{taskTitle}</h2>
+        <p className="mt-1 text-[11px] text-subtle">
           Tick all three before flipping to done, stops the back-and-forth where dev pings the designer two days later.
         </p>
 
         <div className="mt-3 space-y-2">
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2 hover:border-white">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-white">
             <input
               type="checkbox"
               checked={figma}
@@ -1832,13 +1832,13 @@ function DesignHandoffModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#E5E5EA]">Figma link present</div>
-              <div className="text-[10px] text-[#71757D]">
+              <div className="text-xs font-medium text-foreground">Figma link present</div>
+              <div className="text-[10px] text-subtle">
                 Pasted on the project / portal so dev can find it without asking.
               </div>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2 hover:border-white">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-white">
             <input
               type="checkbox"
               checked={assets}
@@ -1846,13 +1846,13 @@ function DesignHandoffModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#E5E5EA]">Assets exported</div>
-              <div className="text-[10px] text-[#71757D]">
+              <div className="text-xs font-medium text-foreground">Assets exported</div>
+              <div className="text-[10px] text-subtle">
                 Hero images, icons, fonts, sliced and dropped where dev expects them.
               </div>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2 hover:border-white">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-white">
             <input
               type="checkbox"
               checked={scope}
@@ -1860,8 +1860,8 @@ function DesignHandoffModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#E5E5EA]">Scope locked</div>
-              <div className="text-[10px] text-[#71757D]">
+              <div className="text-xs font-medium text-foreground">Scope locked</div>
+              <div className="text-[10px] text-subtle">
                 No outstanding client comments. Anything new is a separate revision.
               </div>
             </div>
@@ -1871,7 +1871,7 @@ function DesignHandoffModal({
         <div className="mt-4 flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="rounded-lg px-3 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA]"
+            className="rounded-lg px-3 py-1.5 text-xs text-subtle hover:text-foreground"
           >
             Cancel
           </button>
@@ -1880,8 +1880,8 @@ function DesignHandoffModal({
             disabled={!ready}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
               ready
-                ? "bg-[#E5E5EA] text-[#181818] hover:bg-white"
-                : "cursor-not-allowed bg-[#2A2A2A] text-[#71757D]"
+                ? "bg-foreground text-surface hover:bg-white"
+                : "cursor-not-allowed bg-border text-subtle"
             }`}
           >
             {ready ? "Confirm, mark done" : `Tick all 3 (${[figma, assets, scope].filter(Boolean).length}/3)`}
@@ -1904,18 +1904,18 @@ function PausePopover({
   onResume: () => void;
 }) {
   return (
-    <div className="absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+    <div className="absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
+      <div className="border-b border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
         {isPaused ? "Currently paused" : "Pause clock, waiting on…"}
       </div>
       {isPaused ? (
         <>
-          <div className="px-3 py-1.5 text-[11px] text-[#71757D]">
-            Waiting on <strong className="text-[#E5E5EA]">{waitingOn === "client" ? "client" : "internal"}</strong>. Resume when unblocked to restart the clock from where it left off.
+          <div className="px-3 py-1.5 text-[11px] text-subtle">
+            Waiting on <strong className="text-foreground">{waitingOn === "client" ? "client" : "internal"}</strong>. Resume when unblocked to restart the clock from where it left off.
           </div>
           <button
             onClick={onResume}
-            className="flex w-full items-center justify-center gap-1 border-t border-[#2A2A2A] px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+            className="flex w-full items-center justify-center gap-1 border-t border-border px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
           >
             ▶ Resume
           </button>
@@ -1924,17 +1924,17 @@ function PausePopover({
         <>
           <button
             onClick={() => onPause("client")}
-            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C]"
+            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-background"
           >
             <span>Waiting on client</span>
-            <span className="text-[10px] text-[#71757D]">most common</span>
+            <span className="text-[10px] text-subtle">most common</span>
           </button>
           <button
             onClick={() => onPause("internal")}
-            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C]"
+            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-background"
           >
             <span>Waiting on internal</span>
-            <span className="text-[10px] text-[#71757D]">team blocker</span>
+            <span className="text-[10px] text-subtle">team blocker</span>
           </button>
         </>
       )}
@@ -1950,16 +1950,16 @@ function PriorityPopover({
   onPick: (p: TaskPriority) => void;
 }) {
   return (
-    <div className="absolute left-0 top-full z-30 mt-1 w-48 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+    <div className="absolute left-0 top-full z-30 mt-1 w-48 overflow-hidden rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
+      <div className="border-b border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
         Set priority…
       </div>
       {PRIORITY_ORDER.map((p) => (
         <button
           key={p}
           onClick={() => onPick(p)}
-          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C] ${
-            p === currentPriority ? "bg-[#222222] font-medium" : ""
+          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-background ${
+            p === currentPriority ? "bg-surface-raised font-medium" : ""
           }`}
         >
           <span>{PRIORITY_LABEL[p]}</span>
@@ -1986,7 +1986,7 @@ function TaskStatusButton({
       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
       : status === "in_progress"
         ? "bg-blue-50 text-blue-700 border-blue-200"
-        : "bg-[#222222] text-[#71757D] border-[#2A2A2A]";
+        : "bg-surface-raised text-subtle border-border";
   const label =
     status === "done" ? "Done" : status === "in_progress" ? "Live" : "Todo";
   return (
@@ -2116,7 +2116,7 @@ function AddTaskInline({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-[#2A2A2A] px-2 py-1.5 text-[11px] text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
+        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-border px-2 py-1.5 text-[11px] text-subtle hover:border-white hover:text-foreground"
       >
         <PlusIcon className="size-3" />
         Add for {member.name}
@@ -2135,15 +2135,15 @@ function AddTaskInline({
   }
 
   return (
-    <div className="rounded-lg border border-white/20 bg-[#0C0C0C] p-2.5">
-      <div className="flex items-center gap-2 pb-1.5 text-[11px] text-[#71757D]">
+    <div className="rounded-lg border border-white/20 bg-background p-2.5">
+      <div className="flex items-center gap-2 pb-1.5 text-[11px] text-subtle">
         {isPrimaryMode ? (
           <>
-            New deliverable starting with <strong className="text-[#E5E5EA]">{member.name}</strong>
+            New deliverable starting with <strong className="text-foreground">{member.name}</strong>
           </>
         ) : (
           <>
-            New for <strong className="text-[#E5E5EA]">{member.name}</strong>
+            New for <strong className="text-foreground">{member.name}</strong>
           </>
         )}
       </div>
@@ -2176,7 +2176,7 @@ function AddTaskInline({
                 value={variantLabel}
                 onChange={(e) => setVariantLabel(e.target.value)}
                 placeholder="Variant label (e.g. Lavender oil)"
-                className="rounded border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] placeholder:text-[#C7C9CD]"
+                className="rounded border border-border bg-surface px-2 py-1 text-[11px] placeholder:text-muted"
               />
             </div>
             <select
@@ -2190,12 +2190,12 @@ function AddTaskInline({
                 </option>
               ))}
             </select>
-            <div className="mt-1.5 text-[10px] text-[#71757D]">
+            <div className="mt-1.5 text-[10px] text-subtle">
               Creates two paired tasks: <strong>Design, {PAGE_LABEL[deliverableType]}</strong> for{" "}
-              <strong className="text-[#E5E5EA]">{memberIsDesigner ? member.name : pairPartner?.name ?? ","}</strong>
+              <strong className="text-foreground">{memberIsDesigner ? member.name : pairPartner?.name ?? ","}</strong>
               {" "}+{" "}
               <strong>Build, {PAGE_LABEL[deliverableType]}</strong> for{" "}
-              <strong className="text-[#E5E5EA]">{memberIsDesigner ? pairPartner?.name ?? "," : member.name}</strong>.
+              <strong className="text-foreground">{memberIsDesigner ? pairPartner?.name ?? "," : member.name}</strong>.
               Points cover both halves: <strong>{pointsFor(deliverableType)}pt{pointsFor(deliverableType) === 1 ? "" : "s"}</strong>.
               Same-type discount applies if a {PAGE_LABEL[deliverableType]} already exists on this project.
             </div>
@@ -2208,7 +2208,7 @@ function AddTaskInline({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Task title"
-            className="w-full rounded border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-xs"
+            className="w-full rounded border border-border bg-surface px-2 py-1 text-xs"
           />
           <div className="mt-1.5 grid grid-cols-2 gap-1.5">
             <select
@@ -2242,7 +2242,7 @@ function AddTaskInline({
       <div className="mt-1.5 flex justify-end gap-1.5">
         <button
           onClick={reset}
-          className="rounded px-2 py-1 text-[11px] text-[#71757D] hover:text-[#E5E5EA]"
+          className="rounded px-2 py-1 text-[11px] text-subtle hover:text-foreground"
         >
           Cancel
         </button>
@@ -2315,7 +2315,7 @@ function AddTaskInline({
             onMutate();
           }}
           disabled={(isPrimaryMode && (!pairPartner || projectOptions.length === 0))}
-          className="rounded bg-[#E5E5EA] text-[#181818] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:opacity-50"
+          className="rounded bg-foreground text-surface px-2 py-1 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
         >
           {isPrimaryMode ? "Add deliverable" : "Add"}
         </button>
@@ -2369,10 +2369,10 @@ function PodBlockersPanel({
     <div className="mt-10">
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
             Blockers
           </h2>
-          <p className="mt-0.5 text-xs text-[#71757D]">
+          <p className="mt-0.5 text-xs text-subtle">
             Pod-wide blockers everyone needs to see, a missing asset, a sick teammate, a tool down.
             {pod.slack_channel_id && (
               <span className="ml-1.5 inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
@@ -2381,7 +2381,7 @@ function PodBlockersPanel({
             )}
           </p>
           {isAdmin && (
-            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-[#71757D]">
+            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-subtle">
               <span>Slack channel:</span>
               {editingSlack ? (
                 <>
@@ -2390,7 +2390,7 @@ function PodBlockersPanel({
                     value={slackDraft}
                     onChange={(e) => setSlackDraft(e.target.value)}
                     placeholder="C0123456 (channel id)"
-                    className="rounded border border-[#2A2A2A] bg-[#181818] px-1.5 py-0.5 text-[10px]"
+                    className="rounded border border-border bg-surface px-1.5 py-0.5 text-[10px]"
                     onBlur={() => {
                       updatePodSlackChannel(pod.id, slackDraft.trim());
                       setEditingSlack(false);
@@ -2408,7 +2408,7 @@ function PodBlockersPanel({
               ) : (
                 <button
                   onClick={() => setEditingSlack(true)}
-                  className="font-mono text-[#E5E5EA] hover:underline"
+                  className="font-mono text-foreground hover:underline"
                 >
                   {pod.slack_channel_id || ", not set ,"}
                 </button>
@@ -2416,13 +2416,13 @@ function PodBlockersPanel({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 text-[11px] tabular-nums text-[#71757D]">
+        <div className="flex items-center gap-2 text-[11px] tabular-nums text-subtle">
           <span className={active.length > 0 ? "font-semibold text-rose-700" : ""}>
             {active.length} active
           </span>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="rounded-md border border-[#2A2A2A] px-2 py-1 text-[11px] font-medium text-[#E5E5EA] hover:border-white"
+            className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-foreground hover:border-white"
           >
             {open ? "Cancel" : "+ Raise blocker"}
           </button>
@@ -2430,26 +2430,26 @@ function PodBlockersPanel({
       </div>
 
       {open && (
-        <div className="mt-3 rounded-xl border border-white/20 bg-[#0C0C0C] p-3">
+        <div className="mt-3 rounded-xl border border-white/20 bg-background p-3">
           <input
             autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="What's blocking? (e.g. Waiting on Acme brand assets)"
-            className="w-full rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
+            className="w-full rounded-md border border-border bg-surface px-2 py-1.5 text-xs"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="More context (optional)"
             rows={2}
-            className="mt-1.5 w-full rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs placeholder:text-[#C7C9CD]"
+            className="mt-1.5 w-full rounded-md border border-border bg-surface px-2 py-1.5 text-xs placeholder:text-muted"
           />
           <div className="mt-1.5 flex items-center gap-1.5">
             <select
               value={ownerId}
               onChange={(e) => setOwnerId(e.target.value)}
-              className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
+              className="rounded-md border border-border bg-surface px-2 py-1 text-[11px]"
             >
               <option value="">Owner (optional)</option>
               {pod.members.filter((m) => !m.is_placeholder).map((m) => (
@@ -2462,7 +2462,7 @@ function PodBlockersPanel({
             <button
               onClick={submit}
               disabled={!title.trim()}
-              className="rounded-md bg-[#1B1B1B] px-2.5 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:opacity-50"
+              className="rounded-md bg-surface px-2.5 py-1 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
             >
               Raise blocker
             </button>
@@ -2472,7 +2472,7 @@ function PodBlockersPanel({
 
       <div className="mt-3 space-y-2">
         {active.length === 0 && !open && (
-          <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818] px-4 py-6 text-center text-xs text-[#71757D]">
+          <div className="rounded-xl border border-dashed border-border bg-surface px-4 py-6 text-center text-xs text-subtle">
             No active blockers. Pod is clear.
           </div>
         )}
@@ -2481,21 +2481,21 @@ function PodBlockersPanel({
           const ageMs = Date.now() - new Date(b.raised_at).getTime();
           const ageHours = Math.floor(ageMs / 3_600_000);
           const ageLabel = ageHours < 1 ? "just now" : ageHours < 24 ? `${ageHours}h ago` : `${Math.floor(ageHours / 24)}d ago`;
-          const tone = ageHours >= 48 ? "border-rose-300 bg-rose-50" : ageHours >= 24 ? "border-amber-300 bg-amber-50" : "border-[#2A2A2A] bg-[#181818]";
+          const tone = ageHours >= 48 ? "border-rose-300 bg-rose-50" : ageHours >= 24 ? "border-amber-300 bg-amber-50" : "border-border bg-surface";
           return (
             <div key={b.id} className={`rounded-xl border ${tone} p-3 shadow-[var(--shadow-soft)]`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-[#E5E5EA]">{b.title}</div>
+                  <div className="text-sm font-semibold text-foreground">{b.title}</div>
                   {b.description && (
-                    <div className="mt-1 text-[12px] text-[#C7C9CD] whitespace-pre-wrap">{b.description}</div>
+                    <div className="mt-1 text-[12px] text-muted whitespace-pre-wrap">{b.description}</div>
                   )}
-                  <div className="mt-1.5 flex items-center gap-2 text-[10px] text-[#71757D]">
+                  <div className="mt-1.5 flex items-center gap-2 text-[10px] text-subtle">
                     <span>Raised {ageLabel}</span>
                     {owner && (
                       <>
-                        <span className="text-[#C5C5C5]">·</span>
-                        <span>Owner: <strong className="text-[#E5E5EA]">{owner.name}</strong></span>
+                        <span className="text-muted">·</span>
+                        <span>Owner: <strong className="text-foreground">{owner.name}</strong></span>
                       </>
                     )}
                   </div>
@@ -2517,7 +2517,7 @@ function PodBlockersPanel({
                         onMutate();
                       }
                     }}
-                    className="text-[#71757D] hover:text-rose-600"
+                    className="text-subtle hover:text-rose-600"
                     title="Delete"
                   >
                     <XMarkIcon className="size-3.5" />
@@ -2528,20 +2528,20 @@ function PodBlockersPanel({
           );
         })}
         {resolved.length > 0 && (
-          <details className="text-[11px] text-[#71757D]">
-            <summary className="cursor-pointer hover:text-[#E5E5EA]">Recently resolved ({resolved.length})</summary>
+          <details className="text-[11px] text-subtle">
+            <summary className="cursor-pointer hover:text-foreground">Recently resolved ({resolved.length})</summary>
             <div className="mt-2 space-y-1">
               {resolved.map((b) => (
-                <div key={b.id} className="group flex items-center justify-between gap-2 rounded-md bg-[#0C0C0C] px-2 py-1">
+                <div key={b.id} className="group flex items-center justify-between gap-2 rounded-md bg-background px-2 py-1">
                   <span className="truncate line-through opacity-60">{b.title}</span>
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className="text-[10px] text-[#71757D]">{b.resolved_at ? new Date(b.resolved_at).toLocaleDateString("en-GB") : ""}</span>
+                    <span className="text-[10px] text-subtle">{b.resolved_at ? new Date(b.resolved_at).toLocaleDateString("en-GB") : ""}</span>
                     <button
                       onClick={() => {
                         reopenBlocker(pod.id, b.id);
                         onMutate();
                       }}
-                      className="rounded px-1.5 py-0.5 text-[10px] font-medium text-[#E5E5EA] opacity-0 transition-opacity hover:bg-[#181818] hover:underline group-hover:opacity-100"
+                      className="rounded px-1.5 py-0.5 text-[10px] font-medium text-foreground opacity-0 transition-opacity hover:bg-surface hover:underline group-hover:opacity-100"
                       title="Re-open, moves back to active blockers"
                     >
                       ↺ Re-open
@@ -2569,8 +2569,8 @@ const RISK_DOT: Record<RiskLevel, string> = {
   red: "bg-rose-500",
   amber: "bg-amber-400",
   green: "bg-emerald-400",
-  blocked: "bg-[#C5C5C5]",
-  shipped: "bg-[#C5C5C5]",
+  blocked: "bg-muted",
+  shipped: "bg-muted",
 };
 
 function ClientRoster({
@@ -2592,7 +2592,7 @@ function ClientRoster({
 }) {
   return (
     <div className="mt-10">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
         Client roster
       </h2>
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -2609,7 +2609,7 @@ function ClientRoster({
           />
         ))}
         {clients.length === 0 && (
-          <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818] px-4 py-6 text-center text-xs text-[#71757D]">
+          <div className="rounded-xl border border-dashed border-border bg-surface px-4 py-6 text-center text-xs text-subtle">
             No clients assigned yet.
           </div>
         )}
@@ -2666,14 +2666,14 @@ function ClientCard({
       : null;
 
   return (
-    <div className="group relative rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-white/30">
+    <div className="group relative rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-white/30">
       <div className="flex items-start justify-between gap-2">
         <Link href={engagementHref} className="block min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-semibold leading-tight">
               {client.name}
             </span>
-            <ArrowTopRightOnSquareIcon className="size-3 text-[#71757D] transition-colors group-hover:text-[#E5E5EA]" />
+            <ArrowTopRightOnSquareIcon className="size-3 text-subtle transition-colors group-hover:text-foreground" />
           </div>
           <div className="mt-1 flex items-center gap-1.5">
             <span
@@ -2699,7 +2699,7 @@ function ClientCard({
         {canUnassign && (
           <button
             onClick={() => setUnassignOpen(true)}
-            className="rounded-md px-1.5 py-0.5 text-[10px] text-[#71757D] hover:bg-[#0C0C0C] hover:text-[#E5E5EA]"
+            className="rounded-md px-1.5 py-0.5 text-[10px] text-subtle hover:bg-background hover:text-foreground"
             title="Unassign from pod"
           >
             Unassign
@@ -2707,7 +2707,7 @@ function ClientCard({
         )}
       </div>
       {client.retainer_tier !== "none" && (
-        <div className="mt-3 text-[11px] text-[#71757D]">
+        <div className="mt-3 text-[11px] text-subtle">
           {RETAINER_SCOPE[client.retainer_tier]}
         </div>
       )}
@@ -2716,17 +2716,17 @@ function ClientCard({
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
           onClick={() => setMetricsOpen(true)}
-          className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] px-2 py-1.5 text-left transition-colors hover:border-white/30"
+          className="rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-white/30"
           title="Click to edit CVR baseline / current"
         >
-          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
             CVR
           </div>
           {client.cvr_baseline != null || client.cvr_current != null ? (
             <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
-              <span className="text-[#71757D]">{client.cvr_baseline ?? ","}%</span>
-              <span className="text-[#C5C5C5]">→</span>
-              <span className="font-semibold text-[#E5E5EA]">
+              <span className="text-subtle">{client.cvr_baseline ?? ","}%</span>
+              <span className="text-muted">→</span>
+              <span className="font-semibold text-foreground">
                 {client.cvr_current ?? ","}%
               </span>
               {cvrDelta != null && (
@@ -2736,7 +2736,7 @@ function ClientCard({
                       ? "text-emerald-700"
                       : cvrDelta < 0
                         ? "text-rose-700"
-                        : "text-[#71757D]"
+                        : "text-subtle"
                   }`}
                 >
                   {cvrDelta > 0 ? "+" : ""}
@@ -2745,22 +2745,22 @@ function ClientCard({
               )}
             </div>
           ) : (
-            <div className="mt-0.5 text-[10px] italic text-[#71757D]">+ set</div>
+            <div className="mt-0.5 text-[10px] italic text-subtle">+ set</div>
           )}
         </button>
         <button
           onClick={() => setMetricsOpen(true)}
-          className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] px-2 py-1.5 text-left transition-colors hover:border-white/30"
+          className="rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-white/30"
           title="Click to edit AOV baseline / current"
         >
-          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
             AOV
           </div>
           {client.aov_baseline != null || client.aov_current != null ? (
             <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
-              <span className="text-[#71757D]">£{client.aov_baseline ?? ","}</span>
-              <span className="text-[#C5C5C5]">→</span>
-              <span className="font-semibold text-[#E5E5EA]">
+              <span className="text-subtle">£{client.aov_baseline ?? ","}</span>
+              <span className="text-muted">→</span>
+              <span className="font-semibold text-foreground">
                 £{client.aov_current ?? ","}
               </span>
               {aovDelta != null && (
@@ -2770,7 +2770,7 @@ function ClientCard({
                       ? "text-emerald-700"
                       : aovDelta < 0
                         ? "text-rose-700"
-                        : "text-[#71757D]"
+                        : "text-subtle"
                   }`}
                 >
                   {aovDelta > 0 ? "+" : ""}
@@ -2779,16 +2779,16 @@ function ClientCard({
               )}
             </div>
           ) : (
-            <div className="mt-0.5 text-[10px] italic text-[#71757D]">+ set</div>
+            <div className="mt-0.5 text-[10px] italic text-subtle">+ set</div>
           )}
         </button>
       </div>
 
       {/* Deliverables + timeline — the tracking strip that brings the
           engagement's work onto the pod view so nothing gets missed. */}
-      <div className="mt-3 border-t border-[#2A2A2A] pt-3">
+      <div className="mt-3 border-t border-border pt-3">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Deliverables
           </span>
           {day != null && (
@@ -2796,7 +2796,7 @@ function ClientCard({
               className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium tabular-nums ${
                 day > 75
                   ? "border-rose-200 bg-rose-50 text-rose-700"
-                  : "border-[#2A2A2A] bg-[#0C0C0C] text-[#71757D]"
+                  : "border-border bg-background text-subtle"
               }`}
               title="Day in the 90-day engagement"
             >
@@ -2806,12 +2806,12 @@ function ClientCard({
         </div>
 
         {deliverables.length === 0 ? (
-          <div className="mt-1.5 rounded-md border border-dashed border-[#2A2A2A] bg-[#0C0C0C] px-2 py-1.5 text-[10px] text-[#71757D]">
+          <div className="mt-1.5 rounded-md border border-dashed border-border bg-background px-2 py-1.5 text-[10px] text-subtle">
             No deliverables yet
           </div>
         ) : (
           <>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-[#71757D]">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-subtle">
               <span>{liveDeliverables.length} live</span>
               {atRisk > 0 && <span className="font-semibold text-rose-600">· {atRisk} at risk</span>}
               {blockedCount > 0 && <span className="text-amber-700">· {blockedCount} blocked</span>}
@@ -2823,13 +2823,13 @@ function ClientCard({
                 <Link
                   key={d.task.id}
                   href={engagementHref}
-                  className="flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-[#0C0C0C]"
+                  className="flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-background"
                 >
                   <span className={`size-1.5 shrink-0 rounded-full ${RISK_DOT[d.risk]}`} />
-                  <span className="min-w-0 flex-1 truncate text-[11px] text-[#E5E5EA]">{d.task.title}</span>
+                  <span className="min-w-0 flex-1 truncate text-[11px] text-foreground">{d.task.title}</span>
                   <span
                     className={`shrink-0 text-[10px] tabular-nums ${
-                      d.risk === "red" ? "font-semibold text-rose-600" : "text-[#71757D]"
+                      d.risk === "red" ? "font-semibold text-rose-600" : "text-subtle"
                     }`}
                   >
                     {d.reason}
@@ -2841,7 +2841,7 @@ function ClientCard({
             {overflow > 0 && (
               <Link
                 href={engagementHref}
-                className="mt-1 inline-block text-[10px] font-medium text-[#71757D] hover:text-[#E5E5EA]"
+                className="mt-1 inline-block text-[10px] font-medium text-subtle hover:text-foreground"
               >
                 +{overflow} more →
               </Link>
@@ -2906,19 +2906,19 @@ function UnassignClientModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="w-full max-w-md rounded-2xl bg-surface p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
           Unassign from pod
         </p>
-        <h2 className="text-lg font-semibold text-[#E5E5EA]">{client.name}</h2>
-        <p className="mt-1 text-[11px] text-[#71757D]">
+        <h2 className="text-lg font-semibold text-foreground">{client.name}</h2>
+        <p className="mt-1 text-[11px] text-subtle">
           Pick a destination. Open tasks reassign to the new pod's primary designer/dev. Done tasks stay attached for audit.
         </p>
 
         <div className="mt-4 space-y-2">
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              mode === "move" ? "border-white bg-[#0C0C0C]" : "border-[#2A2A2A]"
+              mode === "move" ? "border-white bg-background" : "border-border"
             } ${otherPods.length === 0 ? "opacity-50" : ""}`}
           >
             <input
@@ -2929,13 +2929,13 @@ function UnassignClientModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#E5E5EA]">Move to another pod</div>
-              <div className="text-[10px] text-[#71757D]">Reassign client + open work to a destination pod.</div>
+              <div className="text-xs font-medium text-foreground">Move to another pod</div>
+              <div className="text-[10px] text-subtle">Reassign client + open work to a destination pod.</div>
               {mode === "move" && otherPods.length > 0 && (
                 <select
                   value={targetPodId}
                   onChange={(e) => setTargetPodId(e.target.value)}
-                  className="mt-2 w-full rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
+                  className="mt-2 w-full rounded-md border border-border bg-surface px-2 py-1 text-[11px]"
                 >
                   {otherPods.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -2949,7 +2949,7 @@ function UnassignClientModal({
 
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              mode === "park" ? "border-white bg-[#0C0C0C]" : "border-[#2A2A2A]"
+              mode === "park" ? "border-white bg-background" : "border-border"
             }`}
           >
             <input
@@ -2959,8 +2959,8 @@ function UnassignClientModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#E5E5EA]">Park (no pod)</div>
-              <div className="text-[10px] text-[#71757D]">
+              <div className="text-xs font-medium text-foreground">Park (no pod)</div>
+              <div className="text-[10px] text-subtle">
                 Client stays in the system. Open projects flip to queued, open tasks become unassigned. Use when capacity isn't ready yet.
               </div>
             </div>
@@ -2968,13 +2968,13 @@ function UnassignClientModal({
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
-          <button onClick={onCancel} className="rounded px-3 py-1.5 text-[11px] text-[#71757D] hover:text-[#E5E5EA]">
+          <button onClick={onCancel} className="rounded px-3 py-1.5 text-[11px] text-subtle hover:text-foreground">
             Cancel
           </button>
           <button
             onClick={submit}
             disabled={submitting || (mode === "move" && !targetPodId)}
-            className="rounded bg-[#E5E5EA] text-[#181818] px-3 py-1.5 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:opacity-50"
+            className="rounded bg-foreground text-surface px-3 py-1.5 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
           >
             {submitting ? "Working…" : mode === "move" ? "Move client" : "Park client"}
           </button>

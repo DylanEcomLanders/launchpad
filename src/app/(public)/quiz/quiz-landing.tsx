@@ -49,11 +49,11 @@ export default function QuizLanding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#1B1B1B] flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       {/* Nav */}
-      <nav className="w-full border-b border-[#F0F0F0] bg-white">
+      <nav className="w-full border-b border-foreground bg-white">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
-          <Logo height={18} className="text-[#1B1B1B]" />
+          <Logo height={18} className="text-foreground" />
         </div>
       </nav>
 
@@ -62,15 +62,15 @@ export default function QuizLanding() {
         <div className="w-full max-w-4xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-20 text-center">
           {/* Badges */}
           <div className="flex items-center justify-center gap-3 mb-8">
-            <span className="flex items-center gap-1.5 text-sm text-[#666]">
-              <svg className="w-3.5 h-3.5 text-[#1B1B1B]" viewBox="0 0 20 20" fill="currentColor">
+            <span className="flex items-center gap-1.5 text-sm text-subtle">
+              <svg className="w-3.5 h-3.5 text-foreground" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" />
               </svg>
               60-Second Quiz
             </span>
-            <span className="text-[#DDD]">&middot;</span>
-            <span className="flex items-center gap-1.5 text-sm text-[#666]">
-              <svg className="w-3.5 h-3.5 text-[#1B1B1B]" viewBox="0 0 20 20" fill="currentColor">
+            <span className="text-muted">&middot;</span>
+            <span className="flex items-center gap-1.5 text-sm text-subtle">
+              <svg className="w-3.5 h-3.5 text-foreground" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" />
               </svg>
               Personalised Diagnosis
@@ -79,7 +79,7 @@ export default function QuizLanding() {
 
           {/* Headline */}
           <h1
-            className="text-3xl md:text-[3.5rem] font-bold text-[#1B1B1B] leading-[1.08] tracking-tight mb-8 uppercase"
+            className="text-3xl md:text-[3.5rem] font-bold text-foreground leading-[1.08] tracking-tight mb-8 uppercase"
             style={{ fontFamily: "var(--font-heading)" }}
           >
             Find Out Where Your <span className="bg-[#D1FF4C] px-2 py-0.5 rounded">Funnel</span> Is Leaking — In 60 Seconds
@@ -87,7 +87,7 @@ export default function QuizLanding() {
 
           {/* Subtext */}
           <p
-            className="text-[15px] md:text-lg text-[#666] leading-[1.7] max-w-2xl mx-auto mb-10"
+            className="text-[15px] md:text-lg text-subtle leading-[1.7] max-w-2xl mx-auto mb-10"
             style={{ fontFamily: "var(--font-body)" }}
           >
             Six questions about your store. We&apos;ll diagnose your top 3 conversion priorities — based on your traffic source, vertical, and biggest pain — and tell you exactly where to start.
@@ -96,7 +96,7 @@ export default function QuizLanding() {
           {/* CTA */}
           <Link
             href="/quiz/1"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors"
             style={{ fontFamily: "var(--font-body)" }}
           >
             Start the quiz
@@ -105,7 +105,7 @@ export default function QuizLanding() {
             </svg>
           </Link>
 
-          <p className="text-sm text-[#999] mt-5" style={{ fontFamily: "var(--font-body)" }}>
+          <p className="text-sm text-subtle mt-5" style={{ fontFamily: "var(--font-body)" }}>
             No fluff. No newsletter trap. Personalised in real time.
           </p>
         </div>

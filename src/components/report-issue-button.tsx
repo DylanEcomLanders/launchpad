@@ -46,7 +46,7 @@ export function ReportIssueButton() {
       {/* Floating trigger */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 w-10 h-10 bg-[#222222] text-[#E5E5EA] rounded-full flex items-center justify-center shadow-lg hover:bg-[#2A2A2A] transition-colors"
+        className="fixed bottom-6 right-6 z-40 w-10 h-10 bg-surface-raised text-foreground rounded-full flex items-center justify-center shadow-lg hover:bg-border transition-colors"
         title="Report an issue"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -61,12 +61,12 @@ export function ReportIssueButton() {
             className="absolute inset-0 bg-black/20"
             onClick={() => setOpen(false)}
           />
-          <div className="relative bg-[#181818] rounded-t-xl sm:rounded-lg w-full max-w-md mx-4 mb-0 sm:mb-0 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#2A2A2A]">
+          <div className="relative bg-surface rounded-t-xl sm:rounded-lg w-full max-w-md mx-4 mb-0 sm:mb-0 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h3 className="text-sm font-semibold">Report an Issue</h3>
               <button
                 onClick={() => setOpen(false)}
-                className="text-[#71757D] hover:text-[#E5E5EA] text-lg leading-none"
+                className="text-subtle hover:text-foreground text-lg leading-none"
               >
                 &times;
               </button>
@@ -74,7 +74,7 @@ export function ReportIssueButton() {
 
             {submitted ? (
               <div className="p-8 text-center">
-                <p className="text-sm text-[#71757D]">Logged. Thanks!</p>
+                <p className="text-sm text-subtle">Logged. Thanks!</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -115,7 +115,7 @@ export function ReportIssueButton() {
                   />
                 </div>
 
-                <p className="text-[10px] text-[#71757D]">
+                <p className="text-[10px] text-subtle">
                   Page: {pathname}
                 </p>
 

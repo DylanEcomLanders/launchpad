@@ -71,10 +71,10 @@ interface MyItem {
 const STATE_STYLE: Record<DeadlineState, { ring: string; bg: string }> = {
   overdue: { ring: "border-red-500/70", bg: "bg-red-500/10" },
   soon: { ring: "border-amber-500/60", bg: "bg-amber-500/10" },
-  ontrack: { ring: "border-[#2A2A2A]", bg: "bg-[#181818]" },
-  done: { ring: "border-[#2A2A2A]", bg: "bg-[#181818]" },
-  awaiting_approval: { ring: "border-[#2A2A2A]", bg: "bg-[#181818]" },
-  paused: { ring: "border-[#2A2A2A]", bg: "bg-[#181818]" },
+  ontrack: { ring: "border-border", bg: "bg-surface" },
+  done: { ring: "border-border", bg: "bg-surface" },
+  awaiting_approval: { ring: "border-border", bg: "bg-surface" },
+  paused: { ring: "border-border", bg: "bg-surface" },
 };
 
 const COLUMNS: { key: TaskStatus; label: string; dot: string }[] = [
@@ -509,7 +509,7 @@ export default function MyWorkClient() {
   if (data.loading) {
     return (
       <div className="px-4 sm:px-6 py-8">
-        <div className="h-96 animate-pulse rounded-2xl bg-[#181818]" />
+        <div className="h-96 animate-pulse rounded-2xl bg-surface" />
       </div>
     );
   }
@@ -518,24 +518,24 @@ export default function MyWorkClient() {
   // surface the picker as the primary action instead of dead-ending in a CTA.
   if (!memberId) {
     return (
-      <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-3xl px-6 py-16">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
             My Tasks
           </p>
           <h1 className="mt-2 text-[28px] leading-tight">
             <span className="font-bold">Pick a person to view</span>{" "}
-            <span className="font-normal text-[#71757D]">
+            <span className="font-normal text-subtle">
               — this session isn&apos;t linked to a pod member
             </span>
           </h1>
-          <p className="mt-3 text-sm text-[#9CA3AF]">
+          <p className="mt-3 text-sm text-muted">
             You&apos;re signed in with the shared admin code, which doesn&apos;t
             identify a single person. Pick someone to see their kanban, or sign
             in by email to land here directly.
           </p>
           {allMembers.length === 0 ? (
-            <p className="mt-6 text-sm text-[#71757D]">
+            <p className="mt-6 text-sm text-subtle">
               No pod members yet. Add some in Workspace.
             </p>
           ) : (
@@ -544,12 +544,12 @@ export default function MyWorkClient() {
                 <button
                   key={m.id}
                   onClick={() => pickMember(m.id)}
-                  className="text-left px-3.5 py-3 rounded-lg bg-[#181818] border border-[#2A2A2A] hover:border-[#383838] hover:bg-[#222222] transition-colors"
+                  className="text-left px-3.5 py-3 rounded-lg bg-surface border border-border hover:border-border hover:bg-surface-raised transition-colors"
                 >
-                  <div className="text-sm font-semibold text-[#E5E5EA]">
+                  <div className="text-sm font-semibold text-foreground">
                     {m.name}
                   </div>
-                  <div className="text-[11px] text-[#71757D] mt-0.5 capitalize">
+                  <div className="text-[11px] text-subtle mt-0.5 capitalize">
                     {m.role.replace(/_/g, " ")}
                   </div>
                 </button>
@@ -570,19 +570,19 @@ export default function MyWorkClient() {
   const showPicker = canViewAs;
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto px-4 sm:px-6 py-8">
         {/* Header — same eyebrow + bold-title pattern as /kanban */}
         <div className="flex items-end justify-between gap-6 mb-8">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
               {showPicker ? "My Tasks · Viewing as" : "My Tasks · Assigned to me"}
             </p>
             <h1 className="mt-2 text-[28px] leading-tight">
-              <span className="font-bold text-[#E5E5EA]">
+              <span className="font-bold text-foreground">
                 {firstName ? `${firstName}'s tasks` : "My tasks"}
               </span>{" "}
-              <span className="font-normal text-[#71757D]">
+              <span className="font-normal text-subtle">
                 across every client
               </span>
             </h1>
@@ -596,7 +596,7 @@ export default function MyWorkClient() {
               </div>
             )}
           </div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D] tabular-nums shrink-0">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-subtle tabular-nums shrink-0">
             {open.length} open
             {overdueCount > 0 && (
               <>
@@ -620,12 +620,12 @@ export default function MyWorkClient() {
           >
             <ExclamationTriangleIcon className="size-5 text-orange-400 shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-[#E5E5EA]">
+              <div className="text-sm font-semibold text-foreground">
                 {revisionCards.length === 1
                   ? "1 kanban card needs revisions from you"
                   : `${revisionCards.length} kanban cards need revisions from you`}
               </div>
-              <div className="mt-0.5 text-[12px] text-[#9CA3AF] truncate">
+              <div className="mt-0.5 text-[12px] text-muted truncate">
                 {revisionCards
                   .slice(0, 3)
                   .map((r) => `${r.title} - ${r.client}`)
@@ -648,22 +648,22 @@ export default function MyWorkClient() {
           * enter open, 1/2/3 move lane, p pin. */}
         <div className="mb-4 flex items-center gap-2">
           <div className="relative flex-1">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D] pointer-events-none" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle pointer-events-none" />
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search your tasks (title, client, project) · j/k navigate · enter open · 1/2/3 move · p pin"
-              className="w-full pl-9 pr-3 py-2 text-[13px] bg-[#181818] border border-[#2A2A2A] rounded-lg text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:border-[#383838]"
+              className="w-full pl-9 pr-3 py-2 text-[13px] bg-surface border border-border rounded-lg text-foreground placeholder:text-subtle focus:outline-none focus:border-border"
             />
           </div>
-          <div className="flex items-center bg-[#181818] border border-[#2A2A2A] rounded-lg p-0.5 shrink-0">
+          <div className="flex items-center bg-surface border border-border rounded-lg p-0.5 shrink-0">
             <button
               onClick={() => setViewMode("lanes")}
               className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
                 viewMode === "lanes"
-                  ? "bg-[#2A2A2A] text-[#E5E5EA]"
-                  : "text-[#71757D] hover:text-[#E5E5EA]"
+                  ? "bg-border text-foreground"
+                  : "text-subtle hover:text-foreground"
               }`}
             >
               Lanes
@@ -672,8 +672,8 @@ export default function MyWorkClient() {
               onClick={() => setViewMode("by-client")}
               className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
                 viewMode === "by-client"
-                  ? "bg-[#2A2A2A] text-[#E5E5EA]"
-                  : "text-[#71757D] hover:text-[#E5E5EA]"
+                  ? "bg-border text-foreground"
+                  : "text-subtle hover:text-foreground"
               }`}
             >
               By client
@@ -717,23 +717,23 @@ export default function MyWorkClient() {
                 }}
                 className={`rounded-xl flex flex-col transition-colors ${
                   isDropTarget
-                    ? "bg-[#222222] border-2 border-dashed border-[#9CA3AF]"
-                    : "bg-[#181818] border border-[#2A2A2A]"
+                    ? "bg-surface-raised border-2 border-dashed border-muted"
+                    : "bg-surface border border-border"
                 }`}
               >
                 {/* Column header */}
-                <div className="px-3.5 py-3 border-b border-[#2A2A2A]">
+                <div className="px-3.5 py-3 border-b border-border">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span
                         className="shrink-0 size-2 rounded-full"
                         style={{ background: col.dot }}
                       />
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#E5E5EA] truncate">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-foreground truncate">
                         {col.label}
                       </span>
                     </div>
-                    <span className="text-[11px] font-medium text-[#71757D] tabular-nums shrink-0">
+                    <span className="text-[11px] font-medium text-subtle tabular-nums shrink-0">
                       {isFiltered && cards.length !== total
                         ? `${cards.length} / ${total}`
                         : total}
@@ -744,7 +744,7 @@ export default function MyWorkClient() {
                 {/* Cards */}
                 <div className="p-2.5 space-y-2.5 flex-1 min-h-[60vh]">
                   {cards.length === 0 ? (
-                    <p className="text-[11px] text-[#4B4D52] text-center py-8 px-3 leading-relaxed">
+                    <p className="text-[11px] text-border text-center py-8 px-3 leading-relaxed">
                       {isFiltered && total > 0
                         ? `No matches for "${search.trim()}" in this lane`
                         : col.key === "todo"
@@ -763,7 +763,7 @@ export default function MyWorkClient() {
                           ? "text-red-400"
                           : d.state === "soon"
                             ? "text-amber-400"
-                            : "text-[#71757D]";
+                            : "text-subtle";
                       return (
                         <div
                           key={d.id}
@@ -782,11 +782,11 @@ export default function MyWorkClient() {
                            * the lane actions. Avoids losing the
                            * /my-work view to a /kanban navigate. */
                           onClick={() => setOpenItemId(d.id)}
-                          className={`group relative p-3.5 border rounded-lg ${style.ring} ${style.bg} cursor-pointer hover:border-[#383838] transition-all ${
+                          className={`group relative p-3.5 border rounded-lg ${style.ring} ${style.bg} cursor-pointer hover:border-border transition-all ${
                             isDragging ? "opacity-40 scale-[0.98]" : ""
                           } ${
                             focusedItemId === d.id
-                              ? "ring-2 ring-[#9CA3AF]/60 ring-offset-2 ring-offset-[#080808]"
+                              ? "ring-2 ring-muted/60 ring-offset-2 ring-offset-background"
                               : ""
                           }`}
                         >
@@ -812,7 +812,7 @@ export default function MyWorkClient() {
                             } text-[14px] leading-none transition-colors ${
                               pinnedIds.has(d.cardId)
                                 ? "text-amber-400 hover:text-amber-300"
-                                : "text-[#4B4D52] opacity-0 group-hover:opacity-100 hover:text-[#71757D]"
+                                : "text-border opacity-0 group-hover:opacity-100 hover:text-subtle"
                             }`}
                           >
                             {pinnedIds.has(d.cardId) ? "★" : "☆"}
@@ -822,11 +822,11 @@ export default function MyWorkClient() {
                             <Link
                               href={`/workspace/clients/${d.clientId}`}
                               onClick={(e) => e.stopPropagation()}
-                              className="text-[10px] font-bold uppercase tracking-wider text-[#E5E5EA] hover:text-white transition-colors truncate block"
+                              className="text-[10px] font-bold uppercase tracking-wider text-foreground hover:text-white transition-colors truncate block"
                             >
                               {d.clientName}
                             </Link>
-                            <span className="text-[10px] text-[#71757D] truncate block mt-0.5">
+                            <span className="text-[10px] text-subtle truncate block mt-0.5">
                               {d.projectName}
                             </span>
                           </div>
@@ -835,8 +835,8 @@ export default function MyWorkClient() {
                           <p
                             className={`text-[14px] font-semibold leading-tight ${
                               d.lane === "done"
-                                ? "text-[#9CA3AF] line-through"
-                                : "text-[#E5E5EA]"
+                                ? "text-muted line-through"
+                                : "text-foreground"
                             }`}
                           >
                             {d.title}
@@ -848,7 +848,7 @@ export default function MyWorkClient() {
                             * card surfacing twice for cross-role users
                             * is unambiguous. */}
                           <div className="mt-3 flex items-center justify-between gap-2 text-[11px]">
-                            <span className="inline-flex items-center gap-1.5 text-[#9CA3AF]">
+                            <span className="inline-flex items-center gap-1.5 text-muted">
                               <span
                                 className="size-1.5 rounded-full"
                                 style={{ background: ROLE_DOT[d.role] }}
@@ -897,7 +897,7 @@ export default function MyWorkClient() {
               const clients = Array.from(byClient.values());
               if (clients.length === 0) {
                 return (
-                  <p className="text-center text-[12px] text-[#71757D] py-8">
+                  <p className="text-center text-[12px] text-subtle py-8">
                     {search.trim()
                       ? `No matches for "${search.trim()}"`
                       : "No tasks yet"}
@@ -909,11 +909,11 @@ export default function MyWorkClient() {
                   <div className="flex items-center justify-between mb-2">
                     <Link
                       href={`/workspace/clients/${c.clientId}`}
-                      className="text-[11px] font-bold uppercase tracking-wider text-[#E5E5EA] hover:text-white"
+                      className="text-[11px] font-bold uppercase tracking-wider text-foreground hover:text-white"
                     >
                       {c.clientName}
                     </Link>
-                    <span className="text-[11px] text-[#71757D] tabular-nums">
+                    <span className="text-[11px] text-subtle tabular-nums">
                       {c.items.length} {c.items.length === 1 ? "task" : "tasks"}
                     </span>
                   </div>
@@ -925,7 +925,7 @@ export default function MyWorkClient() {
                           ? "text-red-400"
                           : d.state === "soon"
                             ? "text-amber-400"
-                            : "text-[#71757D]";
+                            : "text-subtle";
                       const isPinned = pinnedIds.has(d.cardId);
                       const isKickback = d.classified.card.revisionRequested;
                       const laneLabel =
@@ -938,7 +938,7 @@ export default function MyWorkClient() {
                         <button
                           key={d.id}
                           onClick={() => setOpenItemId(d.id)}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 text-left bg-[#181818] border border-[#2A2A2A] rounded-md hover:border-[#383838] transition-colors ${
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 text-left bg-surface border border-border rounded-md hover:border-border transition-colors ${
                             d.lane === "done"
                               ? "opacity-60"
                               : ""
@@ -956,14 +956,14 @@ export default function MyWorkClient() {
                               title="Kicked back"
                             />
                           )}
-                          <span className="text-[12px] text-[#71757D] uppercase tracking-wider w-[80px] shrink-0">
+                          <span className="text-[12px] text-subtle uppercase tracking-wider w-[80px] shrink-0">
                             {laneLabel}
                           </span>
                           <span
                             className={`text-[13px] flex-1 min-w-0 truncate ${
                               d.lane === "done"
-                                ? "text-[#71757D] line-through"
-                                : "text-[#E5E5EA]"
+                                ? "text-subtle line-through"
+                                : "text-foreground"
                             }`}
                           >
                             {d.title}
@@ -995,29 +995,29 @@ export default function MyWorkClient() {
           onClick={() => setOpenItemId(null)}
         >
           <div
-            className="bg-[#0F0F10] border border-[#222222] rounded-2xl w-full max-w-md p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+            className="bg-background border border-surface-raised rounded-2xl w-full max-w-md p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 mb-3">
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/workspace/clients/${openItem.clientId}`}
-                  className="text-[10px] font-bold uppercase tracking-wider text-[#E5E5EA] hover:text-white block truncate"
+                  className="text-[10px] font-bold uppercase tracking-wider text-foreground hover:text-white block truncate"
                 >
                   {openItem.clientName}
                 </Link>
-                <p className="text-[10px] text-[#71757D] mt-0.5 truncate">
+                <p className="text-[10px] text-subtle mt-0.5 truncate">
                   {openItem.projectName}
                 </p>
               </div>
               <button
                 onClick={() => setOpenItemId(null)}
-                className="text-[#71757D] hover:text-white text-[18px] leading-none shrink-0"
+                className="text-subtle hover:text-white text-[18px] leading-none shrink-0"
               >
                 ×
               </button>
             </div>
-            <h2 className="text-[18px] font-semibold text-[#E5E5EA] leading-snug mb-3">
+            <h2 className="text-[18px] font-semibold text-foreground leading-snug mb-3">
               {openItem.title}
             </h2>
             {/* Strategy brief + Figma link. Editable in-place - team
@@ -1045,17 +1045,17 @@ export default function MyWorkClient() {
                 href={`/workspace/clients/${openItem.clientId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-foreground hover:border-border transition-colors"
               >
                 <span>
-                  <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold block">
+                  <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold block">
                     Client brief
                   </span>
-                  <span className="text-[#9CA3AF]">
+                  <span className="text-muted">
                     {openItem.clientName} · onboarding + context
                   </span>
                 </span>
-                <span className="text-[#71757D]">Open →</span>
+                <span className="text-subtle">Open →</span>
               </Link>
 
               {/* Strategist brief - read-only. Surfaces the URL the
@@ -1067,30 +1067,30 @@ export default function MyWorkClient() {
                     href={openProject.brief}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                    className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-foreground hover:border-border transition-colors"
                   >
                     <span>
-                      <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold block">
+                      <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold block">
                         Strategist brief
                       </span>
-                      <span className="text-[#9CA3AF] truncate block max-w-[280px]">
+                      <span className="text-muted truncate block max-w-[280px]">
                         {openProject.brief.replace(/^https?:\/\//, "")}
                       </span>
                     </span>
-                    <span className="text-[#71757D]">Open →</span>
+                    <span className="text-subtle">Open →</span>
                   </a>
                 ) : (
-                  <div className="px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md">
-                    <p className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold mb-1">
+                  <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md">
+                    <p className="text-[10px] uppercase tracking-wider text-subtle font-semibold mb-1">
                       Strategist brief
                     </p>
-                    <p className="text-[#9CA3AF] whitespace-pre-wrap leading-relaxed">
+                    <p className="text-muted whitespace-pre-wrap leading-relaxed">
                       {openProject.brief}
                     </p>
                   </div>
                 )
               ) : (
-                <div className="px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#4B4D52] italic">
+                <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-border italic">
                   <span className="text-[10px] uppercase tracking-wider not-italic font-semibold block mb-0.5">
                     Strategist brief
                   </span>
@@ -1103,7 +1103,7 @@ export default function MyWorkClient() {
                 * card on the project shares the same link. */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+                  <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold">
                     Figma
                   </span>
                   {openProject?.figmaUrl && (
@@ -1111,7 +1111,7 @@ export default function MyWorkClient() {
                       href={openProject.figmaUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[10px] text-[#9CA3AF] hover:text-white"
+                      className="text-[10px] text-muted hover:text-white"
                     >
                       Open →
                     </a>
@@ -1127,7 +1127,7 @@ export default function MyWorkClient() {
                     })
                   }
                   placeholder="https://figma.com/file/…"
-                  className="w-full px-2.5 py-1.5 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#E5E5EA] placeholder:text-[#4B4D52] focus:outline-none focus:border-[#383838]"
+                  className="w-full px-2.5 py-1.5 text-[12px] bg-surface border border-border rounded-md text-foreground placeholder:text-border focus:outline-none focus:border-border"
                 />
               </div>
             </div>
@@ -1152,7 +1152,7 @@ export default function MyWorkClient() {
                       ? "text-rose-300"
                       : openItem.state === "soon"
                         ? "text-amber-400"
-                        : "text-[#71757D]"
+                        : "text-subtle"
                   }`}
                 >
                   Due {formatDue(openItem.dueDate)}
@@ -1171,7 +1171,7 @@ export default function MyWorkClient() {
                   );
                   setOpenItemId(null);
                 }}
-                className="px-3 py-2 text-[12px] text-[#E5E5EA] bg-[#181818] border border-[#2A2A2A] rounded-lg hover:bg-[#222222] transition-colors font-medium"
+                className="px-3 py-2 text-[12px] text-foreground bg-surface border border-border rounded-lg hover:bg-surface-raised transition-colors font-medium"
               >
                 {openItem.lane === "in_progress"
                   ? "Move to Todo"
@@ -1183,14 +1183,14 @@ export default function MyWorkClient() {
                   setOpenItemId(null);
                 }}
                 disabled={openItem.lane === "done"}
-                className="px-3 py-2 text-[12px] text-[#0C0C0C] bg-emerald-400 rounded-lg hover:bg-emerald-300 transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-[12px] text-background bg-emerald-400 rounded-lg hover:bg-emerald-300 transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {openItem.lane === "done" ? "Done" : "Mark as done"}
               </button>
             </div>
             <Link
               href={`/kanban?card=${encodeURIComponent(openItem.cardId)}`}
-              className="block text-center text-[11px] text-[#71757D] hover:text-white pt-2 border-t border-[#222222]"
+              className="block text-center text-[11px] text-subtle hover:text-white pt-2 border-t border-surface-raised"
             >
               Open in Project Delivery for full actions →
             </Link>
@@ -1231,21 +1231,21 @@ function ViewAsPicker({
     <div ref={ref} className="relative inline-block">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 pl-3 pr-2.5 py-1.5 text-xs font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+        className="inline-flex items-center gap-2 pl-3 pr-2.5 py-1.5 text-xs font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
       >
         <span className="truncate max-w-[200px]">
           {active?.name ?? "Pick someone"}
         </span>
         {active && (
-          <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+          <span className="text-[10px] uppercase tracking-wider text-subtle">
             {active.role.replace(/_/g, " ")}
           </span>
         )}
-        <ChevronDownIcon className="size-3 text-[#71757D] shrink-0" />
+        <ChevronDownIcon className="size-3 text-subtle shrink-0" />
       </button>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div className="absolute left-0 top-9 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
             View as ({members.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -1270,10 +1270,10 @@ function ViewAsPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-[#E5E5EA] truncate flex-1 min-w-0">
+                      <span className="text-[13px] text-foreground truncate flex-1 min-w-0">
                         {m.name}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-[#71757D] shrink-0 capitalize">
+                      <span className="text-[10px] uppercase tracking-wider text-subtle shrink-0 capitalize">
                         {m.role.replace(/_/g, " ")}
                       </span>
                     </div>

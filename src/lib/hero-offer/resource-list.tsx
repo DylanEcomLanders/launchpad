@@ -113,13 +113,13 @@ export function ResourceList({
   return (
     <div className={embedded ? "mt-4 pt-3 border-t border-white/[0.04]" : ""}>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+        <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">
           Resources
         </div>
         {isAdmin && !addOpen && (
           <button
             onClick={() => setAddOpen(true)}
-            className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+            className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-subtle hover:text-foreground transition-colors"
           >
             <PlusIcon className="size-3" />
             Add
@@ -128,7 +128,7 @@ export function ResourceList({
       </div>
 
       {resources.length === 0 && !addOpen && (
-        <p className="text-[11px] italic text-[#71757D]">
+        <p className="text-[11px] italic text-subtle">
           Nothing attached yet.
         </p>
       )}
@@ -213,26 +213,26 @@ function ResourceRow({
     <div
       className={`group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md ring-1 ring-transparent ${ACCENT_RING[accent]} transition-all`}
     >
-      <Icon className="size-3.5 text-[#71757D] shrink-0" />
+      <Icon className="size-3.5 text-subtle shrink-0" />
       <a
         href={resource.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex-1 min-w-0 text-[12px] text-[#E5E5EA] hover:text-white truncate"
+        className="flex-1 min-w-0 text-[12px] text-foreground hover:text-white truncate"
       >
         {resource.title || resource.url || "Untitled"}
       </a>
-      <span className="text-[9px] uppercase tracking-wider text-[#71757D] opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
+      <span className="text-[9px] uppercase tracking-wider text-subtle opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
         {meta.label}
       </span>
-      <ArrowTopRightOnSquareIcon className="size-3 text-[#71757D] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+      <ArrowTopRightOnSquareIcon className="size-3 text-subtle opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
       {isAdmin && (
         <button
           onClick={(e) => {
             e.preventDefault();
             onEdit();
           }}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-[#E5E5EA] shrink-0"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-subtle hover:text-foreground shrink-0"
           title="Edit resource"
         >
           <PencilSquareIcon className="size-3.5" />
@@ -297,7 +297,7 @@ function ResourceForm({
         {onDelete ? (
           <button
             onClick={onDelete}
-            className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
+            className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400"
           >
             Delete
           </button>
@@ -307,7 +307,7 @@ function ResourceForm({
         <div className="flex items-center gap-1.5">
           <button
             onClick={onCancel}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider text-subtle hover:text-white"
           >
             <XMarkIcon className="size-3" />
             Cancel
@@ -326,7 +326,7 @@ function ResourceForm({
                 kind: kindDraft,
               });
             }}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
           >
             <CheckIcon className="size-3" />
             Save

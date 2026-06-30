@@ -116,7 +116,7 @@ export default function TemplatesEditorPage() {
   if (loading || !current) {
     return (
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12">
-        <div className="text-sm text-[#71757D]">Loading templates...</div>
+        <div className="text-sm text-subtle">Loading templates...</div>
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function TemplatesEditorPage() {
       {/* Back */}
       <Link
         href="/company/contracts"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeftIcon className="size-4" />
         Back to contracts
@@ -134,10 +134,10 @@ export default function TemplatesEditorPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+        <h1 className="text-2xl font-semibold text-foreground">
           Agreement templates
         </h1>
-        <p className="text-[13px] text-[#71757D] mt-1 max-w-lg">
+        <p className="text-[13px] text-subtle mt-1 max-w-lg">
           Each role has its own template. Pick one below to edit. Edits apply to
           NEW agreements only - already-signed documents keep the clauses they
           were signed under.
@@ -148,7 +148,7 @@ export default function TemplatesEditorPage() {
        * loads into the editor body below. Switching tabs preserves
        * unsaved edits on the current template since templates state
        * is held in React. */}
-      <div className="mb-6 flex flex-wrap gap-1.5 p-1 bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-lg">
+      <div className="mb-6 flex flex-wrap gap-1.5 p-1 bg-background ring-1 ring-white/[0.04] rounded-lg">
         {templates.map((t) => {
           const active = activeId === t.id;
           return (
@@ -157,12 +157,12 @@ export default function TemplatesEditorPage() {
               onClick={() => setActiveId(t.id)}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
                 active
-                  ? "bg-white text-[#0C0C0C]"
-                  : "text-[#9CA3AF] hover:text-[#E5E5EA] hover:bg-white/[0.04]"
+                  ? "bg-white text-background"
+                  : "text-muted hover:text-foreground hover:bg-white/[0.04]"
               }`}
             >
               <span>{TEMPLATE_ROLE_LABEL[t.template_role]}</span>
-              <span className={`text-[10px] font-mono ${active ? "text-[#71757D]" : "text-[#71757D]"}`}>
+              <span className={`text-[10px] font-mono ${active ? "text-subtle" : "text-subtle"}`}>
                 {t.revision}
               </span>
             </button>
@@ -171,7 +171,7 @@ export default function TemplatesEditorPage() {
       </div>
 
       {/* Legal disclaimer */}
-      <div className="flex items-start gap-3 px-4 py-3 mb-6 bg-[#222222] border border-[#383838] rounded-lg text-[13px] text-[#E5E5EA]">
+      <div className="flex items-start gap-3 px-4 py-3 mb-6 bg-surface-raised border border-border rounded-lg text-[13px] text-foreground">
         <ExclamationTriangleIcon className="size-4 shrink-0 mt-0.5" />
         <div>
           <strong>Have a solicitor review the seeded clauses before using these
@@ -218,7 +218,7 @@ export default function TemplatesEditorPage() {
           <label className={labelClass}>Numbered clauses</label>
           <button
             onClick={addClause}
-            className="inline-flex items-center gap-1 text-[12px] text-[#E5E5EA] hover:underline"
+            className="inline-flex items-center gap-1 text-[12px] text-foreground hover:underline"
           >
             <PlusIcon className="size-3.5" /> Add clause
           </button>
@@ -227,10 +227,10 @@ export default function TemplatesEditorPage() {
           {current.body.clauses.map((c, idx) => (
             <div
               key={c.id}
-              className="bg-[#0F0F10] border border-white/[0.04] rounded-lg p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
+              className="bg-background border border-white/[0.04] rounded-lg p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="text-[11px] font-mono text-[#71757D] mt-2 w-8 shrink-0">
+                <div className="text-[11px] font-mono text-subtle mt-2 w-8 shrink-0">
                   {String(idx + 1).padStart(2, "0")}
                 </div>
                 <input
@@ -254,7 +254,7 @@ export default function TemplatesEditorPage() {
                 </select>
                 <button
                   onClick={() => removeClause(idx)}
-                  className="p-2 text-[#71757D] hover:text-[#B22B2B] transition-colors"
+                  className="p-2 text-subtle hover:text-danger transition-colors"
                   aria-label="Remove clause"
                 >
                   <TrashIcon className="size-4" />
@@ -282,9 +282,9 @@ export default function TemplatesEditorPage() {
 
       {/* Save bar — sticks to the bottom of the viewport so long edits don't
           require scrolling back up to commit. */}
-      <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-[#0F0F10]/95 backdrop-blur border-t border-white/[0.04] z-10">
+      <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-background/95 backdrop-blur border-t border-white/[0.04] z-10">
         <div className="max-w-3xl mx-auto px-6 md:px-10 py-3 flex items-center justify-between gap-4">
-          <div className="text-[12px] text-[#71757D]">
+          <div className="text-[12px] text-subtle">
             {savedAt ? (
               <span className="inline-flex items-center gap-1.5 text-emerald-600">
                 <CheckIcon className="size-3.5" />
@@ -299,7 +299,7 @@ export default function TemplatesEditorPage() {
           <button
             onClick={save}
             disabled={!dirty || saving}
-            className="px-4 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-white text-background text-sm font-medium rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
           >
             {saving ? "Saving..." : "Save template"}
           </button>
@@ -311,17 +311,17 @@ export default function TemplatesEditorPage() {
 
 function PlaceholderHint() {
   return (
-    <p className="text-[11px] text-[#71757D] mt-1.5 leading-relaxed">
-      Use <code className="bg-[#222222] px-1 py-0.5 rounded">{"{{ placeholder }}"}</code>{" "}
+    <p className="text-[11px] text-subtle mt-1.5 leading-relaxed">
+      Use <code className="bg-surface-raised px-1 py-0.5 rounded">{"{{ placeholder }}"}</code>{" "}
       to inject person data. Available:{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">person_full_name</code>,{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">person_job_title</code>,{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">person_employment_type</code>,{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">start_date</code>,{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">effective_date</code>,{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">comp_amount</code>,{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">comp_currency</code>,{" "}
-      <code className="bg-[#222222] px-1 py-0.5 rounded">comp_frequency</code>.
+      <code className="bg-surface-raised px-1 py-0.5 rounded">person_full_name</code>,{" "}
+      <code className="bg-surface-raised px-1 py-0.5 rounded">person_job_title</code>,{" "}
+      <code className="bg-surface-raised px-1 py-0.5 rounded">person_employment_type</code>,{" "}
+      <code className="bg-surface-raised px-1 py-0.5 rounded">start_date</code>,{" "}
+      <code className="bg-surface-raised px-1 py-0.5 rounded">effective_date</code>,{" "}
+      <code className="bg-surface-raised px-1 py-0.5 rounded">comp_amount</code>,{" "}
+      <code className="bg-surface-raised px-1 py-0.5 rounded">comp_currency</code>,{" "}
+      <code className="bg-surface-raised px-1 py-0.5 rounded">comp_frequency</code>.
     </p>
   );
 }

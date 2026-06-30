@@ -141,24 +141,24 @@ export function StrategyView() {
 
   return (
     <div className="mt-6">
-      <p className="mb-4 text-[12px] text-[#71757D]">
+      <p className="mb-4 text-[12px] text-subtle">
         {totalActive} in flight ·{" "}
         <span className="font-semibold text-rose-700">{actCount} need attention</span>
       </p>
 
       <div className="space-y-4">
         {/* Briefs */}
-        <section className="overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818]">
-          <div className="flex items-baseline justify-between border-b border-[#2A2A2A] px-4 py-2.5">
+        <section className="overflow-hidden rounded-lg border border-border bg-surface">
+          <div className="flex items-baseline justify-between border-b border-border px-4 py-2.5">
             <div className="flex items-baseline gap-2">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">Briefs</span>
-              <span className="text-[10px] tabular-nums text-[#71757D]">{activeBriefs.length}</span>
-              <span className="text-[11px] text-[#71757D]">· Auto-added when onboarding lands on a pod · one row per client</span>
+              <span className="text-[10px] tabular-nums text-subtle">{activeBriefs.length}</span>
+              <span className="text-[11px] text-subtle">· Auto-added when onboarding lands on a pod · one row per client</span>
             </div>
           </div>
 
           <table className="min-w-full text-left text-[12px]">
-            <thead className="bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <thead className="bg-background text-[10px] font-semibold uppercase tracking-wider text-subtle">
               <tr>
                 <th className="w-6 px-2 py-2"></th>
                 <th className="px-3 py-2 text-left">Client</th>
@@ -169,7 +169,7 @@ export function StrategyView() {
                 <th className="w-8 px-2 py-2"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A2A2A]">
+            <tbody className="divide-y divide-border">
               {activeBriefs.map((b) => (
                 <BriefTableRow
                   key={b.id}
@@ -181,7 +181,7 @@ export function StrategyView() {
               ))}
               {activeBriefs.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-3 text-center text-[11px] italic text-[#71757D]">
+                  <td colSpan={7} className="px-4 py-3 text-center text-[11px] italic text-subtle">
                     No active briefs. Add one manually or wait for a new onboarding.
                   </td>
                 </tr>
@@ -194,7 +194,7 @@ export function StrategyView() {
           {doneBriefs.length > 0 && (
             <DoneSection count={doneBriefs.length}>
               <table className="min-w-full text-left text-[12px]">
-                <tbody className="divide-y divide-[#2A2A2A]">
+                <tbody className="divide-y divide-border">
                   {doneBriefs.map((b) => (
                     <DoneBriefRow key={b.id} b={b} onUntick={() => toggleBriefDone(b.id)} />
                   ))}
@@ -205,17 +205,17 @@ export function StrategyView() {
         </section>
 
         {/* Results */}
-        <section className="overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818]">
-          <div className="flex items-baseline justify-between border-b border-[#2A2A2A] px-4 py-2.5">
+        <section className="overflow-hidden rounded-lg border border-border bg-surface">
+          <div className="flex items-baseline justify-between border-b border-border px-4 py-2.5">
             <div className="flex items-baseline gap-2">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700">Results</span>
-              <span className="text-[10px] tabular-nums text-[#71757D]">{activeResults.length}</span>
-              <span className="text-[11px] text-[#71757D]">· Live tests · how long they have been running</span>
+              <span className="text-[10px] tabular-nums text-subtle">{activeResults.length}</span>
+              <span className="text-[11px] text-subtle">· Live tests · how long they have been running</span>
             </div>
           </div>
 
           <table className="min-w-full text-left text-[12px]">
-            <thead className="bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <thead className="bg-background text-[10px] font-semibold uppercase tracking-wider text-subtle">
               <tr>
                 <th className="w-6 px-2 py-2"></th>
                 <th className="px-3 py-2 text-left">Client</th>
@@ -227,7 +227,7 @@ export function StrategyView() {
                 <th className="w-8 px-2 py-2"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A2A2A]">
+            <tbody className="divide-y divide-border">
               {activeResults.map((r) => (
                 <ResultTableRow
                   key={r.id}
@@ -238,7 +238,7 @@ export function StrategyView() {
               ))}
               {activeResults.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-3 text-center text-[11px] italic text-[#71757D]">
+                  <td colSpan={8} className="px-4 py-3 text-center text-[11px] italic text-subtle">
                     No live tests right now.
                   </td>
                 </tr>
@@ -251,7 +251,7 @@ export function StrategyView() {
           {doneResults.length > 0 && (
             <DoneSection count={doneResults.length}>
               <table className="min-w-full text-left text-[12px]">
-                <tbody className="divide-y divide-[#2A2A2A]">
+                <tbody className="divide-y divide-border">
                   {doneResults.map((r) => (
                     <DoneResultRow key={r.id} r={r} onUntick={() => toggleResultDone(r.id)} />
                   ))}
@@ -294,7 +294,7 @@ function briefStatusPill(b: BriefRow) {
     return <span className="inline-flex items-center rounded border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">Drafting, overdue</span>;
   if (b.status === "in_review")
     return <span className="inline-flex items-center rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300">In review</span>;
-  return <span className="inline-flex items-center rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A4A]">{BRIEF_STATUS_LABEL[b.status]}</span>;
+  return <span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-border">{BRIEF_STATUS_LABEL[b.status]}</span>;
 }
 
 function resultStatusPill(r: ResultRow) {
@@ -302,7 +302,7 @@ function resultStatusPill(r: ResultRow) {
     return <span className="inline-flex items-center rounded border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">Read overdue</span>;
   if (r.status === "ready")
     return <span className="inline-flex items-center rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">Ready to read</span>;
-  return <span className="inline-flex items-center rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A4A]">{RESULT_STATUS_LABEL[r.status]}</span>;
+  return <span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-border">{RESULT_STATUS_LABEL[r.status]}</span>;
 }
 
 // ─── Rows ────────────────────────────────────────────────────────────
@@ -316,18 +316,18 @@ function BriefTableRow({
   onRemove: () => void;
 }) {
   return (
-    <tr className="group hover:bg-[#0C0C0C]">
+    <tr className="group hover:bg-background">
       <td className="px-2 py-2"><TickButton onClick={onTick} /></td>
-      <td className="px-3 py-2 text-[12px] font-semibold text-[#E5E5EA] whitespace-nowrap">
+      <td className="px-3 py-2 text-[12px] font-semibold text-foreground whitespace-nowrap">
         <a href="#" className="hover:text-violet-700 hover:underline">{b.client_name}</a>
       </td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] whitespace-nowrap">{b.pod_id}</td>
+      <td className="px-3 py-2 text-[11px] text-subtle whitespace-nowrap">{b.pod_id}</td>
       <td className="px-3 py-2">{briefStatusPill(b)}</td>
-      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${b.is_overdue ? "font-semibold text-rose-700" : "text-[#71757D]"}`}>{b.onboarding_received}</td>
+      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${b.is_overdue ? "font-semibold text-rose-700" : "text-subtle"}`}>{b.onboarding_received}</td>
       <td className="px-3 py-2">
         <button
           onClick={onViewOnboarding}
-          className="inline-flex items-center gap-1 rounded border border-[#2A2A2A] bg-[#181818] px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A4A] hover:border-white hover:text-[#E5E5EA]"
+          className="inline-flex items-center gap-1 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium text-border hover:border-white hover:text-foreground"
         >
           <EyeIcon className="h-3 w-3" />
           View ({b.deliverables.length})
@@ -341,16 +341,16 @@ function BriefTableRow({
 function ResultTableRow({ r, onTick, onRemove }: { r: ResultRow; onTick: () => void; onRemove: () => void }) {
   const isLong = r.live_days >= 14;
   return (
-    <tr className="group hover:bg-[#0C0C0C]">
+    <tr className="group hover:bg-background">
       <td className="px-2 py-2"><TickButton onClick={onTick} /></td>
-      <td className="px-3 py-2 text-[12px] font-semibold text-[#E5E5EA] whitespace-nowrap">
+      <td className="px-3 py-2 text-[12px] font-semibold text-foreground whitespace-nowrap">
         <a href="#" className="hover:text-emerald-700 hover:underline">{r.client_name}</a>
       </td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] whitespace-nowrap">{r.pod_id}</td>
-      <td className="px-3 py-2 text-[12px] text-[#E5E5EA]">{r.project}</td>
+      <td className="px-3 py-2 text-[11px] text-subtle whitespace-nowrap">{r.pod_id}</td>
+      <td className="px-3 py-2 text-[12px] text-foreground">{r.project}</td>
       <td className="px-3 py-2">{resultStatusPill(r)}</td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] tabular-nums whitespace-nowrap">{r.live_since}</td>
-      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${isLong ? "font-semibold text-rose-700" : "text-[#4A4A4A]"}`}>Day {r.live_days}</td>
+      <td className="px-3 py-2 text-[11px] text-subtle tabular-nums whitespace-nowrap">{r.live_since}</td>
+      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${isLong ? "font-semibold text-rose-700" : "text-border"}`}>Day {r.live_days}</td>
       <td className="px-2 py-2"><RowMenu onRemove={onRemove} /></td>
     </tr>
   );
@@ -358,13 +358,13 @@ function ResultTableRow({ r, onTick, onRemove }: { r: ResultRow; onTick: () => v
 
 function DoneBriefRow({ b, onUntick }: { b: BriefRow; onUntick: () => void }) {
   return (
-    <tr className="group hover:bg-[#0C0C0C]">
+    <tr className="group hover:bg-background">
       <td className="px-2 py-2"><DoneTickButton onClick={onUntick} /></td>
-      <td className="px-3 py-2 text-[12px] font-medium text-[#71757D] line-through whitespace-nowrap">{b.client_name}</td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] whitespace-nowrap">{b.pod_id}</td>
-      <td className="px-3 py-2"><span className="inline-flex items-center rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D]">{BRIEF_STATUS_LABEL[b.status]}</span></td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] tabular-nums whitespace-nowrap">{b.onboarding_received}</td>
-      <td className="px-3 py-2 text-[10px] text-[#71757D]">{b.deliverables.length} deliverables</td>
+      <td className="px-3 py-2 text-[12px] font-medium text-subtle line-through whitespace-nowrap">{b.client_name}</td>
+      <td className="px-3 py-2 text-[11px] text-subtle whitespace-nowrap">{b.pod_id}</td>
+      <td className="px-3 py-2"><span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-subtle">{BRIEF_STATUS_LABEL[b.status]}</span></td>
+      <td className="px-3 py-2 text-[11px] text-subtle tabular-nums whitespace-nowrap">{b.onboarding_received}</td>
+      <td className="px-3 py-2 text-[10px] text-subtle">{b.deliverables.length} deliverables</td>
       <td className="px-2 py-2"></td>
     </tr>
   );
@@ -372,14 +372,14 @@ function DoneBriefRow({ b, onUntick }: { b: BriefRow; onUntick: () => void }) {
 
 function DoneResultRow({ r, onUntick }: { r: ResultRow; onUntick: () => void }) {
   return (
-    <tr className="group hover:bg-[#0C0C0C]">
+    <tr className="group hover:bg-background">
       <td className="px-2 py-2"><DoneTickButton onClick={onUntick} /></td>
-      <td className="px-3 py-2 text-[12px] font-medium text-[#71757D] line-through whitespace-nowrap">{r.client_name}</td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] whitespace-nowrap">{r.pod_id}</td>
-      <td className="px-3 py-2 text-[12px] text-[#71757D] line-through">{r.project}</td>
-      <td className="px-3 py-2"><span className="inline-flex items-center rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D]">Read</span></td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] tabular-nums whitespace-nowrap">{r.live_since}</td>
-      <td className="px-3 py-2 text-[11px] text-[#71757D] tabular-nums whitespace-nowrap">Day {r.live_days}</td>
+      <td className="px-3 py-2 text-[12px] font-medium text-subtle line-through whitespace-nowrap">{r.client_name}</td>
+      <td className="px-3 py-2 text-[11px] text-subtle whitespace-nowrap">{r.pod_id}</td>
+      <td className="px-3 py-2 text-[12px] text-subtle line-through">{r.project}</td>
+      <td className="px-3 py-2"><span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-subtle">Read</span></td>
+      <td className="px-3 py-2 text-[11px] text-subtle tabular-nums whitespace-nowrap">{r.live_since}</td>
+      <td className="px-3 py-2 text-[11px] text-subtle tabular-nums whitespace-nowrap">Day {r.live_days}</td>
       <td className="px-2 py-2"></td>
     </tr>
   );
@@ -392,7 +392,7 @@ function TickButton({ onClick }: { onClick: () => void }) {
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       title="Mark done"
-      className="grid h-4 w-4 place-items-center rounded border border-[#D5D5D8] bg-[#181818] text-transparent transition-colors hover:border-emerald-500 hover:text-emerald-600"
+      className="grid h-4 w-4 place-items-center rounded border border-muted bg-surface text-transparent transition-colors hover:border-emerald-500 hover:text-emerald-600"
     >
       <CheckIcon className="h-3 w-3" />
     </button>
@@ -404,7 +404,7 @@ function DoneTickButton({ onClick }: { onClick: () => void }) {
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       title="Reopen"
-      className="grid h-4 w-4 place-items-center rounded border border-emerald-500 bg-emerald-500 text-white transition-colors hover:border-[#7A7A7A] hover:bg-[#181818] hover:text-[#71757D]"
+      className="grid h-4 w-4 place-items-center rounded border border-emerald-500 bg-emerald-500 text-white transition-colors hover:border-subtle hover:bg-surface hover:text-subtle"
     >
       <CheckIcon className="h-3 w-3" />
     </button>
@@ -426,13 +426,13 @@ function RowMenu({ onRemove }: { onRemove: () => void }) {
     <div ref={ref} className="relative">
       <button
         onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
-        className={`rounded p-1 text-[#71757D] transition-opacity hover:bg-[#222222] hover:text-[#E5E5EA] ${open ? "opacity-100 bg-[#222222] text-[#E5E5EA]" : "opacity-0 group-hover:opacity-100"}`}
+        className={`rounded p-1 text-subtle transition-opacity hover:bg-surface-raised hover:text-foreground ${open ? "opacity-100 bg-surface-raised text-foreground" : "opacity-0 group-hover:opacity-100"}`}
         title="Edit or remove"
       >
         <EllipsisHorizontalIcon className="h-4 w-4" />
       </button>
       {open && (
-        <div className="absolute right-0 top-7 z-10 min-w-[140px] overflow-hidden rounded-md border border-[#2A2A2A] bg-[#181818] shadow-lg">
+        <div className="absolute right-0 top-7 z-10 min-w-[140px] overflow-hidden rounded-md border border-border bg-surface shadow-lg">
           <button
             onClick={(e) => { e.stopPropagation(); onRemove(); setOpen(false); }}
             className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] text-rose-700 hover:bg-rose-500/10"
@@ -448,8 +448,8 @@ function RowMenu({ onRemove }: { onRemove: () => void }) {
 
 function SectionFooter({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <div className="border-t border-[#2A2A2A] bg-[#0C0C0C] px-4 py-1.5">
-      <button onClick={onClick} className="inline-flex items-center gap-1 text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA]">
+    <div className="border-t border-border bg-background px-4 py-1.5">
+      <button onClick={onClick} className="inline-flex items-center gap-1 text-[11px] font-medium text-subtle hover:text-foreground">
         <PlusIcon className="h-3 w-3" />
         {label}
       </button>
@@ -460,12 +460,12 @@ function SectionFooter({ label, onClick }: { label: string; onClick: () => void 
 function DoneSection({ count, children }: { count: number; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-t border-[#2A2A2A]">
-      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-1.5 bg-[#0C0C0C] px-4 py-1.5 text-left text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA]">
+    <div className="border-t border-border">
+      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-1.5 bg-background px-4 py-1.5 text-left text-[11px] font-medium text-subtle hover:text-foreground">
         {open ? <ChevronDownIcon className="h-3 w-3" /> : <ChevronRightIcon className="h-3 w-3" />}
         Done · {count}
       </button>
-      {open && <div className="border-t border-[#2A2A2A]">{children}</div>}
+      {open && <div className="border-t border-border">{children}</div>}
     </div>
   );
 }
@@ -475,31 +475,31 @@ function DoneSection({ count, children }: { count: number; children: React.React
 function OnboardingPopup({ brief, onClose }: { brief: BriefRow; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between border-b border-[#2A2A2A] px-5 py-4">
+      <div className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between border-b border-border px-5 py-4">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">Onboarding · {brief.client_name}</div>
-            <div className="mt-0.5 text-[16px] font-semibold text-[#E5E5EA]">{brief.deliverables.length} deliverables</div>
-            <div className="mt-0.5 text-[11px] text-[#71757D]">{brief.pod_id} · {brief.retainer ?? "—"} · Received {brief.onboarding_received}</div>
+            <div className="mt-0.5 text-[16px] font-semibold text-foreground">{brief.deliverables.length} deliverables</div>
+            <div className="mt-0.5 text-[11px] text-subtle">{brief.pod_id} · {brief.retainer ?? "—"} · Received {brief.onboarding_received}</div>
           </div>
-          <button onClick={onClose} className="rounded p-1 text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]">
+          <button onClick={onClose} className="rounded p-1 text-subtle hover:bg-surface-raised hover:text-foreground">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
         <div className="px-5 py-3">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">Scope</div>
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-subtle">Scope</div>
           <ul className="space-y-1">
             {brief.deliverables.map((d, i) => (
-              <li key={i} className="flex items-baseline gap-2 rounded border border-[#2A2A2A] bg-[#0C0C0C] px-2.5 py-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] w-16 shrink-0">{d.type}</span>
-                <span className="text-[12px] text-[#E5E5EA]">{d.label ?? <span className="italic text-[#71757D]">No label</span>}</span>
+              <li key={i} className="flex items-baseline gap-2 rounded border border-border bg-background px-2.5 py-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle w-16 shrink-0">{d.type}</span>
+                <span className="text-[12px] text-foreground">{d.label ?? <span className="italic text-subtle">No label</span>}</span>
               </li>
             ))}
           </ul>
         </div>
-        <div className="flex items-center justify-between border-t border-[#2A2A2A] bg-[#0C0C0C] px-5 py-3">
-          <a href="#" className="text-[11px] font-medium text-[#E5E5EA] hover:underline">Open {brief.client_name} engagement →</a>
-          <button onClick={onClose} className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2.5 py-1 text-[11px] font-medium text-[#E5E5EA] hover:border-white">Close</button>
+        <div className="flex items-center justify-between border-t border-border bg-background px-5 py-3">
+          <a href="#" className="text-[11px] font-medium text-foreground hover:underline">Open {brief.client_name} engagement →</a>
+          <button onClick={onClose} className="rounded-md border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-foreground hover:border-white">Close</button>
         </div>
       </div>
     </div>
@@ -511,17 +511,17 @@ function OnboardingPopup({ brief, onClose }: { brief: BriefRow; onClose: () => v
 function ModalShell({ title, onClose, children, onSave }: { title: string; onClose: () => void; children: React.ReactNode; onSave: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div className="w-full max-w-md overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between border-b border-[#2A2A2A] px-5 py-3.5">
-          <div className="text-[14px] font-semibold text-[#E5E5EA]">{title}</div>
-          <button onClick={onClose} className="rounded p-1 text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]">
+      <div className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-surface shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between border-b border-border px-5 py-3.5">
+          <div className="text-[14px] font-semibold text-foreground">{title}</div>
+          <button onClick={onClose} className="rounded p-1 text-subtle hover:bg-surface-raised hover:text-foreground">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
         <div className="space-y-3 px-5 py-4">{children}</div>
-        <div className="flex items-center justify-end gap-2 border-t border-[#2A2A2A] bg-[#0C0C0C] px-5 py-2.5">
-          <button onClick={onClose} className="rounded-md border border-[#2A2A2A] bg-[#181818] px-3 py-1.5 text-[11px] font-medium text-[#4A4A4A] hover:border-white hover:text-[#E5E5EA]">Cancel</button>
-          <button onClick={onSave} className="rounded-md bg-[#1B1B1B] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#F3F4F6]">Save</button>
+        <div className="flex items-center justify-end gap-2 border-t border-border bg-background px-5 py-2.5">
+          <button onClick={onClose} className="rounded-md border border-border bg-surface px-3 py-1.5 text-[11px] font-medium text-border hover:border-white hover:text-foreground">Cancel</button>
+          <button onClick={onSave} className="rounded-md bg-surface px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-foreground">Save</button>
         </div>
       </div>
     </div>
@@ -531,13 +531,13 @@ function ModalShell({ title, onClose, children, onSave }: { title: string; onClo
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</span>
+      <span className="block text-[10px] font-semibold uppercase tracking-wider text-subtle">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );
 }
 
-const inputClass = "w-full rounded border border-[#2A2A2A] bg-[#181818] px-2.5 py-1.5 text-[12px] text-[#E5E5EA] focus:border-white focus:outline-none";
+const inputClass = "w-full rounded border border-border bg-surface px-2.5 py-1.5 text-[12px] text-foreground focus:border-white focus:outline-none";
 
 function AddBriefModal({ onClose, onSave }: { onClose: () => void; onSave: (b: Omit<BriefRow, "id" | "created_at" | "updated_at" | "done">) => void }) {
   const [client, setClient] = useState("");

@@ -316,8 +316,8 @@ export default function SalesDashboardClient() {
       {/* Header */}
       <div className="flex items-baseline justify-between mb-4 gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-[#E5E5EA]">Sales</h1>
-          <p className="text-xs text-[#71757D] mt-0.5">
+          <h1 className="text-xl font-semibold text-foreground">Sales</h1>
+          <p className="text-xs text-subtle mt-0.5">
             Live · pipeline + proposals + comms in one view
           </p>
         </div>
@@ -325,18 +325,18 @@ export default function SalesDashboardClient() {
           <ChannelStatusChip />
           <button
             onClick={() => setShowAddLead(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-[12px] font-semibold rounded-full hover:bg-[#E5E5EA] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-background text-[12px] font-semibold rounded-full hover:bg-foreground transition-colors"
           >
             + Add lead
           </button>
-          <span className="text-[10px] text-[#71757D]">
+          <span className="text-[10px] text-subtle">
             {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </span>
         </div>
       </div>
 
       {/* Pill tabs */}
-      <div className="inline-flex items-center gap-1 bg-[#141414] border border-[#222222] rounded-full p-1 mb-5">
+      <div className="inline-flex items-center gap-1 bg-background border border-surface-raised rounded-full p-1 mb-5">
         {TABS.map((t) => {
           const active = tab === t.key;
           return (
@@ -344,14 +344,14 @@ export default function SalesDashboardClient() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                active ? "bg-[#E5E5EA] text-[#0C0C0C]" : "text-[#9CA3AF] hover:text-[#E5E5EA]"
+                active ? "bg-foreground text-background" : "text-muted hover:text-foreground"
               }`}
             >
               {t.label}
               {t.badge ? (
                 <span
                   className={`min-w-4 h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center ${
-                    active ? "bg-[#0C0C0C]/15 text-[#0C0C0C]" : "bg-[#E5E5EA] text-[#0C0C0C]"
+                    active ? "bg-background/15 text-background" : "bg-foreground text-background"
                   }`}
                 >
                   {t.badge}
@@ -398,8 +398,8 @@ export default function SalesDashboardClient() {
 
           {/* Funnel — full width, single restrained colour (height + rate carry
               the story, not a rainbow). The final "won" bar gets the accent. */}
-          <div className="bg-[#141414] border border-[#222222] rounded-lg p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <div className="bg-background border border-surface-raised rounded-lg p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-4">
               Conversion funnel
             </p>
             <div className="flex items-end gap-4">
@@ -410,15 +410,15 @@ export default function SalesDashboardClient() {
                 const color = isWon ? "#22C55E" : "#3E4759";
                 return (
                   <div key={step.name} className="flex-1 flex flex-col items-center">
-                    <span className="text-xl font-semibold tabular-nums text-[#E5E5EA]">{step.count}</span>
+                    <span className="text-xl font-semibold tabular-nums text-foreground">{step.count}</span>
                     <div className="w-full h-40 flex items-end mt-1">
                       <div
                         className="w-full rounded-md transition-[height] duration-300"
                         style={{ height: `${pct}%`, background: color }}
                       />
                     </div>
-                    <span className="text-[12px] text-[#E5E5EA] mt-2 text-center leading-tight">{step.name}</span>
-                    <span className="text-[11px] text-[#71757D] tabular-nums mt-0.5">
+                    <span className="text-[12px] text-foreground mt-2 text-center leading-tight">{step.name}</span>
+                    <span className="text-[11px] text-subtle tabular-nums mt-0.5">
                       {step.rateFromPrev === null ? "—" : `${step.rateFromPrev}%`}
                     </span>
                   </div>
@@ -430,12 +430,12 @@ export default function SalesDashboardClient() {
           {/* Alerts — individual type-shaded boxes, under the funnel */}
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <BellAlertIcon className="size-4 text-[#F5A623]" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">Alerts</span>
-              <span className="text-[12px] font-semibold text-[#E5E5EA] tabular-nums">{metrics.alerts.length}</span>
+              <BellAlertIcon className="size-4 text-warning" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">Alerts</span>
+              <span className="text-[12px] font-semibold text-foreground tabular-nums">{metrics.alerts.length}</span>
             </div>
             {metrics.alerts.length === 0 ? (
-              <p className="text-[13px] text-[#71757D] bg-[#141414] border border-[#222222] rounded-lg p-4">
+              <p className="text-[13px] text-subtle bg-background border border-surface-raised rounded-lg p-4">
                 All clear — nothing needs chasing.
               </p>
             ) : (
@@ -458,8 +458,8 @@ export default function SalesDashboardClient() {
                           {s.label}
                         </span>
                       </span>
-                      <span className="block text-sm font-medium text-[#E5E5EA] truncate">{a.leadName}</span>
-                      <span className="block text-[12px] text-[#9CA3AF] mt-0.5">{a.detail}</span>
+                      <span className="block text-sm font-medium text-foreground truncate">{a.leadName}</span>
+                      <span className="block text-[12px] text-muted mt-0.5">{a.detail}</span>
                     </button>
                   );
                 })}
@@ -511,7 +511,7 @@ export default function SalesDashboardClient() {
       )}
 
       {flash && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-[#E5E5EA] text-[#0C0C0C] text-xs font-medium px-4 py-2.5 rounded-lg shadow-[var(--shadow-elevated)]">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-foreground text-background text-xs font-medium px-4 py-2.5 rounded-lg shadow-[var(--shadow-elevated)]">
           {flash}
         </div>
       )}
@@ -572,79 +572,79 @@ function AddLeadModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <form
         onSubmit={submit}
-        className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+        className="bg-background rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
       >
-        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-1">Add lead</h2>
-        <p className="text-xs text-[#71757D] mb-5">
+        <h2 className="text-lg font-semibold text-foreground mb-1">Add lead</h2>
+        <p className="text-xs text-subtle mb-5">
           Quick capture - tweak the rest on the lead detail page.
         </p>
         <div className="space-y-3">
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Full name</label>
+            <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Full name</label>
             <input
               autoFocus
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
               placeholder="Sam Smith"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Brand</label>
+              <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Brand</label>
               <input
                 value={brandName}
                 onChange={(e) => setBrandName(e.target.value)}
-                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
                 placeholder="Acme Goods"
               />
             </div>
             <div>
-              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Brand URL</label>
+              <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Brand URL</label>
               <input
                 value={brandUrl}
                 onChange={(e) => setBrandUrl(e.target.value)}
-                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
                 placeholder="acme.com"
               />
             </div>
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Email</label>
+            <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
               placeholder="sam@acme.com"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Source</label>
+              <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Source</label>
               <input
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
                 placeholder="X DM / Referral / Apollo"
               />
             </div>
             <div>
-              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Owner</label>
+              <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Owner</label>
               <input
                 value={owner}
                 onChange={(e) => setOwner(e.target.value)}
-                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
                 placeholder="Ajay"
               />
             </div>
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Monthly revenue band</label>
+            <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Monthly revenue band</label>
             <input
               value={revenueBand}
               onChange={(e) => setRevenueBand(e.target.value)}
-              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
               placeholder="£400k - £800k"
             />
           </div>
@@ -653,13 +653,13 @@ function AddLeadModal({
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+            className="px-3 py-2 text-sm text-subtle hover:text-foreground"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-lg hover:bg-[#E5E5EA]"
+            className="px-3 py-2 bg-white text-background text-sm font-semibold rounded-lg hover:bg-foreground"
           >
             Add lead
           </button>
@@ -681,13 +681,13 @@ function Kpi({
   sub: string;
 }) {
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 shadow-[var(--shadow-soft)]">
-      <div className="flex items-center gap-1.5 text-[#71757D] mb-2">
+    <div className="bg-surface border border-border rounded-lg p-4 shadow-[var(--shadow-soft)]">
+      <div className="flex items-center gap-1.5 text-subtle mb-2">
         {icon}
         <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-[28px] leading-none font-bold text-[#E5E5EA] tabular-nums">{value}</p>
-      <p className="text-[10px] text-[#71757D] mt-1.5">{sub}</p>
+      <p className="text-[28px] leading-none font-bold text-foreground tabular-nums">{value}</p>
+      <p className="text-[10px] text-subtle mt-1.5">{sub}</p>
     </div>
   );
 }

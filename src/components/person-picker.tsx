@@ -121,7 +121,7 @@ export function PersonPicker({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className={`w-full inline-flex items-center gap-2 ${compact ? "h-8 px-2 text-[12px]" : "h-9 px-3 text-[13px]"} rounded-md bg-[#0F0F10] ring-1 ring-white/[0.04] hover:ring-white/[0.12] text-[#E5E5EA] transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+        className={`w-full inline-flex items-center gap-2 ${compact ? "h-8 px-2 text-[12px]" : "h-9 px-3 text-[13px]"} rounded-md bg-background ring-1 ring-white/[0.04] hover:ring-white/[0.12] text-foreground transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         {selected ? (
           <>
@@ -141,23 +141,23 @@ export function PersonPicker({
           </>
         ) : (
           <>
-            {!compact && <UserCircleIcon className="size-5 text-[#71757D] shrink-0" />}
-            <span className="flex-1 truncate text-left text-[#71757D]">{placeholder}</span>
+            {!compact && <UserCircleIcon className="size-5 text-subtle shrink-0" />}
+            <span className="flex-1 truncate text-left text-subtle">{placeholder}</span>
           </>
         )}
-        <ChevronUpDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+        <ChevronUpDownIcon className="size-3.5 text-subtle shrink-0" />
       </button>
 
       {open && !disabled && (
-        <div className="absolute z-50 mt-1 w-full min-w-[240px] bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full min-w-[240px] bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
           <div className="p-2 border-b border-white/[0.04] relative">
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-3.5 text-[#71757D]" />
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-3.5 text-subtle" />
             <input
               autoFocus
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full h-7 pl-7 pr-2 bg-black/40 rounded text-[12px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.1]"
+              className="w-full h-7 pl-7 pr-2 bg-black/40 rounded text-[12px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.1]"
             />
           </div>
           <ul className="max-h-64 overflow-y-auto py-1">
@@ -170,7 +170,7 @@ export function PersonPicker({
                     setOpen(false);
                     setSearch("");
                   }}
-                  className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-[12px] text-[#71757D] hover:text-rose-300 hover:bg-rose-500/[0.06]"
+                  className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-[12px] text-subtle hover:text-rose-300 hover:bg-rose-500/[0.06]"
                 >
                   <XMarkIcon className="size-4" />
                   Clear
@@ -178,7 +178,7 @@ export function PersonPicker({
               </li>
             )}
             {filtered.length === 0 ? (
-              <li className="px-3 py-2 text-[11px] italic text-[#71757D]">No matches.</li>
+              <li className="px-3 py-2 text-[11px] italic text-subtle">No matches.</li>
             ) : (
               filtered.map((p) => {
                 const isActive = p.id === value;
@@ -202,11 +202,11 @@ export function PersonPicker({
                         {initials(p.full_name)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[#E5E5EA] truncate">
+                        <div className="text-foreground truncate">
                           {p.preferred_name || p.full_name}
                         </div>
                         {(p.job_title || p.department) && (
-                          <div className="text-[10px] text-[#71757D] truncate">
+                          <div className="text-[10px] text-subtle truncate">
                             {p.job_title || p.department}
                           </div>
                         )}

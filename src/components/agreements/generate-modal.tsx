@@ -154,23 +154,23 @@ export function GenerateAgreementsModal({
         onClick={onClose}
       >
         <div
-          className="bg-[#181818] rounded-2xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto"
+          className="bg-surface rounded-2xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between">
-            <h2 className="font-semibold text-[#E5E5EA]">
+          <div className="border-b border-border px-6 py-4 flex items-center justify-between">
+            <h2 className="font-semibold text-foreground">
               Generate agreements for {person.full_name}
             </h2>
             <button
               onClick={onClose}
-              className="text-[#71757D] hover:text-[#E5E5EA] text-xl leading-none"
+              className="text-subtle hover:text-foreground text-xl leading-none"
             >
               ×
             </button>
           </div>
           <div className="p-6 space-y-5">
             {existingContractCount > 0 && (
-              <div className="text-[12px] text-[#71757D] bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-3">
+              <div className="text-[12px] text-subtle bg-background border border-border rounded-lg p-3">
                 {person.full_name} already has {existingContractCount}{" "}
                 {existingContractCount === 1 ? "contract" : "contracts"} on file. This will create a fresh one alongside the existing record(s).
               </div>
@@ -178,7 +178,7 @@ export function GenerateAgreementsModal({
 
             {/* Contract details */}
             {true && (
-              <div className="pt-4 border-t border-[#2A2A2A] space-y-4">
+              <div className="pt-4 border-t border-border space-y-4">
                 <div>
                   <label className={labelClass}>Role / job title</label>
                   <input
@@ -228,7 +228,7 @@ export function GenerateAgreementsModal({
                       );
                     })}
                   </select>
-                  <p className="text-[10px] text-[#71757D] mt-1 leading-relaxed">
+                  <p className="text-[10px] text-subtle mt-1 leading-relaxed">
                     Auto-picked from the Person&apos;s department - change if
                     you want a different master. Edit the master clauses at
                     /company/contracts/templates.
@@ -283,7 +283,7 @@ export function GenerateAgreementsModal({
             )}
 
             {error && (
-              <div className="px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-[#B22B2B]">
+              <div className="px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-danger">
                 {error}
               </div>
             )}
@@ -291,14 +291,14 @@ export function GenerateAgreementsModal({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                className="px-3 py-1.5 text-[13px] text-subtle hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={submit}
                 disabled={submitting}
-                className="px-3 py-1.5 bg-white text-[#0C0C0C] text-[13px] font-semibold rounded-lg hover:bg-[#E5E5EA] transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-white text-background text-[13px] font-semibold rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
               >
                 {submitting ? "Generating..." : "Generate"}
               </button>

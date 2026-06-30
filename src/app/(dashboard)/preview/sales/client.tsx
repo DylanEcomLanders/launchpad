@@ -235,16 +235,16 @@ export default function SalesDashboardClient() {
       {/* Header */}
       <div className="flex items-baseline justify-between mb-4">
         <div>
-          <h1 className="text-xl font-semibold text-[#E5E5EA]">Sales</h1>
-          <p className="text-xs text-[#71757D] mt-0.5">
+          <h1 className="text-xl font-semibold text-foreground">Sales</h1>
+          <p className="text-xs text-subtle mt-0.5">
             Preview · mock data · final home <span className="font-mono">/sales</span>
           </p>
         </div>
-        <span className="text-[10px] text-[#71757D]">As of {MOCK_TODAY}</span>
+        <span className="text-[10px] text-subtle">As of {MOCK_TODAY}</span>
       </div>
 
       {/* Pill tabs */}
-      <div className="inline-flex items-center gap-1 bg-[#141414] border border-[#222222] rounded-full p-1 mb-5">
+      <div className="inline-flex items-center gap-1 bg-background border border-surface-raised rounded-full p-1 mb-5">
         {TABS.map((t) => {
           const active = tab === t.key;
           return (
@@ -252,14 +252,14 @@ export default function SalesDashboardClient() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                active ? "bg-[#E5E5EA] text-[#0C0C0C]" : "text-[#9CA3AF] hover:text-[#E5E5EA]"
+                active ? "bg-foreground text-background" : "text-muted hover:text-foreground"
               }`}
             >
               {t.label}
               {t.badge ? (
                 <span
                   className={`min-w-4 h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center ${
-                    active ? "bg-[#0C0C0C]/15 text-[#0C0C0C]" : "bg-[#E5E5EA] text-[#0C0C0C]"
+                    active ? "bg-background/15 text-background" : "bg-foreground text-background"
                   }`}
                 >
                   {t.badge}
@@ -306,8 +306,8 @@ export default function SalesDashboardClient() {
 
           {/* Funnel — full width, single restrained colour (height + rate carry
               the story, not a rainbow). The final "won" bar gets the accent. */}
-          <div className="bg-[#141414] border border-[#222222] rounded-lg p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <div className="bg-background border border-surface-raised rounded-lg p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-4">
               Conversion funnel
             </p>
             <div className="flex items-end gap-4">
@@ -318,15 +318,15 @@ export default function SalesDashboardClient() {
                 const color = isWon ? "#22C55E" : "#3E4759";
                 return (
                   <div key={step.name} className="flex-1 flex flex-col items-center">
-                    <span className="text-xl font-semibold tabular-nums text-[#E5E5EA]">{step.count}</span>
+                    <span className="text-xl font-semibold tabular-nums text-foreground">{step.count}</span>
                     <div className="w-full h-40 flex items-end mt-1">
                       <div
                         className="w-full rounded-md transition-[height] duration-300"
                         style={{ height: `${pct}%`, background: color }}
                       />
                     </div>
-                    <span className="text-[12px] text-[#E5E5EA] mt-2 text-center leading-tight">{step.name}</span>
-                    <span className="text-[11px] text-[#71757D] tabular-nums mt-0.5">
+                    <span className="text-[12px] text-foreground mt-2 text-center leading-tight">{step.name}</span>
+                    <span className="text-[11px] text-subtle tabular-nums mt-0.5">
                       {step.rateFromPrev === null ? "—" : `${step.rateFromPrev}%`}
                     </span>
                   </div>
@@ -338,12 +338,12 @@ export default function SalesDashboardClient() {
           {/* Alerts — individual type-shaded boxes, under the funnel */}
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <BellAlertIcon className="size-4 text-[#F5A623]" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">Alerts</span>
-              <span className="text-[12px] font-semibold text-[#E5E5EA] tabular-nums">{metrics.alerts.length}</span>
+              <BellAlertIcon className="size-4 text-warning" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">Alerts</span>
+              <span className="text-[12px] font-semibold text-foreground tabular-nums">{metrics.alerts.length}</span>
             </div>
             {metrics.alerts.length === 0 ? (
-              <p className="text-[13px] text-[#71757D] bg-[#141414] border border-[#222222] rounded-lg p-4">
+              <p className="text-[13px] text-subtle bg-background border border-surface-raised rounded-lg p-4">
                 All clear — nothing needs chasing.
               </p>
             ) : (
@@ -366,8 +366,8 @@ export default function SalesDashboardClient() {
                           {s.label}
                         </span>
                       </span>
-                      <span className="block text-sm font-medium text-[#E5E5EA] truncate">{a.leadName}</span>
-                      <span className="block text-[12px] text-[#9CA3AF] mt-0.5">{a.detail}</span>
+                      <span className="block text-sm font-medium text-foreground truncate">{a.leadName}</span>
+                      <span className="block text-[12px] text-muted mt-0.5">{a.detail}</span>
                     </button>
                   );
                 })}
@@ -418,7 +418,7 @@ export default function SalesDashboardClient() {
       )}
 
       {flash && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-[#E5E5EA] text-[#0C0C0C] text-xs font-medium px-4 py-2.5 rounded-lg shadow-[var(--shadow-elevated)]">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-foreground text-background text-xs font-medium px-4 py-2.5 rounded-lg shadow-[var(--shadow-elevated)]">
           {flash}
         </div>
       )}
@@ -442,13 +442,13 @@ function Kpi({
   sub: string;
 }) {
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 shadow-[var(--shadow-soft)]">
-      <div className="flex items-center gap-1.5 text-[#71757D] mb-2">
+    <div className="bg-surface border border-border rounded-lg p-4 shadow-[var(--shadow-soft)]">
+      <div className="flex items-center gap-1.5 text-subtle mb-2">
         {icon}
         <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-[28px] leading-none font-bold text-[#E5E5EA] tabular-nums">{value}</p>
-      <p className="text-[10px] text-[#71757D] mt-1.5">{sub}</p>
+      <p className="text-[28px] leading-none font-bold text-foreground tabular-nums">{value}</p>
+      <p className="text-[10px] text-subtle mt-1.5">{sub}</p>
     </div>
   );
 }

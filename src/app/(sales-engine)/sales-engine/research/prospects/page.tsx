@@ -138,11 +138,11 @@ export default function EcomProspectingPage() {
     <div className="max-w-5xl mx-auto py-10 px-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Ecom Prospecting</h1>
-        <p className="text-sm text-[#7A7A7A] mt-1">Find and analyse Shopify stores by niche. Add prospects directly to your pipeline.</p>
+        <p className="text-sm text-subtle mt-1">Find and analyse Shopify stores by niche. Add prospects directly to your pipeline.</p>
       </div>
 
       {/* Search */}
-      <div className="border border-[#E5E5EA] rounded-xl bg-[#181818] p-5 mb-6">
+      <div className="border border-foreground rounded-xl bg-surface p-5 mb-6">
         <div className="flex items-end gap-3">
           <div className="flex-1">
             <label className={labelClass}>Search by niche or keyword</label>
@@ -158,7 +158,7 @@ export default function EcomProspectingPage() {
           <button
             onClick={searchStores}
             disabled={!query.trim() || loading}
-            className="flex items-center gap-1.5 px-5 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+            className="flex items-center gap-1.5 px-5 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border disabled:opacity-30"
           >
             {loading ? <ArrowPathIcon className="size-3.5 animate-spin" /> : <MagnifyingGlassIcon className="size-3.5" />}
             {loading ? "Searching..." : "Find Stores"}
@@ -166,13 +166,13 @@ export default function EcomProspectingPage() {
         </div>
 
         {/* Or analyse single store */}
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#F0F0F0]">
-          <p className="text-[10px] text-[#AAA]">Or analyse a specific store:</p>
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-foreground">
+          <p className="text-[10px] text-muted">Or analyse a specific store:</p>
           <input
             type="url"
             id="singleUrl"
             placeholder="https://store.myshopify.com"
-            className="flex-1 px-2 py-1 text-xs border border-[#E5E5EA] rounded"
+            className="flex-1 px-2 py-1 text-xs border border-foreground rounded"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 const input = e.target as HTMLInputElement;
@@ -188,12 +188,12 @@ export default function EcomProspectingPage() {
       {stores.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-[#7A7A7A]">{stores.length} stores found</p>
+            <p className="text-xs text-subtle">{stores.length} stores found</p>
           </div>
 
           {/* Table header */}
-          <div className="border border-[#E5E5EA] rounded-xl bg-[#181818] overflow-hidden">
-            <div className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-2 bg-[#181818] border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
+          <div className="border border-foreground rounded-xl bg-surface overflow-hidden">
+            <div className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-2 bg-surface border-b border-foreground text-[10px] font-semibold uppercase tracking-wider text-muted">
               <span>Store</span>
               <span>Email</span>
               <span className="text-center">Products</span>
@@ -203,12 +203,12 @@ export default function EcomProspectingPage() {
             </div>
 
             {stores.map((store, i) => (
-              <div key={store.url || i} className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-3 border-b border-[#EDEDEF] last:border-0 items-center hover:bg-[#222222]">
+              <div key={store.url || i} className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-3 border-b border-border last:border-0 items-center hover:bg-surface-raised">
                 <div className="min-w-0">
-                  <a href={store.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#1A1A1A] hover:underline truncate block">
+                  <a href={store.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-surface hover:underline truncate block">
                     {store.name || store.url}
                   </a>
-                  {store.description && <p className="text-[10px] text-[#999] truncate">{store.description}</p>}
+                  {store.description && <p className="text-[10px] text-subtle truncate">{store.description}</p>}
                   <div className="flex items-center gap-2 mt-0.5">
                     {store.socials.instagram && (
                       <a href={store.socials.instagram} target="_blank" rel="noopener noreferrer" className="text-[9px] text-pink-400 hover:text-pink-600">IG</a>
@@ -218,17 +218,17 @@ export default function EcomProspectingPage() {
                     )}
                   </div>
                 </div>
-                <span className="text-[10px] text-[#777] truncate">{store.email || "-"}</span>
-                <span className="text-xs text-center text-[#777]">{store.products_count || "-"}</span>
-                <span className="text-[10px] text-center text-[#999]">{store.country || "-"}</span>
+                <span className="text-[10px] text-subtle truncate">{store.email || "-"}</span>
+                <span className="text-xs text-center text-subtle">{store.products_count || "-"}</span>
+                <span className="text-[10px] text-center text-subtle">{store.country || "-"}</span>
                 <div className="flex items-center justify-center">
-                  <div className="w-12 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+                  <div className="w-12 h-1.5 bg-foreground rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${store.score >= 70 ? "bg-emerald-500" : store.score >= 40 ? "bg-amber-500" : "bg-[#CCC]"}`}
+                      className={`h-full rounded-full ${store.score >= 70 ? "bg-emerald-500" : store.score >= 40 ? "bg-amber-500" : "bg-muted"}`}
                       style={{ width: `${store.score}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-semibold ml-1.5 text-[#777]">{store.score}</span>
+                  <span className="text-[10px] font-semibold ml-1.5 text-subtle">{store.score}</span>
                 </div>
                 <div className="text-center">
                   {addedToPipeline.has(store.url) ? (
@@ -236,7 +236,7 @@ export default function EcomProspectingPage() {
                   ) : (
                     <button
                       onClick={() => addToPipeline(store)}
-                      className="p-1 text-[#CCC] hover:text-[#1A1A1A] transition-colors"
+                      className="p-1 text-muted hover:text-surface transition-colors"
                       title="Add to pipeline"
                     >
                       <PlusIcon className="size-3.5" />
@@ -251,9 +251,9 @@ export default function EcomProspectingPage() {
 
       {/* Empty */}
       {stores.length === 0 && !loading && (
-        <div className="border-2 border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#AAA]">Search for ecom stores by niche</p>
-          <p className="text-xs text-[#CCC] mt-1">Find Shopify stores, score them, and add to your pipeline</p>
+        <div className="border-2 border-dashed border-foreground rounded-xl p-12 text-center">
+          <p className="text-sm text-muted">Search for ecom stores by niche</p>
+          <p className="text-xs text-muted mt-1">Find Shopify stores, score them, and add to your pipeline</p>
         </div>
       )}
     </div>

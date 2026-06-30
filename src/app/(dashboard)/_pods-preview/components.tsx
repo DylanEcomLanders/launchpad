@@ -37,7 +37,7 @@ export const CLIENT_HATCH =
 // ---------------------------------------------------------------------------
 
 const AVATAR_TONES = [
-  "bg-white text-[#0C0C0C]",
+  "bg-white text-background",
   "bg-blue-100 text-blue-800",
   "bg-emerald-100 text-emerald-800",
   "bg-amber-100 text-amber-800",
@@ -76,7 +76,7 @@ export function Avatar({
     <span
       title={title ?? name}
       className={`inline-grid shrink-0 place-items-center rounded-full font-semibold ring-2 ring-white ${
-        placeholder ? "border border-dashed border-[#C5C5C5] bg-[#222222] text-[#71757D]" : toneFor(id)
+        placeholder ? "border border-dashed border-muted bg-surface-raised text-subtle" : toneFor(id)
       }`}
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
@@ -91,7 +91,7 @@ export function MemberChip({ id }: { id: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <Avatar name={m.name} id={m.id} size={20} placeholder={m.isPlaceholder} />
-      <span className="text-[12px] text-[#71757D]">{m.isPlaceholder ? "TO HIRE" : m.name}</span>
+      <span className="text-[12px] text-subtle">{m.isPlaceholder ? "TO HIRE" : m.name}</span>
     </span>
   );
 }
@@ -122,7 +122,7 @@ export function AnnotationStrip({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mb-4 inline-flex items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-1.5 text-[11px] font-medium text-[#71757D] shadow-[var(--shadow-soft)] hover:text-[#E5E5EA]"
+        className="mb-4 inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[11px] font-medium text-subtle shadow-[var(--shadow-soft)] hover:text-foreground"
       >
         <InformationCircleIcon className="size-4" /> Show notes
       </button>
@@ -140,7 +140,7 @@ export function AnnotationStrip({
               <XMarkIcon className="size-4" />
             </button>
           </div>
-          <div className="mt-1.5 space-y-1 text-[13px] leading-relaxed text-[#3A3A3A]">{children}</div>
+          <div className="mt-1.5 space-y-1 text-[13px] leading-relaxed text-subtle">{children}</div>
         </div>
       </div>
     </div>
@@ -160,7 +160,7 @@ export function SectionHeader({
 }) {
   return (
     <div className="mb-2.5 flex items-center justify-between">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">{children}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-subtle">{children}</h3>
       {right}
     </div>
   );
@@ -174,7 +174,7 @@ export const STATE_META: Record<
   TaskState,
   { label: string; cls: string; dot: string }
 > = {
-  on_track: { label: "On track", cls: "bg-[#222222] text-[#71757D] border-[#2A2A2A]", dot: "bg-[#A0A0A0]" },
+  on_track: { label: "On track", cls: "bg-surface-raised text-subtle border-border", dot: "bg-muted" },
   due_soon: { label: "Due soon", cls: "bg-amber-50 text-amber-800 border-amber-200", dot: "bg-amber-500" },
   overdue_internal: { label: "Overdue", cls: "bg-rose-50 text-rose-700 border-rose-200", dot: "bg-rose-500" },
   waiting_client: { label: "Waiting on client", cls: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500" },
@@ -225,13 +225,13 @@ export function CapacityBar({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">{label}</span>
         <span className="text-sm tabular-nums">
           <span className="font-semibold">{used}</span>
-          <span className="text-[#71757D]"> / {total} pts</span>
+          <span className="text-subtle"> / {total} pts</span>
         </span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#222222]">
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
         <div className={`h-full ${tone} transition-all`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -257,7 +257,7 @@ export function PhaseTimeline({
   return (
     <div>
       <div
-        className="flex w-full overflow-hidden rounded-md border border-[#2A2A2A]"
+        className="flex w-full overflow-hidden rounded-md border border-border"
         style={{ height }}
       >
         {spans.map((sp, i) => {
@@ -292,7 +292,7 @@ export function PhaseTimeline({
         })}
       </div>
       {showLegend && (
-        <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-[#71757D]">
+        <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-subtle">
           <span className="inline-block h-2.5 w-4 rounded-sm" style={{ backgroundImage: CLIENT_HATCH }} />
           Hatched = time waiting on the client (not counted against the pod)
         </div>
@@ -319,11 +319,11 @@ export function Disclosure({
     <div>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1 text-[12px] font-medium text-[#71757D] hover:text-[#E5E5EA]"
+        className="inline-flex items-center gap-1 text-[12px] font-medium text-subtle hover:text-foreground"
       >
         <ChevronDownIcon className={`size-3.5 transition-transform ${open ? "" : "-rotate-90"}`} />
         {label}
-        {count != null && <span className="text-[#71757D]">({count})</span>}
+        {count != null && <span className="text-subtle">({count})</span>}
       </button>
       {open && <div className="mt-2">{children}</div>}
     </div>
@@ -338,7 +338,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)] ${className}`}>
+    <div className={`rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] ${className}`}>
       {children}
     </div>
   );

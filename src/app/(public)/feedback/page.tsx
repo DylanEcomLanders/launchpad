@@ -22,7 +22,7 @@ function StarRating({
 
   return (
     <div>
-      <p className="text-sm font-medium text-[#1B1B1B] mb-2">{label}</p>
+      <p className="text-sm font-medium text-foreground mb-2">{label}</p>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => {
           const filled = star <= (hover || value);
@@ -36,9 +36,9 @@ function StarRating({
               className="transition-transform hover:scale-110"
             >
               {filled ? (
-                <StarIcon className="size-7 text-[#1B1B1B]" />
+                <StarIcon className="size-7 text-foreground" />
               ) : (
-                <StarOutline className="size-7 text-[#C5C5C5]" />
+                <StarOutline className="size-7 text-muted" />
               )}
             </button>
           );
@@ -113,24 +113,24 @@ export default function FeedbackPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <header className="px-6 md:px-12 py-5">
-          <Logo height={16} className="text-[#1B1B1B]" />
+          <Logo height={16} className="text-foreground" />
         </header>
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="text-center max-w-md">
-            <CheckCircleIcon className="size-12 text-[#1B1B1B] mx-auto mb-4" />
+            <CheckCircleIcon className="size-12 text-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold tracking-tight mb-2">
               Thank you!
             </h1>
-            <p className="text-sm text-[#7A7A7A]">
+            <p className="text-sm text-subtle">
               Your feedback has been submitted. We really appreciate you taking the time — it helps us improve.
             </p>
           </div>
         </div>
-        <footer className="border-t border-[#EDEDEF] px-6 md:px-12 py-6 text-center">
-          <p className="text-xs text-[#A0A0A0]">
+        <footer className="border-t border-border px-6 md:px-12 py-6 text-center">
+          <p className="text-xs text-muted">
             Built by{" "}
             <a href="https://ecomlanders.com" target="_blank" rel="noopener noreferrer"
-              className="font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors">
+              className="font-medium text-subtle hover:text-foreground transition-colors">
               Ecomlanders
             </a>
           </p>
@@ -142,7 +142,7 @@ export default function FeedbackPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="px-6 md:px-12 py-5">
-        <Logo height={16} className="text-[#1B1B1B]" />
+        <Logo height={16} className="text-foreground" />
       </header>
 
       <div className="flex-1 px-6 md:px-12 pb-12 max-w-xl mx-auto w-full">
@@ -150,7 +150,7 @@ export default function FeedbackPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
             Project Feedback
           </h1>
-          <p className="text-sm text-[#7A7A7A]">
+          <p className="text-sm text-subtle">
             We&apos;d love to hear how your experience was working with us.
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function FeedbackPage() {
           {/* Client Info */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1B1B1B] mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 Your Name / Company *
               </label>
               <input
@@ -167,19 +167,19 @@ export default function FeedbackPage() {
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 placeholder="e.g., Sarah from Ecomlanders"
-                className="w-full px-3.5 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B1B1B]/10 focus:border-[#1B1B1B] transition-colors"
+                className="w-full px-3.5 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-surface/10 focus:border-surface transition-colors"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1B1B1B] mb-1.5">
-                Email <span className="text-[#A0A0A0] font-normal">(optional)</span>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Email <span className="text-muted font-normal">(optional)</span>
               </label>
               <input
                 type="email"
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
                 placeholder="sarah@ecomlanders.app"
-                className="w-full px-3.5 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B1B1B]/10 focus:border-[#1B1B1B] transition-colors"
+                className="w-full px-3.5 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-surface/10 focus:border-surface transition-colors"
               />
             </div>
           </div>
@@ -193,10 +193,10 @@ export default function FeedbackPage() {
 
           {/* Recommend Score */}
           <div>
-            <p className="text-sm font-medium text-[#1B1B1B] mb-1">
+            <p className="text-sm font-medium text-foreground mb-1">
               How likely are you to recommend us? *
             </p>
-            <p className="text-xs text-[#A0A0A0] mb-3">1 = not likely, 10 = extremely likely</p>
+            <p className="text-xs text-muted mb-3">1 = not likely, 10 = extremely likely</p>
             <div className="flex gap-1.5">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <button
@@ -205,8 +205,8 @@ export default function FeedbackPage() {
                   onClick={() => setRecommendScore(n)}
                   className={`flex-1 py-2.5 text-sm font-medium rounded-lg border-2 transition-all ${
                     recommendScore === n
-                      ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                      : "border-[#E5E5EA] text-[#7A7A7A] hover:border-[#C5C5C5]"
+                      ? "border-surface bg-surface text-white"
+                      : "border-foreground text-subtle hover:border-muted"
                   }`}
                 >
                   {n}
@@ -217,9 +217,9 @@ export default function FeedbackPage() {
 
           {/* Testimonial */}
           <div>
-            <label className="block text-sm font-medium text-[#1B1B1B] mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Testimonial
-              <span className="text-[#A0A0A0] font-normal ml-1">
+              <span className="text-muted font-normal ml-1">
                 — a quote we could share publicly?
               </span>
             </label>
@@ -228,22 +228,22 @@ export default function FeedbackPage() {
               onChange={(e) => setTestimonial(e.target.value)}
               rows={3}
               placeholder="e.g., Ecomlanders completely transformed our landing pages..."
-              className="w-full px-3.5 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B1B1B]/10 focus:border-[#1B1B1B] transition-colors resize-none"
+              className="w-full px-3.5 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-surface/10 focus:border-surface transition-colors resize-none"
             />
           </div>
 
           {/* Video testimonial (optional) */}
           <div>
-            <label className="block text-sm font-medium text-[#1B1B1B] mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Video testimonial
-              <span className="text-[#A0A0A0] font-normal ml-1">(optional)</span>
+              <span className="text-muted font-normal ml-1">(optional)</span>
             </label>
-            <p className="text-xs text-[#A0A0A0] mb-3">
+            <p className="text-xs text-muted mb-3">
               Prefer to say it on camera? Record a short clip. A few sentences
               is perfect, and we may share it.
             </p>
-            <div className="mb-3 rounded-lg border border-[#16A34A]/20 bg-[#16A34A]/[0.06] px-3.5 py-2.5">
-              <p className="text-xs text-[#15803D]">
+            <div className="mb-3 rounded-lg border border-success/20 bg-success/[0.06] px-3.5 py-2.5">
+              <p className="text-xs text-success">
                 <span className="font-semibold">Record a video review and get 5% off all future projects.</span>{" "}
                 Our way of saying thanks for taking the time.
               </p>
@@ -253,16 +253,16 @@ export default function FeedbackPage() {
 
           {/* Improvements */}
           <div>
-            <label className="block text-sm font-medium text-[#1B1B1B] mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Anything we could improve?
-              <span className="text-[#A0A0A0] font-normal ml-1">(optional)</span>
+              <span className="text-muted font-normal ml-1">(optional)</span>
             </label>
             <textarea
               value={improvements}
               onChange={(e) => setImprovements(e.target.value)}
               rows={3}
               placeholder="Honest feedback helps us get better..."
-              className="w-full px-3.5 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B1B1B]/10 focus:border-[#1B1B1B] transition-colors resize-none"
+              className="w-full px-3.5 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-surface/10 focus:border-surface transition-colors resize-none"
             />
           </div>
 
@@ -274,7 +274,7 @@ export default function FeedbackPage() {
             <button
               onClick={handleSubmit}
               disabled={!canSubmit || submitting}
-              className="w-full px-4 py-3 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 text-sm font-medium bg-surface text-white rounded-lg hover:bg-border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting
                 ? videoBlob
@@ -286,11 +286,11 @@ export default function FeedbackPage() {
         </div>
       </div>
 
-      <footer className="border-t border-[#EDEDEF] px-6 md:px-12 py-6 text-center">
-        <p className="text-xs text-[#A0A0A0]">
+      <footer className="border-t border-border px-6 md:px-12 py-6 text-center">
+        <p className="text-xs text-muted">
           Built by{" "}
           <a href="https://ecomlanders.com" target="_blank" rel="noopener noreferrer"
-            className="font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors">
+            className="font-medium text-subtle hover:text-foreground transition-colors">
             Ecomlanders
           </a>
         </p>

@@ -71,7 +71,7 @@ export function LiveOpsTab() {
     return (
       <div className="mt-6 space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-32 bg-[#0C0C0C] rounded-2xl animate-pulse" />
+          <div key={i} className="h-32 bg-background rounded-2xl animate-pulse" />
         ))}
       </div>
     );
@@ -82,8 +82,8 @@ export function LiveOpsTab() {
   return (
     <div className="mt-6 space-y-6">
       {isEmpty && (
-        <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-8 text-center">
-          <p className="text-sm text-[#71757D] max-w-md mx-auto">
+        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-8 text-center">
+          <p className="text-sm text-subtle max-w-md mx-auto">
             Nothing flowing through the new retention tools yet. Start an{" "}
             <Link href="/tools/onboarding" className="text-sky-300 hover:text-sky-200">onboarding</Link>,
             log a{" "}
@@ -109,19 +109,19 @@ export function LiveOpsTab() {
           <ul className="space-y-2">
             {activeOnboardings.map((o) => (
               <li key={o.id}>
-                <Link href={`/tools/onboarding/${o.id}`} className="block bg-[#0F0F10] rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
+                <Link href={`/tools/onboarding/${o.id}`} className="block bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-sm font-semibold text-[#E5E5EA] truncate">{o.client_name || "Untitled"}</span>
+                        <span className="text-sm font-semibold text-foreground truncate">{o.client_name || "Untitled"}</span>
                         <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${OB_STATUS_TINT[o.status]}`}>
                           {OB_STATUS_LABEL[o.status]}
                         </span>
                       </div>
-                      <div className="text-[11px] text-[#71757D]">
+                      <div className="text-[11px] text-subtle">
                         Day {dayNumber(o)} · {completionPct(o)}% done · {o.csm_name || "no CSM"}
                       </div>
-                      <div className="mt-2 h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
+                      <div className="mt-2 h-1 bg-surface rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${completionPct(o)}%` }} />
                       </div>
                     </div>
@@ -148,19 +148,19 @@ export function LiveOpsTab() {
               const d = daysUntilDue(m);
               return (
                 <li key={m.id}>
-                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-[#0F0F10] rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
+                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
                     <div className="flex items-center gap-3">
                       <div className="size-9 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-600 flex flex-col items-center justify-center shrink-0">
                         <div className="text-sm font-bold text-white leading-none">{m.day}</div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                          <span className="text-sm font-semibold text-[#E5E5EA] truncate">{m.client_name}</span>
+                          <span className="text-sm font-semibold text-foreground truncate">{m.client_name}</span>
                           <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${MS_STATUS_TINT[status]}`}>
                             {MS_STATUS_LABEL[status]}
                           </span>
                         </div>
-                        <div className="text-[11px] text-[#71757D] truncate">
+                        <div className="text-[11px] text-subtle truncate">
                           {MILESTONE_TITLE[m.day]} · {d >= 0 ? `in ${d}d` : `${-d}d overdue`}
                         </div>
                       </div>
@@ -184,13 +184,13 @@ export function LiveOpsTab() {
         >
           <ul className="space-y-1.5">
             {touches.map((t) => (
-              <li key={t.id} className="bg-[#0F0F10] rounded-lg p-3 ring-1 ring-white/[0.04]">
+              <li key={t.id} className="bg-background rounded-lg p-3 ring-1 ring-white/[0.04]">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="text-sm font-semibold text-[#E5E5EA]">{t.client_name}</span>
-                  <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#1A1A1A] text-[#9CA3AF]">{TOUCH_LABEL[t.kind]}</span>
-                  <span className="text-[10px] text-[#71757D] ml-auto">{new Date(t.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                  <span className="text-sm font-semibold text-foreground">{t.client_name}</span>
+                  <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface text-muted">{TOUCH_LABEL[t.kind]}</span>
+                  <span className="text-[10px] text-subtle ml-auto">{new Date(t.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
                 </div>
-                <p className="text-[12px] text-[#9CA3AF] line-clamp-2">{t.summary}</p>
+                <p className="text-[12px] text-muted line-clamp-2">{t.summary}</p>
               </li>
             ))}
           </ul>
@@ -208,14 +208,14 @@ export function LiveOpsTab() {
         >
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {wins.map((w) => (
-              <li key={w.id} className="bg-[#0F0F10] rounded-xl p-3 ring-1 ring-white/[0.04]">
+              <li key={w.id} className="bg-background rounded-xl p-3 ring-1 ring-white/[0.04]">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-semibold text-[#E5E5EA] truncate">{w.client_anonymised || w.client_name}</span>
+                  <span className="text-sm font-semibold text-foreground truncate">{w.client_anonymised || w.client_name}</span>
                   {w.uplift_pct !== undefined && (
                     <span className="text-[11px] font-mono text-emerald-300">+{w.uplift_pct}%</span>
                   )}
                 </div>
-                <p className="text-[11px] text-[#71757D] line-clamp-2">{w.hypothesis || "(no hypothesis)"}</p>
+                <p className="text-[11px] text-subtle line-clamp-2">{w.hypothesis || "(no hypothesis)"}</p>
               </li>
             ))}
           </ul>
@@ -253,12 +253,12 @@ function Section({
             {icon}
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-[#E5E5EA]">{title}</h2>
-            <p className="text-[11px] text-[#71757D]">{subtitle}</p>
+            <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+            <p className="text-[11px] text-subtle">{subtitle}</p>
           </div>
         </div>
         {link && (
-          <Link href={link.href} className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA]">
+          <Link href={link.href} className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground">
             {link.label}
             <ArrowTopRightOnSquareIcon className="size-3.5" />
           </Link>

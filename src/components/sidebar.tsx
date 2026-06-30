@@ -49,6 +49,7 @@ import {
 // LogoMark moved to dashboard top bar — sidebar no longer renders the logo.
 import { useRole, useCurrentUser, signOut } from "@/components/auth-gate";
 import { CommandPalette, type CommandItem } from "@/components/command-palette";
+import { ThemeToggle } from "@/components/theme";
 
 interface NavItem {
   label: string;
@@ -444,11 +445,11 @@ export function Sidebar() {
         onClick={() => setMobileOpen(false)}
         className={`flex items-center gap-3 px-2.5 py-2 rounded-md text-[14px] transition-colors ${
           active
-            ? "bg-[#E5E5EA] text-[#0C0C0C] font-medium"
-            : "text-[#C7C9CD] hover:bg-[#222222] hover:text-white"
+            ? "bg-foreground text-background font-medium"
+            : "text-muted hover:bg-surface-raised hover:text-white"
         }`}
       >
-        <span className={active ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}>{item.icon}</span>
+        <span className={active ? "text-background" : "text-muted"}>{item.icon}</span>
         {!collapsed && <span className="flex-1">{item.label}</span>}
       </Link>
     );
@@ -463,7 +464,7 @@ export function Sidebar() {
       return (
         <div key={section.title} className="mb-6" title={section.title}>
             <div className="flex justify-center py-1.5">
-            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-blue-600" : "bg-[#383838]"}`} />
+            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-blue-600" : "bg-border"}`} />
           </div>
         </div>
       );
@@ -472,8 +473,8 @@ export function Sidebar() {
       <div key={section.title} className="mb-6">
         {section.badge && (
           <div className="px-3 pb-1.5 flex items-center gap-1.5">
-            <LockClosedIcon className="size-2.5 text-[#71757D]" />
-            <span className="text-[10px] uppercase tracking-wider text-[#71757D]">{section.badge}</span>
+            <LockClosedIcon className="size-2.5 text-subtle" />
+            <span className="text-[10px] uppercase tracking-wider text-subtle">{section.badge}</span>
           </div>
         )}
         <div className="px-3 space-y-0.5">
@@ -487,13 +488,13 @@ export function Sidebar() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between gap-3 px-2.5 py-2 text-[14px] rounded-md text-[#C7C9CD] hover:text-white hover:bg-[#222222] transition-colors"
+                  className="flex items-center justify-between gap-3 px-2.5 py-2 text-[14px] rounded-md text-muted hover:text-white hover:bg-surface-raised transition-colors"
                 >
                   <span className="flex items-center gap-3">
-                    <span className="text-[#9CA3AF]">{item.icon}</span>
+                    <span className="text-muted">{item.icon}</span>
                     <span>{item.label}</span>
                   </span>
-                  <svg className="size-3 text-[#71757D] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="size-3 text-subtle shrink-0" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       fillRule="evenodd"
                       d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z"
@@ -510,11 +511,11 @@ export function Sidebar() {
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 px-2.5 py-2 text-[14px] rounded-md transition-colors ${
                   active
-                    ? "bg-[#E5E5EA] text-[#0C0C0C] font-medium"
-                    : "text-[#C7C9CD] hover:text-white hover:bg-[#222222]"
+                    ? "bg-foreground text-background font-medium"
+                    : "text-muted hover:text-white hover:bg-surface-raised"
                 }`}
               >
-                <span className={active ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}>{item.icon}</span>
+                <span className={active ? "text-background" : "text-muted"}>{item.icon}</span>
                 <span>{item.label}</span>
               </Link>
             );
@@ -536,16 +537,16 @@ export function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#181818] shadow-[var(--shadow-card)] md:hidden"
+        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface shadow-[var(--shadow-card)] md:hidden"
         aria-label="Open menu"
       >
-        <Bars3Icon className="size-5 text-[#E5E5EA]" />
+        <Bars3Icon className="size-5 text-foreground" />
       </button>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-[#1B1B1B]/10 backdrop-blur-[2px] z-40 md:hidden"
+          className="fixed inset-0 bg-surface/10 backdrop-blur-[2px] z-40 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -556,7 +557,7 @@ export function Sidebar() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           fixed md:relative z-50 md:z-0
-          h-full bg-[#0C0C0C] text-[#E5E5EA] border-r border-[#2A2A2A] font-heading
+          h-full bg-background text-foreground border-r border-border font-heading
           flex flex-col
           transition-all duration-200 ease-in-out
           ${collapsed ? "md:w-16" : "md:w-56"}
@@ -567,17 +568,17 @@ export function Sidebar() {
             taking a full strip. Mobile uses the close icon variant. */}
         <button
           onClick={() => setMobileOpen(false)}
-          className="absolute top-3 right-3 p-1 rounded-lg md:hidden text-[#E5E5EA] z-10"
+          className="absolute top-3 right-3 p-1 rounded-lg md:hidden text-foreground z-10"
           aria-label="Close menu"
         >
           <XMarkIcon className="size-[18px]" />
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute top-3 right-3 p-1 rounded-md hover:bg-[#222222] hidden md:block transition-colors z-10"
+          className="absolute top-3 right-3 p-1 rounded-md hover:bg-surface-raised hidden md:block transition-colors z-10"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? <ChevronRightIcon className="size-3.5 text-[#71757D]" /> : <ChevronLeftIcon className="size-3.5 text-[#71757D]" />}
+          {collapsed ? <ChevronRightIcon className="size-3.5 text-subtle" /> : <ChevronLeftIcon className="size-3.5 text-subtle" />}
         </button>
 
         {/* Navigation. Search trigger lives in the top bar — open via window
@@ -641,10 +642,10 @@ export function Sidebar() {
 
         {/* Team Timezones — moved up off the footer. */}
         {!collapsed && (
-          <div className="mx-3 mt-3 mb-3 px-3 py-2 rounded-md bg-[#0C0C0C] border border-[#2A2A2A] shrink-0">
+          <div className="mx-3 mt-3 mb-3 px-3 py-2 rounded-md bg-background border border-border shrink-0">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <ClockIcon className="size-3 text-[#71757D]" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71757D]">
+              <ClockIcon className="size-3 text-subtle" />
+              <span className="text-[10px] font-medium uppercase tracking-wider text-subtle">
                 Team
               </span>
             </div>
@@ -654,10 +655,10 @@ export function Sidebar() {
                   key={z.tz}
                   className="flex items-center justify-between text-[11px]"
                 >
-                  <span className="text-[#71757D]">
+                  <span className="text-subtle">
                     {z.flag} {z.label}
                   </span>
-                  <span className="tabular-nums text-[#71757D]">
+                  <span className="tabular-nums text-subtle">
                     {now.toLocaleTimeString("en-GB", {
                       timeZone: z.tz,
                       hour: "2-digit",
@@ -672,7 +673,7 @@ export function Sidebar() {
         )}
         {collapsed && (
           <div className="py-2 flex justify-center shrink-0">
-            <ClockIcon className="size-3.5 text-[#71757D]" />
+            <ClockIcon className="size-3.5 text-subtle" />
           </div>
         )}
 
@@ -682,19 +683,19 @@ export function Sidebar() {
             (legacy shared-password sessions). Collapsed view gets the
             icon-only button at the bottom. */}
         {!collapsed && (
-          <div className="px-4 pt-3 pb-2 mt-auto border-t border-[#1A1A1A] flex items-center justify-between gap-2 shrink-0">
+          <div className="px-4 pt-3 pb-2 mt-auto border-t border-surface flex items-center justify-between gap-2 shrink-0">
             <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-medium text-[#E5E5EA] truncate">
+              <div className="text-[12px] font-medium text-foreground truncate">
                 {currentUser?.name ?? "Shared session"}
               </div>
-              <div className="text-[10px] uppercase tracking-wider text-[#71757D] truncate">
+              <div className="text-[10px] uppercase tracking-wider text-subtle truncate">
                 {currentUser?.email ?? `${role} role`}
               </div>
             </div>
             <button
               onClick={() => signOut()}
               title="Sign out"
-              className="shrink-0 p-1.5 rounded-md text-[#71757D] hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+              className="shrink-0 p-1.5 rounded-md text-subtle hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="size-4" />
             </button>
@@ -705,7 +706,7 @@ export function Sidebar() {
             <button
               onClick={() => signOut()}
               title="Sign out"
-              className="p-1.5 rounded-md text-[#71757D] hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+              className="p-1.5 rounded-md text-subtle hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="size-4" />
             </button>
@@ -717,10 +718,12 @@ export function Sidebar() {
             nav at 10 surfaces flat. */}
         {!collapsed && (
           <div className="px-4 pb-4 pt-1 flex items-center gap-2 shrink-0 flex-wrap">
+            <ThemeToggle />
+            <span className="text-[10px] text-[#3F3F46]">·</span>
             <Link
               href="/changelog"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-[#71757D] hover:text-white transition-colors"
+              className="text-[11px] text-subtle hover:text-white transition-colors"
             >
               Launchpad v1.0.0
             </Link>
@@ -728,7 +731,7 @@ export function Sidebar() {
             <Link
               href="/shortcuts"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-[#71757D] hover:text-white transition-colors"
+              className="text-[11px] text-subtle hover:text-white transition-colors"
             >
               Shortcuts
             </Link>
@@ -736,7 +739,7 @@ export function Sidebar() {
             <Link
               href="/shelved"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-[#71757D] hover:text-white transition-colors"
+              className="text-[11px] text-subtle hover:text-white transition-colors"
             >
               Shelved
             </Link>

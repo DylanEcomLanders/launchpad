@@ -171,18 +171,18 @@ export default function StructurePanel() {
   const previewPerson = previewId ? people.find((p) => p.id === previewId) : null;
 
   if (!hydrated) {
-    return <div className="h-96 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-background rounded-xl animate-pulse" />;
   }
 
   if (people.length === 0) {
     return (
-      <div className="bg-[#0F0F10] border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
-        <div className="text-sm text-[#71757D] mb-3">
+      <div className="bg-background border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
+        <div className="text-sm text-subtle mb-3">
           No people yet - add team members to see the org chart.
         </div>
         <Link
           href="/company/people"
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1A1A1A] text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface text-background text-sm rounded-lg hover:opacity-90"
         >
           Go to People
         </Link>
@@ -191,7 +191,7 @@ export default function StructurePanel() {
   }
 
   return (
-    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]" style={{ height: "75vh" }}>
+    <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]" style={{ height: "75vh" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -204,25 +204,25 @@ export default function StructurePanel() {
         <Background color="#E5E5EA" gap={16} />
         <Controls position="bottom-right" />
         <MiniMap nodeColor={(n) => deptColor((n.data as { person: Person })?.person?.department)} pannable zoomable />
-        <Panel position="top-left" className="bg-[#0F0F10] border border-white/[0.04] rounded-lg p-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <Panel position="top-left" className="bg-background border border-white/[0.04] rounded-lg p-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           <div className="flex items-center gap-2">
             <button
               onClick={resetLayout}
-              className="px-2 py-1 text-xs text-[#E5E5EA] hover:bg-[#0C0C0C] rounded"
+              className="px-2 py-1 text-xs text-foreground hover:bg-background rounded"
             >
               Reset layout
             </button>
           </div>
         </Panel>
-        <Panel position="top-right" className="bg-[#0F0F10] border border-white/[0.04] rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-w-[220px]">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-[#71757D] mb-2">
+        <Panel position="top-right" className="bg-background border border-white/[0.04] rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-w-[220px]">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle mb-2">
             Departments
           </div>
           <div className="space-y-1">
             {DEPARTMENTS.map((d) => (
               <div key={d} className="flex items-center gap-2 text-xs">
                 <span className="size-2 rounded-full" style={{ background: deptColor(d) }} />
-                <span className="text-[#71757D]">{d}</span>
+                <span className="text-subtle">{d}</span>
               </div>
             ))}
           </div>
@@ -239,7 +239,7 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
   return (
     <div
       onClick={onOpen}
-      className="bg-[#0F0F10] border border-white/[0.04] rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] hover:border-white/[0.12] transition-colors cursor-pointer"
+      className="bg-background border border-white/[0.04] rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] hover:border-white/[0.12] transition-colors cursor-pointer"
       style={{ width: NODE_W, height: NODE_H }}
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
@@ -257,10 +257,10 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
           </div>
         )}
         <div className="min-w-0">
-          <div className="text-sm font-medium text-[#E5E5EA] truncate">
+          <div className="text-sm font-medium text-foreground truncate">
             {person.preferred_name || person.full_name}
           </div>
-          <div className="text-[11px] text-[#71757D] truncate">{person.job_title || "—"}</div>
+          <div className="text-[11px] text-subtle truncate">{person.job_title || "—"}</div>
         </div>
       </div>
       <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
@@ -270,7 +270,7 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
 
 function PreviewPanel({ person, onClose }: { person: Person; onClose: () => void }) {
   return (
-    <div className="absolute right-4 top-4 bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 shadow-2xl w-72 z-10">
+    <div className="absolute right-4 top-4 bg-background border border-white/[0.04] rounded-xl p-4 shadow-2xl w-72 z-10">
       <div className="flex items-start gap-3 mb-3">
         {person.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -284,14 +284,14 @@ function PreviewPanel({ person, onClose }: { person: Person; onClose: () => void
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-[#E5E5EA] truncate">{person.full_name}</div>
-          <div className="text-xs text-[#71757D] truncate">{person.job_title || "—"}</div>
+          <div className="font-medium text-foreground truncate">{person.full_name}</div>
+          <div className="text-xs text-subtle truncate">{person.job_title || "—"}</div>
         </div>
-        <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA] text-lg leading-none">
+        <button onClick={onClose} className="text-subtle hover:text-foreground text-lg leading-none">
           ×
         </button>
       </div>
-      <div className="space-y-1.5 text-xs text-[#71757D]">
+      <div className="space-y-1.5 text-xs text-subtle">
         {person.department && (
           <div className="flex items-center gap-1.5">
             <span className="size-2 rounded-full" style={{ background: deptColor(person.department) }} />
@@ -303,7 +303,7 @@ function PreviewPanel({ person, onClose }: { person: Person; onClose: () => void
       </div>
       <Link
         href={`/company/people/${person.id}`}
-        className="mt-3 block text-center text-sm bg-white text-[#0C0C0C] py-2 rounded-lg hover:opacity-90"
+        className="mt-3 block text-center text-sm bg-white text-background py-2 rounded-lg hover:opacity-90"
       >
         Open profile →
       </Link>

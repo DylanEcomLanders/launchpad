@@ -102,14 +102,14 @@ function ShowcaseSettingsEditor() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFB]">
-        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-surface-raised">
+        <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
   if (loadError || !settings) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFB] p-8">
+      <div className="min-h-screen flex items-center justify-center bg-surface-raised p-8">
         <div className="text-center">
           <p className="text-sm text-red-600">
             Couldn&apos;t load showcase settings: {loadError}
@@ -120,13 +120,13 @@ function ShowcaseSettingsEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFB]">
+    <div className="min-h-screen bg-surface-raised">
       {/* ── Top bar ───────────────────── */}
-      <header className="border-b border-[#EDEDEF] bg-white">
+      <header className="border-b border-border bg-white">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <Link
             href="/sales-engine/case-studies"
-            className="flex items-center gap-1.5 text-sm font-semibold text-[#1B1B1B] hover:text-[#3A3A3D] transition-colors"
+            className="flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-[#3A3A3D] transition-colors"
           >
             <ArrowLeftIcon className="size-4" />
             All case studies
@@ -137,7 +137,7 @@ function ShowcaseSettingsEditor() {
               href="/case-studies"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#E5E5EA] text-[#1B1B1B] rounded-md hover:bg-[#F7F8FA] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-foreground text-foreground rounded-md hover:bg-surface-raised transition-colors"
             >
               <EyeIcon className="size-3.5" />
               View live
@@ -148,10 +148,10 @@ function ShowcaseSettingsEditor() {
 
       <main className="max-w-3xl mx-auto px-6 py-10 space-y-10">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1B1B1B]">
+          <h1 className="text-2xl font-semibold text-foreground">
             Showcase page settings
           </h1>
-          <p className="text-sm text-[#7A7A7A] mt-1">
+          <p className="text-sm text-subtle mt-1">
             Edit the copy + links on the public{" "}
             <code className="px-1.5 py-0.5 bg-[#F0F2F5] rounded text-[11px]">
               ecomlanders.app/case-studies
@@ -268,11 +268,11 @@ function ShowcaseSettingsEditor() {
         </Section>
 
         {/* ── Reset ── */}
-        <div className="border-t border-[#EDEDEF] pt-8">
+        <div className="border-t border-border pt-8">
           <button
             type="button"
             onClick={resetToDefaults}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#7A7A7A] hover:text-red-500 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-subtle hover:text-red-500 transition-colors"
           >
             <ArrowPathIcon className="size-3.5" />
             Reset all fields to defaults
@@ -295,11 +295,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-white border border-[#EDEDEF] rounded-xl p-6 md:p-7">
+    <section className="bg-white border border-border rounded-xl p-6 md:p-7">
       <div className="mb-5">
-        <h2 className="text-base font-semibold text-[#1B1B1B]">{title}</h2>
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
         {description && (
-          <p className="text-xs text-[#7A7A7A] mt-1">{description}</p>
+          <p className="text-xs text-subtle mt-1">{description}</p>
         )}
       </div>
       <div className="space-y-4">{children}</div>
@@ -324,7 +324,7 @@ function SaveStateBadge({
   error: string | null;
 }) {
   if (state === "saving") {
-    return <span className="text-xs text-[#7A7A7A]">Saving…</span>;
+    return <span className="text-xs text-subtle">Saving…</span>;
   }
   if (state === "saved") {
     return (

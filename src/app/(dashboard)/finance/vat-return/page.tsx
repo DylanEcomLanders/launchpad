@@ -92,14 +92,14 @@ export default function VatReturnPage() {
   }
 
   if (!hydrated) {
-    return <div className="h-96 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-background rounded-xl animate-pulse" />;
   }
 
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-[#E5E5EA] mb-1">VAT return</h2>
-        <p className="text-sm text-[#71757D]">
+        <h2 className="text-xl font-semibold text-foreground mb-1">VAT return</h2>
+        <p className="text-sm text-subtle">
           Standard 9-box HMRC summary for any period, plus a CSV pack the accountant can drop straight into filing.
         </p>
       </div>
@@ -155,13 +155,13 @@ export default function VatReturnPage() {
         </div>
         <button
           onClick={downloadPack}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-background text-sm rounded-lg hover:opacity-90"
         >
           <ArrowDownTrayIcon className="size-4" /> Download VAT pack (.zip)
         </button>
       </div>
 
-      <p className="text-xs text-[#71757D] mb-6">
+      <p className="text-xs text-subtle mb-6">
         {ret.period.start} → {ret.period.end} · {ret.sales.length} sales · {ret.purchases.length} purchases
       </p>
 
@@ -196,16 +196,16 @@ export default function VatReturnPage() {
       </div>
 
       {ret.sales.length > 0 && (
-        <details className="bg-[#181818] border border-[#2A2A2A] rounded-xl shadow-[var(--shadow-soft)] mb-4" open>
-          <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-[#E5E5EA] flex items-center justify-between">
+        <details className="bg-surface border border-border rounded-xl shadow-[var(--shadow-soft)] mb-4" open>
+          <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-foreground flex items-center justify-between">
             <span>Sales detail ({ret.sales.length})</span>
-            <span className="text-xs font-normal text-[#71757D]">
+            <span className="text-xs font-normal text-subtle">
               Net {fmtMoney(ret.box6_totalSalesExVat)} · VAT {fmtMoney(ret.box1_vatOnSales)}
             </span>
           </summary>
-          <div className="overflow-x-auto border-t border-[#2A2A2A]">
+          <div className="overflow-x-auto border-t border-border">
             <table className="w-full text-sm">
-              <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+              <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
                 <tr>
                   <th className="text-left px-4 py-2 font-semibold">Invoice #</th>
                   <th className="text-left px-4 py-2 font-semibold">Date</th>
@@ -218,11 +218,11 @@ export default function VatReturnPage() {
               </thead>
               <tbody>
                 {ret.sales.map((s, i) => (
-                  <tr key={i} className="border-t border-[#2A2A2A]">
+                  <tr key={i} className="border-t border-border">
                     <td className="px-4 py-2 font-medium">{s.invoice_number}</td>
-                    <td className="px-4 py-2 text-[#71757D]">{s.date}</td>
+                    <td className="px-4 py-2 text-subtle">{s.date}</td>
                     <td className="px-4 py-2">{s.client_name}</td>
-                    <td className="px-4 py-2 text-[#71757D] text-xs">{s.treatment}</td>
+                    <td className="px-4 py-2 text-subtle text-xs">{s.treatment}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(s.net)}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(s.vat)}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(s.gross)}</td>
@@ -235,16 +235,16 @@ export default function VatReturnPage() {
       )}
 
       {ret.purchases.length > 0 && (
-        <details className="bg-[#181818] border border-[#2A2A2A] rounded-xl shadow-[var(--shadow-soft)]" open>
-          <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-[#E5E5EA] flex items-center justify-between">
+        <details className="bg-surface border border-border rounded-xl shadow-[var(--shadow-soft)]" open>
+          <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-foreground flex items-center justify-between">
             <span>Purchases detail ({ret.purchases.length})</span>
-            <span className="text-xs font-normal text-[#71757D]">
+            <span className="text-xs font-normal text-subtle">
               Net {fmtMoney(ret.box7_totalPurchasesExVat)} · VAT {fmtMoney(ret.box4_vatReclaimed)}
             </span>
           </summary>
-          <div className="overflow-x-auto border-t border-[#2A2A2A]">
+          <div className="overflow-x-auto border-t border-border">
             <table className="w-full text-sm">
-              <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+              <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
                 <tr>
                   <th className="text-left px-4 py-2 font-semibold">Date</th>
                   <th className="text-left px-4 py-2 font-semibold">Supplier</th>
@@ -256,10 +256,10 @@ export default function VatReturnPage() {
               </thead>
               <tbody>
                 {ret.purchases.map((p, i) => (
-                  <tr key={i} className="border-t border-[#2A2A2A]">
-                    <td className="px-4 py-2 text-[#71757D]">{p.date}</td>
+                  <tr key={i} className="border-t border-border">
+                    <td className="px-4 py-2 text-subtle">{p.date}</td>
                     <td className="px-4 py-2 font-medium">{p.supplier_name}</td>
-                    <td className="px-4 py-2 text-[#71757D] text-xs">{p.category}</td>
+                    <td className="px-4 py-2 text-subtle text-xs">{p.category}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(p.net)}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(p.vat)}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(p.gross)}</td>
@@ -272,8 +272,8 @@ export default function VatReturnPage() {
       )}
 
       {ret.sales.length === 0 && ret.purchases.length === 0 && (
-        <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#71757D]">No invoices or expenses in this period.</p>
+        <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+          <p className="text-sm text-subtle">No invoices or expenses in this period.</p>
         </div>
       )}
     </div>
@@ -299,19 +299,19 @@ function BoxRow({
     accent === "green"
       ? "text-[#047857]"
       : accent === "amber"
-        ? "text-[#B45309]"
-        : "text-[#E5E5EA]";
+        ? "text-warning"
+        : "text-foreground";
   return (
     <div
-      className={`bg-[#181818] border rounded-xl p-4 shadow-[var(--shadow-soft)] flex items-center justify-between ${
+      className={`bg-surface border rounded-xl p-4 shadow-[var(--shadow-soft)] flex items-center justify-between ${
         muted ? "opacity-60" : ""
-      } ${primary ? "border-[#2A2A2A]" : "border-[#2A2A2A]"}`}
+      } ${primary ? "border-border" : "border-border"}`}
     >
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#222222] text-[10px] font-bold text-[#71757D]">
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-surface-raised text-[10px] font-bold text-subtle">
           {num}
         </span>
-        <span className="text-sm text-[#E5E5EA]">{label}</span>
+        <span className="text-sm text-foreground">{label}</span>
       </div>
       <span className={`text-base font-semibold tabular-nums ${color}`}>
         {fmtMoney(value)}

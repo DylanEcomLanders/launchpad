@@ -82,36 +82,36 @@ export default function ScoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C]">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#1B1B1B]">Scout</h1>
-          <p className="text-sm text-[#999] mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Scout</h1>
+          <p className="text-sm text-subtle mt-1">
             Discover DTC brands, research funnels, find decision-makers. Results saved to Leads.
           </p>
         </div>
 
         {/* Config */}
-        <div className="border border-[#E5E5EA] rounded-xl p-5 mb-6">
+        <div className="border border-foreground rounded-xl p-5 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="md:col-span-1">
-              <label className="block text-xs font-medium text-[#999] mb-1.5">Niche / Vertical</label>
+              <label className="block text-xs font-medium text-subtle mb-1.5">Niche / Vertical</label>
               <input
                 type="text"
                 value={niche}
                 onChange={e => setNiche(e.target.value)}
                 placeholder="e.g. Supplements, Pet Food, Skincare"
-                className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+                className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface"
                 onKeyDown={e => e.key === "Enter" && runScout()}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#999] mb-1.5">Brand Count</label>
+              <label className="block text-xs font-medium text-subtle mb-1.5">Brand Count</label>
               <select
                 value={count}
                 onChange={e => setCount(Number(e.target.value))}
-                className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+                className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface"
               >
                 {[5, 10, 15, 20, 25].map(n => (
                   <option key={n} value={n}>{n} brands</option>
@@ -119,13 +119,13 @@ export default function ScoutPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#999] mb-1.5">Slack Channel (optional)</label>
+              <label className="block text-xs font-medium text-subtle mb-1.5">Slack Channel (optional)</label>
               <input
                 type="text"
                 value={slackChannel}
                 onChange={e => setSlackChannel(e.target.value)}
                 placeholder="#scout-reports"
-                className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+                className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface"
               />
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function ScoutPage() {
           <button
             onClick={runScout}
             disabled={running || !niche.trim()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-5 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-40"
           >
             {running ? (
               <>
@@ -158,9 +158,9 @@ export default function ScoutPage() {
               { label: "Skipped (dupes)", value: stats.skipped, color: "#F59E0B" },
               { label: "Web Searches", value: stats.searches, color: "#3B82F6" },
             ].map(s => (
-              <div key={s.label} className="border border-[#E5E5EA] rounded-xl p-4 text-center">
+              <div key={s.label} className="border border-foreground rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-[10px] text-[#999] mt-1 uppercase tracking-wider">{s.label}</p>
+                <p className="text-[10px] text-subtle mt-1 uppercase tracking-wider">{s.label}</p>
               </div>
             ))}
           </div>
@@ -168,20 +168,20 @@ export default function ScoutPage() {
 
         {/* Live log */}
         {log.length > 0 && (
-          <div className="border border-[#E5E5EA] rounded-xl overflow-hidden">
-            <div className="bg-[#FAFAFA] px-4 py-2.5 border-b border-[#E5E5EA] flex items-center gap-2">
-              <BoltIcon className="size-3.5 text-[#999]" />
-              <span className="text-xs font-medium text-[#999]">Live Feed</span>
+          <div className="border border-foreground rounded-xl overflow-hidden">
+            <div className="bg-surface-raised px-4 py-2.5 border-b border-foreground flex items-center gap-2">
+              <BoltIcon className="size-3.5 text-subtle" />
+              <span className="text-xs font-medium text-subtle">Live Feed</span>
               {running && <div className="animate-pulse size-2 rounded-full bg-emerald-400" />}
             </div>
             <div ref={logRef} className="max-h-[500px] overflow-y-auto p-4 space-y-1.5 font-mono text-xs">
               {log.filter(l => l.type !== "text").map((entry, i) => (
                 <div key={i} className="flex gap-2">
-                  <span className="text-[#CCC] shrink-0 w-16">
+                  <span className="text-muted shrink-0 w-16">
                     {new Date(entry.ts).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                   </span>
                   {entry.type === "status" && (
-                    <span className="text-[#666]">{entry.data.message}</span>
+                    <span className="text-subtle">{entry.data.message}</span>
                   )}
                   {entry.type === "search" && (
                     <span className="text-blue-500">Web search #{entry.data.count}</span>

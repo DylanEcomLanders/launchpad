@@ -106,8 +106,8 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
   if (role !== "admin") {
     return (
       <div className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <h1 className="text-xl font-semibold text-[#E5E5EA] mb-2">Admin only</h1>
-        <p className="text-sm text-[#71757D]">
+        <h1 className="text-xl font-semibold text-foreground mb-2">Admin only</h1>
+        <p className="text-sm text-subtle">
           The Admin module is restricted to admins.
         </p>
       </div>
@@ -139,13 +139,13 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
        * when content is short. Hero Offer is the ONE surface that
        * wears the gradient + shimmer chrome - /admin stays clean +
        * soft so Hero Offer keeps its visual throne. */}
-      <div className="min-h-[calc(100dvh-3.5rem)] bg-[#080808] relative">
+      <div className="min-h-[calc(100dvh-3.5rem)] bg-background relative">
         {/* Header sits flush with the page bg. Plain white title,
          * subtle active-tab tint, no gradient theatrics. */}
-        <div className="sticky top-0 z-10 bg-[#080808]/80 backdrop-blur-md">
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
-            <h1 className="text-2xl font-semibold text-[#E5E5EA] mb-1">Admin</h1>
-            <p className="text-sm text-[#71757D] mb-5">
+            <h1 className="text-2xl font-semibold text-foreground mb-1">Admin</h1>
+            <p className="text-sm text-subtle mb-5">
               People, structure, hiring, contracts, settings - everything about running Ecom Landers itself.
             </p>
             <nav className="flex gap-1 overflow-x-auto pb-3">
@@ -158,8 +158,8 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
                     onClick={() => pickTab(tab.id)}
                     className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-all ${
                       active
-                        ? "bg-white/[0.08] text-[#E5E5EA] font-medium ring-1 ring-white/[0.08]"
-                        : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04]"
+                        ? "bg-white/[0.08] text-foreground font-medium ring-1 ring-white/[0.08]"
+                        : "text-subtle hover:text-foreground hover:bg-white/[0.04]"
                     }`}
                   >
                     <Icon className="size-4" />
@@ -170,7 +170,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
               {/* Settings is outside /company so it stays a Link. */}
               <Link
                 href="/settings"
-                className="flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] transition-all"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full text-subtle hover:text-foreground hover:bg-white/[0.04] transition-all"
               >
                 <Cog6ToothIcon className="size-4" />
                 Settings

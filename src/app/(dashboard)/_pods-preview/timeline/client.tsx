@@ -88,12 +88,12 @@ export default function TimelineClient() {
       </AnnotationStrip>
 
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-[#E5E5EA]">Timeline &amp; KPIs</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Timeline &amp; KPIs</h1>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setScope("all")}
             className={`rounded-md px-2.5 py-1.5 text-sm font-medium ${
-              scope === "all" ? "bg-white text-[#0C0C0C]" : "text-[#71757D] hover:bg-[#222222]"
+              scope === "all" ? "bg-white text-background" : "text-subtle hover:bg-surface-raised"
             }`}
           >
             All pods
@@ -103,7 +103,7 @@ export default function TimelineClient() {
               key={p.id}
               onClick={() => setScope(p.id)}
               className={`rounded-md px-2.5 py-1.5 text-sm font-medium ${
-                scope === p.id ? "bg-white text-[#0C0C0C]" : "text-[#71757D] hover:bg-[#222222]"
+                scope === p.id ? "bg-white text-background" : "text-subtle hover:bg-surface-raised"
               }`}
             >
               P{i + 1}
@@ -146,9 +146,9 @@ export default function TimelineClient() {
             const isBottleneck = bottleneck?.phase === p.phase;
             return (
               <div key={p.phase} className="flex items-center gap-3">
-                <div className="flex w-48 shrink-0 items-center justify-end gap-1.5 text-[12px] text-[#71757D]">
-                  {p.visits > 1 && <span className="text-[10px] text-[#71757D]">×{p.visits}</span>}
-                  <span className={isBottleneck ? "font-semibold text-[#E5E5EA]" : ""}>
+                <div className="flex w-48 shrink-0 items-center justify-end gap-1.5 text-[12px] text-subtle">
+                  {p.visits > 1 && <span className="text-[10px] text-subtle">×{p.visits}</span>}
+                  <span className={isBottleneck ? "font-semibold text-foreground" : ""}>
                     {PHASE_LABEL[p.phase]}
                   </span>
                   {isBottleneck && (
@@ -157,7 +157,7 @@ export default function TimelineClient() {
                     </span>
                   )}
                 </div>
-                <div className="h-5 flex-1 overflow-hidden rounded-md bg-[#222222]">
+                <div className="h-5 flex-1 overflow-hidden rounded-md bg-surface-raised">
                   <div className="relative h-full" style={{ width: `${widthPct}%`, backgroundColor: ramp.bg }}>
                     {clientPct > 0 && (
                       <span
@@ -167,7 +167,7 @@ export default function TimelineClient() {
                     )}
                   </div>
                 </div>
-                <div className="w-20 text-right text-[12px] tabular-nums text-[#E5E5EA]">
+                <div className="w-20 text-right text-[12px] tabular-nums text-foreground">
                   {p.days}d
                   {p.clientDays > 0 && (
                     <span className="text-[10px] text-blue-600"> · {p.clientDays}d</span>
@@ -177,11 +177,11 @@ export default function TimelineClient() {
             );
           })}
         </div>
-        <div className="mt-3 flex items-center gap-1.5 border-t border-[#F0F0F2] pt-3 text-[10px] text-[#71757D]">
+        <div className="mt-3 flex items-center gap-1.5 border-t border-surface-raised pt-3 text-[10px] text-subtle">
           <span className="inline-block h-2.5 w-4 rounded-sm" style={{ backgroundImage: CLIENT_HATCH }} />
           Hatched / blue figure = client-side time
         </div>
-        <div className="mt-1 flex items-center gap-1.5 text-[10px] text-[#71757D]">
+        <div className="mt-1 flex items-center gap-1.5 text-[10px] text-subtle">
           <span className="inline-block h-2.5 w-12 rounded-sm bg-gradient-to-r from-[hsl(222_13%_93%)] to-[hsl(222_13%_70%)]" />
           Greyscale = phase order (onboarding → launch)
         </div>
@@ -195,7 +195,7 @@ export default function TimelineClient() {
           if (!podTasks.length) return null;
           return (
             <div key={pod.id}>
-              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-subtle">
                 {pod.name} · {pod.tagline}
               </div>
               <div className="space-y-3">
@@ -223,12 +223,12 @@ function Kpi({
   tone?: "default" | "amber" | "rose";
 }) {
   const valueTone =
-    tone === "rose" ? "text-rose-700" : tone === "amber" ? "text-amber-700" : "text-[#E5E5EA]";
+    tone === "rose" ? "text-rose-700" : tone === "amber" ? "text-amber-700" : "text-foreground";
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] px-4 py-3 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</div>
+    <div className="rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
       <div className={`mt-1 text-2xl font-semibold tabular-nums ${valueTone}`}>{value}</div>
-      {hint && <div className="mt-0.5 text-[11px] text-[#71757D]">{hint}</div>}
+      {hint && <div className="mt-0.5 text-[11px] text-subtle">{hint}</div>}
     </div>
   );
 }
@@ -238,13 +238,13 @@ function TaskTimelineRow({ task }: { task: Task }) {
   const total = (task.spans ?? []).reduce((s, sp) => s + sp.days, 0);
   const clientDays = (task.spans ?? []).reduce((s, sp) => s + sp.clientDays, 0);
   return (
-    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3 shadow-[var(--shadow-soft)]">
+    <div className="rounded-lg border border-border bg-surface p-3 shadow-[var(--shadow-soft)]">
       <div className="mb-2 flex items-center justify-between">
         <div className="min-w-0">
-          <span className="text-sm font-medium text-[#E5E5EA]">{task.title}</span>
-          <span className="ml-2 text-[11px] text-[#71757D]">{client?.name}</span>
+          <span className="text-sm font-medium text-foreground">{task.title}</span>
+          <span className="ml-2 text-[11px] text-subtle">{client?.name}</span>
         </div>
-        <div className="shrink-0 text-[12px] tabular-nums text-[#71757D]">
+        <div className="shrink-0 text-[12px] tabular-nums text-subtle">
           {total}d total
           {clientDays > 0 && <span className="text-blue-600"> · {clientDays}d client</span>}
         </div>

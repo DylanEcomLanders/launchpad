@@ -22,13 +22,13 @@ export function WorkspaceNav() {
   // Pods / Clients) don't apply to them — they just see their pod board.
   const isMember = role === "team";
   return (
-    <header className="sticky top-0 z-20 border-b border-[#2A2A2A]/70 bg-[#0C0C0C]/85 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-[1240px] items-center gap-6 px-6">
         <Link href="/workspace" className="flex items-center gap-2 py-4">
-          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-900 text-[11px] font-bold text-[#E5E5EA]">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-900 text-[11px] font-bold text-foreground">
             W
           </span>
-          <span className="font-heading text-sm font-semibold text-[#E5E5EA]">
+          <span className="font-heading text-sm font-semibold text-foreground">
             {isMember ? "My pod" : "Workspace"}
           </span>
         </Link>
@@ -41,8 +41,8 @@ export function WorkspaceNav() {
                 href={t.href}
                 className={`relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   active
-                    ? "text-[#E5E5EA]"
-                    : "text-[#9CA3AF] hover:text-[#E5E5EA]"
+                    ? "text-foreground"
+                    : "text-muted hover:text-foreground"
                 }`}
               >
                 {t.label}
@@ -57,8 +57,8 @@ export function WorkspaceNav() {
               href="/workspace/team"
               className={`relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 pathname.startsWith("/workspace/team")
-                  ? "text-[#E5E5EA]"
-                  : "text-[#9CA3AF] hover:text-[#E5E5EA]"
+                  ? "text-foreground"
+                  : "text-muted hover:text-foreground"
               }`}
             >
               Team access
@@ -71,9 +71,9 @@ export function WorkspaceNav() {
 
         {/* Signed-in identity (magic-link sessions) */}
         {me && (
-          <div className="ml-auto flex items-center gap-2 py-4 text-xs text-[#9CA3AF]">
+          <div className="ml-auto flex items-center gap-2 py-4 text-xs text-muted">
             <span className="hidden sm:inline">{me.name}</span>
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2A2A2A] text-[10px] font-semibold text-[#9CA3AF]">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-border text-[10px] font-semibold text-muted">
               {me.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
             </span>
           </div>

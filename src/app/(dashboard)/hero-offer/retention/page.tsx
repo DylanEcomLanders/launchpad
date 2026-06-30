@@ -127,7 +127,7 @@ export default function RetentionPage() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -136,7 +136,7 @@ export default function RetentionPage() {
   return (
     <div className="space-y-10">
       <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+        <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
           <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
           Tools
         </h2>
@@ -144,17 +144,17 @@ export default function RetentionPage() {
       </section>
 
       <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+        <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
           <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
           Playbook notes
         </h2>
-        <p className="text-[12px] text-[#71757D] mb-4 max-w-2xl">
+        <p className="text-[12px] text-subtle mb-4 max-w-2xl">
           Free-form copy for the CSM team: retention principles, comms cadence, expansion levers, anything that doesn&apos;t belong in a tool.
         </p>
         <div className="space-y-3">
           {sections.length === 0 ? (
-            <div className="bg-[#0F0F10] rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
-              <p className="text-sm text-[#71757D]">
+            <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+              <p className="text-sm text-subtle">
                 {isAdmin
                   ? "Add overarching retention principles, comms cadence, expansion levers."
                   : "Nothing here yet."}
@@ -181,7 +181,7 @@ export default function RetentionPage() {
           {isAdmin && (
             <button
               onClick={addSection}
-              className="w-full py-3 rounded-2xl text-[13px] text-[#71757D] ring-1 ring-dashed ring-white/[0.08] hover:ring-sky-500/40 hover:text-[#E5E5EA] hover:bg-sky-500/[0.04] transition-all"
+              className="w-full py-3 rounded-2xl text-[13px] text-subtle ring-1 ring-dashed ring-white/[0.08] hover:ring-sky-500/40 hover:text-foreground hover:bg-sky-500/[0.04] transition-all"
             >
               + Add section
             </button>

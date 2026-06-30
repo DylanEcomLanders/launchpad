@@ -137,8 +137,8 @@ export default function PortfolioV2AdminPage() {
     <div className="p-6 md:p-10 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1B1B1B]">Portfolio v2 (Beta)</h1>
-          <p className="text-sm text-[#7A7A7A] mt-1">
+          <h1 className="text-2xl font-semibold text-foreground">Portfolio v2 (Beta)</h1>
+          <p className="text-sm text-subtle mt-1">
             Pull design screenshots from Figma, auto-slice, and serve.
           </p>
         </div>
@@ -147,16 +147,16 @@ export default function PortfolioV2AdminPage() {
             resetForm();
             setModalOpen(true);
           }}
-          className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          className="px-4 py-2 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors"
         >
           Add Project
         </button>
       </div>
 
       {loading ? (
-        <div className="text-sm text-[#7A7A7A]">Loading...</div>
+        <div className="text-sm text-subtle">Loading...</div>
       ) : projects.length === 0 ? (
-        <div className="text-sm text-[#7A7A7A] border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
+        <div className="text-sm text-subtle border border-dashed border-foreground rounded-xl p-12 text-center">
           No projects yet. Click &ldquo;Add Project&rdquo; to get started.
         </div>
       ) : (
@@ -164,19 +164,19 @@ export default function PortfolioV2AdminPage() {
           {projects.map((p) => (
             <div
               key={p.id}
-              className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]"
+              className="bg-surface border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]"
             >
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
-                  <h3 className="font-semibold text-[#1B1B1B]">{p.name}</h3>
+                  <h3 className="font-semibold text-foreground">{p.name}</h3>
                   {p.client && (
-                    <p className="text-xs text-[#7A7A7A] mt-0.5">{p.client}</p>
+                    <p className="text-xs text-subtle mt-0.5">{p.client}</p>
                   )}
                 </div>
                 <Link
                   href={`/portfolio-v2/${p.slug}`}
                   target="_blank"
-                  className="text-xs font-semibold text-[#1B1B1B] hover:underline"
+                  className="text-xs font-semibold text-foreground hover:underline"
                 >
                   View →
                 </Link>
@@ -186,26 +186,26 @@ export default function PortfolioV2AdminPage() {
                   {p.tags.map((t) => (
                     <span
                       key={t}
-                      className="text-[10px] uppercase tracking-wide px-2 py-0.5 bg-[#F5F5F7] text-[#7A7A7A] rounded-full"
+                      className="text-[10px] uppercase tracking-wide px-2 py-0.5 bg-[#F5F5F7] text-subtle rounded-full"
                     >
                       {t}
                     </span>
                   ))}
                 </div>
               )}
-              <div className="text-xs text-[#7A7A7A] mb-3">
+              <div className="text-xs text-subtle mb-3">
                 {p.desktop_slices.length} desktop / {p.mobile_slices.length} mobile slices
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleResync(p)}
-                  className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-md hover:bg-[#222222]"
+                  className="text-xs px-3 py-1.5 border border-foreground rounded-md hover:bg-surface-raised"
                 >
                   Re-sync
                 </button>
                 <button
                   onClick={() => handleDelete(p)}
-                  className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-md hover:bg-[#222222] text-red-600"
+                  className="text-xs px-3 py-1.5 border border-foreground rounded-md hover:bg-surface-raised text-red-600"
                 >
                   Delete
                 </button>
@@ -218,12 +218,12 @@ export default function PortfolioV2AdminPage() {
       {modalOpen && (
         <ModalPortal>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-[#181818] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
-              <div className="sticky top-0 bg-[#181818] border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between">
-                <h2 className="font-semibold text-[#1B1B1B]">New Portfolio Project</h2>
+            <div className="bg-surface rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+              <div className="sticky top-0 bg-surface border-b border-border px-6 py-4 flex items-center justify-between">
+                <h2 className="font-semibold text-foreground">New Portfolio Project</h2>
                 <button
                   onClick={() => setModalOpen(false)}
-                  className="text-[#7A7A7A] hover:text-[#1B1B1B] text-xl leading-none"
+                  className="text-subtle hover:text-foreground text-xl leading-none"
                 >
                   ×
                 </button>
@@ -275,7 +275,7 @@ export default function PortfolioV2AdminPage() {
                     onChange={(e) => setForm((f) => ({ ...f, desktopFrameUrl: e.target.value }))}
                     placeholder="https://www.figma.com/design/ABC123/Portfolio?node-id=4-567"
                   />
-                  <p className="text-[11px] text-[#A0A0A0] mt-1">
+                  <p className="text-[11px] text-muted mt-1">
                     Right-click frame in Figma → Copy link to selection
                   </p>
                 </div>
@@ -290,7 +290,7 @@ export default function PortfolioV2AdminPage() {
                 </div>
 
                 {progress && (
-                  <div className="text-sm text-[#1B1B1B] bg-[#222222] rounded-lg px-4 py-3">
+                  <div className="text-sm text-foreground bg-surface-raised rounded-lg px-4 py-3">
                     {progress}
                   </div>
                 )}
@@ -304,14 +304,14 @@ export default function PortfolioV2AdminPage() {
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="px-4 py-2 text-sm border border-[#E5E5EA] rounded-lg hover:bg-[#222222]"
+                    className="px-4 py-2 text-sm border border-foreground rounded-lg hover:bg-surface-raised"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!!progress}
-                    className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] disabled:opacity-50"
+                    className="px-4 py-2 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border disabled:opacity-50"
                   >
                     {progress ? "Working..." : "Sync from Figma"}
                   </button>

@@ -59,8 +59,8 @@ export function ChannelStatusChip() {
 
   if (!statuses) {
     return (
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181818] border border-[#2A2A2A] text-[11px] text-[#71757D]">
-        <span className="size-1.5 rounded-full bg-[#4B4D52]" />
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-border text-[11px] text-subtle">
+        <span className="size-1.5 rounded-full bg-border" />
         Channels loading
       </div>
     );
@@ -70,7 +70,7 @@ export function ChannelStatusChip() {
   const allStubbed = liveCount === 0;
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181818] border border-[#2A2A2A]">
+    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-border">
       {CHANNEL_ORDER.map((c) => {
         const s = statuses[c];
         const live = s?.live ?? false;
@@ -94,7 +94,7 @@ export function ChannelStatusChip() {
           </span>
         );
       })}
-      <span className="text-[10px] text-[#4B4D52] ml-1">
+      <span className="text-[10px] text-border ml-1">
         {allStubbed ? "all stubbed" : `${liveCount}/${CHANNEL_ORDER.length} live`}
       </span>
     </div>

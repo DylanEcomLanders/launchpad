@@ -41,7 +41,7 @@ export function ScreenshotStrip({ urls, onRemove, compact }: Props) {
             <button
               type="button"
               onClick={() => setOpen(url)}
-              className={`${size} rounded-md border border-[#2A2A2A] overflow-hidden bg-[#0C0C0C] hover:border-[#1A1A1A] transition-colors block`}
+              className={`${size} rounded-md border border-border overflow-hidden bg-background hover:border-surface transition-colors block`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -58,7 +58,7 @@ export function ScreenshotStrip({ urls, onRemove, compact }: Props) {
                   e.stopPropagation();
                   onRemove(url);
                 }}
-                className="absolute -top-1 -right-1 size-4 rounded-full bg-white text-[#0C0C0C] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-1 -right-1 size-4 rounded-full bg-white text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="Remove screenshot"
               >
                 <XMarkIcon className="size-2.5" />
@@ -76,7 +76,7 @@ export function ScreenshotStrip({ urls, onRemove, compact }: Props) {
           <button
             type="button"
             onClick={() => setOpen(null)}
-            className="absolute top-4 right-4 size-9 rounded-full bg-[#181818]/10 hover:bg-[#181818]/20 text-white flex items-center justify-center"
+            className="absolute top-4 right-4 size-9 rounded-full bg-surface/10 hover:bg-surface/20 text-white flex items-center justify-center"
             aria-label="Close"
           >
             <XMarkIcon className="size-5" />

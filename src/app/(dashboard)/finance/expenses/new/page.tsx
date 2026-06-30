@@ -106,24 +106,24 @@ export default function NewExpensePage() {
     <div>
       <Link
         href="/finance/expenses"
-        className="inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA] mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground mb-6 transition-colors"
       >
         <ArrowLeftIcon className="size-4" /> Back to expenses
       </Link>
 
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-[#E5E5EA]">New expense</h2>
+        <h2 className="text-xl font-semibold text-foreground">New expense</h2>
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-[#991B1B] text-[#FCA5A5] rounded-lg text-sm">
+        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger text-[#FCA5A5] rounded-lg text-sm">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             What & Who
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,7 +166,7 @@ export default function NewExpensePage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Amount & VAT
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -185,16 +185,16 @@ export default function NewExpensePage() {
             </div>
             <div className="flex flex-col">
               <label className={labelClass}>VAT included?</label>
-              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-[#181818] border border-[#2A2A2A] rounded-lg cursor-pointer">
+              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface border border-border rounded-lg cursor-pointer">
                 <input
                   type="checkbox"
                   checked={vatIncluded}
                   onChange={(e) => setVatIncluded(e.target.checked)}
-                  className="rounded border-[#2A2A2A]"
+                  className="rounded border-border"
                 />
                 <span className="text-sm">Amount includes UK VAT (20%)</span>
               </label>
-              <p className="text-[11px] text-[#71757D] mt-2">
+              <p className="text-[11px] text-subtle mt-2">
                 Required to track reclaimable input VAT once VAT registered
               </p>
             </div>
@@ -216,7 +216,7 @@ export default function NewExpensePage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Dates
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -256,7 +256,7 @@ export default function NewExpensePage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Document & Notes
           </h3>
           <div className="grid grid-cols-1 gap-4">
@@ -273,7 +273,7 @@ export default function NewExpensePage() {
                 className="text-sm"
               />
               {uploading && (
-                <p className="text-[11px] text-[#71757D] mt-1 inline-flex items-center gap-1.5">
+                <p className="text-[11px] text-subtle mt-1 inline-flex items-center gap-1.5">
                   <ArrowPathIcon className="size-3 animate-spin" /> Uploading...
                 </p>
               )}
@@ -295,17 +295,17 @@ export default function NewExpensePage() {
           </div>
         </section>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-[#2A2A2A]">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Link
             href="/finance/expenses"
-            className="px-5 py-3 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+            className="px-5 py-3 text-sm text-subtle hover:text-foreground"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving || uploading}
-            className="flex items-center gap-2 px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save expense

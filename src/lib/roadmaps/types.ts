@@ -66,7 +66,7 @@ export const STATUS_LABEL: Record<RoadmapItemStatus, string> = {
 };
 
 export const STATUS_TINT: Record<RoadmapItemStatus, string> = {
-  planned: "bg-[#222222] text-[#9CA3AF]",
+  planned: "bg-surface-raised text-muted",
   in_progress: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
   done: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
   skipped: "bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30",

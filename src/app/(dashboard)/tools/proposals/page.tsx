@@ -84,8 +84,8 @@ export default function ProposalsListPage() {
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">Proposals are admin / CRO only.</p>
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">Proposals are admin / CRO only.</p>
         </div>
       </div>
     );
@@ -103,14 +103,14 @@ export default function ProposalsListPage() {
               Proposals
             </h1>
           </div>
-          <p className="text-sm text-[#9CA3AF] max-w-2xl">
+          <p className="text-sm text-muted max-w-2xl">
             After the verbal yes - tier, terms, guarantee, prepay. Sent as a
             branded link the lead opens without auth.
           </p>
         </div>
         <button
           onClick={createNew}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0"
         >
           <PlusIcon className="size-4" />
           New proposal
@@ -119,12 +119,12 @@ export default function ProposalsListPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D]" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search brand, contact, tier"
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-[#0F0F10] ring-1 ring-white/[0.06] text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-emerald-500/40"
+            className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40"
           />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -134,8 +134,8 @@ export default function ProposalsListPage() {
               onClick={() => setFilter(f.value)}
               className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                 filter === f.value
-                  ? "bg-white text-[#0C0C0C]"
-                  : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"
+                  ? "bg-white text-background"
+                  : "bg-surface text-muted hover:bg-surface-raised"
               }`}
             >
               {f.label}
@@ -147,12 +147,12 @@ export default function ProposalsListPage() {
       {!hydrated ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D] mb-4">
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle mb-4">
             {proposals.length === 0
               ? "No proposals yet. Start one after a verbal yes."
               : "No proposals match the current filter."}
@@ -164,19 +164,19 @@ export default function ProposalsListPage() {
             <li key={p.id}>
               <Link
                 href={`/tools/proposals/${p.id}`}
-                className="block bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all"
+                className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all"
               >
                 <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-[#E5E5EA] truncate">
+                      <span className="text-sm font-semibold text-foreground truncate">
                         {p.brand_name || "Untitled proposal"}
                       </span>
                       <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${STATUS_TINT[p.status]}`}>
                         {STATUS_LABEL[p.status]}
                       </span>
                     </div>
-                    <div className="text-[12px] text-[#71757D] flex items-center gap-2 flex-wrap">
+                    <div className="text-[12px] text-subtle flex items-center gap-2 flex-wrap">
                       <span>{p.tier}</span>
                       <span>· {formatMoney(p.monthly_fee, p.fee_currency)}/mo</span>
                       <span>· {p.term_months}-mo term</span>
@@ -204,7 +204,7 @@ export default function ProposalsListPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-emerald-300"
+                        className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-emerald-300"
                       >
                         View
                         <ArrowTopRightOnSquareIcon className="size-3.5" />

@@ -42,10 +42,10 @@ function nextResult(current: SelfCheckResult): SelfCheckResult {
 }
 
 const resultStyles: Record<SelfCheckResult, { label: string; bg: string; text: string }> = {
-  "": { label: "\u2014", bg: "bg-[#222222]", text: "text-[#C5C5C5]" },
+  "": { label: "\u2014", bg: "bg-surface-raised", text: "text-muted" },
   pass: { label: "Pass", bg: "bg-emerald-50", text: "text-emerald-600" },
   fail: { label: "Fail", bg: "bg-red-50", text: "text-red-500" },
-  na: { label: "N/A", bg: "bg-[#222222]", text: "text-[#999999]" },
+  na: { label: "N/A", bg: "bg-surface-raised", text: "text-subtle" },
 };
 
 export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } = {}) {
@@ -176,13 +176,13 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
             Dev Self-Check
           </h1>
-          <p className="text-[#71757D]">
+          <p className="text-subtle">
             Run through this checklist before handing off to QA — catch issues before they cost you time
           </p>
         </div>
 
         {/* Project Info */}
-        <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5 space-y-4 mb-8">
+        <div className="bg-surface-raised border border-border rounded-lg p-5 space-y-4 mb-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>Project Name</label>
@@ -222,9 +222,9 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
 
         {/* Stats Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-          <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">Pass Rate</p>
-            <p className={`text-xl font-bold ${passRate >= 90 ? "text-emerald-500" : passRate >= 70 ? "text-amber-500" : stats.checked === 0 ? "text-[#C5C5C5]" : "text-red-500"}`}>
+          <div className="bg-surface border border-border rounded-lg p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Pass Rate</p>
+            <p className={`text-xl font-bold ${passRate >= 90 ? "text-emerald-500" : passRate >= 70 ? "text-amber-500" : stats.checked === 0 ? "text-muted" : "text-red-500"}`}>
               {stats.checked > 0 ? `${passRate}%` : "\u2014"}
             </p>
           </div>
@@ -236,9 +236,9 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
             <p className="text-[10px] font-semibold uppercase tracking-wider text-red-300 mb-1">Fail</p>
             <p className="text-xl font-bold text-red-500">{stats.fail}</p>
           </div>
-          <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">Unchecked</p>
-            <p className="text-xl font-bold text-[#999999]">{stats.unchecked}</p>
+          <div className="bg-surface border border-border rounded-lg p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Unchecked</p>
+            <p className="text-xl font-bold text-subtle">{stats.unchecked}</p>
           </div>
         </div>
 
@@ -250,16 +250,16 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
             const isCollapsed = collapsed[cat];
 
             return (
-              <div key={cat} className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden">
+              <div key={cat} className="bg-surface border border-border rounded-lg overflow-hidden">
                 {/* Category header */}
                 <button
                   onClick={() => setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }))}
-                  className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[#0C0C0C] transition-colors"
+                  className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-background transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <ChevronDownIcon className={`size-3.5 text-[#71757D] transition-transform ${isCollapsed ? "-rotate-90" : ""}`} />
+                    <ChevronDownIcon className={`size-3.5 text-subtle transition-transform ${isCollapsed ? "-rotate-90" : ""}`} />
                     <span className="text-sm font-semibold">{cat}</span>
-                    <span className="text-[10px] text-[#71757D]">
+                    <span className="text-[10px] text-subtle">
                       {catStat.pass}/{catStat.total - catStat.na} pass
                     </span>
                   </div>
@@ -272,11 +272,11 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
 
                 {/* Items */}
                 {!isCollapsed && (
-                  <div className="border-t border-[#2A2A2A]">
+                  <div className="border-t border-border">
                     {catItems.map((item) => {
                       const style = resultStyles[item.result];
                       return (
-                        <div key={item.id} className="border-b border-[#2A2A2A] last:border-b-0">
+                        <div key={item.id} className="border-b border-border last:border-b-0">
                           <div className="flex items-center gap-3 px-5 py-3">
                             {/* Result toggle */}
                             <button
@@ -286,7 +286,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                               {style.label}
                             </button>
                             {/* Description */}
-                            <span className={`flex-1 text-sm ${item.result === "pass" ? "text-[#999999] line-through" : ""}`}>
+                            <span className={`flex-1 text-sm ${item.result === "pass" ? "text-subtle line-through" : ""}`}>
                               {item.description}
                             </span>
                             {/* Actions */}
@@ -294,7 +294,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                               <button
                                 onClick={() => setNotesOpen((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
                                 className={`p-1 rounded transition-colors ${
-                                  item.notes ? "text-blue-500" : "text-[#C5C5C5] hover:text-[#999999]"
+                                  item.notes ? "text-blue-500" : "text-muted hover:text-subtle"
                                 }`}
                                 title="Notes"
                               >
@@ -302,7 +302,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                               </button>
                               <button
                                 onClick={() => removeItem(item.id)}
-                                className="p-1 text-[#C5C5C5] hover:text-red-400 transition-colors"
+                                className="p-1 text-muted hover:text-red-400 transition-colors"
                                 title="Remove"
                               >
                                 <TrashIcon className="size-3.5" />
@@ -317,7 +317,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                                 value={item.notes}
                                 onChange={(e) => updateItem(item.id, { notes: e.target.value })}
                                 placeholder="Add a note..."
-                                className="w-full px-3 py-2 text-xs bg-[#0C0C0C] border border-[#2A2A2A] rounded-md focus:outline-none focus:border-[#999999]"
+                                className="w-full px-3 py-2 text-xs bg-background border border-border rounded-md focus:outline-none focus:border-subtle"
                               />
                             </div>
                           )}
@@ -334,19 +334,19 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                           onChange={(e) => setNewItemText(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && addCustomItem(cat)}
                           placeholder="Describe the check..."
-                          className="flex-1 px-3 py-2 text-xs bg-[#0C0C0C] border border-[#2A2A2A] rounded-md focus:outline-none focus:border-[#999999]"
+                          className="flex-1 px-3 py-2 text-xs bg-background border border-border rounded-md focus:outline-none focus:border-subtle"
                           autoFocus
                         />
                         <button
                           onClick={() => addCustomItem(cat)}
                           disabled={!newItemText.trim()}
-                          className="px-3 py-2 text-xs font-medium bg-[#222222] text-[#E5E5EA] rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
+                          className="px-3 py-2 text-xs font-medium bg-surface-raised text-foreground rounded-md hover:bg-border transition-colors disabled:opacity-40"
                         >
                           Add
                         </button>
                         <button
                           onClick={() => { setAddingTo(null); setNewItemText(""); }}
-                          className="px-3 py-2 text-xs text-[#999999] hover:text-[#E5E5EA]"
+                          className="px-3 py-2 text-xs text-subtle hover:text-foreground"
                         >
                           Cancel
                         </button>
@@ -354,7 +354,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                     ) : (
                       <button
                         onClick={() => setAddingTo(cat)}
-                        className="flex items-center gap-1.5 px-5 py-3 text-xs text-[#71757D] hover:text-[#71757D] transition-colors w-full"
+                        className="flex items-center gap-1.5 px-5 py-3 text-xs text-subtle hover:text-subtle transition-colors w-full"
                       >
                         <PlusIcon className="size-3" />
                         Add item
@@ -382,7 +382,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
           </button>
           <button
             onClick={resetAll}
-            className="flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-md border border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:border-[#C5C5C5] hover:text-[#E5E5EA] transition-colors"
+            className="flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-md border border-border bg-surface text-subtle hover:border-muted hover:text-foreground transition-colors"
           >
             Reset
           </button>

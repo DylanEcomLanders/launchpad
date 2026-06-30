@@ -283,7 +283,7 @@ function Character(p: AvatarProps): ReactElement {
   return (
     <div
       style={{ width: size, height: size }}
-      className="shrink-0 overflow-hidden rounded-md bg-[#F3F3F5]"
+      className="shrink-0 overflow-hidden rounded-md bg-surface-raised"
     >
       <svg
         viewBox="10 0 100 100"
@@ -357,7 +357,7 @@ export function PodAvatar({ name, size = 48, isPlaceholder, avatarUrl }: PodAvat
     return (
       <div
         style={{ width: size, height: size }}
-        className="grid shrink-0 place-items-center rounded-md border border-dashed border-[#C5C5C5] bg-white"
+        className="grid shrink-0 place-items-center rounded-md border border-dashed border-muted bg-white"
       >
         <svg
           viewBox="0 0 120 120"

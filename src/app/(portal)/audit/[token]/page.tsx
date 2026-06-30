@@ -38,14 +38,14 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
           <div className="mb-8">
             <Logo height={16} />
           </div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#CCC] mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted mb-3">
             PREPARED BY ECOMLANDERS · CONFIDENTIAL
           </p>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1A1A1A] mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-surface mb-2">
             CRO Audit
           </h1>
-          <p className="text-lg text-[#777] mb-4 capitalize">{audit.brand_name}</p>
-          <p className="text-xs text-[#AAA]">
+          <p className="text-lg text-subtle mb-4 capitalize">{audit.brand_name}</p>
+          <p className="text-xs text-muted">
             {date} · Conversion Architecture Review · {issueCount} Issues Identified
           </p>
         </div>
@@ -53,7 +53,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
         {/* Page Speed */}
         {audit.speed_data && (
           <section className="mb-12">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-surface mb-4 pb-2 border-b border-foreground">
               Page Speed (Mobile)
             </h2>
             {(() => {
@@ -70,11 +70,11 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
               return (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {metrics.map((m) => (
-                    <div key={m.label} className="border border-[#E8E8E8] rounded-xl px-4 py-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">{m.label}</p>
+                    <div key={m.label} className="border border-foreground rounded-xl px-4 py-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{m.label}</p>
                       <div className="flex items-end gap-2">
                         <p className={`text-lg font-bold tabular-nums ${m.pass ? "text-emerald-600" : m.warn ? "text-amber-600" : "text-red-500"}`}>{m.value}</p>
-                        <p className={`text-[10px] mb-0.5 ${m.pass ? "text-emerald-500" : "text-[#CCC]"}`}>
+                        <p className={`text-[10px] mb-0.5 ${m.pass ? "text-emerald-500" : "text-muted"}`}>
                           {m.pass ? "✓" : `Goal: ${m.benchmark}`}
                         </p>
                       </div>
@@ -88,28 +88,28 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
 
         {/* Executive Summary */}
         <section className="mb-12">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-surface mb-4 pb-2 border-b border-foreground">
             Executive Summary
           </h2>
-          <div className="text-sm text-[#444] leading-[1.8] whitespace-pre-wrap">
+          <div className="text-sm text-border leading-[1.8] whitespace-pre-wrap">
             {audit.executive_summary}
           </div>
         </section>
 
         {/* Scorecard */}
         <section className="mb-12">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-surface mb-4 pb-2 border-b border-foreground">
             Scorecard
           </h2>
-          <p className="text-xs text-[#AAA] mb-4">Current estimated performance by section.</p>
-          <div className="border border-[#E8E8E8] rounded-xl overflow-hidden">
-            <div className="grid grid-cols-[1fr_100px] px-4 py-2 bg-[#FAFAFA] border-b border-[#E8E8E8]">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Area</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] text-center">Rating</span>
+          <p className="text-xs text-muted mb-4">Current estimated performance by section.</p>
+          <div className="border border-foreground rounded-xl overflow-hidden">
+            <div className="grid grid-cols-[1fr_100px] px-4 py-2 bg-surface-raised border-b border-foreground">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">Area</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted text-center">Rating</span>
             </div>
             {(audit.scorecard || []).map((s, i) => (
-              <div key={i} className="grid grid-cols-[1fr_100px] px-4 py-3 border-b border-[#F0F0F0] last:border-0 items-center">
-                <span className="text-sm text-[#1A1A1A]">{s.area}</span>
+              <div key={i} className="grid grid-cols-[1fr_100px] px-4 py-3 border-b border-foreground last:border-0 items-center">
+                <span className="text-sm text-surface">{s.area}</span>
                 <span className={`text-[10px] font-semibold uppercase text-center px-2 py-1 rounded-full ${ratingStyle[s.rating]}`}>
                   {s.rating}
                 </span>
@@ -123,21 +123,21 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
           {(audit.issues || []).map((issue, i) => (
             <div key={issue.id || i} className="mb-10">
               <div className="flex items-start justify-between gap-3 mb-4">
-                <h3 className="text-lg font-bold text-[#1A1A1A]">
+                <h3 className="text-lg font-bold text-surface">
                   Issue {i + 1} — {issue.title}
                 </h3>
                 <span className={`shrink-0 text-[10px] font-semibold uppercase px-2.5 py-1 rounded-full ${severityStyle[issue.severity]}`}>
                   {severityLabel[issue.severity]}
                 </span>
               </div>
-              <p className="text-sm text-[#999] italic mb-4">{issue.subtitle}</p>
+              <p className="text-sm text-subtle italic mb-4">{issue.subtitle}</p>
               <div className="mb-4">
-                <p className="text-xs font-semibold text-[#1A1A1A] mb-2">The problem:</p>
-                <p className="text-sm text-[#444] leading-[1.8]">{issue.problem}</p>
+                <p className="text-xs font-semibold text-surface mb-2">The problem:</p>
+                <p className="text-sm text-border leading-[1.8]">{issue.problem}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-[#1A1A1A] mb-2">The fix:</p>
-                <p className="text-sm text-[#444] leading-[1.8]">{issue.fix}</p>
+                <p className="text-xs font-semibold text-surface mb-2">The fix:</p>
+                <p className="text-sm text-border leading-[1.8]">{issue.fix}</p>
               </div>
             </div>
           ))}
@@ -146,15 +146,15 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
         {/* Priority Order */}
         {audit.priority_order && audit.priority_order.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-surface mb-4 pb-2 border-b border-foreground">
               Recommended Priority Order
             </h2>
-            <p className="text-xs text-[#AAA] mb-4">Do these in sequence. The first three have the most impact on immediate conversion rate.</p>
+            <p className="text-xs text-muted mb-4">Do these in sequence. The first three have the most impact on immediate conversion rate.</p>
             <div className="space-y-2">
               {audit.priority_order.map((p, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <span className="text-sm font-bold text-[#1A1A1A] shrink-0 w-6">{i + 1}.</span>
-                  <p className="text-sm text-[#444] leading-relaxed">{p}</p>
+                  <span className="text-sm font-bold text-surface shrink-0 w-6">{i + 1}.</span>
+                  <p className="text-sm text-border leading-relaxed">{p}</p>
                 </div>
               ))}
             </div>
@@ -164,16 +164,16 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
         {/* What This Audit Is Not Saying */}
         {audit.not_saying && (
           <section className="mb-12">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-surface mb-4 pb-2 border-b border-foreground">
               What This Audit Is Not Saying
             </h2>
-            <p className="text-sm text-[#444] leading-[1.8]">{audit.not_saying}</p>
+            <p className="text-sm text-border leading-[1.8]">{audit.not_saying}</p>
           </section>
         )}
 
         {/* CTAs */}
-        <section className="border-t border-[#E8E8E8] pt-10 mt-12">
-          <p className="text-center text-sm text-[#777] mb-6">
+        <section className="border-t border-foreground pt-10 mt-12">
+          <p className="text-center text-sm text-subtle mb-6">
             Want us to implement these changes and rebuild your homepage?
           </p>
           <div className="flex items-center justify-center gap-4">
@@ -190,7 +190,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
               href={audit.booking_link || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-3 bg-[#1A1A1A] text-white text-sm font-medium rounded-xl hover:bg-[#2D2D2D] transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-surface text-white text-sm font-medium rounded-xl hover:bg-border transition-colors"
             >
               Book a Call
             </a>
@@ -198,8 +198,8 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
         </section>
 
         {/* Footer */}
-        <div className="mt-16 pt-6 border-t border-[#F0F0F0] text-center">
-          <p className="text-[10px] text-[#CCC]">Powered by Ecomlanders</p>
+        <div className="mt-16 pt-6 border-t border-foreground text-center">
+          <p className="text-[10px] text-muted">Powered by Ecomlanders</p>
         </div>
       </div>
     </div>

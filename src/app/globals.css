@@ -1,22 +1,76 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ──────────────────────────────────────────────────────────────────────────
+   SEMANTIC COLOUR TOKENS  (single source of truth)
+   Raw values live on :root (DARK = the current app look, so merging this is a
+   zero-visual-change diff) and are overridden under [data-theme="light"].
+   @theme inline below maps Tailwind colour names → these vars, so the entire
+   app re-themes by swapping ~12 variables instead of editing 16k classes.
+   To flip the whole app light: add data-theme="light" to <html>.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+  --background: #0C0C0C;        /* canvas            */
+  --surface: #181818;          /* cards             */
+  --surface-raised: #222222;   /* nested / raised   */
+  --border: #2A2A2A;           /* hairlines         */
+  --foreground: #E5E5EA;       /* primary text      */
+  --muted: #9CA3AF;            /* secondary text    */
+  --subtle: #71757D;           /* tertiary / labels */
+  --accent: #FFFFFF;           /* THE primary action only */
+  --accent-foreground: #0C0C0C;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #DC2626;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #FCFCFC;
+  --surface: #FFFFFF;
+  --surface-raised: #F7F7F8;
+  --border: #ECECEC;
+  --foreground: #0C0C0C;
+  --muted: #6E6E6E;
+  --subtle: #9A9A9A;
+  --accent: #0C0C0C;
+  --accent-foreground: #FFFFFF;
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+}
+
 @theme inline {
-  /* Dark mode palette — pure greyscale, no blue cast. Sidebar deepest, canvas
-     one step up, cards one more. Text primary near white, then steps down. */
-  --color-background: #0C0C0C;
-  --color-foreground: #E5E5EA;
-  --color-surface: #181818;
-  --color-surface-light: #222222;
-  --color-border: #2A2A2A;
-  --color-muted: #9CA3AF;
-  --color-hover: #222222;
-  --color-accent: #FFFFFF;
-  --color-accent-hover: #F3F4F6;
-  --color-accent-light: #222222;
-  --color-accent-muted: #71757D;
-  --color-sidebar-bg: #0C0C0C;
-  --color-card-bg: #181818;
+  /* colour names → runtime vars (the `inline` keyword keeps the var() ref so
+     overrides under [data-theme] cascade at runtime) */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  /* back-compat aliases (2 stray usages) — remove after sweep */
+  --color-accent-hover: var(--surface-raised);
+  --color-accent-light: var(--surface-raised);
+
+  /* TYPE SCALE — target for the Phase 2b type codemod (replaces 4,461
+     arbitrary sizes / ~20 values with 8 steps). Dense-tool floor at 11px. */
+  --text-2xs: 0.6875rem;  /* 11px — labels, meta            */
+  --text-xs:  0.75rem;    /* 12px — table cells, captions   */
+  --text-sm:  0.8125rem;  /* 13px — secondary body          */
+  --text-base:0.875rem;   /* 14px — body                    */
+  --text-lg:  1rem;       /* 16px — card titles             */
+  --text-xl:  1.25rem;    /* 20px — section headers         */
+  --text-2xl: 1.5rem;     /* 24px — page titles             */
+  --text-3xl: 1.875rem;   /* 30px — display                 */
+
   --font-heading: var(--font-inter-tight), var(--font-inter), "Inter Tight", "Inter", system-ui, sans-serif;
   --font-body: var(--font-articulat), var(--font-inter), "Articulat CF", system-ui, sans-serif;
   --font-mono: var(--font-mono), "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, monospace;

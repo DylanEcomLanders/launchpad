@@ -8,7 +8,7 @@ export function DeckCoverPreview({ backdropImages = [] }: DeckCoverPreviewProps)
   const list = backdropImages.length > 0 ? [...backdropImages, ...backdropImages] : [];
 
   return (
-    <div className="relative aspect-[16/9] overflow-hidden rounded-md bg-[#080808] border border-white">
+    <div className="relative aspect-[16/9] overflow-hidden rounded-md bg-background border border-white">
       {list.length > 0 && (
         <>
           <div className="absolute inset-0 flex items-center gap-1 px-1 deck-cover-marquee opacity-25">
@@ -24,7 +24,7 @@ export function DeckCoverPreview({ backdropImages = [] }: DeckCoverPreviewProps)
               />
             ))}
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/85 to-[#080808]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background" />
         </>
       )}
       <div className="absolute inset-0 flex items-center justify-center px-6">

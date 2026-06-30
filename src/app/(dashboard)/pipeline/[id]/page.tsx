@@ -262,8 +262,8 @@ export default function LeadDetailPage({
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">Pipeline access is admin / CRO only.</p>
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">Pipeline access is admin / CRO only.</p>
         </div>
       </div>
     );
@@ -273,7 +273,7 @@ export default function LeadDetailPage({
     return (
       <div className="p-6 space-y-3 max-w-5xl mx-auto">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -282,8 +282,8 @@ export default function LeadDetailPage({
   if (notFound || !lead) {
     return (
       <div className="p-6">
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D] mb-3">Lead not found.</p>
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle mb-3">Lead not found.</p>
           <Link href="/pipeline" className="text-[12px] uppercase tracking-wider text-emerald-300 hover:text-emerald-200">
             ← Back to pipeline
           </Link>
@@ -297,7 +297,7 @@ export default function LeadDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <Link href="/pipeline" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] mb-3">
+          <Link href="/pipeline" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground mb-3">
             <ArrowLeftIcon className="size-3.5" />
             All leads
           </Link>
@@ -305,14 +305,14 @@ export default function LeadDetailPage({
             <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
               <SignalIcon className="size-4 text-white" />
             </div>
-            <h1 className="text-2xl font-semibold text-[#E5E5EA] truncate">
+            <h1 className="text-2xl font-semibold text-foreground truncate">
               {lead.brand_name || lead.full_name || "Untitled lead"}
             </h1>
-            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold bg-[#1A1A1A] text-[#9CA3AF]">
+            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold bg-surface text-muted">
               {STAGE_LABEL[lead.stage]}
             </span>
           </div>
-          <div className="text-[12px] text-[#71757D]">
+          <div className="text-[12px] text-subtle">
             {saving ? "Saving…" : savedAt ? `Saved ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Loaded"}
           </div>
         </div>
@@ -329,7 +329,7 @@ export default function LeadDetailPage({
           </select>
           <button
             onClick={deleteLead}
-            className="p-1.5 rounded-md text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.1]"
+            className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]"
             title="Delete lead"
           >
             <TrashIcon className="size-4" />
@@ -458,23 +458,23 @@ export default function LeadDetailPage({
               <DocumentMagnifyingGlassIcon className="size-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-[#E5E5EA] truncate">
+              <div className="text-sm font-semibold text-foreground truncate">
                 {linkedAudit.brand_name || "Untitled audit"}
               </div>
-              <div className="text-[11px] text-[#71757D]">
+              <div className="text-[11px] text-subtle">
                 {linkedAudit.findings.length} findings · {linkedAudit.status}
               </div>
             </div>
             <Link
               href={`/tools/discovery-audit/${linkedAudit.id}`}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0"
             >
               Open
               <ArrowTopRightOnSquareIcon className="size-3" />
             </Link>
             <button
               onClick={() => patch({ discovery_audit_id: undefined })}
-              className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
+              className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400"
               title="Unlink audit"
             >
               Unlink
@@ -482,7 +482,7 @@ export default function LeadDetailPage({
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-[12px] text-[#71757D]">
+            <p className="text-[12px] text-subtle">
               Start a Discovery Audit for this lead, or link one you&apos;ve already started.
             </p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -524,23 +524,23 @@ export default function LeadDetailPage({
               <DocumentMagnifyingGlassIcon className="size-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-[#E5E5EA] truncate">
+              <div className="text-sm font-semibold text-foreground truncate">
                 {linkedProposal.tier} · {linkedProposal.brand_name}
               </div>
-              <div className="text-[11px] text-[#71757D]">
+              <div className="text-[11px] text-subtle">
                 {linkedProposal.status} · {linkedProposal.fee_currency}{linkedProposal.monthly_fee.toLocaleString()}/mo
               </div>
             </div>
             <Link
               href={`/tools/proposals/${linkedProposal.id}`}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0"
             >
               Open
               <ArrowTopRightOnSquareIcon className="size-3" />
             </Link>
             <button
               onClick={() => patch({ proposal_id: undefined })}
-              className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
+              className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400"
               title="Unlink proposal"
             >
               Unlink
@@ -548,7 +548,7 @@ export default function LeadDetailPage({
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-[12px] text-[#71757D]">
+            <p className="text-[12px] text-subtle">
               After the verbal yes, spin up the proposal here.
             </p>
             <button
@@ -565,7 +565,7 @@ export default function LeadDetailPage({
       {/* Sales calls (structured by the playbook's 4-phase script) */}
       <Section title={`Sales calls (${lead.sales_calls.length})`}>
         <div className="flex items-center justify-between gap-3 -mt-1">
-          <p className="text-[11px] text-[#71757D]">
+          <p className="text-[11px] text-subtle">
             Capture each call against the script: Frame → Discovery → Demo → Close. Always end with a booked next step or a clean no.
           </p>
           <button
@@ -577,7 +577,7 @@ export default function LeadDetailPage({
           </button>
         </div>
         {lead.sales_calls.length === 0 ? (
-          <p className="text-[11px] italic text-[#71757D] mt-3">
+          <p className="text-[11px] italic text-subtle mt-3">
             No calls logged yet.
           </p>
         ) : (
@@ -599,7 +599,7 @@ export default function LeadDetailPage({
       <Section title={`Touches (${lead.touches.length})`}>
         <TouchLogger onLog={logTouch} />
         {lead.touches.length === 0 ? (
-          <p className="text-[11px] italic text-[#71757D] mt-3">
+          <p className="text-[11px] italic text-subtle mt-3">
             No touches logged. Every call / send / reply should land here.
           </p>
         ) : (
@@ -610,13 +610,13 @@ export default function LeadDetailPage({
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300">
                     {TOUCH_LABEL[t.kind]}
                   </span>
-                  <span className="text-[10px] text-[#71757D]">
+                  <span className="text-[10px] text-subtle">
                     {new Date(t.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}
                   </span>
-                  {t.by && <span className="text-[10px] text-[#71757D]">· {t.by}</span>}
+                  {t.by && <span className="text-[10px] text-subtle">· {t.by}</span>}
                 </div>
                 {t.summary && (
-                  <p className="text-[13px] text-[#E5E5EA] whitespace-pre-wrap">{t.summary}</p>
+                  <p className="text-[13px] text-foreground whitespace-pre-wrap">{t.summary}</p>
                 )}
               </li>
             ))}
@@ -645,10 +645,10 @@ export default function LeadDetailPage({
         />
         {lead.notes.trim() && (
           <details className="mt-2">
-            <summary className="text-[10px] uppercase tracking-wider text-[#71757D] cursor-pointer hover:text-[#E5E5EA]">
+            <summary className="text-[10px] uppercase tracking-wider text-subtle cursor-pointer hover:text-foreground">
               Preview
             </summary>
-            <div className="mt-2 prose prose-invert prose-sm max-w-none prose-p:text-[#9CA3AF] prose-li:text-[#9CA3AF]">
+            <div className="mt-2 prose prose-invert prose-sm max-w-none prose-p:text-muted prose-li:text-muted">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{lead.notes}</ReactMarkdown>
             </div>
           </details>
@@ -660,8 +660,8 @@ export default function LeadDetailPage({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5">
-      <h2 className="text-sm font-semibold text-[#E5E5EA] mb-4">{title}</h2>
+    <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
+      <h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -705,11 +705,11 @@ function SalesCallCard({
           className="flex-1 min-w-0 text-left flex items-center gap-3"
         >
           <PhoneIcon className="size-3.5 text-cyan-300 shrink-0" />
-          <span className="text-sm text-[#E5E5EA]">
+          <span className="text-sm text-foreground">
             {new Date(call.called_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
           </span>
           {call.ran_by && (
-            <span className="text-[11px] text-[#71757D]">· {call.ran_by}</span>
+            <span className="text-[11px] text-subtle">· {call.ran_by}</span>
           )}
           {call.outcome && (
             <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${OUTCOME_TINT[call.outcome]}`}>
@@ -719,14 +719,14 @@ function SalesCallCard({
         </button>
         <button
           onClick={onDelete}
-          className="p-1 text-[#71757D] hover:text-rose-400"
+          className="p-1 text-subtle hover:text-rose-400"
           title="Delete call"
         >
           <TrashIcon className="size-3.5" />
         </button>
         <ChevronDownIcon
           onClick={() => setOpen((v) => !v)}
-          className={`size-4 text-[#71757D] transition-transform cursor-pointer ${open ? "rotate-180" : ""}`}
+          className={`size-4 text-subtle transition-transform cursor-pointer ${open ? "rotate-180" : ""}`}
         />
       </div>
       {open && (
@@ -785,7 +785,7 @@ function SalesCallCard({
             <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-2">
               2 · Discovery
             </div>
-            <p className="text-[11px] text-[#71757D] mb-3">
+            <p className="text-[11px] text-subtle mb-3">
               Get them to name the problem and its cost. Whoever diagnoses, prescribes.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -921,7 +921,7 @@ function PhaseBlock({
       <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-1">
         {title}
       </div>
-      <p className="text-[11px] text-[#71757D] mb-2">{blurb}</p>
+      <p className="text-[11px] text-subtle mb-2">{blurb}</p>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -967,7 +967,7 @@ function TouchLogger({ onLog }: { onLog: (kind: LeadTouchKind, summary: string) 
             setSummary("");
           }}
           disabled={!summary.trim()}
-          className="inline-flex items-center gap-1 px-3 h-9 rounded text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 px-3 h-9 rounded text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <CheckCircleIcon className="size-4" />
           Log

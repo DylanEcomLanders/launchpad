@@ -164,7 +164,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold mb-2">QA Checklist</h1>
-          <p className="text-[#71757D] text-sm">
+          <p className="text-subtle text-sm">
             Interactive quality assurance checklist for client projects
           </p>
         </div>
@@ -253,16 +253,16 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
         </div>
 
         {/* Progress Bar */}
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 mb-8">
+        <div className="bg-surface border border-border rounded-lg p-4 mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-[#71757D] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-subtle uppercase tracking-wider">
               Progress
             </span>
-            <span className="text-xs text-[#71757D]">
+            <span className="text-xs text-subtle">
               {stats.checked}/{stats.total} checked
             </span>
           </div>
-          <div className="h-2 bg-[#222222] rounded-full overflow-hidden flex">
+          <div className="h-2 bg-surface-raised rounded-full overflow-hidden flex">
             {stats.pass > 0 && (
               <div
                 className="bg-emerald-500 transition-all duration-300"
@@ -277,7 +277,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
             )}
             {stats.skip > 0 && (
               <div
-                className="bg-[#C5C5C5] transition-all duration-300"
+                className="bg-muted transition-all duration-300"
                 style={{ width: `${(stats.skip / stats.total) * 100}%` }}
               />
             )}
@@ -285,7 +285,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
           <div className="flex gap-4 mt-2">
             <span className="text-xs text-emerald-600 font-medium">{stats.pass} pass</span>
             <span className="text-xs text-red-500 font-medium">{stats.fail} fail</span>
-            <span className="text-xs text-[#71757D] font-medium">{stats.skip} skip</span>
+            <span className="text-xs text-subtle font-medium">{stats.skip} skip</span>
           </div>
         </div>
 
@@ -300,27 +300,27 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
               <button
                 type="button"
                 onClick={() => setCollapsed((prev) => ({ ...prev, [category]: !isCollapsed }))}
-                className="w-full flex items-center justify-between px-4 py-3 bg-[#181818] border border-[#2A2A2A] rounded-lg hover:bg-[#0C0C0C] transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 bg-surface border border-border rounded-lg hover:bg-background transition-colors"
               >
                 <div className="flex items-center gap-2">
                   {cs.hasFail && (
                     <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
                   )}
                   <span className="text-sm font-semibold">{category}</span>
-                  <span className="text-xs text-[#71757D]">
+                  <span className="text-xs text-subtle">
                     ({cs.checked}/{cs.total})
                   </span>
                 </div>
                 <ChevronDownIcon
-                  className={`size-4 text-[#71757D] transition-transform ${isCollapsed ? "" : "rotate-180"}`}
+                  className={`size-4 text-subtle transition-transform ${isCollapsed ? "" : "rotate-180"}`}
                 />
               </button>
 
               {!isCollapsed && (
-                <div className="border border-t-0 border-[#2A2A2A] rounded-b-lg bg-[#181818] -mt-[1px]">
+                <div className="border border-t-0 border-border rounded-b-lg bg-surface -mt-[1px]">
                   {catItems.map((item) => (
                     <div key={item.id}>
-                      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[#2A2A2A] last:border-b-0">
+                      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border last:border-b-0">
                         {/* Result toggle */}
                         <button
                           type="button"
@@ -366,10 +366,10 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <span
                           className={`flex-1 text-sm ${
                             item.result === "skip"
-                              ? "text-[#71757D] line-through"
+                              ? "text-subtle line-through"
                               : item.result === "fail"
                                 ? "text-red-700"
-                                : "text-[#E5E5EA]"
+                                : "text-foreground"
                           }`}
                         >
                           {item.description}
@@ -383,8 +383,8 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                           }
                           className={`flex-shrink-0 p-1.5 rounded transition-colors ${
                             notesOpen[item.id] || item.notes
-                              ? "text-[#E5E5EA]"
-                              : "text-[#C5C5C5] hover:text-[#71757D]"
+                              ? "text-foreground"
+                              : "text-muted hover:text-subtle"
                           }`}
                         >
                           <ChatBubbleLeftIcon className="size-3.5" />
@@ -394,7 +394,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          className="flex-shrink-0 p-1.5 text-[#C5C5C5] hover:text-red-500 transition-colors"
+                          className="flex-shrink-0 p-1.5 text-muted hover:text-red-500 transition-colors"
                         >
                           <TrashIcon className="size-3.5" />
                         </button>
@@ -402,10 +402,10 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
 
                       {/* Notes input */}
                       {notesOpen[item.id] && (
-                        <div className="px-4 pb-2.5 pl-14 border-b border-[#2A2A2A]">
+                        <div className="px-4 pb-2.5 pl-14 border-b border-border">
                           <input
                             type="text"
-                            className="w-full px-2.5 py-1.5 text-xs bg-[#0C0C0C] border border-[#2A2A2A] rounded focus:outline-none focus:border-white placeholder:text-[#C5C5C5]"
+                            className="w-full px-2.5 py-1.5 text-xs bg-background border border-border rounded focus:outline-none focus:border-white placeholder:text-muted"
                             placeholder="Add a note..."
                             value={item.notes}
                             onChange={(e) => updateItem(item.id, { notes: e.target.value })}
@@ -421,7 +421,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          className="flex-1 px-2.5 py-1.5 text-sm bg-[#0C0C0C] border border-[#2A2A2A] rounded focus:outline-none focus:border-white placeholder:text-[#C5C5C5]"
+                          className="flex-1 px-2.5 py-1.5 text-sm bg-background border border-border rounded focus:outline-none focus:border-white placeholder:text-muted"
                           placeholder="New check description..."
                           value={newItemText}
                           onChange={(e) => setNewItemText(e.target.value)}
@@ -437,7 +437,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <button
                           type="button"
                           onClick={() => addCustomItem(category)}
-                          className="px-3 py-1.5 bg-[#222222] text-[#E5E5EA] text-xs font-medium rounded hover:bg-[#2A2A2A] transition-colors"
+                          className="px-3 py-1.5 bg-surface-raised text-foreground text-xs font-medium rounded hover:bg-border transition-colors"
                         >
                           Add
                         </button>
@@ -447,7 +447,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                             setAddingTo(null);
                             setNewItemText("");
                           }}
-                          className="px-3 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                          className="px-3 py-1.5 text-xs text-subtle hover:text-foreground transition-colors"
                         >
                           Cancel
                         </button>
@@ -456,7 +456,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                       <button
                         type="button"
                         onClick={() => setAddingTo(category)}
-                        className="flex items-center gap-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-subtle hover:text-foreground transition-colors"
                       >
                         <PlusIcon className="size-3" />
                         Add check
@@ -499,7 +499,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
           </button>
           <button
             onClick={handleReset}
-            className="px-6 py-3 border border-[#2A2A2A] bg-[#181818] text-[#71757D] text-sm font-medium rounded-md hover:bg-[#222222] transition-colors"
+            className="px-6 py-3 border border-border bg-surface text-subtle text-sm font-medium rounded-md hover:bg-surface-raised transition-colors"
           >
             Reset Checklist
           </button>

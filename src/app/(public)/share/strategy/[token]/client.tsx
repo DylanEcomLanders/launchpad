@@ -53,19 +53,19 @@ export default function StrategyShareClient({ token }: { token: string }) {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] text-[#1B1B1B]">
+    <div className="min-h-screen bg-surface-raised text-foreground">
       {/* Brand header */}
-      <header className="border-b border-[#E5E5EA] bg-white">
+      <header className="border-b border-foreground bg-white">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <div className="flex items-baseline gap-3">
             <span className="text-[14px] font-semibold tracking-tight">
               Ecomlanders
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">
               Strategy
             </span>
           </div>
-          <span className="text-[10px] text-[#A0A0A0]">
+          <span className="text-[10px] text-muted">
             Conversion Partnership
           </span>
         </div>
@@ -73,15 +73,15 @@ export default function StrategyShareClient({ token }: { token: string }) {
 
       <main className="mx-auto max-w-3xl px-6 py-10">
         {state.kind === "loading" && (
-          <div className="rounded-xl border border-[#E5E5EA] bg-white p-8 text-center text-sm text-[#7A7A7A]">
+          <div className="rounded-xl border border-foreground bg-white p-8 text-center text-sm text-subtle">
             Loading…
           </div>
         )}
 
         {state.kind === "missing" && (
-          <div className="rounded-xl border border-[#E5E5EA] bg-white p-8 text-center">
+          <div className="rounded-xl border border-foreground bg-white p-8 text-center">
             <h1 className="text-xl font-medium">Not found</h1>
-            <p className="mt-2 text-sm text-[#7A7A7A]">
+            <p className="mt-2 text-sm text-subtle">
               This link may have expired or been removed. Ask the strategist
               for a fresh link.
             </p>
@@ -93,7 +93,7 @@ export default function StrategyShareClient({ token }: { token: string }) {
         )}
       </main>
 
-      <footer className="mx-auto max-w-3xl px-6 py-6 text-center text-[10px] uppercase tracking-[0.18em] text-[#A0A0A0]">
+      <footer className="mx-auto max-w-3xl px-6 py-6 text-center text-[10px] uppercase tracking-[0.18em] text-muted">
         Ecomlanders · Conversion Partnership
       </footer>
     </div>
@@ -108,7 +108,7 @@ function ResourceShow({
   signedUrl?: string;
 }) {
   return (
-    <article className="overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+    <article className="overflow-hidden rounded-xl border border-foreground bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       <div className="bg-gradient-to-br from-[#0F1115] to-[#1F2430] px-6 py-8 text-white">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
           {resource.kind === "file"
@@ -141,7 +141,7 @@ function ResourceShow({
           <LinkOut url={resource.url} label="Open link" />
         )}
 
-        <div className="mt-8 rounded-md border border-[#E5E5EA] bg-[#FAFAFB] p-4 text-[12px] text-[#666]">
+        <div className="mt-8 rounded-md border border-foreground bg-surface-raised p-4 text-[12px] text-subtle">
           Questions? Reply to the strategist who sent you this link.
         </div>
       </div>
@@ -165,13 +165,13 @@ function FileShow({ signedUrl, title }: { signedUrl?: string; title: string }) {
         target="_blank"
         rel="noreferrer"
         download
-        className="inline-flex items-center gap-2 rounded-md bg-[#1B1B1B] px-4 py-2 text-sm font-medium text-white hover:bg-black"
+        className="inline-flex items-center gap-2 rounded-md bg-surface px-4 py-2 text-sm font-medium text-white hover:bg-black"
       >
         <PaperClipIcon className="h-4 w-4" />
         Download {title}
       </a>
       {isPdf && (
-        <div className="mt-6 overflow-hidden rounded-md border border-[#E5E5EA]">
+        <div className="mt-6 overflow-hidden rounded-md border border-foreground">
           <iframe
             src={signedUrl}
             title={title}
@@ -189,7 +189,7 @@ function LinkOut({ url, label }: { url: string; label: string }) {
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center gap-2 rounded-md bg-[#1B1B1B] px-4 py-2 text-sm font-medium text-white hover:bg-black"
+      className="inline-flex items-center gap-2 rounded-md bg-surface px-4 py-2 text-sm font-medium text-white hover:bg-black"
     >
       <ArrowTopRightOnSquareIcon className="h-4 w-4" />
       {label}
@@ -203,7 +203,7 @@ function LoomEmbed({ url }: { url: string }) {
     ? url.replace("/share/", "/embed/")
     : url;
   return (
-    <div className="overflow-hidden rounded-md border border-[#E5E5EA]">
+    <div className="overflow-hidden rounded-md border border-foreground">
       <div className="relative" style={{ paddingTop: "56.25%" }}>
         <iframe
           src={embedUrl}
@@ -212,12 +212,12 @@ function LoomEmbed({ url }: { url: string }) {
           className="absolute inset-0 h-full w-full"
         />
       </div>
-      <div className="border-t border-[#F0F0F0] bg-[#FAFAFB] px-3 py-2 text-right">
+      <div className="border-t border-foreground bg-surface-raised px-3 py-2 text-right">
         <a
           href={url}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1B1B1B] hover:underline"
+          className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground hover:underline"
         >
           Open in Loom
           <ArrowTopRightOnSquareIcon className="h-3 w-3" />

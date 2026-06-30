@@ -101,7 +101,7 @@ export default function OperationsHubPage() {
     return () => { cancelled = true; };
   }, []);
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-8 max-w-6xl mx-auto">
@@ -114,7 +114,7 @@ export default function OperationsHubPage() {
             Operations
           </h1>
         </div>
-        <p className="text-sm text-[#9CA3AF] max-w-2xl">
+        <p className="text-sm text-muted max-w-2xl">
           Every tool, by lifecycle stage. The full Hero Offer operating system in one place. Open <Link href="/hero-offer" className="text-emerald-300 hover:text-emerald-200 underline">/hero-offer</Link> for the playbook itself.
         </p>
       </header>
@@ -123,8 +123,8 @@ export default function OperationsHubPage() {
       <div className={`rounded-xl p-4 ring-1 flex items-center gap-3 ${slack?.configured ? "bg-emerald-500/10 ring-emerald-500/20" : "bg-amber-500/10 ring-amber-500/20"}`}>
         {slack?.configured ? <CheckCircleIcon className="size-5 text-emerald-300" /> : <ExclamationCircleIcon className="size-5 text-amber-300" />}
         <div className="flex-1 text-[13px]">
-          <span className="font-semibold text-[#E5E5EA]">Slack notifications: </span>
-          <span className="text-[#9CA3AF]">
+          <span className="font-semibold text-foreground">Slack notifications: </span>
+          <span className="text-muted">
             {slack === null
               ? "checking…"
               : slack.configured
@@ -137,20 +137,20 @@ export default function OperationsHubPage() {
       {/* Groups */}
       {GROUPS.map((g) => (
         <section key={g.title}>
-          <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">{g.title}</h2>
+          <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">{g.title}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {g.tools.map((t) => {
               const Icon = t.icon;
               return (
-                <Link key={t.href} href={t.href} className="group block bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all">
+                <Link key={t.href} href={t.href} className="group block bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all">
                   <div className={`size-10 rounded-xl bg-gradient-to-br ${ACCENT_GRADIENT[g.accent]} flex items-center justify-center mb-4 transition-transform group-hover:scale-105`}>
                     <Icon className="size-5 text-white" />
                   </div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold text-[#E5E5EA]">{t.label}</span>
-                    <ArrowTopRightOnSquareIcon className="size-3 text-[#71757D] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-sm font-semibold text-foreground">{t.label}</span>
+                    <ArrowTopRightOnSquareIcon className="size-3 text-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <p className="text-[12px] text-[#9CA3AF] leading-relaxed">{t.blurb}</p>
+                  <p className="text-[12px] text-muted leading-relaxed">{t.blurb}</p>
                 </Link>
               );
             })}

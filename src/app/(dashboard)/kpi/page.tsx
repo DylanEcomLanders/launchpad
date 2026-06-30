@@ -44,7 +44,7 @@ function fmtDate(iso: string): string {
   });
 }
 function rateColor(r: number | null): string {
-  if (r === null) return "text-[#71757D]";
+  if (r === null) return "text-subtle";
   if (r >= RATE_GOOD) return "text-emerald-400";
   if (r >= RATE_WARN) return "text-amber-400";
   return "text-red-400";
@@ -52,7 +52,7 @@ function rateColor(r: number | null): string {
 function lateColor(days: number): string {
   if (days > LATE_BAD_DAYS) return "text-red-400";
   if (days >= LATE_WARN_DAYS) return "text-amber-400";
-  return "text-[#E5E5EA]";
+  return "text-foreground";
 }
 
 /* ── Page ── */
@@ -96,10 +96,10 @@ export default function KpiPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">
+          <h1 className="text-[28px] leading-tight font-bold text-foreground">
             Delivery KPIs
           </h1>
-          <p className="text-xs text-[#71757D] mt-0.5">
+          <p className="text-xs text-subtle mt-0.5">
             From Project Delivery · {win.label}
             {win.isCurrent ? " · in progress" : ""} ·{" "}
             {loading
@@ -142,7 +142,7 @@ export default function KpiPage() {
         <Stat
           label={win.isCurrent ? "Currently overdue" : "Overdue at close"}
           value={String(summary.currentlyOverdue)}
-          valueClass={summary.currentlyOverdue > 0 ? "text-red-400" : "text-[#E5E5EA]"}
+          valueClass={summary.currentlyOverdue > 0 ? "text-red-400" : "text-foreground"}
           sub={win.isCurrent ? "open · past due now" : `open · as of ${asOfLabel}`}
         />
         <Stat
@@ -210,7 +210,7 @@ function TestStrip({ win }: { win: { startMs: number; asOfMs: number; isCurrent:
   if (!hydrated) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-        {Array.from({ length: 4 }).map((_, i) => (<div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />))}
+        {Array.from({ length: 4 }).map((_, i) => (<div key={i} className="h-20 bg-background rounded-xl animate-pulse" />))}
       </div>
     );
   }
@@ -220,11 +220,11 @@ function TestStrip({ win }: { win: { startMs: number; asOfMs: number; isCurrent:
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
       <Stat label="Tests live now" value={String(stats.live)} sub={stats.live > 0 ? "in flight" : "—"} />
       <Stat label="Called this period" value={String(stats.won + stats.lost + stats.inc)} sub={`${stats.won}W · ${stats.lost}L · ${stats.inc}I`} />
-      <Stat label="Period winners" value={String(stats.won)} valueClass={stats.won > 0 ? "text-emerald-400" : "text-[#E5E5EA]"} sub="↑ proof deck candidates" />
+      <Stat label="Period winners" value={String(stats.won)} valueClass={stats.won > 0 ? "text-emerald-400" : "text-foreground"} sub="↑ proof deck candidates" />
       <Stat
         label="Cumulative win rate"
         value={stats.winRate === null ? "–" : `${stats.winRate}%`}
-        valueClass={stats.winRate !== null ? rateColor(stats.winRate) : "text-[#71757D]"}
+        valueClass={stats.winRate !== null ? rateColor(stats.winRate) : "text-subtle"}
         sub="all concluded tests"
       />
     </div>
@@ -239,15 +239,15 @@ function PeriodToggle({
   onChange: (p: KpiPeriod) => void;
 }) {
   return (
-    <div className="inline-flex p-0.5 rounded-full bg-[#222222] border border-[#2A2A2A] shrink-0">
+    <div className="inline-flex p-0.5 rounded-full bg-surface-raised border border-border shrink-0">
       {PERIODS.map((o) => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
           className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-colors ${
             period === o.value
-              ? "bg-white text-[#0C0C0C]"
-              : "text-[#71757D] hover:text-white"
+              ? "bg-white text-background"
+              : "text-subtle hover:text-white"
           }`}
         >
           {o.label}
@@ -271,13 +271,13 @@ function PeriodStepper({
   onForward: () => void;
 }) {
   const btn =
-    "size-6 inline-flex items-center justify-center rounded-full border border-[#2A2A2A] text-[#9CA3AF] hover:text-white hover:border-[#383838] disabled:opacity-30 disabled:hover:text-[#9CA3AF] disabled:hover:border-[#2A2A2A] transition-colors";
+    "size-6 inline-flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-border disabled:opacity-30 disabled:hover:text-muted disabled:hover:border-border transition-colors";
   return (
     <div className="inline-flex items-center gap-2">
       <button onClick={onBack} className={btn} aria-label="Previous period" title="Previous period">
         ←
       </button>
-      <span className="min-w-[96px] text-center text-[12px] font-medium text-[#E5E5EA] tabular-nums">
+      <span className="min-w-[96px] text-center text-[12px] font-medium text-foreground tabular-nums">
         {label}
       </span>
       <button
@@ -299,7 +299,7 @@ function Stat({
   label,
   value,
   sub,
-  valueClass = "text-[#E5E5EA]",
+  valueClass = "text-foreground",
 }: {
   label: string;
   value: string;
@@ -307,14 +307,14 @@ function Stat({
   valueClass?: string;
 }) {
   return (
-    <div className="border border-[#2A2A2A] rounded-lg p-5 bg-[#181818]">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+    <div className="border border-border rounded-lg p-5 bg-surface">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
         {label}
       </p>
       <p className={`mt-2 text-[30px] font-bold leading-none tabular-nums ${valueClass}`}>
         {value}
       </p>
-      {sub && <p className="mt-2 text-[11px] text-[#71757D]">{sub}</p>}
+      {sub && <p className="mt-2 text-[11px] text-subtle">{sub}</p>}
     </div>
   );
 }
@@ -324,7 +324,7 @@ function Stat({
 function SectionHeader({ title, right }: { title: string; right?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between mb-3">
-      <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#E5E5EA]">
+      <h2 className="text-[13px] font-bold uppercase tracking-wider text-foreground">
         {title}
       </h2>
       {right}
@@ -371,7 +371,7 @@ function OverdueList({
   const Th = ({ col, label, align = "left" }: { col: OverdueSort; label: string; align?: "left" | "right" }) => (
     <th
       onClick={() => toggle(col)}
-      className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] cursor-pointer hover:text-[#E5E5EA] select-none text-${align}`}
+      className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle cursor-pointer hover:text-foreground select-none text-${align}`}
     >
       {label}
       {sort === col ? (dir === "asc" ? " ↑" : " ↓") : ""}
@@ -383,19 +383,19 @@ function OverdueList({
       <SectionHeader
         title={heading}
         right={
-          <span className="text-[11px] tabular-nums text-[#71757D]">
+          <span className="text-[11px] tabular-nums text-subtle">
             {rows.length} {note}
           </span>
         }
       />
-      <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-hidden">
         {rows.length === 0 ? (
-          <p className="text-sm text-[#71757D] text-center py-10">
+          <p className="text-sm text-subtle text-center py-10">
             Nothing overdue. 🎉
           </p>
         ) : (
           <table className="w-full">
-            <thead className="bg-[#181818] border-b border-[#2A2A2A]">
+            <thead className="bg-surface border-b border-border">
               <tr>
                 <Th col="title" label="Deliverable" />
                 <Th col="clientName" label="Client" />
@@ -410,9 +410,9 @@ function OverdueList({
               {sorted.map((r) => (
                 <tr
                   key={r.id}
-                  className="border-b border-[#1F1F1F] last:border-0 hover:bg-[#161616]"
+                  className="border-b border-border last:border-0 hover:bg-[#161616]"
                 >
-                  <td className="px-3 py-2.5 text-[13px] text-[#E5E5EA]">
+                  <td className="px-3 py-2.5 text-[13px] text-foreground">
                     {r.url ? (
                       <a
                         href={r.url}
@@ -426,13 +426,13 @@ function OverdueList({
                       r.title
                     )}
                   </td>
-                  <td className="px-3 py-2.5 text-[12px] text-[#9CA3AF]">{r.clientName}</td>
-                  <td className="px-3 py-2.5 text-[12px] text-[#9CA3AF]">{r.pod ?? "–"}</td>
-                  <td className="px-3 py-2.5 text-[12px] text-[#9CA3AF]">{r.owner ?? "–"}</td>
-                  <td className="px-3 py-2.5 text-[12px] text-[#9CA3AF] capitalize">
+                  <td className="px-3 py-2.5 text-[12px] text-muted">{r.clientName}</td>
+                  <td className="px-3 py-2.5 text-[12px] text-muted">{r.pod ?? "–"}</td>
+                  <td className="px-3 py-2.5 text-[12px] text-muted">{r.owner ?? "–"}</td>
+                  <td className="px-3 py-2.5 text-[12px] text-muted capitalize">
                     {r.phase.replace(/-/g, " ")}
                   </td>
-                  <td className="px-3 py-2.5 text-[12px] text-[#9CA3AF] text-right tabular-nums">
+                  <td className="px-3 py-2.5 text-[12px] text-muted text-right tabular-nums">
                     {fmtDate(r.dueDate)}
                   </td>
                   <td
@@ -464,26 +464,26 @@ function BreakdownTable({
   return (
     <section className="mb-10">
       <SectionHeader title={title} />
-      <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-hidden">
         {rows.length === 0 ? (
-          <p className="text-sm text-[#71757D] text-center py-10">No data.</p>
+          <p className="text-sm text-subtle text-center py-10">No data.</p>
         ) : (
           <table className="w-full">
-            <thead className="bg-[#181818] border-b border-[#2A2A2A]">
+            <thead className="bg-surface border-b border-border">
               <tr>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-left">
+                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-left">
                   {keyHeader}
                 </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-right">
+                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
                   Delivered
                 </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-right">
+                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
                   On-time
                 </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-right">
+                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
                   Overdue
                 </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-right">
+                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
                   Avg turnaround
                 </th>
               </tr>
@@ -492,10 +492,10 @@ function BreakdownTable({
               {rows.map((r) => (
                 <tr
                   key={r.key}
-                  className="border-b border-[#1F1F1F] last:border-0 hover:bg-[#161616]"
+                  className="border-b border-border last:border-0 hover:bg-[#161616]"
                 >
-                  <td className="px-3 py-2.5 text-[13px] text-[#E5E5EA]">{r.key}</td>
-                  <td className="px-3 py-2.5 text-[13px] text-[#9CA3AF] text-right tabular-nums">
+                  <td className="px-3 py-2.5 text-[13px] text-foreground">{r.key}</td>
+                  <td className="px-3 py-2.5 text-[13px] text-muted text-right tabular-nums">
                     {r.delivered}
                   </td>
                   <td
@@ -504,11 +504,11 @@ function BreakdownTable({
                     {fmtRate(r.onTimeRate)}
                   </td>
                   <td
-                    className={`px-3 py-2.5 text-[13px] text-right tabular-nums ${r.currentlyOverdue > 0 ? "text-red-400" : "text-[#9CA3AF]"}`}
+                    className={`px-3 py-2.5 text-[13px] text-right tabular-nums ${r.currentlyOverdue > 0 ? "text-red-400" : "text-muted"}`}
                   >
                     {r.currentlyOverdue}
                   </td>
-                  <td className="px-3 py-2.5 text-[13px] text-[#9CA3AF] text-right tabular-nums">
+                  <td className="px-3 py-2.5 text-[13px] text-muted text-right tabular-nums">
                     {fmtDays(r.avgTurnaroundDays)}
                   </td>
                 </tr>
@@ -532,15 +532,15 @@ function TrendChart({
     <section className="mb-6">
       <SectionHeader
         title="On-time trend"
-        right={<span className="text-[11px] text-[#71757D]">last {points.length} weeks</span>}
+        right={<span className="text-[11px] text-subtle">last {points.length} weeks</span>}
       />
-      <div className="border border-[#2A2A2A] rounded-lg p-5 bg-[#181818]">
+      <div className="border border-border rounded-lg p-5 bg-surface">
         <div className="flex items-end justify-between gap-2 h-40">
           {points.map((p) => {
             const h = p.onTimeRate === null ? 0 : Math.max(2, p.onTimeRate);
             const color =
               p.onTimeRate === null
-                ? "bg-[#2A2A2A]"
+                ? "bg-border"
                 : p.onTimeRate >= RATE_GOOD
                   ? "bg-emerald-500"
                   : p.onTimeRate >= RATE_WARN
@@ -551,7 +551,7 @@ function TrendChart({
                 key={p.weekStart}
                 className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end"
               >
-                <span className="text-[10px] tabular-nums text-[#71757D]">
+                <span className="text-[10px] tabular-nums text-subtle">
                   {p.onTimeRate === null ? "–" : `${p.onTimeRate}%`}
                 </span>
                 <div className="w-full flex items-end h-full">
@@ -561,8 +561,8 @@ function TrendChart({
                     title={`${p.label}: ${p.onTimeRate ?? "–"}% on time · ${p.delivered} delivered`}
                   />
                 </div>
-                <span className="text-[10px] text-[#71757D] whitespace-nowrap">{p.label}</span>
-                <span className="text-[10px] tabular-nums text-[#4B4D52]">{p.delivered}</span>
+                <span className="text-[10px] text-subtle whitespace-nowrap">{p.label}</span>
+                <span className="text-[10px] tabular-nums text-border">{p.delivered}</span>
               </div>
             );
           })}

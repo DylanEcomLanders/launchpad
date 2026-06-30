@@ -118,7 +118,7 @@ export default function ArticlesPage() {
   const filtered = filter === "all" ? articles : articles.filter((a) => a.status === filter);
 
   const statusColor: Record<string, string> = {
-    draft: "bg-[#F3F3F5] text-[#777]",
+    draft: "bg-surface-raised text-subtle",
     approved: "bg-emerald-50 text-emerald-600",
     posted: "bg-blue-50 text-blue-600",
     rejected: "bg-red-50 text-red-500",
@@ -131,16 +131,16 @@ export default function ArticlesPage() {
   return (
     <div className="flex h-full">
       {/* Left — Library */}
-      <div className={`${selectedArticle ? "w-96 border-r border-[#E5E5EA]" : "flex-1 max-w-3xl mx-auto"} overflow-y-auto`}>
+      <div className={`${selectedArticle ? "w-96 border-r border-foreground" : "flex-1 max-w-3xl mx-auto"} overflow-y-auto`}>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-xl font-bold">Article Library</h1>
-              <p className="text-xs text-[#AAA] mt-1">{articles.length} articles · {articles.filter(a => a.status === "approved").length} ready to post</p>
+              <p className="text-xs text-muted mt-1">{articles.length} articles · {articles.filter(a => a.status === "approved").length} ready to post</p>
             </div>
             <button
               onClick={() => setShowGenerator(!showGenerator)}
-              className="px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D]"
+              className="px-4 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border"
             >
               + Generate
             </button>
@@ -148,7 +148,7 @@ export default function ArticlesPage() {
 
           {/* Generator */}
           {showGenerator && (
-            <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-6 space-y-4">
+            <div className="border border-foreground rounded-xl bg-white p-5 mb-6 space-y-4">
               <div>
                 <label className={labelClass}>Topic</label>
                 <input
@@ -166,7 +166,7 @@ export default function ArticlesPage() {
                   <button
                     key={s}
                     onClick={() => setTopic(s)}
-                    className="px-2 py-1 text-[10px] text-[#777] bg-[#F5F5F5] rounded-full hover:bg-[#E8E8E8] truncate max-w-[200px]"
+                    className="px-2 py-1 text-[10px] text-subtle bg-surface-raised rounded-full hover:bg-foreground truncate max-w-[200px]"
                   >
                     {s}
                   </button>
@@ -191,7 +191,7 @@ export default function ArticlesPage() {
                       key={a}
                       onClick={() => setAuthor(a)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                        author === a ? "bg-[#1A1A1A] text-white" : "text-[#999] hover:bg-[#F5F5F5]"
+                        author === a ? "bg-surface text-white" : "text-subtle hover:bg-surface-raised"
                       }`}
                     >
                       {a.charAt(0).toUpperCase() + a.slice(1)}
@@ -201,7 +201,7 @@ export default function ArticlesPage() {
                 <button
                   onClick={handleGenerate}
                   disabled={!topic.trim() || generating}
-                  className="ml-auto px-5 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+                  className="ml-auto px-5 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border disabled:opacity-30"
                 >
                   {generating ? "Generating..." : "Generate Article"}
                 </button>
@@ -209,8 +209,8 @@ export default function ArticlesPage() {
 
               {generating && (
                 <div className="flex items-center gap-3 py-4 justify-center">
-                  <div className="animate-spin size-5 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
-                  <p className="text-xs text-[#777]">Writing article in your voice...</p>
+                  <div className="animate-spin size-5 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
+                  <p className="text-xs text-subtle">Writing article in your voice...</p>
                 </div>
               )}
             </div>
@@ -223,7 +223,7 @@ export default function ArticlesPage() {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
-                  filter === f ? "bg-[#1A1A1A] text-white" : "text-[#999] hover:bg-[#F5F5F5]"
+                  filter === f ? "bg-surface text-white" : "text-subtle hover:bg-surface-raised"
                 }`}
               >
                 {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -235,12 +235,12 @@ export default function ArticlesPage() {
           {/* Article list */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin size-5 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+              <div className="animate-spin size-5 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="border-2 border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
-              <p className="text-sm text-[#AAA]">No articles yet</p>
-              <p className="text-xs text-[#CCC] mt-1">Generate your first article above</p>
+            <div className="border-2 border-dashed border-foreground rounded-xl p-8 text-center">
+              <p className="text-sm text-muted">No articles yet</p>
+              <p className="text-xs text-muted mt-1">Generate your first article above</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -250,14 +250,14 @@ export default function ArticlesPage() {
                   onClick={() => { setSelectedArticle(article); setEditing(false); }}
                   className={`w-full text-left border rounded-lg p-4 transition-colors ${
                     selectedArticle?.id === article.id
-                      ? "border-[#1A1A1A] bg-[#FAFAFA]"
-                      : "border-[#E5E5EA] hover:border-[#999]"
+                      ? "border-surface bg-surface-raised"
+                      : "border-foreground hover:border-subtle"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#1A1A1A] truncate">{article.topic}</p>
-                      <p className="text-[10px] text-[#AAA] mt-1">
+                      <p className="text-sm font-semibold text-surface truncate">{article.topic}</p>
+                      <p className="text-[10px] text-muted mt-1">
                         {article.word_count.toLocaleString()} words · {article.author} · {new Date(article.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                       </p>
                     </div>
@@ -265,7 +265,7 @@ export default function ArticlesPage() {
                       {article.status}
                     </span>
                   </div>
-                  <p className="text-xs text-[#777] mt-2 line-clamp-2">{article.content.slice(0, 150)}...</p>
+                  <p className="text-xs text-subtle mt-2 line-clamp-2">{article.content.slice(0, 150)}...</p>
                 </button>
               ))}
             </div>
@@ -280,16 +280,16 @@ export default function ArticlesPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p className="text-lg font-bold text-[#1A1A1A]">{selectedArticle.topic}</p>
-                <p className="text-xs text-[#AAA] mt-1">
+                <p className="text-lg font-bold text-surface">{selectedArticle.topic}</p>
+                <p className="text-xs text-muted mt-1">
                   {selectedArticle.word_count.toLocaleString()} words · {selectedArticle.author} · {new Date(selectedArticle.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </p>
               </div>
-              <button onClick={() => setSelectedArticle(null)} className="text-xs text-[#CCC] hover:text-[#1A1A1A]">Close</button>
+              <button onClick={() => setSelectedArticle(null)} className="text-xs text-muted hover:text-surface">Close</button>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 mb-6 pb-6 border-b border-[#F0F0F0]">
+            <div className="flex items-center gap-2 mb-6 pb-6 border-b border-foreground">
               <button
                 onClick={() => updateStatus(selectedArticle.id, "approved")}
                 className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
@@ -315,13 +315,13 @@ export default function ArticlesPage() {
               <div className="ml-auto flex items-center gap-2">
                 <button
                   onClick={() => copyToClipboard(selectedArticle.content)}
-                  className="px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5]"
+                  className="px-3 py-1.5 text-[11px] font-medium text-subtle border border-foreground rounded-lg hover:bg-surface-raised"
                 >
                   Copy
                 </button>
                 <button
                   onClick={() => { setEditing(!editing); setEditContent(selectedArticle.content); }}
-                  className="px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5]"
+                  className="px-3 py-1.5 text-[11px] font-medium text-subtle border border-foreground rounded-lg hover:bg-surface-raised"
                 >
                   {editing ? "Cancel" : "Edit"}
                 </button>
@@ -343,12 +343,12 @@ export default function ArticlesPage() {
                   className="w-full min-h-[600px] text-sm leading-relaxed px-0 py-0 border-0 focus:outline-none resize-none font-mono"
                 />
                 <div className="flex items-center gap-2 mt-4">
-                  <button onClick={saveEdit} className="px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg">Save Changes</button>
-                  <span className="text-[10px] text-[#AAA]">{editContent.split(/\s+/).length.toLocaleString()} words</span>
+                  <button onClick={saveEdit} className="px-4 py-2 bg-surface text-white text-xs font-medium rounded-lg">Save Changes</button>
+                  <span className="text-[10px] text-muted">{editContent.split(/\s+/).length.toLocaleString()} words</span>
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+              <div className="text-sm text-border leading-relaxed whitespace-pre-wrap">
                 {selectedArticle.content}
               </div>
             )}

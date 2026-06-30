@@ -13,7 +13,7 @@ export function AgentCard({ agent }: AgentCardProps) {
   return (
     <Link
       href={`/agents/${agent.id}`}
-      className="group relative flex flex-col items-center rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 text-center shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-card)]"
+      className="group relative flex flex-col items-center rounded-xl border border-border bg-surface p-4 text-center shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-card)]"
     >
       <div className="absolute right-2 top-2">
         <StatusBadge status={agent.status} />
@@ -26,13 +26,13 @@ export function AgentCard({ agent }: AgentCardProps) {
       </div>
 
       <div className="min-w-0">
-        <div className="truncate text-sm font-semibold text-[#E5E5EA]">{agent.name}</div>
-        <div className="truncate text-[11px] uppercase tracking-wider text-[#71757D]">{agent.role}</div>
+        <div className="truncate text-sm font-semibold text-foreground">{agent.name}</div>
+        <div className="truncate text-[11px] uppercase tracking-wider text-subtle">{agent.role}</div>
       </div>
 
       {/* Pixel "tile" base — gives each NPC the feeling of standing on a square */}
       <div
-        className="mt-3 h-1.5 w-12 rounded-sm bg-[#2A2A2A] transition-colors duration-200 group-hover:bg-[#1B1B1B]/30"
+        className="mt-3 h-1.5 w-12 rounded-sm bg-border transition-colors duration-200 group-hover:bg-surface/30"
         aria-hidden
       />
     </Link>

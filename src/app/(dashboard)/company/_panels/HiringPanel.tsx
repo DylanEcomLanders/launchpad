@@ -154,26 +154,26 @@ export default function HiringPanel() {
   const selected = selectedId ? candidates.find((c) => c.id === selectedId) : null;
 
   if (!hydrated) {
-    return <div className="h-96 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-background rounded-xl animate-pulse" />;
   }
 
   return (
     <div>
       {/* Open roles strip */}
-      <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-xl p-4 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <div className="bg-background ring-1 ring-white/[0.04] rounded-xl p-4 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-subtle">
             Open roles
           </h2>
           <button
             onClick={() => setShowAddRole(true)}
-            className="inline-flex items-center gap-1 text-xs text-[#E5E5EA] hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-foreground hover:underline"
           >
             <PlusIcon className="size-3.5" /> Add role
           </button>
         </div>
         {roles.filter((r) => r.status === "open").length === 0 ? (
-          <p className="text-xs text-[#71757D]">No open roles. Add one to start collecting candidates.</p>
+          <p className="text-xs text-subtle">No open roles. Add one to start collecting candidates.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {roles
@@ -187,8 +187,8 @@ export default function HiringPanel() {
                     onClick={() => setRoleFilter(active ? "all" : r.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs border ${
                       active
-                        ? "bg-white text-[#0C0C0C] border-white"
-                        : "bg-[#0F0F10] text-[#E5E5EA] ring-1 ring-white/[0.04] hover:ring-white/[0.12]"
+                        ? "bg-white text-background border-white"
+                        : "bg-background text-foreground ring-1 ring-white/[0.04] hover:ring-white/[0.12]"
                     }`}
                   >
                     {r.title} <span className="opacity-70">· {count}</span>
@@ -198,7 +198,7 @@ export default function HiringPanel() {
             {roleFilter !== "all" && (
               <button
                 onClick={() => setRoleFilter("all")}
-                className="px-3 py-1.5 rounded-lg text-xs text-[#71757D] hover:text-[#E5E5EA]"
+                className="px-3 py-1.5 rounded-lg text-xs text-subtle hover:text-foreground"
               >
                 Clear filter
               </button>
@@ -228,7 +228,7 @@ export default function HiringPanel() {
       <div className="mt-4">
         <button
           onClick={() => setShowRejected((s) => !s)}
-          className="flex items-center gap-1 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+          className="flex items-center gap-1 text-sm text-subtle hover:text-foreground"
         >
           {showRejected ? <ChevronDownIcon className="size-4" /> : <ChevronRightIcon className="size-4" />}
           Rejected ({byColumn.rejected.length})
@@ -312,8 +312,8 @@ function KanbanColumn({
     <div
       className={`rounded-xl flex flex-col transition-colors ${
         over
-          ? "bg-[#222222] border-2 border-dashed border-[#9CA3AF]"
-          : "bg-[#0F0F10] border border-white/[0.04]"
+          ? "bg-surface-raised border-2 border-dashed border-muted"
+          : "bg-background border border-white/[0.04]"
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -334,17 +334,17 @@ function KanbanColumn({
               className="shrink-0 size-2 rounded-full"
               style={{ background: color }}
             />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#E5E5EA] truncate">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-foreground truncate">
               {label}
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[11px] font-medium text-[#71757D] tabular-nums">
+            <span className="text-[11px] font-medium text-subtle tabular-nums">
               {cards.length}
             </span>
             <button
               onClick={onAddClick}
-              className="text-[#71757D] hover:text-[#E5E5EA]"
+              className="text-subtle hover:text-foreground"
               title="Add candidate"
             >
               <PlusIcon className="size-4" />
@@ -363,7 +363,7 @@ function KanbanColumn({
           />
         ))}
         {cards.length === 0 && (
-          <div className="text-xs text-[#C5C5C5] py-4 text-center">No candidates</div>
+          <div className="text-xs text-muted py-4 text-center">No candidates</div>
         )}
       </div>
     </div>
@@ -391,24 +391,24 @@ function CandidateCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       onClick={onClick}
-      className="bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-lg p-3 cursor-pointer hover:ring-violet-500/30 transition-all"
+      className="bg-background ring-1 ring-white/[0.04] rounded-lg p-3 cursor-pointer hover:ring-violet-500/30 transition-all"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="font-medium text-sm text-[#E5E5EA] truncate">{candidate.full_name}</div>
+        <div className="font-medium text-sm text-foreground truncate">{candidate.full_name}</div>
         {candidate.status === "rejected" && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onMove(candidate.id, "applied");
             }}
-            className="text-[10px] text-[#71757D] hover:text-[#E5E5EA]"
+            className="text-[10px] text-subtle hover:text-foreground"
             title="Restore"
           >
             ↺
           </button>
         )}
       </div>
-      <div className="text-xs text-[#71757D] truncate">{role?.title || "No role"}</div>
+      <div className="text-xs text-subtle truncate">{role?.title || "No role"}</div>
       <div className="flex items-center gap-1.5 mt-2 text-[10px]">
         {candidate.source && (
           <span
@@ -418,7 +418,7 @@ function CandidateCard({
             {candidate.source}
           </span>
         )}
-        <span className="text-[#C5C5C5]">{fmtDateUK(candidate.date_added)}</span>
+        <span className="text-muted">{fmtDateUK(candidate.date_added)}</span>
       </div>
     </div>
   );
@@ -460,8 +460,8 @@ function ComposeCandidateModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="bg-[#0F0F10] rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Add candidate</h2>
+      <form onSubmit={submit} className="bg-background rounded-xl shadow-xl w-full max-w-md p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Add candidate</h2>
         <div className="space-y-3">
           <div>
             <label className={labelClass}>Name</label>
@@ -495,10 +495,10 @@ function ComposeCandidateModal({
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-6">
-          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]">
+          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-subtle hover:text-foreground">
             Cancel
           </button>
-          <button type="submit" className="px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90">
+          <button type="submit" className="px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90">
             Add
           </button>
         </div>
@@ -531,8 +531,8 @@ function AddRoleModal({ onCancel, onSave }: { onCancel: () => void; onSave: (r: 
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="bg-[#0F0F10] rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Add open role</h2>
+      <form onSubmit={submit} className="bg-background rounded-xl shadow-xl w-full max-w-md p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Add open role</h2>
         <div className="space-y-3">
           <div>
             <label className={labelClass}>Title</label>
@@ -568,10 +568,10 @@ function AddRoleModal({ onCancel, onSave }: { onCancel: () => void; onSave: (r: 
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-6">
-          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]">
+          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-subtle hover:text-foreground">
             Cancel
           </button>
-          <button type="submit" className="px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90">
+          <button type="submit" className="px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90">
             Add
           </button>
         </div>
@@ -616,12 +616,12 @@ function CandidateSidePanel({
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex justify-end" onClick={onClose}>
       <div
-        className="bg-[#0F0F10] w-full max-w-lg h-full overflow-y-auto shadow-2xl"
+        className="bg-background w-full max-w-lg h-full overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-[#0F0F10] border-b border-white/[0.04] px-5 py-3 flex items-center justify-between z-10">
-          <h2 className="text-lg font-semibold text-[#E5E5EA]">{candidate.full_name}</h2>
-          <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]">
+        <div className="sticky top-0 bg-background border-b border-white/[0.04] px-5 py-3 flex items-center justify-between z-10">
+          <h2 className="text-lg font-semibold text-foreground">{candidate.full_name}</h2>
+          <button onClick={onClose} className="text-subtle hover:text-foreground">
             <XMarkIcon className="size-5" />
           </button>
         </div>
@@ -696,20 +696,20 @@ function CandidateSidePanel({
           <div>
             <label className={labelClass}>CV</label>
             {candidate.cv_url ? (
-              <div className="flex items-center justify-between bg-[#0C0C0C] rounded-lg px-3 py-2 text-sm">
-                <span className="truncate text-[#E5E5EA]">{candidate.cv_name || "CV"}</span>
+              <div className="flex items-center justify-between bg-background rounded-lg px-3 py-2 text-sm">
+                <span className="truncate text-foreground">{candidate.cv_name || "CV"}</span>
                 <div className="flex items-center gap-2">
                   <a
                     href={candidate.cv_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#E5E5EA] hover:underline inline-flex items-center gap-1 text-xs"
+                    className="text-foreground hover:underline inline-flex items-center gap-1 text-xs"
                   >
                     <ArrowDownTrayIcon className="size-3.5" /> View
                   </a>
                   <button
                     onClick={() => onPatch({ cv_url: undefined, cv_name: undefined })}
-                    className="text-xs text-[#B91C1C] hover:underline"
+                    className="text-xs text-danger hover:underline"
                   >
                     Remove
                   </button>
@@ -729,7 +729,7 @@ function CandidateSidePanel({
               placeholder="Markdown supported."
             />
           </div>
-          <div className="text-[11px] text-[#71757D] pt-2 border-t border-white/[0.04]">
+          <div className="text-[11px] text-subtle pt-2 border-t border-white/[0.04]">
             Added {fmtDateUK(candidate.date_added)} · Updated {fmtDateUK(candidate.updated_at)}
           </div>
 
@@ -737,14 +737,14 @@ function CandidateSidePanel({
             {candidate.status === "hired" ? (
               <button
                 onClick={onConvert}
-                className="inline-flex items-center gap-1 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+                className="inline-flex items-center gap-1 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
               >
                 Convert to person
               </button>
             ) : null}
             <button
               onClick={onDelete}
-              className="px-3 py-2 text-sm text-[#B91C1C] hover:bg-red-500/15 rounded-lg"
+              className="px-3 py-2 text-sm text-danger hover:bg-red-500/15 rounded-lg"
             >
               Delete
             </button>

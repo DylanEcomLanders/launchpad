@@ -200,10 +200,10 @@ export function ProposalBuilder({
         <p className="text-sm font-medium text-[#2563EB] mb-2 uppercase tracking-wider">
           Build Your Package
         </p>
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[#1B1B1B] mb-3">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-3">
           Hey {proposal.client_name}
         </h1>
-        <p className="text-base md:text-lg text-[#7A7A7A] max-w-2xl">
+        <p className="text-base md:text-lg text-subtle max-w-2xl">
           Choose your services, get your price.
         </p>
         <div className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
@@ -220,15 +220,15 @@ export function ProposalBuilder({
           {/* Main services by category */}
           {Object.entries(grouped).map(([cat, svcs]) => (
             <div key={cat} className="mb-10">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-4">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">
                 {serviceCategories[cat] || cat}
               </h2>
 
               {/* Retainer discount banner — show above builds when retainer is active */}
               {cat === "builds" && activeRetainerDiscount > 0 && (
-                <div className="flex items-center gap-2 px-4 py-3 mb-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
-                  <TagIcon className="size-4 text-[#15803D] shrink-0" />
-                  <span className="text-sm text-[#15803D]">
+                <div className="flex items-center gap-2 px-4 py-3 mb-4 bg-success border border-[#BBF7D0] rounded-lg">
+                  <TagIcon className="size-4 text-success shrink-0" />
+                  <span className="text-sm text-success">
                     <strong>
                       {Math.round(activeRetainerDiscount * 100)}% retainer
                       discount
@@ -267,10 +267,10 @@ export function ProposalBuilder({
           {/* Add-ons */}
           {addOnServices.length > 0 && (
             <div className="mb-10">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted mb-1">
                 Additional Services
               </h2>
-              <p className="text-xs text-[#C5C5C5] mb-4">
+              <p className="text-xs text-muted mb-4">
                 Bolt onto any project or retainer to extend output without
                 adding overhead.
               </p>
@@ -314,7 +314,7 @@ export function ProposalBuilder({
 
       {/* Mobile: Persistent summary bar */}
       {itemCount > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#181818] border-t border-[#E5E5EA] z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-foreground z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           {/* Scrollable item list */}
           <div className="max-h-[30vh] overflow-y-auto px-4 pt-3 pb-2 space-y-1.5">
             {selectedItems.map(({ service, sel, lineTotal, baseLineTotal, discount }) => (
@@ -322,14 +322,14 @@ export function ProposalBuilder({
                 key={service.id}
                 className="flex items-center justify-between text-xs"
               >
-                <span className="text-[#1B1B1B] truncate mr-3">
+                <span className="text-foreground truncate mr-3">
                   {service.name}
                   {sel.quantity > 1 && (
-                    <span className="text-[#A0A0A0]"> &times;{sel.quantity}</span>
+                    <span className="text-muted"> &times;{sel.quantity}</span>
                   )}
                 </span>
                 {discount > 0 ? (
-                  <span className="text-[#15803D] font-semibold tabular-nums shrink-0">
+                  <span className="text-success font-semibold tabular-nums shrink-0">
                     {formatGBP(lineTotal)}
                   </span>
                 ) : (
@@ -346,7 +346,7 @@ export function ProposalBuilder({
                 0
               );
               return totalSaved > 0 ? (
-                <div className="flex items-center gap-1.5 text-[10px] text-[#15803D] font-medium pt-1">
+                <div className="flex items-center gap-1.5 text-[10px] text-success font-medium pt-1">
                   <TagIcon className="size-3 shrink-0" />
                   Saving {formatGBP(totalSaved)}
                 </div>
@@ -355,10 +355,10 @@ export function ProposalBuilder({
           </div>
 
           {/* Total + CTA */}
-          <div className="px-4 pb-4 pt-2 border-t border-[#333333]">
+          <div className="px-4 pb-4 pt-2 border-t border-border">
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-sm font-semibold text-[#1B1B1B]">Total</span>
-              <span className="text-lg font-bold text-[#1B1B1B]">{formatGBP(totalPence)}</span>
+              <span className="text-sm font-semibold text-foreground">Total</span>
+              <span className="text-lg font-bold text-foreground">{formatGBP(totalPence)}</span>
             </div>
             <button
               onClick={() => setDrawerOpen(true)}
@@ -380,11 +380,11 @@ export function ProposalBuilder({
             onClick={() => setDrawerOpen(false)}
           />
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-y-auto animate-slideUp">
-            <div className="flex items-center justify-between p-4 border-b border-[#EDEDEF]">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold">Order Summary</h3>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="p-1.5 hover:bg-[#F3F3F5] rounded-md"
+                className="p-1.5 hover:bg-surface-raised rounded-md"
               >
                 <XMarkIcon className="size-4" />
               </button>
@@ -458,7 +458,7 @@ function ServiceCard({
       className={`relative rounded-lg border-2 p-5 transition-all duration-200 cursor-pointer ${
         isSelected
           ? "border-[#2563EB] bg-[#EFF6FF] shadow-sm"
-          : "border-[#404040] bg-[#1A1A1A] hover:border-[#C5C5C5] hover:shadow-sm"
+          : "border-border bg-surface hover:border-muted hover:shadow-sm"
       }`}
     >
       {/* Recommended badge */}
@@ -471,21 +471,21 @@ function ServiceCard({
 
       {/* Selection indicator */}
       <div className="flex items-start justify-between mb-3">
-        <h3 className="text-sm font-semibold text-[#1B1B1B] pr-8">
+        <h3 className="text-sm font-semibold text-foreground pr-8">
           {service.name}
         </h3>
         <div
           className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
             isSelected
               ? "bg-[#2563EB] border-[#2563EB]"
-              : "border-[#C5C5C5]"
+              : "border-muted"
           }`}
         >
           {isSelected && <CheckCircleIcon className="size-4 text-white" />}
         </div>
       </div>
 
-      <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
+      <p className="text-xs text-subtle leading-relaxed mb-3">
         {service.description}
       </p>
 
@@ -495,7 +495,7 @@ function ServiceCard({
           {service.features.map((f) => (
             <li
               key={f}
-              className="text-xs text-[#7A7A7A] flex items-start gap-2"
+              className="text-xs text-subtle flex items-start gap-2"
             >
               <span className="text-[#2563EB] mt-0.5 shrink-0">&#x2022;</span>
               {f}
@@ -508,23 +508,23 @@ function ServiceCard({
       <div className="flex items-end justify-between">
         {hasDiscount ? (
           <div className="flex items-baseline gap-2">
-            <span className="text-sm text-[#A0A0A0] line-through">
+            <span className="text-sm text-muted line-through">
               {tierPrice?.label}
             </span>
-            <span className="text-lg font-bold text-[#15803D]">
+            <span className="text-lg font-bold text-success">
               {formatGBP(discountedAmount!)}
             </span>
-            <span className="text-[10px] font-semibold text-[#15803D] uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-success uppercase tracking-wider">
               {Math.round(buildDiscount * 100)}% off
             </span>
           </div>
         ) : (
           <div>
-            <span className="text-lg font-bold text-[#1B1B1B]">
+            <span className="text-lg font-bold text-foreground">
               {tierPrice?.label ?? "—"}
             </span>
             {service.minQuantity && service.minQuantity > 1 && (
-              <span className="block text-[10px] text-[#A0A0A0]">
+              <span className="block text-[10px] text-muted">
                 min {service.minQuantity} {service.unitLabel ? `${service.unitLabel}s` : ""}
               </span>
             )}
@@ -534,7 +534,7 @@ function ServiceCard({
         {/* Mode toggle (only if both modes) */}
         {hasBothModes && isSelected && (
           <div
-            className="inline-flex rounded-md border border-[#404040] bg-[#1A1A1A] p-0.5 text-[10px] font-semibold uppercase tracking-wider"
+            className="inline-flex rounded-md border border-border bg-surface p-0.5 text-[10px] font-semibold uppercase tracking-wider"
             onClick={(e) => e.stopPropagation()}
           >
             {service.modes.map((m) => (
@@ -544,7 +544,7 @@ function ServiceCard({
                 className={`px-2.5 py-1 rounded transition-colors ${
                   activeMode === m
                     ? "bg-[#2563EB] text-white"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                    : "text-subtle hover:text-foreground"
                 }`}
               >
                 {m === "one-off" ? "One-off" : "Retainer"}
@@ -568,23 +568,23 @@ function ServiceCard({
 
         return (
           <div
-            className="mt-3 pt-3 border-t border-[#E5E5EA] space-y-1.5"
+            className="mt-3 pt-3 border-t border-foreground space-y-1.5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-[#7A7A7A]">
+                <span className="text-xs font-medium text-subtle">
                   Qty:
                 </span>
-                <div className="inline-flex items-center gap-0 rounded-md border border-[#E5E5EA] bg-white">
+                <div className="inline-flex items-center gap-0 rounded-md border border-foreground bg-white">
                   <button
                     onClick={() => onSetQuantity(Math.max(minQty, qty - 1))}
                     disabled={qty <= minQty}
-                    className="px-2.5 py-1.5 text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="px-2.5 py-1.5 text-subtle hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <MinusIcon className="size-3" />
                   </button>
-                  <span className="px-3 py-1.5 text-sm font-semibold tabular-nums border-x border-[#E5E5EA]">
+                  <span className="px-3 py-1.5 text-sm font-semibold tabular-nums border-x border-foreground">
                     {qty}
                   </span>
                   <button
@@ -592,25 +592,25 @@ function ServiceCard({
                       onSetQuantity(Math.min(service.maxQuantity!, qty + 1))
                     }
                     disabled={qty >= service.maxQuantity!}
-                    className="px-2.5 py-1.5 text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="px-2.5 py-1.5 text-subtle hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <PlusIcon className="size-3" />
                   </button>
                 </div>
                 {minQty > 1 && (
-                  <span className="text-[10px] text-[#A0A0A0]">
+                  <span className="text-[10px] text-muted">
                     min {minQty}
                   </span>
                 )}
               </div>
               <div className="text-right">
                 {service.unitLabel && (
-                  <span className="text-xs font-semibold text-[#1B1B1B] tabular-nums">
+                  <span className="text-xs font-semibold text-foreground tabular-nums">
                     {qty} &times; {effectiveLabel} = {formatGBP(lineTotal)}
                   </span>
                 )}
                 {saving > 0 && (
-                  <span className="block text-[10px] font-medium text-[#15803D]">
+                  <span className="block text-[10px] font-medium text-success">
                     Saving {formatGBP(saving)}
                   </span>
                 )}
@@ -618,7 +618,7 @@ function ServiceCard({
             </div>
             {/* Next discount tier nudge */}
             {volResult.nextTier && (
-              <p className="text-[10px] text-[#A0A0A0] ml-10">
+              <p className="text-[10px] text-muted ml-10">
                 Order {volResult.nextTier.minQty}+ for {volResult.nextTier.label}
               </p>
             )}
@@ -661,13 +661,13 @@ function OrderSummary({
   );
 
   return (
-    <div className="bg-[#181818] border border-[#E5E5EA] rounded-lg p-5">
-      <h3 className="text-sm font-semibold text-[#1B1B1B] mb-4">
+    <div className="bg-surface border border-foreground rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-foreground mb-4">
         Order Summary
       </h3>
 
       {isEmpty ? (
-        <p className="text-xs text-[#A0A0A0] py-6 text-center">
+        <p className="text-xs text-muted py-6 text-center">
           Select services to build your package
         </p>
       ) : (
@@ -679,19 +679,19 @@ function OrderSummary({
                 className="flex items-start justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[#1B1B1B] truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {service.name}
                     {sel.quantity > 1 && (
-                      <span className="text-[#7A7A7A]">
+                      <span className="text-subtle">
                         {" "}
                         &times;{sel.quantity}
                       </span>
                     )}
                   </p>
-                  <p className="text-[10px] uppercase tracking-wider text-[#A0A0A0]">
+                  <p className="text-[10px] uppercase tracking-wider text-muted">
                     {sel.mode === "retainer" ? "Monthly retainer" : "One-off"}
                     {discount > 0 && (
-                      <span className="text-[#15803D] ml-1">
+                      <span className="text-success ml-1">
                         · {Math.round(discount * 100)}% retainer discount
                       </span>
                     )}
@@ -701,10 +701,10 @@ function OrderSummary({
                   <div className="text-right">
                     {discount > 0 ? (
                       <>
-                        <span className="text-[10px] text-[#C5C5C5] line-through block leading-tight">
+                        <span className="text-[10px] text-muted line-through block leading-tight">
                           {formatGBP(baseLineTotal)}
                         </span>
-                        <span className="text-sm font-semibold tabular-nums text-[#15803D]">
+                        <span className="text-sm font-semibold tabular-nums text-success">
                           {formatGBP(lineTotal)}
                         </span>
                       </>
@@ -716,7 +716,7 @@ function OrderSummary({
                   </div>
                   <button
                     onClick={() => onRemove(service.id)}
-                    className="p-1 text-[#C5C5C5] hover:text-red-500 transition-colors"
+                    className="p-1 text-muted hover:text-red-500 transition-colors"
                   >
                     <XMarkIcon className="size-3.5" />
                   </button>
@@ -727,26 +727,26 @@ function OrderSummary({
 
           {/* Savings banner */}
           {totalSaved > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
-              <TagIcon className="size-3.5 text-[#15803D] shrink-0" />
-              <span className="text-xs text-[#15803D] font-medium">
+            <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-success border border-[#BBF7D0] rounded-lg">
+              <TagIcon className="size-3.5 text-success shrink-0" />
+              <span className="text-xs text-success font-medium">
                 Saving {formatGBP(totalSaved)} with retainer discount
               </span>
             </div>
           )}
 
           {/* Divider */}
-          <div className="border-t border-[#E5E5EA] pt-4 mb-5">
+          <div className="border-t border-foreground pt-4 mb-5">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-[#1B1B1B]">
+              <span className="text-sm font-semibold text-foreground">
                 Total
               </span>
               <div className="text-right">
-                <span className="text-lg font-bold text-[#1B1B1B]">
+                <span className="text-lg font-bold text-foreground">
                   {formatGBP(totalPence)}
                 </span>
                 {hasRetainer && (
-                  <p className="text-[10px] text-[#A0A0A0]">
+                  <p className="text-[10px] text-muted">
                     includes recurring monthly fees
                   </p>
                 )}
@@ -761,10 +761,10 @@ function OrderSummary({
         <div className="mb-4">
           <label
             htmlFor="client-email"
-            className="block text-xs font-medium text-[#7A7A7A] mb-1.5"
+            className="block text-xs font-medium text-subtle mb-1.5"
           >
             Your email{" "}
-            <span className="text-[#A0A0A0] font-normal">(for Slack channel invite)</span>
+            <span className="text-muted font-normal">(for Slack channel invite)</span>
           </label>
           <input
             id="client-email"
@@ -772,7 +772,7 @@ function OrderSummary({
             placeholder="you@company.com"
             value={clientEmail}
             onChange={(e) => onEmailChange(e.target.value)}
-            className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg bg-white text-[#1B1B1B] placeholder:text-[#C5C5C5] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-colors"
+            className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg bg-white text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-colors"
           />
         </div>
       )}
@@ -790,7 +790,7 @@ function OrderSummary({
         disabled={isEmpty || loading}
         className={`w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
           isEmpty || loading
-            ? "bg-[#E5E5EA] text-[#A0A0A0] cursor-not-allowed"
+            ? "bg-foreground text-muted cursor-not-allowed"
             : "bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-sm hover:shadow-md"
         }`}
       >
@@ -827,7 +827,7 @@ function OrderSummary({
       </button>
 
       {!isEmpty && !loading && (
-        <p className="text-[10px] text-[#A0A0A0] text-center mt-3">
+        <p className="text-[10px] text-muted text-center mt-3">
           You&apos;ll be redirected to our secure checkout
         </p>
       )}

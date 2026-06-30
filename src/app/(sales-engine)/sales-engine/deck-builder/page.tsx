@@ -75,45 +75,45 @@ export default function DeckBuilderPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#1B1B1B]">Deck Builder</h1>
-          <p className="text-sm text-[#999] mt-1">Generate a branded discovery deck for Call 2</p>
+          <h1 className="text-2xl font-bold text-foreground">Deck Builder</h1>
+          <p className="text-sm text-subtle mt-1">Generate a branded discovery deck for Call 2</p>
         </div>
 
         <div className="space-y-6">
           {/* Brand */}
-          <section className="border border-[#E5E5EA] rounded-xl p-5">
-            <h2 className="text-xs font-semibold text-[#999] uppercase tracking-wider mb-4">Brand</h2>
+          <section className="border border-foreground rounded-xl p-5">
+            <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-4">Brand</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-[#999] mb-1">Brand Name</label>
-                <input value={brandName} onChange={e => setBrandName(e.target.value)} placeholder="e.g. Ecomlanders" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">Brand Name</label>
+                <input value={brandName} onChange={e => setBrandName(e.target.value)} placeholder="e.g. Ecomlanders" className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
               <div>
-                <label className="block text-xs text-[#999] mb-1">URL</label>
-                <input value={brandUrl} onChange={e => setBrandUrl(e.target.value)} placeholder="https://ecomlanders.app" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">URL</label>
+                <input value={brandUrl} onChange={e => setBrandUrl(e.target.value)} placeholder="https://ecomlanders.app" className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
             </div>
           </section>
 
           {/* Numbers */}
-          <section className="border border-[#E5E5EA] rounded-xl p-5">
-            <h2 className="text-xs font-semibold text-[#999] uppercase tracking-wider mb-4">Traffic & Conversion</h2>
+          <section className="border border-foreground rounded-xl p-5">
+            <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-4">Traffic & Conversion</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs text-[#999] mb-1">Monthly Traffic</label>
-                <input type="number" value={traffic} onChange={e => setTraffic(e.target.value)} placeholder="150000" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">Monthly Traffic</label>
+                <input type="number" value={traffic} onChange={e => setTraffic(e.target.value)} placeholder="150000" className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
               <div>
-                <label className="block text-xs text-[#999] mb-1">Current CVR (%)</label>
-                <input type="number" step="0.1" value={cvr} onChange={e => setCvr(e.target.value)} placeholder="1.8" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">Current CVR (%)</label>
+                <input type="number" step="0.1" value={cvr} onChange={e => setCvr(e.target.value)} placeholder="1.8" className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
               <div>
-                <label className="block text-xs text-[#999] mb-1">Benchmark CVR (%)</label>
-                <input type="number" step="0.1" value={benchmarkCvr} onChange={e => setBenchmarkCvr(e.target.value)} className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">Benchmark CVR (%)</label>
+                <input type="number" step="0.1" value={benchmarkCvr} onChange={e => setBenchmarkCvr(e.target.value)} className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
               <div>
-                <label className="block text-xs text-[#999] mb-1">AOV (£)</label>
-                <input type="number" value={aov} onChange={e => setAov(e.target.value)} placeholder="55" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">AOV (£)</label>
+                <input type="number" value={aov} onChange={e => setAov(e.target.value)} placeholder="55" className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
             </div>
             {traffic && cvr && aov && gap > 0 && (
@@ -126,12 +126,12 @@ export default function DeckBuilderPage() {
           </section>
 
           {/* Scores */}
-          <section className="border border-[#E5E5EA] rounded-xl p-5">
-            <h2 className="text-xs font-semibold text-[#999] uppercase tracking-wider mb-4">Conversion Matrix Scores</h2>
+          <section className="border border-foreground rounded-xl p-5">
+            <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-4">Conversion Matrix Scores</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {SCORE_KEYS.map(({ key, label }) => (
                 <div key={key}>
-                  <label className="block text-xs text-[#999] mb-1">{label}</label>
+                  <label className="block text-xs text-subtle mb-1">{label}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="range"
@@ -139,7 +139,7 @@ export default function DeckBuilderPage() {
                       max={10}
                       value={scores[key]}
                       onChange={e => updateScore(key, Number(e.target.value))}
-                      className="flex-1 accent-[#1B1B1B]"
+                      className="flex-1 accent-surface"
                     />
                     <span className={`text-sm font-bold w-6 text-right ${scores[key] >= 7 ? "text-emerald-600" : scores[key] >= 5 ? "text-amber-500" : "text-red-500"}`}>
                       {scores[key]}
@@ -151,11 +151,11 @@ export default function DeckBuilderPage() {
           </section>
 
           {/* Priorities */}
-          <section className="border border-[#E5E5EA] rounded-xl p-5">
-            <h2 className="text-xs font-semibold text-[#999] uppercase tracking-wider mb-4">Top 3 Priorities (90-day roadmap)</h2>
+          <section className="border border-foreground rounded-xl p-5">
+            <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-4">Top 3 Priorities (90-day roadmap)</h2>
             {priorities.map((p, i) => (
               <div key={i} className="flex items-center gap-3 mb-3">
-                <span className="size-6 rounded-full bg-[#F0F0F0] flex items-center justify-center text-xs font-bold text-[#999] shrink-0">{i + 1}</span>
+                <span className="size-6 rounded-full bg-foreground flex items-center justify-center text-xs font-bold text-subtle shrink-0">{i + 1}</span>
                 <input
                   value={p}
                   onChange={e => {
@@ -164,23 +164,23 @@ export default function DeckBuilderPage() {
                     setPriorities(next);
                   }}
                   placeholder={`Priority ${i + 1}...`}
-                  className="flex-1 px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+                  className="flex-1 px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface"
                 />
               </div>
             ))}
           </section>
 
           {/* Pricing */}
-          <section className="border border-[#E5E5EA] rounded-xl p-5">
-            <h2 className="text-xs font-semibold text-[#999] uppercase tracking-wider mb-4">Offer Pricing</h2>
+          <section className="border border-foreground rounded-xl p-5">
+            <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-4">Offer Pricing</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-[#999] mb-1">Core Retainer (£/mo)</label>
-                <input type="number" value={retainerPrice} onChange={e => setRetainerPrice(e.target.value)} className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">Core Retainer (£/mo)</label>
+                <input type="number" value={retainerPrice} onChange={e => setRetainerPrice(e.target.value)} className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
               <div>
-                <label className="block text-xs text-[#999] mb-1">Anchor / Pro (£/mo)</label>
-                <input type="number" value={anchorPrice} onChange={e => setAnchorPrice(e.target.value)} className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <label className="block text-xs text-subtle mb-1">Anchor / Pro (£/mo)</label>
+                <input type="number" value={anchorPrice} onChange={e => setAnchorPrice(e.target.value)} className="w-full px-3 py-2 text-sm border border-foreground rounded-lg focus:outline-none focus:border-surface" />
               </div>
             </div>
           </section>
@@ -190,24 +190,24 @@ export default function DeckBuilderPage() {
             <button
               onClick={generate}
               disabled={generating || !brandName.trim()}
-              className="px-6 py-3 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] disabled:opacity-40 transition-colors"
+              className="px-6 py-3 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border disabled:opacity-40 transition-colors"
             >
               {generating ? "Generating..." : "Generate Deck"}
             </button>
 
             {deckUrl && (
-              <div className="flex items-center gap-3 flex-1 bg-[#F8F8F8] border border-[#E5E5EA] rounded-lg px-4 py-2.5">
+              <div className="flex items-center gap-3 flex-1 bg-[#F8F8F8] border border-foreground rounded-lg px-4 py-2.5">
                 <a href={deckUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate flex-1">
                   {deckUrl}
                 </a>
                 <button
                   onClick={() => { navigator.clipboard.writeText(deckUrl); }}
-                  className="shrink-0 p-1.5 text-[#999] hover:text-[#1B1B1B] transition-colors"
+                  className="shrink-0 p-1.5 text-subtle hover:text-foreground transition-colors"
                   title="Copy link"
                 >
                   <ClipboardDocumentIcon className="size-4" />
                 </button>
-                <a href={deckUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 p-1.5 text-[#999] hover:text-[#1B1B1B] transition-colors" title="Open">
+                <a href={deckUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 p-1.5 text-subtle hover:text-foreground transition-colors" title="Open">
                   <ArrowTopRightOnSquareIcon className="size-4" />
                 </a>
               </div>

@@ -263,7 +263,7 @@ export default function MyInvoicesPage() {
 
   if (!hydrated) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
       </div>
     );
@@ -271,29 +271,29 @@ export default function MyInvoicesPage() {
 
   if (!person) {
     return (
-      <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-2xl px-6 py-12 text-center">
-          <p className="text-sm text-[#71757D]">
+          <p className="text-sm text-subtle">
             We couldn&apos;t link your account to a team record yet. Try a hard refresh (Cmd+Shift+R). If it persists, ask an admin to check your name + email match on /company/people.
           </p>
           {me && (
-            <p className="text-[11px] text-[#4A4A4A] mt-3">
+            <p className="text-[11px] text-border mt-3">
               Signed in as: {me.name || "(no name)"} · {me.email || "(no email)"}
             </p>
           )}
           {diagnostic && (
             <details className="mt-6 text-left max-w-xl mx-auto">
-              <summary className="text-[11px] text-[#71757D] cursor-pointer hover:text-[#E5E5EA]">
+              <summary className="text-[11px] text-subtle cursor-pointer hover:text-foreground">
                 Diagnostic (share with admin)
               </summary>
-              <pre className="mt-2 text-[10px] text-[#9CA3AF] bg-[#0C0C0C] border border-[#2A2A2A] rounded-md p-3 overflow-auto whitespace-pre-wrap break-all">
+              <pre className="mt-2 text-[10px] text-muted bg-background border border-border rounded-md p-3 overflow-auto whitespace-pre-wrap break-all">
                 {diagnostic}
               </pre>
             </details>
           )}
           <Link
             href="/me"
-            className="inline-block mt-4 text-xs text-[#E5E5EA] hover:underline"
+            className="inline-block mt-4 text-xs text-foreground hover:underline"
           >
             Back to home
           </Link>
@@ -303,18 +303,18 @@ export default function MyInvoicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-6 py-12">
         <Link
           href="/me"
-          className="inline-flex items-center gap-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA] mb-6"
+          className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-foreground mb-6"
         >
           <ArrowLeftIcon className="size-3.5" />
           Back
         </Link>
 
         <h1 className="text-2xl font-bold mb-1">Submit an invoice</h1>
-        <p className="text-sm text-[#71757D] mb-8">
+        <p className="text-sm text-subtle mb-8">
           Invoices submitted here auto-link to your account. Admin sees them
           immediately and pays in the next cycle (28th).
         </p>
@@ -335,7 +335,7 @@ export default function MyInvoicesPage() {
         {/* Form */}
         <form
           onSubmit={submit}
-          className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-6 space-y-4"
+          className="bg-surface border border-border rounded-xl p-6 space-y-4"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <FieldL label="Invoice number">
@@ -344,7 +344,7 @@ export default function MyInvoicesPage() {
                 value={invoiceNumber}
                 onChange={(e) => setInvoiceNumber(e.target.value)}
                 placeholder="INV-2026-001"
-                className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+                className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
               />
             </FieldL>
             <FieldL label="Issue date">
@@ -352,7 +352,7 @@ export default function MyInvoicesPage() {
                 type="date"
                 value={issueDate}
                 onChange={(e) => setIssueDate(e.target.value)}
-                className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+                className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
               />
             </FieldL>
             <FieldL label="Due date (optional)">
@@ -360,7 +360,7 @@ export default function MyInvoicesPage() {
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+                className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
               />
             </FieldL>
           </div>
@@ -373,14 +373,14 @@ export default function MyInvoicesPage() {
                 onChange={(e) => setAmount(e.target.value)}
                 step="0.01"
                 placeholder="0.00"
-                className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2 tabular-nums"
+                className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2 tabular-nums"
               />
             </FieldL>
             <FieldL label="Currency">
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+                className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
               >
                 <option value="GBP">GBP</option>
                 <option value="USD">USD</option>
@@ -391,12 +391,12 @@ export default function MyInvoicesPage() {
 
           <FieldL label="Invoice PDF">
             {file ? (
-              <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-md">
+              <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-background border border-border rounded-md">
                 <div className="flex items-center gap-2 min-w-0">
-                  <DocumentArrowUpIcon className="size-4 text-[#71757D] shrink-0" />
+                  <DocumentArrowUpIcon className="size-4 text-subtle shrink-0" />
                   <div className="min-w-0">
-                    <div className="text-sm text-[#E5E5EA] truncate">{file.filename}</div>
-                    <div className="text-[11px] text-[#71757D]">
+                    <div className="text-sm text-foreground truncate">{file.filename}</div>
+                    <div className="text-[11px] text-subtle">
                       {fmtSize(file.size)} · uploaded
                     </div>
                   </div>
@@ -404,24 +404,24 @@ export default function MyInvoicesPage() {
                 <button
                   type="button"
                   onClick={removeFile}
-                  className="text-[#71757D] hover:text-rose-400 p-1"
+                  className="text-subtle hover:text-rose-400 p-1"
                   aria-label="Remove file"
                 >
                   <XMarkIcon className="size-4" />
                 </button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center gap-2 py-6 border-2 border-dashed border-[#2A2A2A] rounded-md cursor-pointer hover:border-[#999] bg-[#0C0C0C] transition-colors">
+              <label className="flex flex-col items-center justify-center gap-2 py-6 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-subtle bg-background transition-colors">
                 {uploading ? (
-                  <div className="flex items-center gap-2 text-[#71757D] text-sm">
-                    <div className="size-4 border-2 border-[#2A2A2A] border-t-[#E5E5EA] rounded-full animate-spin" />
+                  <div className="flex items-center gap-2 text-subtle text-sm">
+                    <div className="size-4 border-2 border-border border-t-[#E5E5EA] rounded-full animate-spin" />
                     Uploading...
                   </div>
                 ) : (
                   <>
-                    <DocumentArrowUpIcon className="size-5 text-[#71757D]" />
-                    <span className="text-sm text-[#71757D]">Click to upload or drop your invoice</span>
-                    <span className="text-[11px] text-[#71757D]">PDF, PNG, JPG, or WebP · up to 25 MB</span>
+                    <DocumentArrowUpIcon className="size-5 text-subtle" />
+                    <span className="text-sm text-subtle">Click to upload or drop your invoice</span>
+                    <span className="text-[11px] text-subtle">PDF, PNG, JPG, or WebP · up to 25 MB</span>
                   </>
                 )}
                 <input
@@ -442,7 +442,7 @@ export default function MyInvoicesPage() {
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="Anything admin should know about this invoice"
-              className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+              className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
             />
           </FieldL>
 
@@ -457,7 +457,7 @@ export default function MyInvoicesPage() {
             <button
               type="submit"
               disabled={submitting || uploading || !file}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ArrowUpTrayIcon className="size-3.5" />
               {submitting ? "Submitting..." : "Submit invoice"}
@@ -468,12 +468,12 @@ export default function MyInvoicesPage() {
         {/* History */}
         {invoices.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+            <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
               Your invoices
             </h2>
-            <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+            <div className="bg-surface border border-border rounded-xl overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+                <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
                   <tr>
                     <th className="text-left px-4 py-3 font-semibold">Invoice</th>
                     <th className="text-left px-4 py-3 font-semibold">Issued</th>
@@ -493,15 +493,15 @@ export default function MyInvoicesPage() {
                     return (
                       <tr
                         key={i.id}
-                        className="border-t border-[#2A2A2A]"
+                        className="border-t border-border"
                       >
-                        <td className="px-4 py-3 text-[#E5E5EA]">
+                        <td className="px-4 py-3 text-foreground">
                           {i.invoice_number || "(no number)"}
                         </td>
-                        <td className="px-4 py-3 text-[#71757D] tabular-nums">
+                        <td className="px-4 py-3 text-subtle tabular-nums">
                           {fmtDateUK(i.issue_date)}
                         </td>
-                        <td className="px-4 py-3 font-medium text-[#E5E5EA]">
+                        <td className="px-4 py-3 font-medium text-foreground">
                           {fmtMoney(i.amount, i.currency)}
                         </td>
                         <td className="px-4 py-3">
@@ -517,7 +517,7 @@ export default function MyInvoicesPage() {
                             <button
                               onClick={() => deleteInvoice(i.id)}
                               disabled={deletingId === i.id}
-                              className="text-[11px] text-[#71757D] hover:text-rose-400 disabled:opacity-50"
+                              className="text-[11px] text-subtle hover:text-rose-400 disabled:opacity-50"
                               title="Delete invoice"
                             >
                               {deletingId === i.id ? "Deleting..." : "Delete"}
@@ -552,7 +552,7 @@ function FieldL({
 }) {
   return (
     <div>
-      <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+      <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
         {label}
       </label>
       {children}
@@ -575,11 +575,11 @@ function Summary({
       : tone === "warn"
       ? "text-amber-300"
       : tone === "muted"
-      ? "text-[#71757D]"
-      : "text-[#E5E5EA]";
+      ? "text-subtle"
+      : "text-foreground";
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4">
-      <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1">
+    <div className="bg-surface border border-border rounded-xl p-4">
+      <div className="text-[10px] uppercase tracking-wider text-subtle mb-1">
         {label}
       </div>
       <div className={`text-xl font-semibold ${valueColor}`}>{value}</div>

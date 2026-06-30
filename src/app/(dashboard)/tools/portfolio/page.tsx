@@ -114,7 +114,7 @@ export default function PortfolioManager() {
           <h1 className="text-[28px] font-bold mb-2">
             Portfolio
           </h1>
-          <p className="text-[#71757D]">
+          <p className="text-subtle">
             Manage the tabs on your shareable portfolio page. Each tab embeds a Figma design.
           </p>
         </div>
@@ -122,17 +122,17 @@ export default function PortfolioManager() {
         {/* Link + Add */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">
               Tabs
               {tabs.length > 0 && (
-                <span className="ml-2 text-[10px] font-bold bg-[#222222] text-[#71757D] px-1.5 py-0.5 rounded">
+                <span className="ml-2 text-[10px] font-bold bg-surface-raised text-subtle px-1.5 py-0.5 rounded">
                   {tabs.length}
                 </span>
               )}
             </h2>
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1 text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+              className="flex items-center gap-1 text-[11px] font-medium text-subtle hover:text-foreground transition-colors"
               title="Copy portfolio link"
             >
               <ClipboardDocumentIcon className="size-3.5" />
@@ -142,7 +142,7 @@ export default function PortfolioManager() {
               href="/portfolio"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+              className="flex items-center gap-1 text-[11px] font-medium text-subtle hover:text-foreground transition-colors"
             >
               <ArrowTopRightOnSquareIcon className="size-3.5" />
               Preview
@@ -153,7 +153,7 @@ export default function PortfolioManager() {
               handleCancel();
               setShowForm(true);
             }}
-            className="flex items-center gap-1 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-subtle hover:text-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add Tab
@@ -162,12 +162,12 @@ export default function PortfolioManager() {
 
         {/* Add/Edit Form */}
         {showForm && (
-          <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-5 mb-6">
+          <div className="bg-background border border-border rounded-lg p-5 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold">
                 {editingId ? "Edit Tab" : "Add Tab"}
               </h3>
-              <button onClick={handleCancel} className="text-[#71757D] hover:text-[#E5E5EA]">
+              <button onClick={handleCancel} className="text-subtle hover:text-foreground">
                 <XMarkIcon className="size-4" />
               </button>
             </div>
@@ -199,7 +199,7 @@ export default function PortfolioManager() {
               <button
                 onClick={handleSubmit}
                 disabled={!label.trim() || !figmaUrl.trim()}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-4 py-2 bg-white text-background text-xs font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <CheckIcon className="size-3.5" />
                 {editingId ? "Save Changes" : "Add Tab"}
@@ -213,20 +213,20 @@ export default function PortfolioManager() {
           {loading && (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 animate-pulse">
-                  <div className="h-4 bg-[#222222] rounded w-1/3 mb-2" />
-                  <div className="h-3 bg-[#222222] rounded w-2/3" />
+                <div key={i} className="bg-surface border border-border rounded-lg p-4 animate-pulse">
+                  <div className="h-4 bg-surface-raised rounded w-1/3 mb-2" />
+                  <div className="h-3 bg-surface-raised rounded w-2/3" />
                 </div>
               ))}
             </div>
           )}
 
           {!loading && tabs.length === 0 && !showForm && (
-            <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-lg p-8 text-center">
-              <p className="text-xs text-[#71757D] mb-2">No portfolio tabs yet</p>
+            <div className="bg-surface border border-dashed border-border rounded-lg p-8 text-center">
+              <p className="text-xs text-subtle mb-2">No portfolio tabs yet</p>
               <button
                 onClick={() => setShowForm(true)}
-                className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                className="text-xs font-medium text-subtle hover:text-foreground transition-colors"
               >
                 + Add your first tab
               </button>
@@ -237,21 +237,21 @@ export default function PortfolioManager() {
             tabs.map((tab, i) => (
               <div
                 key={tab.id}
-                className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 flex items-center gap-3"
+                className="bg-surface border border-border rounded-lg p-4 flex items-center gap-3"
               >
                 {/* Reorder */}
                 <div className="flex flex-col gap-0.5">
                   <button
                     onClick={() => moveTab(tab.id, "up")}
                     disabled={i === 0}
-                    className="text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-20 transition-colors"
+                    className="text-subtle hover:text-foreground disabled:opacity-20 transition-colors"
                   >
                     <ArrowUpIcon className="size-3" />
                   </button>
                   <button
                     onClick={() => moveTab(tab.id, "down")}
                     disabled={i === tabs.length - 1}
-                    className="text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-20 transition-colors"
+                    className="text-subtle hover:text-foreground disabled:opacity-20 transition-colors"
                   >
                     <ArrowDownIcon className="size-3" />
                   </button>
@@ -259,10 +259,10 @@ export default function PortfolioManager() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-[#E5E5EA] truncate">
+                  <h3 className="text-sm font-semibold text-foreground truncate">
                     {tab.label}
                   </h3>
-                  <p className="text-xs text-[#71757D] truncate">
+                  <p className="text-xs text-subtle truncate">
                     {tab.figma_url}
                   </p>
                 </div>
@@ -271,14 +271,14 @@ export default function PortfolioManager() {
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => handleEdit(tab)}
-                    className="p-1.5 text-[#71757D] hover:text-[#E5E5EA] transition-colors text-xs font-medium"
+                    className="p-1.5 text-subtle hover:text-foreground transition-colors text-xs font-medium"
                     title="Edit"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(tab.id)}
-                    className="p-1.5 text-[#71757D] hover:text-red-400 transition-colors"
+                    className="p-1.5 text-subtle hover:text-red-400 transition-colors"
                     title="Delete"
                   >
                     <TrashIcon className="size-3.5" />

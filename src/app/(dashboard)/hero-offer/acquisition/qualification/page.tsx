@@ -115,11 +115,11 @@ export default function QualificationScriptPage() {
     >
       <div className="space-y-8">
         {/* Quick legend */}
-        <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5">
+        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
           <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-3">
             How to use this on a call
           </div>
-          <ul className="space-y-2 text-sm text-[#9CA3AF]">
+          <ul className="space-y-2 text-sm text-muted">
             <li>1. Open this page before the call. Scroll as you go.</li>
             <li>2. Listen for the green / red flags under each question to score fit in real time.</li>
             <li>3. If you hit 3+ red flags, end the call kind but quick - they&apos;re not a Hero Offer fit.</li>
@@ -131,25 +131,25 @@ export default function QualificationScriptPage() {
           <section key={section.id}>
             <div className="flex items-center gap-2 mb-1">
               <span className="size-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
-              <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+              <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
                 {section.label}
               </h2>
             </div>
-            <p className="text-[12px] text-[#71757D] mb-4 max-w-2xl">{section.description}</p>
+            <p className="text-[12px] text-subtle mb-4 max-w-2xl">{section.description}</p>
 
             <div className="space-y-3">
               {section.questions.map((q) => (
                 <div
                   key={q.n}
-                  className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5 hover:ring-emerald-500/30 transition-all"
+                  className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5 hover:ring-emerald-500/30 transition-all"
                 >
                   <div className="flex items-start gap-4">
                     <div className="shrink-0 size-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-[0_8px_24px_rgba(16,185,129,0.25)]">
                       {q.n}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-semibold text-[#E5E5EA] mb-2 leading-snug" dangerouslySetInnerHTML={{ __html: q.q }} />
-                      <p className="text-[12px] text-[#71757D] italic mb-4">
+                      <h3 className="text-base font-semibold text-foreground mb-2 leading-snug" dangerouslySetInnerHTML={{ __html: q.q }} />
+                      <p className="text-[12px] text-subtle italic mb-4">
                         Why we ask: {q.why}
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -158,14 +158,14 @@ export default function QualificationScriptPage() {
                             <CheckCircleIcon className="size-3.5 text-emerald-300" />
                             <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-semibold">Green flag</span>
                           </div>
-                          <p className="text-[12.5px] text-[#E5E5EA] leading-relaxed" dangerouslySetInnerHTML={{ __html: q.green }} />
+                          <p className="text-[12.5px] text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: q.green }} />
                         </div>
                         <div className="bg-rose-500/[0.06] rounded-xl ring-1 ring-rose-500/20 p-3">
                           <div className="flex items-center gap-1.5 mb-1.5">
                             <ExclamationTriangleIcon className="size-3.5 text-rose-300" />
                             <span className="text-[10px] uppercase tracking-wider text-rose-300 font-semibold">Red flag</span>
                           </div>
-                          <p className="text-[12.5px] text-[#E5E5EA] leading-relaxed" dangerouslySetInnerHTML={{ __html: q.red }} />
+                          <p className="text-[12.5px] text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: q.red }} />
                         </div>
                       </div>
                     </div>

@@ -63,7 +63,7 @@ export default function TestsListPage() {
     router.push(`/tools/tests/${t.id}`);
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
@@ -77,11 +77,11 @@ export default function TestsListPage() {
               Tests
             </h1>
           </div>
-          <p className="text-sm text-[#9CA3AF] max-w-2xl">
+          <p className="text-sm text-muted max-w-2xl">
             Every test in one place - hypothesis, runtime, significance, result, write-up. Strategist calls each test against the target significance.
           </p>
         </div>
-        <button onClick={createNew} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]">
+        <button onClick={createNew} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground">
           <PlusIcon className="size-4" />
           New test
         </button>
@@ -89,12 +89,12 @@ export default function TestsListPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D]" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface" className="w-full pl-9 pr-3 py-2 rounded-md bg-[#0F0F10] ring-1 ring-white/[0.06] text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-emerald-500/40" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface" className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40" />
         </div>
         <div className="flex items-center gap-1.5">
           {TABS.map((t) => (
-            <button key={t.value} onClick={() => setTab(t.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${tab === t.value ? "bg-white text-[#0C0C0C]" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>
+            <button key={t.value} onClick={() => setTab(t.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${tab === t.value ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>
               {t.label}
             </button>
           ))}
@@ -102,10 +102,10 @@ export default function TestsListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-background rounded-xl animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">{tab === "active" ? "No live or drafting tests right now." : "No concluded tests yet."}</p>
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">{tab === "active" ? "No live or drafting tests right now." : "No concluded tests yet."}</p>
         </div>
       ) : (
         <ul className="space-y-2">
@@ -113,7 +113,7 @@ export default function TestsListPage() {
             const days = daysRunning(t);
             return (
               <li key={t.id}>
-                <Link href={`/tools/tests/${t.id}`} className="block bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all">
+                <Link href={`/tools/tests/${t.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all">
                   <div className="flex items-start gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -126,23 +126,23 @@ export default function TestsListPage() {
                             {t.uplift_pct !== undefined && ` ${t.uplift_pct >= 0 ? "+" : ""}${t.uplift_pct}%`}
                           </span>
                         )}
-                        <span className="text-sm text-[#E5E5EA] truncate">
+                        <span className="text-sm text-foreground truncate">
                           {t.client_name || "Unattached"}
                           {t.surface && ` · ${t.surface}`}
                         </span>
                       </div>
-                      <p className="text-[12px] text-[#9CA3AF] line-clamp-2">
-                        {t.hypothesis_line || <span className="italic text-[#71757D]">No hypothesis yet</span>}
+                      <p className="text-[12px] text-muted line-clamp-2">
+                        {t.hypothesis_line || <span className="italic text-subtle">No hypothesis yet</span>}
                       </p>
                       {t.status === "live" && (
                         <div className="mt-2">
-                          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-[#71757D] mb-1">
+                          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-subtle mb-1">
                             <span>{days !== null ? `${days}d running` : "—"}</span>
                             {t.significance_reached_pct !== undefined && (
                               <span>· {t.significance_reached_pct}% sig (target {t.significance_target_pct}%)</span>
                             )}
                           </div>
-                          <div className="h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
+                          <div className="h-1 bg-surface rounded-full overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${sigProgress(t)}%` }} />
                           </div>
                         </div>

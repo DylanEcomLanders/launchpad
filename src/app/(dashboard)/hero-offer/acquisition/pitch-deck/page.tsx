@@ -37,7 +37,7 @@ const SLIDES = [
           <li>• You&apos;re paying more per click, year over year.</li>
           <li>• Your conversion rate hasn&apos;t moved in 18 months.</li>
           <li>• Every £1 in extra spend buys less revenue than the last.</li>
-          <li>• The only honest way out is to <strong className="text-[#0E0D0B]">convert more of the traffic you already have</strong>.</li>
+          <li>• The only honest way out is to <strong className="text-background">convert more of the traffic you already have</strong>.</li>
         </ul>
       </SlideBody>
     ),
@@ -60,20 +60,20 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="What we do" title="Three pillars. One programme.">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-          <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Design</div>
-            <div className="text-[#0E0D0B] font-semibold mb-1">Conversion-led, not pretty.</div>
-            <p className="text-[12px] text-[#6E6E6E]">Pages that read in 3 seconds and convert in 30.</p>
+          <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Design</div>
+            <div className="text-background font-semibold mb-1">Conversion-led, not pretty.</div>
+            <p className="text-[12px] text-subtle">Pages that read in 3 seconds and convert in 30.</p>
           </div>
-          <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Dev</div>
-            <div className="text-[#0E0D0B] font-semibold mb-1">Ship-quality builds.</div>
-            <p className="text-[12px] text-[#6E6E6E]">Fast, mobile-first, instrumented. Built for testing, not theming.</p>
+          <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Dev</div>
+            <div className="text-background font-semibold mb-1">Ship-quality builds.</div>
+            <p className="text-[12px] text-subtle">Fast, mobile-first, instrumented. Built for testing, not theming.</p>
           </div>
-          <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">CRO + Copy</div>
-            <div className="text-[#0E0D0B] font-semibold mb-1">Test what matters.</div>
-            <p className="text-[12px] text-[#6E6E6E]">Hypothesis-driven A/B tests on the surfaces that move the number.</p>
+          <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">CRO + Copy</div>
+            <div className="text-background font-semibold mb-1">Test what matters.</div>
+            <p className="text-[12px] text-subtle">Hypothesis-driven A/B tests on the surfaces that move the number.</p>
           </div>
         </div>
       </SlideBody>
@@ -84,23 +84,23 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="Tiers" title="One programme. Three speeds.">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-          <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-1">Entry</div>
-            <div className="text-3xl font-bold text-[#0E0D0B]">£5k<span className="text-sm text-[#6E6E6E]">/mo</span></div>
-            <p className="text-[12px] text-[#444] mt-2">2 pages + 2 tests / mo</p>
+          <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-1">Entry</div>
+            <div className="text-3xl font-bold text-background">£5k<span className="text-sm text-subtle">/mo</span></div>
+            <p className="text-[12px] text-border mt-2">2 pages + 2 tests / mo</p>
           </div>
           <div className="bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-xl p-5 ring-1 ring-emerald-500/40">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-1">Core · most chosen</div>
-            <div className="text-3xl font-bold text-[#0E0D0B]">£10k<span className="text-sm text-[#6E6E6E]">/mo</span></div>
-            <p className="text-[12px] text-[#444] mt-2">4 pages + 4 tests / mo</p>
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-1">Core · most chosen</div>
+            <div className="text-3xl font-bold text-background">£10k<span className="text-sm text-subtle">/mo</span></div>
+            <p className="text-[12px] text-border mt-2">4 pages + 4 tests / mo</p>
           </div>
-          <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-1">VIP</div>
-            <div className="text-3xl font-bold text-[#0E0D0B]">£15k<span className="text-sm text-[#6E6E6E]">/mo</span></div>
-            <p className="text-[12px] text-[#444] mt-2">6 pages + 12 tests / mo + priority</p>
+          <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-1">VIP</div>
+            <div className="text-3xl font-bold text-background">£15k<span className="text-sm text-subtle">/mo</span></div>
+            <p className="text-[12px] text-border mt-2">6 pages + 12 tests / mo + priority</p>
           </div>
         </div>
-        <p className="text-[12px] text-[#6E6E6E] mt-4 text-center">90-day initial commitment · 10% off paid up front</p>
+        <p className="text-[12px] text-subtle mt-4 text-center">90-day initial commitment · 10% off paid up front</p>
       </SlideBody>
     ),
   },
@@ -109,9 +109,9 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="North Star" title="One metric. Conversion rate.">
         <p className="text-lg">
-          We measure ourselves on the only number that matters: <strong className="text-[#0E0D0B]">your site&apos;s conversion rate</strong>.
+          We measure ourselves on the only number that matters: <strong className="text-background">your site&apos;s conversion rate</strong>.
         </p>
-        <p className="text-base text-[#444]">
+        <p className="text-base text-border">
           Not impressions, not sessions, not bounce rate. CR up = revenue up at the same ad spend. Everything we ship traces back to that line going up.
         </p>
       </SlideBody>
@@ -124,7 +124,7 @@ const SLIDES = [
         <p className="text-lg">
           We hit the number. You ship what we recommend. If the lift isn&apos;t there in 90 days, we keep working until it is, at no extra cost.
         </p>
-        <p className="text-base text-[#6E6E6E]">
+        <p className="text-base text-subtle">
           We can offer this because the system works. The risk sits with us.
         </p>
       </SlideBody>
@@ -136,9 +136,9 @@ const SLIDES = [
       <SlideBody eyebrow="Proof" title="The work that&apos;s already done it.">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Case study slot {i}</div>
-              <p className="text-sm text-[#6E6E6E] italic">Drop in real client name + headline number (+X% CR in Y weeks) when ready.</p>
+            <div key={i} className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Case study slot {i}</div>
+              <p className="text-sm text-subtle italic">Drop in real client name + headline number (+X% CR in Y weeks) when ready.</p>
             </div>
           ))}
         </div>
@@ -150,10 +150,10 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="The team" title="A pod, dedicated to your brand.">
         <ul className="space-y-3 text-base">
-          <li><strong className="text-[#0E0D0B]">Strategist.</strong> Owns the roadmap. Briefs the work. Reports to you weekly.</li>
-          <li><strong className="text-[#0E0D0B]">Designer.</strong> Conversion-led design. Mobile-first, hierarchy-first.</li>
-          <li><strong className="text-[#0E0D0B]">Developer.</strong> Ships clean Shopify builds. Tests, monitors, iterates.</li>
-          <li><strong className="text-[#0E0D0B]">QA.</strong> Nothing goes live broken. Cross-device, cross-browser.</li>
+          <li><strong className="text-background">Strategist.</strong> Owns the roadmap. Briefs the work. Reports to you weekly.</li>
+          <li><strong className="text-background">Designer.</strong> Conversion-led design. Mobile-first, hierarchy-first.</li>
+          <li><strong className="text-background">Developer.</strong> Ships clean Shopify builds. Tests, monitors, iterates.</li>
+          <li><strong className="text-background">QA.</strong> Nothing goes live broken. Cross-device, cross-browser.</li>
         </ul>
       </SlideBody>
     ),
@@ -163,10 +163,10 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="How a typical month runs" title="Sprint cadence.">
         <ul className="space-y-3 text-base">
-          <li><strong className="text-[#0E0D0B]">Week 1.</strong> Roadmap kickoff. Brief the work, lock the test hypotheses.</li>
-          <li><strong className="text-[#0E0D0B]">Week 2.</strong> Design ships. Dev starts builds.</li>
-          <li><strong className="text-[#0E0D0B]">Week 3.</strong> QA + launch. Tests go live.</li>
-          <li><strong className="text-[#0E0D0B]">Week 4.</strong> Monthly review. Results in. Next month&apos;s roadmap shaped.</li>
+          <li><strong className="text-background">Week 1.</strong> Roadmap kickoff. Brief the work, lock the test hypotheses.</li>
+          <li><strong className="text-background">Week 2.</strong> Design ships. Dev starts builds.</li>
+          <li><strong className="text-background">Week 3.</strong> QA + launch. Tests go live.</li>
+          <li><strong className="text-background">Week 4.</strong> Monthly review. Results in. Next month&apos;s roadmap shaped.</li>
         </ul>
       </SlideBody>
     ),
@@ -176,9 +176,9 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="How we measure" title="Reports you&apos;ll actually read.">
         <ul className="space-y-3 text-base">
-          <li><strong className="text-[#0E0D0B]">Weekly.</strong> What shipped, what tested, what&apos;s next.</li>
-          <li><strong className="text-[#0E0D0B]">Monthly.</strong> CR delta, revenue delta, test outcomes, next month&apos;s plan.</li>
-          <li><strong className="text-[#0E0D0B]">Quarterly.</strong> Brand-level retro: where we started, where we are, where we&apos;re going.</li>
+          <li><strong className="text-background">Weekly.</strong> What shipped, what tested, what&apos;s next.</li>
+          <li><strong className="text-background">Monthly.</strong> CR delta, revenue delta, test outcomes, next month&apos;s plan.</li>
+          <li><strong className="text-background">Quarterly.</strong> Brand-level retro: where we started, where we are, where we&apos;re going.</li>
         </ul>
       </SlideBody>
     ),
@@ -188,10 +188,10 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="Common questions" title="Answered.">
         <ul className="space-y-3 text-base">
-          <li><strong className="text-[#0E0D0B]">How is this different to an agency?</strong> Agencies sell hours. We sell CR lift.</li>
-          <li><strong className="text-[#0E0D0B]">Why monthly?</strong> CRO compounds. One-off projects don&apos;t.</li>
-          <li><strong className="text-[#0E0D0B]">What if a test loses?</strong> A losing test is a learning. We replace the hypothesis, we don&apos;t back down.</li>
-          <li><strong className="text-[#0E0D0B]">Can we cancel?</strong> Yes, after the 90-day initial commitment. Most don&apos;t.</li>
+          <li><strong className="text-background">How is this different to an agency?</strong> Agencies sell hours. We sell CR lift.</li>
+          <li><strong className="text-background">Why monthly?</strong> CRO compounds. One-off projects don&apos;t.</li>
+          <li><strong className="text-background">What if a test loses?</strong> A losing test is a learning. We replace the hypothesis, we don&apos;t back down.</li>
+          <li><strong className="text-background">Can we cancel?</strong> Yes, after the 90-day initial commitment. Most don&apos;t.</li>
         </ul>
       </SlideBody>
     ),
@@ -203,7 +203,7 @@ const SLIDES = [
         <p className="text-lg">
           We&apos;ll tear your funnel down to the studs and tell you exactly where the conversion is leaking. You&apos;ll leave with a 30/60/90 roadmap whether or not we work together.
         </p>
-        <p className="text-base text-[#444]">
+        <p className="text-base text-border">
           One week. £1k. Refunded against your first month if you sign.
         </p>
       </SlideBody>

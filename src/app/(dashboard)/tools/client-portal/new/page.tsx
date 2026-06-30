@@ -197,14 +197,14 @@ export default function NewPortalPage() {
       <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 py-10">
         <Link
           href="/tools/client-portal"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-subtle hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeftIcon className="size-3" />
           All Portals
         </Link>
 
         <h1 className="text-3xl md:text-4xl font-bold mb-2">New Portal</h1>
-        <p className="text-[#71757D] mb-8">
+        <p className="text-subtle mb-8">
           {template
             ? `Setting up a ${template === "conversion-engine" ? "Conversion Engine (retainer)" : "Page Build"} portal.`
             : "Pick a template to get started. You'll go through a few steps to make sure the portal isn't empty on Day 1."}
@@ -233,7 +233,7 @@ export default function NewPortalPage() {
           <>
             <Stepper step={step} labels={stepLabels} />
 
-            <div className="mt-8 bg-[#181818] border border-[#2A2A2A] rounded-xl p-6">
+            <div className="mt-8 bg-surface border border-border rounded-xl p-6">
               {step === 0 && (
                 <BrandStep
                   clientName={clientName}
@@ -297,7 +297,7 @@ export default function NewPortalPage() {
                   }
                   setStep(step - 1);
                 }}
-                className="px-4 py-2 text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA] transition-colors"
+                className="px-4 py-2 text-xs font-medium text-muted hover:text-foreground transition-colors"
               >
                 Back
               </button>
@@ -306,7 +306,7 @@ export default function NewPortalPage() {
                 <button
                   onClick={() => setStep(step + 1)}
                   disabled={!canAdvance}
-                  className="px-5 py-2.5 text-sm font-semibold text-[#0C0C0C] bg-white rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 text-sm font-semibold text-background bg-white rounded-lg hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
@@ -314,7 +314,7 @@ export default function NewPortalPage() {
                 <button
                   onClick={handleCreate}
                   disabled={creating}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#0C0C0C] bg-white rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-background bg-white rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
                 >
                   {creating ? "Creating…" : (
                     <>
@@ -344,14 +344,14 @@ function Stepper({ step, labels }: { step: number; labels: string[] }) {
               i < step
                 ? "bg-emerald-500 text-white"
                 : i === step
-                ? "bg-white text-[#0C0C0C]"
-                : "bg-[#222222] text-[#71757D]"
+                ? "bg-white text-background"
+                : "bg-surface-raised text-subtle"
             }`}
           >
             {i < step ? <CheckIcon className="size-3" /> : i + 1}
           </div>
-          <span className={`text-xs font-medium ${i === step ? "text-[#E5E5EA]" : "text-[#71757D]"}`}>{label}</span>
-          {i < labels.length - 1 && <div className="flex-1 h-px bg-[#2A2A2A]" />}
+          <span className={`text-xs font-medium ${i === step ? "text-foreground" : "text-subtle"}`}>{label}</span>
+          {i < labels.length - 1 && <div className="flex-1 h-px bg-border" />}
         </div>
       ))}
     </div>
@@ -374,11 +374,11 @@ function TemplateCard({
   return (
     <button
       onClick={onPick}
-      className="text-left p-5 border border-[#2A2A2A] rounded-xl bg-[#181818] hover:border-white hover:shadow-sm transition-all"
+      className="text-left p-5 border border-border rounded-xl bg-surface hover:border-white hover:shadow-sm transition-all"
     >
-      <h3 className="text-base font-bold text-[#E5E5EA] mb-1">{title}</h3>
-      <p className="text-xs font-medium text-[#9CA3AF] mb-3">{subtitle}</p>
-      <p className="text-xs text-[#9CA3AF] leading-relaxed">{blurb}</p>
+      <h3 className="text-base font-bold text-foreground mb-1">{title}</h3>
+      <p className="text-xs font-medium text-muted mb-3">{subtitle}</p>
+      <p className="text-xs text-muted leading-relaxed">{blurb}</p>
     </button>
   );
 }
@@ -397,8 +397,8 @@ function BrandStep(props: {
 }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-[#E5E5EA] mb-1">Brand basics</h2>
-      <p className="text-xs text-[#9CA3AF] mb-4">Who is this portal for?</p>
+      <h2 className="text-base font-semibold text-foreground mb-1">Brand basics</h2>
+      <p className="text-xs text-muted mb-4">Who is this portal for?</p>
 
       <div>
         <label className={labelClass}>Client name *</label>
@@ -452,11 +452,11 @@ function PagesStep({ pages, setPages }: { pages: PageScopeRow[]; setPages: (p: P
 
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-[#E5E5EA] mb-1">Pages</h2>
-      <p className="text-xs text-[#9CA3AF] mb-4">List every page being built. Keep it simple — one row per page.</p>
+      <h2 className="text-base font-semibold text-foreground mb-1">Pages</h2>
+      <p className="text-xs text-muted mb-4">List every page being built. Keep it simple — one row per page.</p>
 
       {pages.map((page, i) => (
-        <div key={i} className="border border-[#2A2A2A] rounded-lg p-4 space-y-3 bg-[#0C0C0C]">
+        <div key={i} className="border border-border rounded-lg p-4 space-y-3 bg-background">
           <div className="flex items-start gap-3">
             <div className="flex-1 grid grid-cols-3 gap-3">
               <div className="col-span-2">
@@ -480,7 +480,7 @@ function PagesStep({ pages, setPages }: { pages: PageScopeRow[]; setPages: (p: P
             {pages.length > 1 && (
               <button
                 onClick={() => remove(i)}
-                className="mt-6 p-2 text-[#71757D] hover:text-red-600 transition-colors"
+                className="mt-6 p-2 text-subtle hover:text-red-600 transition-colors"
                 title="Remove"
               >
                 <TrashIcon className="size-4" />
@@ -501,7 +501,7 @@ function PagesStep({ pages, setPages }: { pages: PageScopeRow[]; setPages: (p: P
 
       <button
         onClick={add}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-foreground transition-colors"
       >
         <PlusIcon className="size-3.5" />
         Add another page
@@ -518,8 +518,8 @@ function TimelineStep(props: {
 }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-[#E5E5EA] mb-1">Timeline</h2>
-      <p className="text-xs text-[#9CA3AF] mb-4">
+      <h2 className="text-base font-semibold text-foreground mb-1">Timeline</h2>
+      <p className="text-xs text-muted mb-4">
         Four phases will be pre-filled on the portal (Onboarding ✓ / Design / Dev / QA & Launch). Set the start and target launch.
       </p>
 
@@ -557,14 +557,14 @@ function RoadmapSeedStep({ seeds, setSeeds }: { seeds: RoadmapSeed[]; setSeeds: 
 
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-[#E5E5EA] mb-1">Seed the roadmap</h2>
-      <p className="text-xs text-[#9CA3AF] mb-4">
+      <h2 className="text-base font-semibold text-foreground mb-1">Seed the roadmap</h2>
+      <p className="text-xs text-muted mb-4">
         Add 1-3 initial items so the portal isn't empty on Day 1. First item goes straight into In Progress; the rest become Next Up.
         Optional — you can leave them blank and add items after setup.
       </p>
 
       {seeds.map((seed, i) => (
-        <div key={i} className="border border-[#2A2A2A] rounded-lg p-4 bg-[#0C0C0C] space-y-3">
+        <div key={i} className="border border-border rounded-lg p-4 bg-background space-y-3">
           <div className="flex items-start gap-3">
             <div className="flex-1 space-y-3">
               <div>
@@ -612,7 +612,7 @@ function RoadmapSeedStep({ seeds, setSeeds }: { seeds: RoadmapSeed[]; setSeeds: 
             {seeds.length > 1 && (
               <button
                 onClick={() => remove(i)}
-                className="mt-6 p-2 text-[#71757D] hover:text-red-600 transition-colors"
+                className="mt-6 p-2 text-subtle hover:text-red-600 transition-colors"
                 title="Remove"
               >
                 <TrashIcon className="size-4" />
@@ -625,7 +625,7 @@ function RoadmapSeedStep({ seeds, setSeeds }: { seeds: RoadmapSeed[]; setSeeds: 
       {seeds.length < 3 && (
         <button
           onClick={add}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-foreground transition-colors"
         >
           <PlusIcon className="size-3.5" />
           Add another item
@@ -643,8 +643,8 @@ function CadenceStep(props: {
 }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-[#E5E5EA] mb-1">Cadence</h2>
-      <p className="text-xs text-[#9CA3AF] mb-4">
+      <h2 className="text-base font-semibold text-foreground mb-1">Cadence</h2>
+      <p className="text-xs text-muted mb-4">
         When does the retainer kick off, and when do you review progress with the client each month?
       </p>
 
@@ -685,8 +685,8 @@ function TeamSlackStep(props: {
 }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-[#E5E5EA] mb-1">Team + Slack</h2>
-      <p className="text-xs text-[#9CA3AF] mb-4">
+      <h2 className="text-base font-semibold text-foreground mb-1">Team + Slack</h2>
+      <p className="text-xs text-muted mb-4">
         Paste Slack channel IDs here. In Slack: right-click the channel → View channel details → copy the ID at the bottom.
         Leave blank if the channels don't exist yet — you can add them later in portal settings.
       </p>
@@ -699,7 +699,7 @@ function TeamSlackStep(props: {
           value={props.internalSlackId}
           onChange={(e) => props.setInternalSlackId(e.target.value)}
         />
-        <p className="text-[10px] text-[#9CA3AF] mt-1">Where QA gate notifications and team updates post.</p>
+        <p className="text-[10px] text-muted mt-1">Where QA gate notifications and team updates post.</p>
       </div>
 
       <div>
@@ -710,10 +710,10 @@ function TeamSlackStep(props: {
           value={props.externalSlackUrl}
           onChange={(e) => props.setExternalSlackUrl(e.target.value)}
         />
-        <p className="text-[10px] text-[#9CA3AF] mt-1">The shared channel with the client.</p>
+        <p className="text-[10px] text-muted mt-1">The shared channel with the client.</p>
       </div>
 
-      <p className="text-[11px] text-[#71757D] pt-2 border-t border-[#2A2A2A]">
+      <p className="text-[11px] text-subtle pt-2 border-t border-border">
         Once created, you can assign team members to this portal in the portal's Settings tab.
       </p>
     </div>

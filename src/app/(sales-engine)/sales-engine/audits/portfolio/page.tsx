@@ -163,10 +163,10 @@ export default function AuditPortfolioPage() {
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#1B1B1B]">
+        <h1 className="text-2xl font-bold text-foreground">
           Audit Portfolio
         </h1>
-        <p className="text-sm text-[#7A7A7A] mt-1">
+        <p className="text-sm text-subtle mt-1">
           Manage the portfolio images shown on your audit landing page
         </p>
       </div>
@@ -177,8 +177,8 @@ export default function AuditPortfolioPage() {
           relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
           ${
             dragOver
-              ? "border-[#1B1B1B] bg-[#F7F8FA]"
-              : "border-[#E5E5EA] hover:border-[#C5C5C5] bg-white"
+              ? "border-surface bg-surface-raised"
+              : "border-foreground hover:border-muted bg-white"
           }
         `}
         onClick={() => fileInputRef.current?.click()}
@@ -189,11 +189,11 @@ export default function AuditPortfolioPage() {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
       >
-        <PhotoIcon className="size-10 text-[#C5C5C5] mx-auto mb-3" />
-        <p className="text-sm font-medium text-[#1B1B1B]">
+        <PhotoIcon className="size-10 text-muted mx-auto mb-3" />
+        <p className="text-sm font-medium text-foreground">
           {uploading ? "Uploading..." : "Drop images here or click to browse"}
         </p>
-        <p className="text-xs text-[#7A7A7A] mt-1">
+        <p className="text-xs text-subtle mt-1">
           PNG, JPG, or WebP. Max 10MB each.
         </p>
         <input
@@ -209,7 +209,7 @@ export default function AuditPortfolioPage() {
         />
         {uploading && (
           <div className="absolute inset-0 bg-white/60 rounded-xl flex items-center justify-center">
-            <div className="size-6 border-2 border-[#1B1B1B] border-t-transparent rounded-full animate-spin" />
+            <div className="size-6 border-2 border-surface border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </div>
@@ -230,7 +230,7 @@ export default function AuditPortfolioPage() {
           <button
             onClick={saveOrder}
             disabled={saving}
-            className="px-4 py-1.5 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+            className="px-4 py-1.5 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Order"}
           </button>
@@ -239,18 +239,18 @@ export default function AuditPortfolioPage() {
 
       {/* Image grid */}
       <div className="mt-8">
-        <h2 className="text-sm font-semibold text-[#1B1B1B] mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-4">
           Images ({images.length})
         </h2>
 
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="size-6 border-2 border-[#1B1B1B] border-t-transparent rounded-full animate-spin" />
+            <div className="size-6 border-2 border-surface border-t-transparent rounded-full animate-spin" />
           </div>
         ) : images.length === 0 ? (
-          <div className="text-center py-16 bg-[#F7F8FA] rounded-xl border border-[#EDEDEF]">
-            <PhotoIcon className="size-12 text-[#C5C5C5] mx-auto mb-3" />
-            <p className="text-sm text-[#7A7A7A]">
+          <div className="text-center py-16 bg-surface-raised rounded-xl border border-border">
+            <PhotoIcon className="size-12 text-muted mx-auto mb-3" />
+            <p className="text-sm text-subtle">
               No portfolio images yet. Upload some above.
             </p>
           </div>
@@ -259,7 +259,7 @@ export default function AuditPortfolioPage() {
             {images.map((img, idx) => (
               <div
                 key={img.filename}
-                className="group relative bg-white border border-[#EDEDEF] rounded-xl overflow-hidden shadow-[var(--shadow-soft)]"
+                className="group relative bg-white border border-border rounded-xl overflow-hidden shadow-[var(--shadow-soft)]"
               >
                 {/* Image */}
                 <div className="aspect-[9/16] relative">
@@ -278,7 +278,7 @@ export default function AuditPortfolioPage() {
                         className="p-1.5 bg-white rounded-lg shadow-md hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Move left"
                       >
-                        <ArrowUpIcon className="size-4 text-[#1B1B1B] -rotate-90" />
+                        <ArrowUpIcon className="size-4 text-foreground -rotate-90" />
                       </button>
                       <button
                         onClick={() => moveImage(idx, "down")}
@@ -286,7 +286,7 @@ export default function AuditPortfolioPage() {
                         className="p-1.5 bg-white rounded-lg shadow-md hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Move right"
                       >
-                        <ArrowDownIcon className="size-4 text-[#1B1B1B] -rotate-90" />
+                        <ArrowDownIcon className="size-4 text-foreground -rotate-90" />
                       </button>
                       <button
                         onClick={() =>
@@ -319,7 +319,7 @@ export default function AuditPortfolioPage() {
 
                 {/* Position label */}
                 <div className="px-2.5 py-1.5 text-center">
-                  <span className="text-[11px] font-medium text-[#7A7A7A]">
+                  <span className="text-[11px] font-medium text-subtle">
                     {idx + 1}
                   </span>
                 </div>
@@ -332,21 +332,21 @@ export default function AuditPortfolioPage() {
       {/* Preview strip */}
       {images.length > 0 && (
         <div className="mt-10">
-          <h2 className="text-sm font-semibold text-[#1B1B1B] mb-4">
+          <h2 className="text-sm font-semibold text-foreground mb-4">
             Preview
           </h2>
-          <div className="bg-[#1B1B1B] rounded-xl p-4 overflow-hidden">
+          <div className="bg-surface rounded-xl p-4 overflow-hidden">
             <div className="flex gap-3 overflow-x-auto scrollbar-thin pb-2">
               {images.map((img, idx) => (
                 <img
                   key={idx}
                   src={img.url}
                   alt=""
-                  className="shrink-0 w-[100px] h-[220px] object-cover rounded-lg border border-[#333]"
+                  className="shrink-0 w-[100px] h-[220px] object-cover rounded-lg border border-border"
                 />
               ))}
             </div>
-            <p className="text-[11px] text-[#666] mt-2 text-center">
+            <p className="text-[11px] text-subtle mt-2 text-center">
               This mimics the scrolling strip on the public audit page
             </p>
           </div>

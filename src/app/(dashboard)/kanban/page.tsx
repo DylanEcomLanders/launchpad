@@ -484,9 +484,9 @@ const STUCK_STYLES: Record<StuckStatus, {
     label: "Approaching",
   },
   "on-track": {
-    ring: "border-[#2A2A2A]",
-    bg: "bg-[#181818]",
-    accent: "text-[#71757D]",
+    ring: "border-border",
+    bg: "bg-surface",
+    accent: "text-subtle",
     dot: "#4B4D52",
     label: "On track",
   },
@@ -1435,7 +1435,7 @@ export default function KanbanPage() {
   }, [clients]);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto px-4 sm:px-6 py-8">
         {/* 2-col grid so the right cluster never wraps below the title.
             Title takes 1fr (with min-w-0 + truncate so long titles like
@@ -1443,17 +1443,17 @@ export default function KanbanPage() {
             cluster). Cluster takes auto, stays anchored at the right edge. */}
         <div className="grid grid-cols-[1fr_auto] items-end gap-6 mb-6">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
               Mission Control · {viewModeLabel}
               {headerCountLabel && (
-                <span className="text-[#4B4D52] normal-case tracking-normal">
+                <span className="text-border normal-case tracking-normal">
                   {" · "}{headerCountLabel.toLowerCase()}
                 </span>
               )}
             </p>
             <h1 className="mt-2 text-[28px] leading-tight truncate">
-              <span className="font-bold text-[#E5E5EA]">{title.bold}</span>{" "}
-              <span className="font-normal text-[#71757D]">{title.light}</span>
+              <span className="font-bold text-foreground">{title.bold}</span>{" "}
+              <span className="font-normal text-subtle">{title.light}</span>
             </h1>
           </div>
 
@@ -1477,7 +1477,7 @@ export default function KanbanPage() {
                 className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
                   mineOnly
                     ? "bg-emerald-500/[0.15] text-emerald-200 border border-emerald-500/40"
-                    : "text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838]"
+                    : "text-subtle hover:text-white border border-border hover:border-border"
                 }`}
                 title="Show only cards assigned to you"
               >
@@ -1491,7 +1491,7 @@ export default function KanbanPage() {
             {viewMode === "project" && (
               <button
                 onClick={() => setAddClientOpen(true)}
-                className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors px-3 py-2"
+                className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors px-3 py-2"
                 title="Add a new client"
               >
                 + Client
@@ -1526,7 +1526,7 @@ export default function KanbanPage() {
             {/* View mode pill - anchored to the right edge. Stays put
                 regardless of mode so eye-position doesn't jolt when
                 + Client + the client dropdown appear/disappear. */}
-            <div className="inline-flex p-0.5 rounded-full bg-[#222222] border border-[#2A2A2A]">
+            <div className="inline-flex p-0.5 rounded-full bg-surface-raised border border-border">
               {(
                 [
                   { v: "project" as const, label: "By project" },
@@ -1540,8 +1540,8 @@ export default function KanbanPage() {
                   onClick={() => setViewMode(o.v)}
                   className={`px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
                     viewMode === o.v
-                      ? "bg-white text-[#0C0C0C]"
-                      : "text-[#71757D] hover:text-white"
+                      ? "bg-white text-background"
+                      : "text-subtle hover:text-white"
                   }`}
                 >
                   {o.label}
@@ -1789,7 +1789,7 @@ function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps
   if (clients.length === 0) {
     return (
       <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] uppercase tracking-wider text-[#4B4D52]">
+        <span className="text-[11px] uppercase tracking-wider text-border">
           No active clients.
         </span>
       </div>
@@ -1802,7 +1802,7 @@ function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps
       {clients.map((c) => (
         <div
           key={c.clientId}
-          className="group inline-flex items-center rounded-full border bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+          className="group inline-flex items-center rounded-full border bg-surface text-subtle border-border hover:text-white hover:border-border transition-colors"
         >
           <button
             onClick={() => onSelectClient(c.clientId)}
@@ -1810,14 +1810,14 @@ function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps
             title={`${c.clientName} - ${c.projectCount} project${c.projectCount === 1 ? "" : "s"}`}
           >
             <span>{c.clientName}</span>
-            <span className="ml-2 tabular-nums text-[#4B4D52]">{c.openCount}</span>
+            <span className="ml-2 tabular-nums text-border">{c.openCount}</span>
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDeleteClient(c.clientId);
             }}
-            className="size-6 mr-1 inline-flex items-center justify-center rounded-full text-[#4B4D52] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="size-6 mr-1 inline-flex items-center justify-center rounded-full text-border hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
             title={`Delete ${c.clientName}`}
           >
             <XMarkIcon className="size-3" />
@@ -1850,7 +1850,7 @@ function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
   if (projects.length === 0) {
     return (
       <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] uppercase tracking-wider text-[#4B4D52]">
+        <span className="text-[11px] uppercase tracking-wider text-border">
           No projects on this pod yet.
         </span>
       </div>
@@ -1864,14 +1864,14 @@ function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
     <div className="flex items-center gap-1.5 mb-5 min-w-0">
       <button
         onClick={() => onSelectProject(first.clientId, first.projectId)}
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-medium border bg-white text-[#0C0C0C] border-white"
+        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-medium border bg-white text-background border-white"
         title={`${first.clientName} · ${first.projectName}`}
       >
-        <span className="text-[#0C0C0C]/50">{first.clientName}</span>
+        <span className="text-background/50">{first.clientName}</span>
         <span className="truncate max-w-[200px]">{first.projectName}</span>
-        <span className="tabular-nums text-[#0C0C0C]/50">{first.openCount}</span>
+        <span className="tabular-nums text-background/50">{first.openCount}</span>
         {first.turnaroundDays && (
-          <span className="text-[10px] uppercase tracking-wider text-[#0C0C0C]/60">
+          <span className="text-[10px] uppercase tracking-wider text-background/60">
             {first.turnaroundDays}d
           </span>
         )}
@@ -1910,14 +1910,14 @@ function PodProjectsOverflow({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#9CA3AF] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-surface text-muted border-border hover:text-white hover:border-border transition-colors"
         title={`${projects.length} more project${projects.length === 1 ? "" : "s"} on this pod`}
       >
         +{projects.length}
       </button>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-80 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div className="absolute left-0 top-9 z-40 w-80 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
             Other projects ({projects.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -1931,17 +1931,17 @@ function PodProjectsOverflow({
                   className="w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-[#71757D] truncate shrink-0">
+                    <span className="text-[11px] text-subtle truncate shrink-0">
                       {p.clientName}
                     </span>
-                    <span className="text-[12px] text-[#E5E5EA] truncate flex-1 min-w-0">
+                    <span className="text-[12px] text-foreground truncate flex-1 min-w-0">
                       {p.projectName}
                     </span>
-                    <span className="text-[10px] text-[#71757D] tabular-nums shrink-0">
+                    <span className="text-[10px] text-subtle tabular-nums shrink-0">
                       {p.openCount}
                     </span>
                     {p.turnaroundDays && (
-                      <span className="text-[10px] uppercase tracking-wider text-[#71757D] tabular-nums shrink-0">
+                      <span className="text-[10px] uppercase tracking-wider text-subtle tabular-nums shrink-0">
                         {p.turnaroundDays}d
                       </span>
                     )}
@@ -2037,11 +2037,11 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
               className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
                 isActive
                   ? p.type === "retainer"
-                    ? "bg-teal-500 text-[#0C0C0C] border-teal-500"
-                    : "bg-white text-[#0C0C0C] border-white"
+                    ? "bg-teal-500 text-background border-teal-500"
+                    : "bg-white text-background border-white"
                   : p.type === "retainer"
                     ? "bg-teal-500/10 text-teal-300 border-teal-500/40 hover:text-teal-200 hover:border-teal-400/60"
-                    : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-white hover:border-[#383838]"
+                    : "bg-surface text-subtle border-border hover:text-white hover:border-border"
               }`}
               title={
                 p.type === "retainer" && p.engagementDays
@@ -2053,7 +2053,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
             >
               <span>{p.name}</span>
               <span
-                className={`ml-2 tabular-nums ${isActive ? "text-[#0C0C0C]/50" : "text-[#4B4D52]"}`}
+                className={`ml-2 tabular-nums ${isActive ? "text-background/50" : "text-border"}`}
               >
                 {count}
               </span>
@@ -2061,10 +2061,10 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                 <span
                   className={`ml-2 text-[10px] tabular-nums uppercase tracking-wider ${
                     isActive
-                      ? "text-[#0C0C0C]/60"
+                      ? "text-background/60"
                       : p.type === "retainer"
                         ? "text-teal-300/80"
-                        : "text-[#E5E5EA]/60"
+                        : "text-foreground/60"
                   }`}
                 >
                   {p.type === "retainer"
@@ -2076,10 +2076,10 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
           );
         })}
         {props.canManage && (addingProject ? (
-          <div className="flex items-center gap-1.5 rounded-full bg-[#0C0C0C] border border-[#383838] pl-1.5 pr-1.5 py-1">
+          <div className="flex items-center gap-1.5 rounded-full bg-background border border-border pl-1.5 pr-1.5 py-1">
             {/* Type toggle - Build vs Retainer. Drives which duration toggle
                 renders to the right (15/20/25 vs 30/60/90). */}
-            <div className="flex items-center gap-0.5 bg-[#181818] rounded-full p-0.5 border border-[#2A2A2A]">
+            <div className="flex items-center gap-0.5 bg-surface rounded-full p-0.5 border border-border">
               {(["build", "retainer"] as ProjectType[]).map((t) => (
                 <button
                   key={t}
@@ -2088,9 +2088,9 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                   className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                     typeDraft === t
                       ? t === "retainer"
-                        ? "bg-teal-500 text-[#0C0C0C]"
-                        : "bg-white text-[#0C0C0C]"
-                      : "text-[#71757D] hover:text-white"
+                        ? "bg-teal-500 text-background"
+                        : "bg-white text-background"
+                      : "text-subtle hover:text-white"
                   }`}
                 >
                   {t}
@@ -2114,9 +2114,9 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
               placeholder={
                 typeDraft === "retainer" ? "Retainer name" : "Project name"
               }
-              className="bg-transparent text-[12px] text-[#E5E5EA] focus:outline-none w-32 placeholder:text-[#4B4D52]"
+              className="bg-transparent text-[12px] text-foreground focus:outline-none w-32 placeholder:text-border"
             />
-            <div className="flex items-center gap-0.5 bg-[#181818] rounded-full p-0.5 border border-[#2A2A2A]">
+            <div className="flex items-center gap-0.5 bg-surface rounded-full p-0.5 border border-border">
               {typeDraft === "retainer"
                 ? ENGAGEMENT_OPTIONS.map((t) => (
                     <button
@@ -2125,8 +2125,8 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                       onClick={() => setEngagementDraft(t)}
                       className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                         engagementDraft === t
-                          ? "bg-teal-500 text-[#0C0C0C]"
-                          : "text-[#71757D] hover:text-white"
+                          ? "bg-teal-500 text-background"
+                          : "text-subtle hover:text-white"
                       }`}
                       title={`${ENGAGEMENT_TIER_LABEL[t]} retainer (${t}-day cadence)`}
                     >
@@ -2140,8 +2140,8 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                       onClick={() => setTurnaroundDraft(t)}
                       className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider tabular-nums transition-colors ${
                         turnaroundDraft === t
-                          ? "bg-white text-[#0C0C0C]"
-                          : "text-[#71757D] hover:text-white"
+                          ? "bg-white text-background"
+                          : "text-subtle hover:text-white"
                       }`}
                       title={`${t}-day turnaround`}
                     >
@@ -2151,7 +2151,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
             </div>
             <button
               onClick={submitNewProject}
-              className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white px-2"
+              className="text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white px-2"
             >
               Add
             </button>
@@ -2159,7 +2159,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
         ) : (
           <button
             onClick={() => setAddingProject(true)}
-            className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-[#71757D] border border-dashed border-[#2A2A2A] hover:text-white hover:border-[#383838] inline-flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-subtle border border-dashed border-border hover:text-white hover:border-border inline-flex items-center gap-1.5"
           >
             <PlusIcon className="size-3.5" />
             New project
@@ -2181,14 +2181,14 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
         {props.hasBrief ? (
           <button
             onClick={props.onPreviewOnboarding}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] hover:border-[#383838] hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-surface text-foreground border border-border hover:border-border hover:text-white transition-colors"
             title="Open the client's onboarding brief"
           >
             Onboarding brief
           </button>
         ) : (
           <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-[#4B4D52] border border-dashed border-[#2A2A2A] cursor-default"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-border border border-dashed border-border cursor-default"
             title="Brief lands here once the client completes onboarding"
           >
             No brief yet
@@ -2299,23 +2299,23 @@ function BoardColumns(props: BoardColumnsProps) {
             }}
             className={`rounded-xl flex flex-col transition-colors h-full overflow-hidden ${
               isDropTarget
-                ? "bg-[#222222] border-2 border-dashed border-[#9CA3AF]"
-                : "bg-[#181818] border border-[#2A2A2A]"
+                ? "bg-surface-raised border-2 border-dashed border-muted"
+                : "bg-surface border border-border"
             }`}
           >
-            <div className="px-3 py-3 border-b border-[#2A2A2A] shrink-0">
+            <div className="px-3 py-3 border-b border-border shrink-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span
                     className="shrink-0 size-2 rounded-full"
                     style={{ background: phase.color }}
                   />
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#E5E5EA] truncate">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-foreground truncate">
                     {phase.label}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[11px] font-medium text-[#71757D] tabular-nums">
+                  <span className="text-[11px] font-medium text-subtle tabular-nums">
                     {cards.length}
                   </span>
                   {/* Quick-add: only in project mode (the add input
@@ -2336,7 +2336,7 @@ function BoardColumns(props: BoardColumnsProps) {
                           form?.scrollIntoView({ behavior: "smooth", block: "end" });
                         }, 50);
                       }}
-                      className="size-5 inline-flex items-center justify-center rounded-md text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.06] transition-colors"
+                      className="size-5 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-white/[0.06] transition-colors"
                       title={`Add card to ${phase.label}`}
                     >
                       <PlusIcon className="size-3.5" />
@@ -2349,7 +2349,7 @@ function BoardColumns(props: BoardColumnsProps) {
                   so the bottom border lines up across every column. */}
               <p
                 className={`mt-1 text-[10px] tabular-nums ${
-                  expected ? "text-[#4B4D52]" : "invisible select-none"
+                  expected ? "text-border" : "invisible select-none"
                 }`}
                 aria-hidden={!expected}
               >
@@ -2359,7 +2359,7 @@ function BoardColumns(props: BoardColumnsProps) {
 
             <div className={`${props.density === "glance" ? "p-1 space-y-1" : "p-2 space-y-2"} flex-1 min-h-0 overflow-y-auto scrollbar-thin`}>
               {cards.length === 0 ? (
-                <p className="text-[11px] text-[#4B4D52] text-center py-6">
+                <p className="text-[11px] text-border text-center py-6">
                   -
                 </p>
               ) : (
@@ -2388,7 +2388,7 @@ function BoardColumns(props: BoardColumnsProps) {
                     phase.value === "tickets" ? (
                       // Category picker + title input, only on the Tickets
                       // column. Other phases get the plain title input below.
-                      <div className="flex flex-col gap-1.5 rounded-md bg-[#0C0C0C] border border-[#383838] p-1.5" data-add-form="true">
+                      <div className="flex flex-col gap-1.5 rounded-md bg-background border border-border p-1.5" data-add-form="true">
                         <div className="flex items-center gap-1">
                           {TICKET_CATEGORIES.map((c) => {
                             const Icon = c.icon;
@@ -2403,8 +2403,8 @@ function BoardColumns(props: BoardColumnsProps) {
                                 }
                                 className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                                   active
-                                    ? "bg-white text-[#0C0C0C]"
-                                    : `${c.tone} hover:bg-[#181818]`
+                                    ? "bg-white text-background"
+                                    : `${c.tone} hover:bg-surface`
                                 }`}
                               >
                                 <Icon className="size-3" />
@@ -2433,14 +2433,14 @@ function BoardColumns(props: BoardColumnsProps) {
                             }
                           }}
                           placeholder={`New ${props.newCategoryDraft}`}
-                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-[#E5E5EA] focus:outline-none placeholder:text-[#4B4D52]"
+                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-foreground focus:outline-none placeholder:text-border"
                         />
                       </div>
                     ) : (
                       // Non-tickets columns: deliverable category select +
                       // title input. Category is optional - blank just means
                       // an uncategorised card.
-                      <div className="flex flex-col gap-1.5 rounded-md bg-[#0C0C0C] border border-[#383838] p-1.5" data-add-form="true">
+                      <div className="flex flex-col gap-1.5 rounded-md bg-background border border-border p-1.5" data-add-form="true">
                         <div className="relative">
                           <select
                             value={props.newDeliverableCategoryDraft}
@@ -2449,7 +2449,7 @@ function BoardColumns(props: BoardColumnsProps) {
                                 e.target.value,
                               )
                             }
-                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-[11px] font-semibold uppercase tracking-wider bg-transparent text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] cursor-pointer"
+                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-[11px] font-semibold uppercase tracking-wider bg-transparent text-foreground border border-border focus:outline-none focus:border-border cursor-pointer"
                           >
                             <option value="">No category</option>
                             {DELIVERABLE_CATEGORIES.map((c) => (
@@ -2458,7 +2458,7 @@ function BoardColumns(props: BoardColumnsProps) {
                               </option>
                             ))}
                           </select>
-                          <ChevronDownIcon className="size-3 text-[#71757D] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <ChevronDownIcon className="size-3 text-subtle absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
                         <input
                           autoFocus
@@ -2484,14 +2484,14 @@ function BoardColumns(props: BoardColumnsProps) {
                               ? `New ${props.newDeliverableCategoryDraft}`
                               : "New deliverable"
                           }
-                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-[#E5E5EA] focus:outline-none placeholder:text-[#4B4D52]"
+                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-foreground focus:outline-none placeholder:text-border"
                         />
                       </div>
                     )
                   ) : (
                     <button
                       onClick={() => props.onSetAddingToPhase(phase.value)}
-                      className="w-full px-2.5 py-1.5 rounded-md text-[11px] font-medium text-[#71757D] hover:text-white hover:bg-[#222222] inline-flex items-center justify-center gap-1.5 transition-colors"
+                      className="w-full px-2.5 py-1.5 rounded-md text-[11px] font-medium text-subtle hover:text-white hover:bg-surface-raised inline-flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <PlusIcon className="size-3.5" />
                       Add
@@ -2628,7 +2628,7 @@ function Card({
         }}
         onDragEnd={onDragEnd}
         onClick={onOpen}
-        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border rounded ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-[#383838] transition-all ${
+        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border rounded ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-border transition-all ${
           isDragging ? "opacity-40 scale-[0.98]" : ""
         }`}
         title={`${d.title}${role ? ` · ${role}` : ""}`}
@@ -2642,7 +2642,7 @@ function Card({
             title="Retainer (priority)"
           />
         )}
-        <span className="text-[12px] text-[#E5E5EA] truncate flex-1 min-w-0">
+        <span className="text-[12px] text-foreground truncate flex-1 min-w-0">
           {d.title}
         </span>
         {(needsConclude || needsInterim || limbo) && (
@@ -2673,7 +2673,7 @@ function Card({
       }}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      className={`p-3 border rounded-lg ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-[#383838] transition-all ${
+      className={`p-3 border rounded-lg ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-border transition-all ${
         isDragging ? "opacity-40 scale-[0.98]" : ""
       }`}
     >
@@ -2691,7 +2691,7 @@ function Card({
               title="Retainer (priority)"
             />
           )}
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#E5E5EA] truncate">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-foreground truncate">
             {headerLabel}
           </span>
         </div>
@@ -2744,10 +2744,10 @@ function Card({
       </div>
 
       {subhead && (
-        <p className="text-[10px] text-[#71757D] truncate mb-1.5">{subhead}</p>
+        <p className="text-[10px] text-subtle truncate mb-1.5">{subhead}</p>
       )}
 
-      <p className="text-[14px] font-semibold leading-tight text-[#E5E5EA]">
+      <p className="text-[14px] font-semibold leading-tight text-foreground">
         {d.title}
       </p>
 
@@ -2757,11 +2757,11 @@ function Card({
           what the strategist needs to act on. */}
 
       <div className="mt-3 flex items-center justify-between gap-2 text-[11px]">
-        <span className="text-[#9CA3AF] truncate min-w-0">
+        <span className="text-muted truncate min-w-0">
           {d.phase === "launch-testing" ? (
             <>
               {LAUNCH_TESTING_TESTER}
-              <span className="text-[#4B4D52] mx-1">·</span>
+              <span className="text-border mx-1">·</span>
               {LAUNCH_TESTING_DEV}
             </>
           ) : d.phase === "strategy" ? (
@@ -2774,7 +2774,7 @@ function Card({
             <>
               {role.name}
               {role.isSecondary && (
-                <span className="text-[#4B4D52] ml-1">(2nd)</span>
+                <span className="text-border ml-1">(2nd)</span>
               )}
             </>
           )}
@@ -2834,15 +2834,15 @@ function ResultsBankFilters(props: ResultsBankFiltersProps) {
   ];
   return (
     <div className="flex items-center gap-2 flex-wrap mb-5">
-      <div className="inline-flex p-0.5 rounded-full bg-[#222222] border border-[#2A2A2A]">
+      <div className="inline-flex p-0.5 rounded-full bg-surface-raised border border-border">
         {outcomes.map((o) => (
           <button
             key={o.v}
             onClick={() => props.onChangeOutcome(o.v)}
             className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
               props.outcome === o.v
-                ? "bg-white text-[#0C0C0C]"
-                : "text-[#71757D] hover:text-white"
+                ? "bg-white text-background"
+                : "text-subtle hover:text-white"
             }`}
           >
             {o.label}
@@ -2854,7 +2854,7 @@ function ResultsBankFilters(props: ResultsBankFiltersProps) {
         <select
           value={props.client}
           onChange={(e) => props.onChangeClient(e.target.value)}
-          className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
+          className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-surface text-foreground border border-border rounded-full focus:outline-none focus:border-border"
         >
           <option value="all">All clients</option>
           {props.clientOptions.map((c) => (
@@ -2863,7 +2863,7 @@ function ResultsBankFilters(props: ResultsBankFiltersProps) {
             </option>
           ))}
         </select>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <ChevronDownIcon className="size-3.5 text-subtle absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
       </div>
 
       {props.metricOptions.length > 0 && (
@@ -2871,7 +2871,7 @@ function ResultsBankFilters(props: ResultsBankFiltersProps) {
           <select
             value={props.metric}
             onChange={(e) => props.onChangeMetric(e.target.value)}
-            className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
+            className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-surface text-foreground border border-border rounded-full focus:outline-none focus:border-border"
           >
             <option value="all">All metrics</option>
             {props.metricOptions.map((m) => (
@@ -2880,7 +2880,7 @@ function ResultsBankFilters(props: ResultsBankFiltersProps) {
               </option>
             ))}
           </select>
-          <ChevronDownIcon className="size-3.5 text-[#71757D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDownIcon className="size-3.5 text-subtle absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       )}
     </div>
@@ -2895,9 +2895,9 @@ interface ResultsBankGridProps {
 function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
   if (cards.length === 0) {
     return (
-      <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] px-6 py-16 text-center">
-        <p className="text-sm font-semibold text-[#E5E5EA]">No tests yet</p>
-        <p className="mt-1 text-xs text-[#71757D]">
+      <div className="rounded-xl border border-border bg-surface px-6 py-16 text-center">
+        <p className="text-sm font-semibold text-foreground">No tests yet</p>
+        <p className="mt-1 text-xs text-subtle">
           Conclude a launch-testing deliverable to build the bank.
         </p>
       </div>
@@ -2912,10 +2912,10 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
           <button
             key={d.id}
             onClick={() => onOpen(d.id)}
-            className="text-left p-4 rounded-xl border border-[#2A2A2A] bg-[#181818] hover:border-[#383838] hover:bg-[#1E1E1E] transition-colors"
+            className="text-left p-4 rounded-xl border border-border bg-surface hover:border-border hover:bg-[#1E1E1E] transition-colors"
           >
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] truncate">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-subtle truncate">
                 {d.clientName} · {d.projectName}
               </span>
               <span
@@ -2925,31 +2925,31 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 {meta.label}
               </span>
             </div>
-            <p className="text-[14px] font-semibold text-[#E5E5EA] leading-tight">
+            <p className="text-[14px] font-semibold text-foreground leading-tight">
               {d.title}
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
               <div>
-                <p className="text-[#4B4D52] uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border uppercase tracking-wider text-[9px] font-bold">
                   Metric
                 </p>
-                <p className="mt-0.5 text-[#E5E5EA] truncate">
+                <p className="mt-0.5 text-foreground truncate">
                   {r.metric ?? "-"}
                 </p>
               </div>
               <div>
-                <p className="text-[#4B4D52] uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border uppercase tracking-wider text-[9px] font-bold">
                   Uplift
                 </p>
                 <p
                   className={`mt-0.5 tabular-nums font-semibold ${
                     r.upliftPct == null
-                      ? "text-[#71757D]"
+                      ? "text-subtle"
                       : r.upliftPct > 0
                         ? "text-emerald-400"
                         : r.upliftPct < 0
                           ? "text-red-400"
-                          : "text-[#E5E5EA]"
+                          : "text-foreground"
                   }`}
                 >
                   {r.upliftPct == null
@@ -2958,15 +2958,15 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-[#4B4D52] uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border uppercase tracking-wider text-[9px] font-bold">
                   Confidence
                 </p>
-                <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                <p className="mt-0.5 text-foreground tabular-nums">
                   {r.confidencePct != null ? `${r.confidencePct}%` : "-"}
                 </p>
               </div>
             </div>
-            <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-[#71757D]">
+            <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-subtle">
               <span className="inline-flex items-center gap-1.5">
                 <CalendarIcon className="size-3" />
                 {formatDueDate(r.concludedAt)}
@@ -3047,20 +3047,20 @@ function OnboardingPreviewModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[85vh] rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] flex flex-col overflow-hidden"
+        className="w-full max-w-3xl max-h-[85vh] rounded-xl border border-border bg-background flex flex-col overflow-hidden"
       >
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#2A2A2A] shrink-0">
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border shrink-0">
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-subtle">
               Onboarding brief
             </p>
-            <p className="text-sm font-medium text-[#E5E5EA] truncate">
+            <p className="text-sm font-medium text-foreground truncate">
               {clientName}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="size-8 inline-flex items-center justify-center rounded-full text-[#71757D] hover:text-white hover:bg-[#181818] transition-colors"
+            className="size-8 inline-flex items-center justify-center rounded-full text-subtle hover:text-white hover:bg-surface transition-colors"
             aria-label="Close brief"
           >
             <XMarkIcon className="size-4" />
@@ -3073,16 +3073,16 @@ function OnboardingPreviewModal({
             if (populated.length === 0) return null;
             return (
               <section key={section.title}>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-3">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-3">
                   {section.title}
                 </h3>
                 <dl className="space-y-3">
                   {populated.map((item) => (
                     <div key={item.label}>
-                      <dt className="text-[11px] font-medium uppercase tracking-wider text-[#71757D] mb-0.5">
+                      <dt className="text-[11px] font-medium uppercase tracking-wider text-subtle mb-0.5">
                         {item.label}
                       </dt>
-                      <dd className="text-sm text-[#E5E5EA] whitespace-pre-wrap leading-relaxed">
+                      <dd className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                         {item.value}
                       </dd>
                     </div>
@@ -3122,14 +3122,14 @@ function DarkConfirm({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+        className="w-full max-w-md rounded-xl border border-border bg-background p-5 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
       >
-        <h3 className="text-base font-semibold text-[#E5E5EA] mb-2">{title}</h3>
-        <p className="text-sm text-[#9CA3AF] leading-relaxed mb-5">{message}</p>
+        <h3 className="text-base font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-sm text-muted leading-relaxed mb-5">{message}</p>
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
           >
             Cancel
           </button>
@@ -3138,7 +3138,7 @@ function DarkConfirm({
             className={`px-4 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
               destructive
                 ? "bg-rose-500 text-white hover:bg-rose-400"
-                : "bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+                : "bg-white text-background hover:bg-foreground"
             }`}
           >
             {confirmLabel}
@@ -3157,33 +3157,33 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl rounded-2xl bg-[#0C0C0C] border border-[#2A2A2A] p-6"
+        className="w-full max-w-2xl rounded-2xl bg-background border border-border p-6"
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
               Mission Control
             </p>
-            <h2 className="text-xl font-bold text-[#E5E5EA] mt-1">
+            <h2 className="text-xl font-bold text-foreground mt-1">
               Phase rules
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="size-8 rounded-full bg-[#181818] border border-[#2A2A2A] text-[#71757D] hover:text-white flex items-center justify-center"
+            className="size-8 rounded-full bg-surface border border-border text-subtle hover:text-white flex items-center justify-center"
           >
             <XMarkIcon className="size-4" />
           </button>
         </div>
 
-        <p className="text-sm text-[#9CA3AF] mb-4">
+        <p className="text-sm text-muted mb-4">
           Expected vs stuck thresholds are measured in UK working hours (Mon-Fri,
           9-5 Europe/London, excl bank holidays). 1 day = {WORKING_HOURS_PER_DAY}{" "}
           working hours.
         </p>
 
-        <div className="rounded-lg border border-[#2A2A2A] divide-y divide-[#2A2A2A]">
-          <div className="grid grid-cols-3 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+        <div className="rounded-lg border border-border divide-y divide-border">
+          <div className="grid grid-cols-3 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-subtle">
             <span>Phase</span>
             <span className="text-right">Expected (internal)</span>
             <span className="text-right">Stuck (client-facing)</span>
@@ -3195,17 +3195,17 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
                 key={p.value}
                 className="grid grid-cols-3 px-4 py-2.5 text-[12px]"
               >
-                <span className="inline-flex items-center gap-2 text-[#E5E5EA]">
+                <span className="inline-flex items-center gap-2 text-foreground">
                   <span
                     className="size-2 rounded-full"
                     style={{ background: p.color }}
                   />
                   {p.label}
                 </span>
-                <span className="text-right tabular-nums text-[#9CA3AF]">
+                <span className="text-right tabular-nums text-muted">
                   {t.expectedHours === 0 ? "-" : formatHours(t.expectedHours)}
                 </span>
-                <span className="text-right tabular-nums text-[#9CA3AF]">
+                <span className="text-right tabular-nums text-muted">
                   {t.stuckHours === 0 ? "-" : formatHours(t.stuckHours)}
                 </span>
               </div>
@@ -3214,11 +3214,11 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-3 text-[11px]">
-          <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-[#71757D]">
+          <div className="rounded-lg border border-border bg-surface p-3">
+            <p className="font-bold uppercase tracking-wider text-[10px] text-subtle">
               On track
             </p>
-            <p className="mt-1 text-[#9CA3AF]">
+            <p className="mt-1 text-muted">
               Below the internal deadline. Neutral border.
             </p>
           </div>
@@ -3226,7 +3226,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             <p className="font-bold uppercase tracking-wider text-[10px] text-amber-400">
               Approaching
             </p>
-            <p className="mt-1 text-[#9CA3AF]">
+            <p className="mt-1 text-muted">
               Past internal deadline, before the client knows. Window to unblock.
             </p>
           </div>
@@ -3234,13 +3234,13 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             <p className="font-bold uppercase tracking-wider text-[10px] text-red-400">
               Stuck
             </p>
-            <p className="mt-1 text-[#9CA3AF]">
+            <p className="mt-1 text-muted">
               Past the client-facing deadline. Surface and escalate.
             </p>
           </div>
         </div>
 
-        <p className="mt-4 text-[11px] text-[#71757D]">
+        <p className="mt-4 text-[11px] text-subtle">
           Limbo / revision-round badges fire at R3 (heating) and R4+ (limbo) by
           counting how many times a deliverable has bounced through
           internal-revisions or external-revisions.
@@ -3358,12 +3358,12 @@ function DarkDatePicker({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full inline-flex items-center gap-2 px-3 py-2 rounded-md bg-[#181818] border border-[#2A2A2A] hover:border-[#383838] text-sm transition-colors"
+        className="w-full inline-flex items-center gap-2 px-3 py-2 rounded-md bg-surface border border-border hover:border-border text-sm transition-colors"
       >
-        <CalendarIcon className="size-4 text-[#71757D] shrink-0" />
+        <CalendarIcon className="size-4 text-subtle shrink-0" />
         <span
           className={`flex-1 text-left tabular-nums ${
-            value ? "text-[#E5E5EA]" : "text-[#4B4D52]"
+            value ? "text-foreground" : "text-border"
           }`}
         >
           {value ? formatDueDate(value) : placeholder}
@@ -3383,7 +3383,7 @@ function DarkDatePicker({
                 onChange(undefined);
               }
             }}
-            className="text-[#4B4D52] hover:text-[#9CA3AF] transition-colors shrink-0 cursor-pointer"
+            className="text-border hover:text-muted transition-colors shrink-0 cursor-pointer"
             aria-label="Clear date"
           >
             <XMarkIcon className="size-3.5" />
@@ -3395,25 +3395,25 @@ function DarkDatePicker({
         <div
           ref={popRef}
           style={{ position: "fixed", top: popPos.top, left: popPos.left }}
-          className="z-[60] w-72 rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] shadow-[0_8px_32px_rgba(0,0,0,0.6)] p-3"
+          className="z-[60] w-72 rounded-xl border border-border bg-background shadow-[0_8px_32px_rgba(0,0,0,0.6)] p-3"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-3">
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
-              className="size-7 inline-flex items-center justify-center rounded-md text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818] transition-colors"
+              className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
               aria-label="Previous month"
             >
               <ChevronLeftIcon className="size-3.5" />
             </button>
-            <span className="text-sm font-semibold text-[#E5E5EA] tabular-nums">
+            <span className="text-sm font-semibold text-foreground tabular-nums">
               {monthLabel}
             </span>
             <button
               type="button"
               onClick={() => shiftMonth(1)}
-              className="size-7 inline-flex items-center justify-center rounded-md text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818] transition-colors"
+              className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
               aria-label="Next month"
             >
               <ChevronRightIcon className="size-3.5" />
@@ -3423,7 +3423,7 @@ function DarkDatePicker({
             {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
               <div
                 key={d}
-                className="text-[10px] uppercase tracking-wider text-[#4B4D52] text-center py-1"
+                className="text-[10px] uppercase tracking-wider text-border text-center py-1"
               >
                 {d}
               </div>
@@ -3442,10 +3442,10 @@ function DarkDatePicker({
                   onClick={() => pickDay(day)}
                   className={`size-8 inline-flex items-center justify-center rounded-md text-[12px] tabular-nums transition-colors ${
                     isSelected
-                      ? "bg-white text-[#0C0C0C] font-semibold"
+                      ? "bg-white text-background font-semibold"
                       : isToday
-                        ? "bg-[#181818] text-[#E5E5EA] ring-1 ring-[#383838] hover:bg-[#222222]"
-                        : "text-[#9CA3AF] hover:bg-[#181818] hover:text-white"
+                        ? "bg-surface text-foreground ring-1 ring-border hover:bg-surface-raised"
+                        : "text-muted hover:bg-surface hover:text-white"
                   }`}
                 >
                   {day}
@@ -3453,7 +3453,7 @@ function DarkDatePicker({
               );
             })}
           </div>
-          <div className="mt-3 pt-3 border-t border-[#2A2A2A] flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
             <button
               type="button"
               onClick={() => {
@@ -3462,7 +3462,7 @@ function DarkDatePicker({
                 setViewYM({ year: y, month: m - 1 });
                 setOpen(false);
               }}
-              className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+              className="text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
             >
               Today
             </button>
@@ -3473,7 +3473,7 @@ function DarkDatePicker({
                   onChange(undefined);
                   setOpen(false);
                 }}
-                className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-rose-400 transition-colors"
+                className="text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-rose-400 transition-colors"
               >
                 Clear
               </button>
@@ -3675,15 +3675,15 @@ function DetailModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#0C0C0C] border border-[#2A2A2A]"
+        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-border"
       >
-        <div className="px-6 py-5 border-b border-[#2A2A2A] flex items-start justify-between gap-4">
+        <div className="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
               {d.clientName} · {d.projectName}
               {d.category ? ` · ${d.category}` : ""}
             </p>
-            <h2 className="mt-1 text-xl font-bold text-[#E5E5EA] leading-tight">
+            <h2 className="mt-1 text-xl font-bold text-foreground leading-tight">
               {d.title}
             </h2>
             <div className="mt-3 flex items-center gap-2 flex-wrap">
@@ -3696,16 +3696,16 @@ function DetailModal({
                 />
                 {style.label}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#181818] text-[#9CA3AF]">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface text-muted">
                 {formatHours(d.hoursInPhase)} in phase
               </span>
               {calDays > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#181818] text-[#9CA3AF]">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface text-muted">
                   {calDays}d calendar
                 </span>
               )}
               {rounds > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#181818] text-[#9CA3AF]">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface text-muted">
                   R{rounds} revisions
                 </span>
               )}
@@ -3713,7 +3713,7 @@ function DetailModal({
           </div>
           <button
             onClick={onClose}
-            className="size-8 rounded-full bg-[#181818] border border-[#2A2A2A] text-[#71757D] hover:text-white flex items-center justify-center shrink-0"
+            className="size-8 rounded-full bg-surface border border-border text-subtle hover:text-white flex items-center justify-center shrink-0"
           >
             <XMarkIcon className="size-4" />
           </button>
@@ -3787,12 +3787,12 @@ function DetailModal({
                 })),
               ];
               return (
-                <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
+                <section className="rounded-xl border border-border bg-background p-4">
                   <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
                       Build schedule
                     </h3>
-                    <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+                    <span className="text-[10px] uppercase tracking-wider text-subtle">
                       {d.turnaroundDays}d project
                     </span>
                   </div>
@@ -3804,8 +3804,8 @@ function DetailModal({
                           key={phase}
                           className={`rounded-md p-2 border ${
                             isCurrent
-                              ? "border-[#383838] bg-[#181818]"
-                              : "border-[#2A2A2A]"
+                              ? "border-border bg-surface"
+                              : "border-border"
                           }`}
                         >
                           <div className="flex items-center gap-1.5 mb-1">
@@ -3813,7 +3813,7 @@ function DetailModal({
                               className="size-1.5 rounded-full"
                               style={{ background: meta?.color ?? "#71757D" }}
                             />
-                            <span className="text-[10px] uppercase tracking-wider text-[#9CA3AF] truncate">
+                            <span className="text-[10px] uppercase tracking-wider text-muted truncate">
                               {meta?.label ?? phase}
                             </span>
                           </div>
@@ -3822,8 +3822,8 @@ function DetailModal({
                               due
                                 ? isCurrent
                                   ? "text-white font-medium"
-                                  : "text-[#E5E5EA]"
-                                : "text-[#4B4D52]"
+                                  : "text-foreground"
+                                : "text-border"
                             }`}
                           >
                             {due ? formatShortDate(due) : "TBC"}
@@ -3839,17 +3839,17 @@ function DetailModal({
                     </div>
                   )}
                   {canManage && (
-                  <div className="mt-3 pt-3 border-t border-[#2A2A2A] space-y-2 text-[11px]">
+                  <div className="mt-3 pt-3 border-t border-border space-y-2 text-[11px]">
                     {/* These two anchors drive the auto-computed per-phase
                       * due dates in the schedule grid above. They're a
                       * fallback - if Phase 1 / Phase 2 deadlines are set
                       * directly in the Client deadlines section, those
                       * take precedence for stuck/approaching/on-track. */}
-                    <p className="text-[10px] text-[#4B4D52] italic pb-1">
+                    <p className="text-[10px] text-border italic pb-1">
                       Schedule anchors (used when no manual deadlines set)
                     </p>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                      <span className="text-subtle uppercase tracking-wider shrink-0">
                         Project start
                       </span>
                       <div className="min-w-0 flex-1 max-w-[180px]">
@@ -3861,7 +3861,7 @@ function DetailModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                      <span className="text-subtle uppercase tracking-wider shrink-0">
                         Client approved
                       </span>
                       <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
@@ -3875,7 +3875,7 @@ function DetailModal({
                         {d.projectClientApprovedAt && (
                           <button
                             onClick={onResetClientApproval}
-                            className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-rose-400 transition-colors shrink-0"
+                            className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400 transition-colors shrink-0"
                             title="Reset client approval - Phase 2 dates go back to TBC"
                           >
                             Reset
@@ -3884,12 +3884,12 @@ function DetailModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[#71757D] uppercase tracking-wider">
+                      <span className="text-subtle uppercase tracking-wider">
                         Client deadline
                       </span>
                       <span
                         className={`tabular-nums ${
-                          isLate ? "text-rose-300" : "text-[#E5E5EA]"
+                          isLate ? "text-rose-300" : "text-foreground"
                         }`}
                       >
                         {formatShortDate(clientDeadlineISO)}
@@ -3909,13 +3909,13 @@ function DetailModal({
             * dates for stuck/approaching/on-track on every card in
             * that bucket; Phase 2 also becomes the client deadline. */}
           {canManage && (
-          <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-3">
+          <section className="rounded-xl border border-border bg-background p-4">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-3">
               Client deadlines
             </h3>
             <div className="space-y-2 text-[11px]">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                <span className="text-subtle uppercase tracking-wider shrink-0">
                   Phase 1 deadline
                 </span>
                 <div className="min-w-0 flex-1 max-w-[180px]">
@@ -3927,7 +3927,7 @@ function DetailModal({
                 </div>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                <span className="text-subtle uppercase tracking-wider shrink-0">
                   Phase 2 deadline
                 </span>
                 <div className="min-w-0 flex-1 max-w-[180px]">
@@ -3959,19 +3959,19 @@ function DetailModal({
               className={`rounded-xl border p-4 ${
                 d.completedAt
                   ? "border-emerald-500/40 bg-emerald-500/5"
-                  : "border-[#2A2A2A] bg-[#0C0C0C]"
+                  : "border-border bg-background"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
                     className={`text-[11px] font-bold uppercase tracking-wider ${
-                      d.completedAt ? "text-emerald-400" : "text-[#71757D]"
+                      d.completedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
                     {d.completedAt ? "Completed" : "Ticket status"}
                   </p>
-                  <p className="text-sm text-[#E5E5EA] mt-0.5">
+                  <p className="text-sm text-foreground mt-0.5">
                     {d.completedAt
                       ? `Marked done ${formatShortDate(d.completedAt)}. No longer on the board.`
                       : "Mark this ticket as resolved to clear it from the board."}
@@ -3981,7 +3981,7 @@ function DetailModal({
                   {d.completedAt ? (
                     <button
                       onClick={onUncompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-[#181818] text-[#9CA3AF] border border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Reopen
@@ -3989,7 +3989,7 @@ function DetailModal({
                   ) : (
                     <button
                       onClick={onCompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Complete
@@ -4005,19 +4005,19 @@ function DetailModal({
               className={`rounded-xl border p-4 ${
                 d.approvedAt
                   ? "border-emerald-500/40 bg-emerald-500/5"
-                  : "border-[#2A2A2A] bg-[#0C0C0C]"
+                  : "border-border bg-background"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
                     className={`text-[11px] font-bold uppercase tracking-wider ${
-                      d.approvedAt ? "text-emerald-400" : "text-[#71757D]"
+                      d.approvedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
                     {d.approvedAt ? "Approved - send to client" : "Internal sign-off"}
                   </p>
-                  <p className="text-sm text-[#E5E5EA] mt-0.5">
+                  <p className="text-sm text-foreground mt-0.5">
                     {d.approvedAt
                       ? `Signed off ${formatShortDate(d.approvedAt)}. Drag the card to External Revisions once you have sent it.`
                       : "Approve and hand to the primary designer to send, or bounce back to Design."}
@@ -4026,7 +4026,7 @@ function DetailModal({
                 {d.approvedAt ? (
                   <button
                     onClick={onUndoApprove}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-[#181818] text-[#9CA3AF] border border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Undo
@@ -4042,7 +4042,7 @@ function DetailModal({
                     </button>
                     <button
                       onClick={onApproveInternal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Approve
@@ -4057,13 +4057,13 @@ function DetailModal({
               Launch & Testing; Send back bounces to Dev with the Revisions
               tag (the move handler auto-flags backward moves). */}
           {canManage && d.phase === "qa" && !d.testResult && (
-            <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
+            <section className="rounded-xl border border-border bg-background p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#71757D]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-subtle">
                     QA sign-off
                   </p>
-                  <p className="text-sm text-[#E5E5EA] mt-0.5">
+                  <p className="text-sm text-foreground mt-0.5">
                     Approve to push to Launch & Testing, or send back to Dev
                     if anything broke.
                   </p>
@@ -4078,7 +4078,7 @@ function DetailModal({
                   </button>
                   <button
                     onClick={onApproveQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
                   >
                     <CheckCircleIcon className="size-3.5" />
                     Approve
@@ -4090,37 +4090,37 @@ function DetailModal({
 
           <section className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-2">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-2">
                 Active assignee
               </h3>
               {d.phase === "launch-testing" ? (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {LAUNCH_TESTING_TESTER}
-                  <span className="text-[#4B4D52] mx-1.5">·</span>
+                  <span className="text-border mx-1.5">·</span>
                   {LAUNCH_TESTING_DEV}
-                  <span className="block text-[10px] text-[#71757D] mt-1 uppercase tracking-wider">
+                  <span className="block text-[10px] text-subtle mt-1 uppercase tracking-wider">
                     Test / Dev
                   </span>
                 </p>
               ) : d.phase === "strategy" ? (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {STRATEGY_OWNER}
-                  <span className="block text-[10px] text-[#71757D] mt-1 uppercase tracking-wider">
+                  <span className="block text-[10px] text-subtle mt-1 uppercase tracking-wider">
                     Strategy owner
                   </span>
                 </p>
               ) : d.phase === "internal-revisions" && d.approvedAt ? (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {d.designer || role.name}
                   <span className="block text-[10px] text-emerald-400 mt-1 uppercase tracking-wider">
                     Approved - send to client
                   </span>
                 </p>
               ) : (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {role.name}
                   {role.isSecondary && (
-                    <span className="text-[#71757D] ml-2 text-xs">
+                    <span className="text-subtle ml-2 text-xs">
                       (secondary)
                     </span>
                   )}
@@ -4128,7 +4128,7 @@ function DetailModal({
               )}
             </div>
             <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-2">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-2">
                 Due
               </h3>
               {canManage ? (
@@ -4137,7 +4137,7 @@ function DetailModal({
                   onChange={(v) => onUpdate({ dueDate: v })}
                 />
               ) : (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {d.dueDate ? formatShortDate(d.dueDate) : "Not set"}
                 </p>
               )}
@@ -4146,7 +4146,7 @@ function DetailModal({
 
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
                 Strategy brief
               </h3>
               {d.brief && !editingBrief && (
@@ -4156,7 +4156,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(true);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#71757D] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-subtle hover:text-white transition-colors"
                 >
                   <PencilSquareIcon className="size-3" />
                   Edit
@@ -4180,7 +4180,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste brief URL (Google Doc, Notion, SharePoint, etc.)"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-[#0C0C0C] border border-[#383838] text-sm text-[#E5E5EA] focus:outline-none focus:border-[#525252] placeholder:text-[#4B4D52]"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-[#525252] placeholder:text-border"
                 />
                 <button
                   type="button"
@@ -4188,7 +4188,7 @@ function DetailModal({
                     onUpdate({ brief: briefDraft.trim() || undefined });
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-[#0C0C0C] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#E5E5EA] transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold uppercase tracking-wider hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4198,7 +4198,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4208,7 +4208,7 @@ function DetailModal({
                 href={d.brief}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-[#E5E5EA] hover:text-white underline-offset-4 hover:underline break-all"
+                className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-white underline-offset-4 hover:underline break-all"
               >
                 <DocumentTextIcon className="size-3.5 shrink-0" />
                 {d.brief}
@@ -4221,7 +4221,7 @@ function DetailModal({
                   setBriefDraft("");
                   setEditingBrief(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-[#2A2A2A] text-sm text-[#71757D] hover:text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Attach brief URL
@@ -4234,7 +4234,7 @@ function DetailModal({
               QA for spec check). Same edit-on-pencil pattern as brief. */}
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
                 Figma
               </h3>
               {d.figmaUrl && !editingFigma && (
@@ -4244,7 +4244,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(true);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#71757D] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-subtle hover:text-white transition-colors"
                 >
                   <PencilSquareIcon className="size-3" />
                   Edit
@@ -4268,7 +4268,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste Figma file or frame URL"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-[#0C0C0C] border border-[#383838] text-sm text-[#E5E5EA] focus:outline-none focus:border-[#525252] placeholder:text-[#4B4D52]"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-[#525252] placeholder:text-border"
                 />
                 <button
                   type="button"
@@ -4276,7 +4276,7 @@ function DetailModal({
                     onUpdate({ figmaUrl: figmaDraft.trim() || undefined });
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-[#0C0C0C] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#E5E5EA] transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold uppercase tracking-wider hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4286,7 +4286,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4296,7 +4296,7 @@ function DetailModal({
                 href={d.figmaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-[#E5E5EA] hover:text-white underline-offset-4 hover:underline break-all"
+                className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-white underline-offset-4 hover:underline break-all"
               >
                 <PuzzlePieceIcon className="size-3.5 shrink-0" />
                 {d.figmaUrl}
@@ -4309,7 +4309,7 @@ function DetailModal({
                   setFigmaDraft("");
                   setEditingFigma(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-[#2A2A2A] text-sm text-[#71757D] hover:text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Attach Figma URL
@@ -4318,7 +4318,7 @@ function DetailModal({
           </section>
 
           <section>
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-2">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-2">
               Notes
             </h3>
             <textarea
@@ -4332,7 +4332,7 @@ function DetailModal({
               }}
               placeholder="Context, edge cases, blockers - anything that doesn't fit the structured fields."
               rows={3}
-              className="w-full px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52] leading-relaxed"
+              className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border leading-relaxed"
             />
           </section>
 
@@ -4346,7 +4346,7 @@ function DetailModal({
               <p className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
                 Time to conclude
               </p>
-              <p className="mt-1 text-sm text-[#E5E5EA]">
+              <p className="mt-1 text-sm text-foreground">
                 Test has been live {daysLive} days. Use the Conclude test
                 button above to lock in the result.
               </p>
@@ -4358,7 +4358,7 @@ function DetailModal({
               <p className="text-[11px] font-bold uppercase tracking-wider text-[#0EA5E9]">
                 Log an interim result
               </p>
-              <p className="mt-1 text-sm text-[#E5E5EA]">
+              <p className="mt-1 text-sm text-foreground">
                 Live for {daysLive} days with no interim numbers recorded. Drop
                 running figures into the metrics rows below to keep the kanban
                 honest.
@@ -4369,14 +4369,14 @@ function DetailModal({
                 onBlur={saveInterim}
                 placeholder="Interim notes"
                 rows={2}
-                className="mt-3 w-full px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                className="mt-3 w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
               />
             </section>
           )}
 
           {concluding && (
-            <section className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-4 space-y-3">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#71757D]">
+            <section className="rounded-lg border border-border bg-surface p-4 space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-subtle">
                 Conclude test
               </p>
 
@@ -4388,8 +4388,8 @@ function DetailModal({
                       onClick={() => setOutcomeDraft(o)}
                       className={`px-2.5 py-2 rounded-md text-[11px] font-bold uppercase tracking-wider transition-colors ${
                         outcomeDraft === o
-                          ? "text-[#0C0C0C]"
-                          : "bg-[#0C0C0C] text-[#9CA3AF] border border-[#2A2A2A] hover:text-white"
+                          ? "text-background"
+                          : "bg-background text-muted border border-border hover:text-white"
                       }`}
                       style={
                         outcomeDraft === o
@@ -4408,7 +4408,7 @@ function DetailModal({
                   value={metricDraft}
                   onChange={(e) => setMetricDraft(e.target.value)}
                   placeholder="Metric"
-                  className="px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
                 <input
                   type="number"
@@ -4416,7 +4416,7 @@ function DetailModal({
                   value={upliftDraft}
                   onChange={(e) => setUpliftDraft(e.target.value)}
                   placeholder="Uplift %"
-                  className="px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
                 <input
                   type="number"
@@ -4424,7 +4424,7 @@ function DetailModal({
                   value={confidenceDraft}
                   onChange={(e) => setConfidenceDraft(e.target.value)}
                   placeholder="Confidence %"
-                  className="px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
               </div>
 
@@ -4433,19 +4433,19 @@ function DetailModal({
                 onChange={(e) => setNotesDraft(e.target.value)}
                 placeholder="Notes"
                 rows={3}
-                className="w-full px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
               />
 
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setConcluding(false)}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitConclude}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
                 >
                   Save result
                 </button>
@@ -4454,9 +4454,9 @@ function DetailModal({
           )}
 
           {d.testResult && (
-            <section className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-4">
+            <section className="rounded-lg border border-border bg-surface p-4">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#71757D]">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-subtle">
                   Result
                 </p>
                 <span
@@ -4471,38 +4471,38 @@ function DetailModal({
               </div>
               <div className="grid grid-cols-4 gap-3 text-sm">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
                     Metric
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA]">
+                  <p className="mt-0.5 text-foreground">
                     {d.testResult.metric ?? "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
                     Uplift
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                  <p className="mt-0.5 text-foreground tabular-nums">
                     {d.testResult.upliftPct == null
                       ? "-"
                       : `${d.testResult.upliftPct > 0 ? "+" : ""}${d.testResult.upliftPct}%`}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
                     Confidence
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                  <p className="mt-0.5 text-foreground tabular-nums">
                     {d.testResult.confidencePct != null
                       ? `${d.testResult.confidencePct}%`
                       : "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
                     Duration
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                  <p className="mt-0.5 text-foreground tabular-nums">
                     {d.testResult.durationDays != null
                       ? `${d.testResult.durationDays}d`
                       : "-"}
@@ -4510,7 +4510,7 @@ function DetailModal({
                 </div>
               </div>
               {d.testResult.notes && (
-                <p className="mt-3 text-sm text-[#9CA3AF] leading-relaxed">
+                <p className="mt-3 text-sm text-muted leading-relaxed">
                   {d.testResult.notes}
                 </p>
               )}
@@ -4524,10 +4524,10 @@ function DetailModal({
                 onClick={() => setHistoryOpen((v) => !v)}
                 className="w-full flex items-center justify-between gap-2 mb-2 group"
               >
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] group-hover:text-[#9CA3AF] transition-colors">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle group-hover:text-muted transition-colors">
                   Phase history
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#71757D] group-hover:text-[#9CA3AF] transition-colors">
+                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-subtle group-hover:text-muted transition-colors">
                   {d.phaseHistory.length} steps
                   <ChevronDownIcon
                     className={`size-3 transition-transform ${historyOpen ? "rotate-180" : ""}`}
@@ -4543,14 +4543,14 @@ function DetailModal({
                         key={`${h.phase}-${i}`}
                         className="flex items-center justify-between gap-3 text-xs"
                       >
-                        <span className="inline-flex items-center gap-2 text-[#E5E5EA]">
+                        <span className="inline-flex items-center gap-2 text-foreground">
                           <span
                             className="size-1.5 rounded-full"
                             style={{ background: meta?.color ?? "#71757D" }}
                           />
                           {meta?.label ?? h.phase}
                         </span>
-                        <span className="text-[#71757D] tabular-nums">
+                        <span className="text-subtle tabular-nums">
                           {formatDueDate(h.enteredAt)}
                         </span>
                       </div>
@@ -4562,9 +4562,9 @@ function DetailModal({
           )}
 
           {d.phase === "launch-testing" && (
-            <section className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 space-y-3">
+            <section className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
                   Test setup
                 </h3>
                 <div className="flex items-center gap-2">
@@ -4573,7 +4573,7 @@ function DetailModal({
                       href={d.liveTestUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
                     >
                       Open live
                       <ArrowTopRightOnSquareIcon className="size-3" />
@@ -4588,9 +4588,9 @@ function DetailModal({
                       onClick={() =>
                         onUpdate({ liveStartedAt: MOCK_TODAY })
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
                     >
-                      <span className="size-1.5 rounded-full bg-[#0C0C0C]" />
+                      <span className="size-1.5 rounded-full bg-background" />
                       Set live
                     </button>
                   )}
@@ -4598,7 +4598,7 @@ function DetailModal({
                     <button
                       type="button"
                       onClick={() => setConcluding(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-amber-500 text-[#0C0C0C] hover:bg-amber-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-amber-500 text-background hover:bg-amber-400 transition-colors"
                     >
                       Conclude test
                     </button>
@@ -4607,7 +4607,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5 block">
                   Test URL
                 </label>
                 <input
@@ -4620,7 +4620,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="https://..."
-                  className="w-full px-3 py-2 rounded-md text-sm bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52]"
+                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
                 />
               </div>
 
@@ -4629,10 +4629,10 @@ function DetailModal({
                   row is treated as primary by the conclude form. */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                     Metrics
                   </label>
-                  <span className="text-[10px] text-[#4B4D52] uppercase tracking-wider">
+                  <span className="text-[10px] text-border uppercase tracking-wider">
                     Before / After
                   </span>
                 </div>
@@ -4646,7 +4646,7 @@ function DetailModal({
                       onChange={(e) => updateMetric(i, { name: e.target.value })}
                       onBlur={blurCommit}
                       placeholder="Metric"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52]"
+                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
                     />
                     <input
                       value={m.baseline ?? ""}
@@ -4655,7 +4655,7 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Baseline"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52] tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
                     />
                     <input
                       value={m.interim ?? ""}
@@ -4664,12 +4664,12 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Interim"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52] tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
                     />
                     <button
                       type="button"
                       onClick={() => removeMetric(i)}
-                      className="size-7 inline-flex items-center justify-center rounded-md text-[#4B4D52] hover:text-[#9CA3AF] hover:bg-[#181818] transition-colors"
+                      className="size-7 inline-flex items-center justify-center rounded-md text-border hover:text-muted hover:bg-surface transition-colors"
                       title="Remove metric"
                       aria-label="Remove metric"
                     >
@@ -4680,7 +4680,7 @@ function DetailModal({
                 <button
                   type="button"
                   onClick={addMetric}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-[#2A2A2A] text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-foreground hover:border-border transition-colors"
                 >
                   <PlusIcon className="size-3" />
                   Add metric
@@ -4688,7 +4688,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5 block">
                   Interim notes
                 </label>
                 <textarea
@@ -4702,7 +4702,7 @@ function DetailModal({
                   }}
                   placeholder="What the running data is telling you."
                   rows={2}
-                  className="w-full px-3 py-2 rounded-md text-sm bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52]"
+                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
                 />
               </div>
 
@@ -4710,11 +4710,11 @@ function DetailModal({
                   drops the live variant proof in the same place as the URL +
                   metric inputs. */}
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5 block">
                   Screenshot
                 </label>
                 {d.screenshot ? (
-                  <div className="relative rounded-lg overflow-hidden border border-[#2A2A2A]">
+                  <div className="relative rounded-lg overflow-hidden border border-border">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={d.screenshot}
@@ -4732,7 +4732,7 @@ function DetailModal({
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingScreenshot}
-                    className="w-full px-4 py-6 rounded-lg border border-dashed border-[#2A2A2A] bg-[#181818] text-sm text-[#71757D] hover:border-[#383838] hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
+                    className="w-full px-4 py-6 rounded-lg border border-dashed border-border bg-surface text-sm text-subtle hover:border-border hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
                   >
                     {uploadingScreenshot ? "Uploading..." : "Upload a screenshot"}
                   </button>
@@ -4755,7 +4755,7 @@ function DetailModal({
           <section className="pt-2">
             <button
               onClick={onDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-rose-400 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-rose-400 transition-colors"
             >
               <XMarkIcon className="size-3.5" />
               Delete card
@@ -4829,7 +4829,7 @@ function SearchControl({
           window.setTimeout(() => inputRef.current?.focus(), 0);
         }}
         title="Search cards (/)"
-        className="size-7 inline-flex items-center justify-center rounded-full text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838] transition-colors"
+        className="size-7 inline-flex items-center justify-center rounded-full text-subtle hover:text-white border border-border hover:border-border transition-colors"
       >
         <MagnifyingGlassIcon className="size-3.5" />
       </button>
@@ -4838,7 +4838,7 @@ function SearchControl({
 
   return (
     <div className="relative">
-      <MagnifyingGlassIcon className="size-3.5 text-[#71757D] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      <MagnifyingGlassIcon className="size-3.5 text-subtle absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
       <input
         ref={inputRef}
         value={query}
@@ -4847,7 +4847,7 @@ function SearchControl({
           if (!query) setExpanded(false);
         }}
         placeholder="Search cards…"
-        className="h-7 pl-7 pr-7 w-56 text-[11px] bg-[#0F0F10] border border-[#2A2A2A] rounded-full text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:border-[#383838] transition-all"
+        className="h-7 pl-7 pr-7 w-56 text-[11px] bg-background border border-border rounded-full text-foreground placeholder:text-subtle focus:outline-none focus:border-border transition-all"
       />
       {query ? (
         <button
@@ -4855,13 +4855,13 @@ function SearchControl({
             onChange("");
             setExpanded(false);
           }}
-          className="absolute right-1 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-[#71757D] hover:text-[#E5E5EA] rounded-full"
+          className="absolute right-1 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-subtle hover:text-foreground rounded-full"
           title="Clear (Esc)"
         >
           <XMarkIcon className="size-3" />
         </button>
       ) : (
-        <kbd className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-[#71757D]">
+        <kbd className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-subtle">
           /
         </kbd>
       )}
@@ -4889,8 +4889,8 @@ function ActiveProjectTab({
     <div
       className={`group inline-flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-full text-[12px] font-medium border ${
         isRetainer
-          ? "bg-teal-500 text-[#0C0C0C] border-teal-500"
-          : "bg-white text-[#0C0C0C] border-white"
+          ? "bg-teal-500 text-background border-teal-500"
+          : "bg-white text-background border-white"
       }`}
       title={
         isRetainer && p.engagementDays
@@ -4901,9 +4901,9 @@ function ActiveProjectTab({
       }
     >
       <span className="truncate max-w-[260px]">{p.name}</span>
-      <span className="tabular-nums text-[#0C0C0C]/50">{count}</span>
+      <span className="tabular-nums text-background/50">{count}</span>
       {(p.turnaroundDays || p.engagementDays) && (
-        <span className="text-[10px] uppercase tracking-wider text-[#0C0C0C]/60">
+        <span className="text-[10px] uppercase tracking-wider text-background/60">
           {p.type === "retainer" && p.engagementDays
             ? `${ENGAGEMENT_TIER_SHORT[p.engagementDays as EngagementDays]}/mo`
             : `${p.turnaroundDays}d`}
@@ -4912,7 +4912,7 @@ function ActiveProjectTab({
       {canManage && (
         <button
           onClick={onDelete}
-          className="size-5 inline-flex items-center justify-center rounded-full text-[#0C0C0C]/60 hover:text-rose-700 hover:bg-black/[0.08] opacity-0 group-hover:opacity-100 transition-opacity"
+          className="size-5 inline-flex items-center justify-center rounded-full text-background/60 hover:text-rose-700 hover:bg-black/[0.08] opacity-0 group-hover:opacity-100 transition-opacity"
           title="Delete this project"
         >
           <XMarkIcon className="size-3" />
@@ -4957,14 +4957,14 @@ function ProjectOverflow({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#9CA3AF] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-surface text-muted border-border hover:text-white hover:border-border transition-colors"
         title={`${projects.length} more project${projects.length === 1 ? "" : "s"}`}
       >
         +{projects.length}
       </button>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div className="absolute left-0 top-9 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
             Other projects ({projects.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -4983,10 +4983,10 @@ function ProjectOverflow({
                       <span
                         className={`shrink-0 size-1.5 rounded-full ${p.type === "retainer" ? "bg-teal-400" : "bg-white"}`}
                       />
-                      <span className="text-[12px] text-[#E5E5EA] truncate">
+                      <span className="text-[12px] text-foreground truncate">
                         {p.name}
                       </span>
-                      <span className="text-[10px] text-[#71757D] tabular-nums shrink-0">
+                      <span className="text-[10px] text-subtle tabular-nums shrink-0">
                         {count}
                       </span>
                     </div>
@@ -4997,7 +4997,7 @@ function ProjectOverflow({
                         setOpen(false);
                         onDelete(p.id);
                       }}
-                      className="size-7 mr-1.5 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="size-7 mr-1.5 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
                       title={`Delete ${p.name}`}
                     >
                       <XMarkIcon className="size-3.5" />
@@ -5044,14 +5044,14 @@ function ProjectPodPicker({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 text-[12px] font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+        className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 text-[12px] font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
       >
         <span className="truncate max-w-[140px]">{active?.name ?? "No pod"}</span>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
       </button>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
             Assign pod
           </div>
           <ul className="max-h-72 overflow-y-auto py-1">
@@ -5073,7 +5073,7 @@ function ProjectPodPicker({
                   ) : (
                     <span className="size-3.5 shrink-0" />
                   )}
-                  <span className="text-[13px] text-[#71757D] italic">No pod</span>
+                  <span className="text-[13px] text-subtle italic">No pod</span>
                 </div>
               </button>
             </li>
@@ -5098,7 +5098,7 @@ function ProjectPodPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-[#E5E5EA] truncate">
+                      <span className="text-[13px] text-foreground truncate">
                         {p.name}
                       </span>
                     </div>
@@ -5146,14 +5146,14 @@ function KanbanClientPicker({
     <div ref={ref} className="relative w-[180px] shrink-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
       >
         <span className="truncate">{active?.name ?? "Pick a client"}</span>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
       </button>
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div className="absolute right-0 top-11 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
             Clients ({clients.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5179,10 +5179,10 @@ function KanbanClientPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-[#E5E5EA] truncate flex-1 min-w-0">
+                      <span className="text-[13px] text-foreground truncate flex-1 min-w-0">
                         {c.name}
                       </span>
-                      <span className="text-[10px] text-[#71757D] tabular-nums shrink-0 pl-2">
+                      <span className="text-[10px] text-subtle tabular-nums shrink-0 pl-2">
                         {projectCount} proj
                       </span>
                     </div>
@@ -5192,7 +5192,7 @@ function KanbanClientPicker({
                       setOpen(false);
                       onDelete(c.id);
                     }}
-                    className="size-7 shrink-0 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
                     title={`Delete ${c.name}`}
                   >
                     <XMarkIcon className="size-3.5" />
@@ -5237,14 +5237,14 @@ function KanbanPodPicker({
     <div ref={ref} className="relative w-[180px] shrink-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
       >
         <span className="truncate">{active?.name ?? "Pick a pod"}</span>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
       </button>
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div className="absolute right-0 top-11 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
             Pods ({pods.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5269,7 +5269,7 @@ function KanbanPodPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-[#E5E5EA] truncate">
+                      <span className="text-[13px] text-foreground truncate">
                         {p.name}
                       </span>
                     </div>
@@ -5322,13 +5322,13 @@ function NewClientModal({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+        className="bg-background rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
       >
-        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-1">Add client</h2>
-        <p className="text-xs text-[#71757D] mb-5">
+        <h2 className="text-lg font-semibold text-foreground mb-1">Add client</h2>
+        <p className="text-xs text-subtle mb-5">
           Creates a new client on the kanban. Add projects + cards once it's in.
         </p>
-        <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">
+        <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">
           Client name
         </label>
         <input
@@ -5336,20 +5336,20 @@ function NewClientModal({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Acme Skincare"
-          className="w-full h-10 px-3 bg-black/40 rounded-md text-[14px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+          className="w-full h-10 px-3 bg-black/40 rounded-md text-[14px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
         />
         <div className="flex justify-end gap-2 mt-6">
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+            className="px-3 py-2 text-sm text-subtle hover:text-foreground"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={!name.trim()}
-            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-lg hover:bg-[#E5E5EA] disabled:opacity-40"
+            className="px-3 py-2 bg-white text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-40"
           >
             Add client
           </button>
@@ -5393,8 +5393,8 @@ function OverflowMenu({
         title="More"
         className={`size-7 inline-flex items-center justify-center rounded-full transition-colors ${
           open
-            ? "text-white border border-[#383838] bg-[#1A1A1A]"
-            : "text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838]"
+            ? "text-white border border-border bg-surface"
+            : "text-subtle hover:text-white border border-border hover:border-border"
         }`}
       >
         <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
@@ -5404,20 +5404,20 @@ function OverflowMenu({
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
           <div className="p-2 border-b border-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold px-2 mb-2">
+            <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold px-2 mb-2">
               Card density
             </div>
-            <div className="inline-flex w-full p-0.5 rounded-md bg-[#141414] ring-1 ring-white/[0.04]">
+            <div className="inline-flex w-full p-0.5 rounded-md bg-background ring-1 ring-white/[0.04]">
               {(["cosy", "glance"] as const).map((d) => (
                 <button
                   key={d}
                   onClick={() => onSetDensity(d)}
                   className={`flex-1 px-2 py-1 rounded text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                     density === d
-                      ? "bg-[#E5E5EA] text-[#0C0C0C]"
-                      : "text-[#71757D] hover:text-[#E5E5EA]"
+                      ? "bg-foreground text-background"
+                      : "text-subtle hover:text-foreground"
                   }`}
                 >
                   {d === "cosy" ? "Cosy" : "Glance"}
@@ -5430,7 +5430,7 @@ function OverflowMenu({
               setOpen(false);
               onOpenRules();
             }}
-            className="w-full text-left px-4 py-2.5 text-[12px] text-[#E5E5EA] hover:bg-white/[0.04] transition-colors"
+            className="w-full text-left px-4 py-2.5 text-[12px] text-foreground hover:bg-white/[0.04] transition-colors"
           >
             Phase rules
           </button>

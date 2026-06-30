@@ -202,7 +202,7 @@ export default function IntakeClient() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-12 md:px-10">
-        <div className="text-sm text-[#71757D]">Loading…</div>
+        <div className="text-sm text-subtle">Loading…</div>
       </div>
     );
   }
@@ -211,20 +211,20 @@ export default function IntakeClient() {
     <div className="mx-auto max-w-3xl px-6 py-8 md:px-10">
       <Link
         href="/pods-v2"
-        className="inline-flex items-center gap-1 text-xs text-[#71757D] hover:text-[#E5E5EA]"
+        className="inline-flex items-center gap-1 text-xs text-subtle hover:text-foreground"
       >
         <ChevronLeftIcon className="size-3.5" />
         All pods
       </Link>
 
       <div className="mt-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
           Intake
         </p>
         <h1 className="mt-1 text-3xl font-medium">
           New project
         </h1>
-        <p className="mt-1 text-sm text-[#71757D]">
+        <p className="mt-1 text-sm text-subtle">
           The system auto-buckets, auto-schedules, and creates default tasks.
           Override only when you have to.
         </p>
@@ -232,19 +232,19 @@ export default function IntakeClient() {
 
       <form
         onSubmit={handleSubmit}
-        className="mt-8 space-y-6 rounded-2xl border border-[#2A2A2A] bg-[#181818] p-6 shadow-[var(--shadow-soft)]"
+        className="mt-8 space-y-6 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]"
       >
         {/* Client */}
         <div>
           <label className={labelClass}>Client</label>
-          <div className="mb-2 flex gap-1 rounded-lg bg-[#222222] p-1 text-xs">
+          <div className="mb-2 flex gap-1 rounded-lg bg-surface-raised p-1 text-xs">
             <button
               type="button"
               onClick={() => setClientMode("existing")}
               className={`flex-1 rounded-md px-3 py-1.5 transition-colors ${
                 clientMode === "existing"
-                  ? "bg-[#181818] shadow-[var(--shadow-soft)]"
-                  : "text-[#71757D]"
+                  ? "bg-surface shadow-[var(--shadow-soft)]"
+                  : "text-subtle"
               }`}
             >
               Existing client
@@ -254,8 +254,8 @@ export default function IntakeClient() {
               onClick={() => setClientMode("new")}
               className={`flex-1 rounded-md px-3 py-1.5 transition-colors ${
                 clientMode === "new"
-                  ? "bg-[#181818] shadow-[var(--shadow-soft)]"
-                  : "text-[#71757D]"
+                  ? "bg-surface shadow-[var(--shadow-soft)]"
+                  : "text-subtle"
               }`}
             >
               New client
@@ -315,12 +315,12 @@ export default function IntakeClient() {
                   </select>
                 </div>
               </div>
-              <label className="flex items-center gap-2 text-xs text-[#E5E5EA]">
+              <label className="flex items-center gap-2 text-xs text-foreground">
                 <input
                   type="checkbox"
                   checked={newClientBrandWarm}
                   onChange={(e) => setNewClientBrandWarm(e.target.checked)}
-                  className="h-4 w-4 rounded border-[#2A2A2A]"
+                  className="h-4 w-4 rounded border-border"
                 />
                 Brand-warm (returning, retainer, or worked with in last 6 months)
               </label>
@@ -328,8 +328,8 @@ export default function IntakeClient() {
           )}
 
           {existingClient && (
-            <div className="mt-2 rounded-lg bg-[#0C0C0C] px-3 py-2 text-[11px] text-[#71757D]">
-              Pod: <span className="font-medium text-[#E5E5EA]">
+            <div className="mt-2 rounded-lg bg-background px-3 py-2 text-[11px] text-subtle">
+              Pod: <span className="font-medium text-foreground">
                 {pods.find((p) => p.id === existingClient.pod_id)?.name ?? ","}
               </span>
               {existingClient.brand_warm && (
@@ -357,7 +357,7 @@ export default function IntakeClient() {
             <button
               type="button"
               onClick={addPage}
-              className="inline-flex items-center gap-1 text-xs text-[#E5E5EA] hover:opacity-70"
+              className="inline-flex items-center gap-1 text-xs text-foreground hover:opacity-70"
             >
               <PlusIcon className="size-3.5" />
               Add page
@@ -367,7 +367,7 @@ export default function IntakeClient() {
             {pages.map((p, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-2"
+                className="flex items-center gap-2 rounded-lg border border-border bg-background p-2"
               >
                 <select
                   value={p.type}
@@ -398,7 +398,7 @@ export default function IntakeClient() {
                 <button
                   type="button"
                   onClick={() => removePage(idx)}
-                  className="rounded p-1.5 text-[#71757D] hover:bg-rose-500/10 hover:text-rose-300"
+                  className="rounded p-1.5 text-subtle hover:bg-rose-500/10 hover:text-rose-300"
                 >
                   <TrashIcon className="size-3.5" />
                 </button>
@@ -417,7 +417,7 @@ export default function IntakeClient() {
               onChange={(e) => setSignoffDate(e.target.value)}
               className={inputClass}
             />
-            <p className="mt-1 text-[10px] text-[#71757D]">
+            <p className="mt-1 text-[10px] text-subtle">
               {formatLongDate(signoffDate)}
             </p>
           </div>
@@ -431,7 +431,7 @@ export default function IntakeClient() {
               onChange={(e) => setSignoffHour(Number(e.target.value))}
               className={inputClass}
             />
-            <p className="mt-1 text-[10px] text-[#71757D]">
+            <p className="mt-1 text-[10px] text-subtle">
               Friday after 5pm or weekend pushes to next-next Monday.
             </p>
           </div>
@@ -453,8 +453,8 @@ export default function IntakeClient() {
         </label>
 
         {/* Live preview */}
-        <div className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <div className="rounded-xl border border-border bg-background p-4">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             System preview
           </div>
           <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -468,7 +468,7 @@ export default function IntakeClient() {
               value={totalPoints.toString()}
             />
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
                 Bucket
               </div>
               <div className="mt-1.5">
@@ -480,9 +480,9 @@ export default function IntakeClient() {
               value={pods.find((p) => p.id === suggestedPodId)?.name ?? ","}
             />
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[#2A2A2A] pt-3">
+          <div className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3">
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
                 Kickoff Monday
               </div>
               <div className="mt-0.5 text-sm font-medium">
@@ -490,14 +490,14 @@ export default function IntakeClient() {
               </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
                 Ship date (client)
               </div>
               <div className="mt-0.5 text-sm font-medium">
                 {delivery ? formatLongDate(delivery) : "Bespoke, set manually"}
               </div>
               {internalTarget && (
-                <div className="text-[10px] text-[#71757D]">
+                <div className="text-[10px] text-subtle">
                   internal target {formatLongDate(internalTarget)} (−1 day buffer)
                 </div>
               )}
@@ -525,16 +525,16 @@ export default function IntakeClient() {
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-[#2A2A2A] pt-4">
+        <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
           <Link
             href="/pods-v2"
-            className="rounded-lg px-3 py-2 text-xs text-[#71757D] hover:text-[#E5E5EA]"
+            className="rounded-lg px-3 py-2 text-xs text-subtle hover:text-foreground"
           >
             Cancel
           </Link>
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-[#1B1B1B] px-4 py-2 text-sm font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F4F6]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-surface px-4 py-2 text-sm font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-foreground"
           >
             Create project
           </button>
@@ -555,11 +555,11 @@ function PreviewStat({
 }) {
   return (
     <div>
-      <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
         {label}
       </div>
       <div className="mt-0.5 text-sm font-semibold tabular-nums">{value}</div>
-      {sub && <div className="text-[10px] text-[#71757D]">{sub}</div>}
+      {sub && <div className="text-[10px] text-subtle">{sub}</div>}
     </div>
   );
 }

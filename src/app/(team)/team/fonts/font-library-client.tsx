@@ -148,13 +148,13 @@ export function FontLibraryClient() {
       <div className="flex items-end justify-between gap-4 mb-8 flex-wrap">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold mb-1">Font Library</h1>
-          <p className="text-sm text-[#71757D]">
+          <p className="text-sm text-subtle">
             Approved fonts only. Drop a Google Fonts download, the library handles the rest.
           </p>
         </div>
         <button
           onClick={() => setCreatingNew(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-[#222222] text-[#E5E5EA] rounded-full hover:bg-[#2A2A2A] transition-colors"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-surface-raised text-foreground rounded-full hover:bg-border transition-colors"
         >
           <PlusIcon className="size-4" />
           Add font
@@ -162,9 +162,9 @@ export function FontLibraryClient() {
       </div>
 
       {/* Hero preview controls */}
-      <section className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 md:p-6 mb-6">
+      <section className="bg-surface border border-border rounded-xl p-5 md:p-6 mb-6">
         <label className="block">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Type to preview every card
           </span>
           <input
@@ -172,11 +172,11 @@ export function FontLibraryClient() {
             value={previewText}
             onChange={(e) => setPreviewText(e.target.value)}
             placeholder={DEFAULT_PREVIEW}
-            className="mt-2 w-full text-base px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+            className="mt-2 w-full text-base px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-surface"
           />
         </label>
         <div className="flex items-center gap-4 mt-4">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] shrink-0">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle shrink-0">
             Size
           </span>
           <input
@@ -187,7 +187,7 @@ export function FontLibraryClient() {
             onChange={(e) => setPreviewSize(parseInt(e.target.value, 10))}
             className="flex-1"
           />
-          <span className="text-xs tabular-nums text-[#E5E5EA] w-12 text-right">{previewSize}px</span>
+          <span className="text-xs tabular-nums text-foreground w-12 text-right">{previewSize}px</span>
         </div>
       </section>
 
@@ -198,7 +198,7 @@ export function FontLibraryClient() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search fonts by name…"
-          className="w-full text-sm px-3.5 py-2.5 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+          className="w-full text-sm px-3.5 py-2.5 border border-border rounded-lg focus:outline-none focus:border-surface"
         />
         <FilterChips
           label="Category"
@@ -219,13 +219,13 @@ export function FontLibraryClient() {
           onChange={(v) => setActiveUsage(v as FontUsage | "all")}
         />
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] shrink-0">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle shrink-0">
             Niche
           </span>
           <select
             value={activeNiche}
             onChange={(e) => setActiveNiche(e.target.value)}
-            className="text-xs px-3 py-1.5 border border-[#2A2A2A] rounded-full bg-[#181818] focus:outline-none focus:border-[#1B1B1B] min-w-[140px]"
+            className="text-xs px-3 py-1.5 border border-border rounded-full bg-surface focus:outline-none focus:border-surface min-w-[140px]"
           >
             <option value="">All niches</option>
             {allNiches.map((n) => (
@@ -242,7 +242,7 @@ export function FontLibraryClient() {
                 setActiveUsage("all");
                 setActiveNiche("");
               }}
-              className="text-xs text-[#71757D] hover:text-[#E5E5EA] underline"
+              className="text-xs text-subtle hover:text-foreground underline"
             >
               Clear filters
             </button>
@@ -262,7 +262,7 @@ export function FontLibraryClient() {
 
       {/* Grid */}
       {loading ? (
-        <div className="text-sm text-[#71757D] py-12 text-center">Loading…</div>
+        <div className="text-sm text-subtle py-12 text-center">Loading…</div>
       ) : visible.length === 0 ? (
         <EmptyState onAdd={() => setCreatingNew(true)} hasFonts={fonts.length > 0} />
       ) : (
@@ -326,7 +326,7 @@ function FilterChips({
 }) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] shrink-0">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle shrink-0">
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -338,8 +338,8 @@ function FilterChips({
               onClick={() => onChange(opt.value)}
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                 isActive
-                  ? "bg-white text-[#0C0C0C] border-[#1B1B1B]"
-                  : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:border-[#1B1B1B]"
+                  ? "bg-white text-background border-surface"
+                  : "bg-surface text-foreground border-border hover:border-surface"
               }`}
             >
               {opt.label}
@@ -354,11 +354,11 @@ function FilterChips({
 // ── Empty state ────────────────────────────────────────────────────────────
 function EmptyState({ onAdd, hasFonts }: { onAdd: () => void; hasFonts: boolean }) {
   return (
-    <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
-      <h3 className="text-base font-semibold text-[#E5E5EA] mb-1">
+    <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+      <h3 className="text-base font-semibold text-foreground mb-1">
         {hasFonts ? "Nothing matches those filters" : "No fonts yet"}
       </h3>
-      <p className="text-sm text-[#71757D] mb-4">
+      <p className="text-sm text-subtle mb-4">
         {hasFonts
           ? "Try clearing some filters."
           : "Drop a Google Fonts download to start the library."}
@@ -366,7 +366,7 @@ function EmptyState({ onAdd, hasFonts }: { onAdd: () => void; hasFonts: boolean 
       {!hasFonts && (
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-[#222222] text-[#E5E5EA] rounded-full hover:bg-[#2A2A2A]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-surface-raised text-foreground rounded-full hover:bg-border"
         >
           <PlusIcon className="size-4" /> Add a font
         </button>
@@ -469,10 +469,10 @@ function FontCard({
   };
 
   return (
-    <article className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden hover:border-[#1B1B1B] transition-colors group">
+    <article className="bg-surface border border-border rounded-xl overflow-hidden hover:border-surface transition-colors group">
       {/* Preview */}
       <div
-        className="px-5 md:px-6 py-7 md:py-9 border-b border-[#2A2A2A] min-h-[120px] flex items-center"
+        className="px-5 md:px-6 py-7 md:py-9 border-b border-border min-h-[120px] flex items-center"
         style={{
           fontFamily: hasFiles ? `"${font.family}", system-ui, sans-serif` : "system-ui, sans-serif",
           fontSize: `${previewSize}px`,
@@ -490,7 +490,7 @@ function FontCard({
 
       {/* Weight switcher */}
       {variants.length > 1 && (
-        <div className="px-5 md:px-6 py-2.5 border-b border-[#2A2A2A] flex flex-wrap gap-1.5 bg-[#FAFAFB]">
+        <div className="px-5 md:px-6 py-2.5 border-b border-border flex flex-wrap gap-1.5 bg-surface-raised">
           {variants.map((v, i) => {
             const isActive = i === activeIdx;
             return (
@@ -499,8 +499,8 @@ function FontCard({
                 onClick={() => setActiveIdx(i)}
                 className={`text-[10px] font-medium px-2 py-0.5 rounded-full border tabular-nums transition-colors ${
                   isActive
-                    ? "bg-white text-[#0C0C0C] border-[#1B1B1B]"
-                    : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:border-[#1B1B1B] hover:text-[#E5E5EA]"
+                    ? "bg-white text-background border-surface"
+                    : "bg-surface text-subtle border-border hover:border-surface hover:text-foreground"
                 }`}
                 title={`${v.weight} ${v.style}`}
               >
@@ -516,8 +516,8 @@ function FontCard({
       <div className="px-5 md:px-6 py-4">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div>
-            <h3 className="text-sm font-semibold text-[#E5E5EA]">{font.name}</h3>
-            <p className="text-[11px] text-[#71757D] mt-0.5">
+            <h3 className="text-sm font-semibold text-foreground">{font.name}</h3>
+            <p className="text-[11px] text-subtle mt-0.5">
               {FONT_CATEGORY_LABELS[font.category]}
               {font.usage.length > 0 && (
                 <> · {font.usage.map((u) => FONT_USAGE_LABELS[u]).join(", ")}</>
@@ -529,7 +529,7 @@ function FontCard({
           </div>
           <button
             onClick={onEdit}
-            className="text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA] inline-flex items-center gap-1"
+            className="text-[11px] font-medium text-subtle hover:text-foreground inline-flex items-center gap-1"
           >
             <PencilIcon className="size-3" /> Manage
           </button>
@@ -540,7 +540,7 @@ function FontCard({
             {font.niches.map((n) => (
               <span
                 key={n}
-                className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[#222222] text-[#71757D] rounded-full"
+                className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-surface-raised text-subtle rounded-full"
               >
                 {n}
               </span>
@@ -549,8 +549,8 @@ function FontCard({
         )}
 
         {hasFiles && (
-          <div className="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-[#2A2A2A]">
-            <span className="text-[11px] text-[#71757D]">
+          <div className="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-border">
+            <span className="text-[11px] text-subtle">
               {font.files.length === 1
                 ? `${font.files[0].format.toUpperCase()} · ${formatBytes(font.files[0].fileSizeBytes)}`
                 : `${font.files.length} weights · ${formatBytes(
@@ -560,7 +560,7 @@ function FontCard({
             <button
               onClick={onDownloadAll}
               disabled={downloading}
-              className="text-[11px] font-medium text-[#E5E5EA] hover:underline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-wait"
+              className="text-[11px] font-medium text-foreground hover:underline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-wait"
             >
               <ArrowDownTrayIcon className="size-3" />
               {downloading
@@ -852,10 +852,10 @@ function AddFontModal({
         onDrop={onDrop}
         className={`relative rounded-xl border-2 border-dashed transition-colors ${
           dragOver
-            ? "border-[#1B1B1B] bg-[#222222]"
+            ? "border-surface bg-surface-raised"
             : empty
-              ? "border-[#2A2A2A] bg-[#FAFAFB]"
-              : "border-[#2A2A2A] bg-[#181818]"
+              ? "border-border bg-surface-raised"
+              : "border-border bg-surface"
         } px-5 py-8 text-center`}
       >
         <input
@@ -867,20 +867,20 @@ function AddFontModal({
           className="hidden"
           id="font-files-input"
         />
-        <ArrowUpOnSquareIcon className="size-7 mx-auto text-[#71757D] mb-2" />
-        <p className="text-sm font-medium text-[#E5E5EA]">
+        <ArrowUpOnSquareIcon className="size-7 mx-auto text-subtle mb-2" />
+        <p className="text-sm font-medium text-foreground">
           Drop the Google Fonts download here
         </p>
-        <p className="text-xs text-[#71757D] mt-1">
+        <p className="text-xs text-subtle mt-1">
           .zip, .woff2, .woff, .ttf, or .otf — or{" "}
           <label
             htmlFor="font-files-input"
-            className="font-medium text-[#E5E5EA] underline cursor-pointer"
+            className="font-medium text-foreground underline cursor-pointer"
           >
             pick a file
           </label>
         </p>
-        <p className="text-[10px] text-[#71757D] mt-2">
+        <p className="text-[10px] text-subtle mt-2">
           Zips are unpacked client-side. Weight + style auto-detected from filenames.
         </p>
       </div>
@@ -889,14 +889,14 @@ function AddFontModal({
       {!empty && (
         <div className="mt-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
               {groups.length} font{groups.length === 1 ? "" : "s"} detected
               {" · "}
               {groups.reduce((s, g) => s + g.files.length, 0)} files
             </span>
             <button
               onClick={() => setGroups([])}
-              className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] underline"
+              className="text-[11px] text-subtle hover:text-foreground underline"
             >
               Clear all
             </button>
@@ -919,7 +919,7 @@ function AddFontModal({
       {/* Footer */}
       <div className="flex items-center justify-end gap-3 mt-6">
         {submitting && progress.fileTotal > 0 && (
-          <span className="text-xs text-[#71757D] mr-auto truncate">
+          <span className="text-xs text-subtle mr-auto truncate">
             {progress.currentName
               ? `Adding ${progress.currentName} (${progress.groupDone + 1}/${progress.groupTotal}) — `
               : ""}
@@ -928,14 +928,14 @@ function AddFontModal({
         )}
         <button
           onClick={onClose}
-          className="px-3 py-1.5 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA]"
+          className="px-3 py-1.5 text-xs font-medium text-subtle hover:text-foreground"
         >
           Cancel
         </button>
         <button
           onClick={submit}
           disabled={!groups.length || submitting}
-          className="px-4 py-1.5 text-xs font-medium bg-[#222222] text-[#E5E5EA] rounded-lg hover:bg-[#2A2A2A] disabled:opacity-40"
+          className="px-4 py-1.5 text-xs font-medium bg-surface-raised text-foreground rounded-lg hover:bg-border disabled:opacity-40"
         >
           {submitting
             ? "Uploading…"
@@ -978,12 +978,12 @@ function PendingGroupCard({
   };
 
   return (
-    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818]">
+    <div className="rounded-lg border border-border bg-surface">
       {/* Header — always visible */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-[#2A2A2A]">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="text-[#71757D] hover:text-[#E5E5EA] text-xs shrink-0"
+          className="text-subtle hover:text-foreground text-xs shrink-0"
           title={open ? "Collapse" : "Expand"}
         >
           {open ? "▾" : "▸"}
@@ -993,14 +993,14 @@ function PendingGroupCard({
           value={group.name}
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder="Font name"
-          className="flex-1 text-sm font-semibold px-2 py-1 border border-transparent hover:border-[#2A2A2A] focus:border-[#1B1B1B] focus:outline-none rounded bg-transparent"
+          className="flex-1 text-sm font-semibold px-2 py-1 border border-transparent hover:border-border focus:border-surface focus:outline-none rounded bg-transparent"
         />
-        <span className="text-[11px] text-[#71757D] shrink-0">
+        <span className="text-[11px] text-subtle shrink-0">
           {group.files.length} file{group.files.length === 1 ? "" : "s"}
         </span>
         <button
           onClick={onRemove}
-          className="text-[#71757D] hover:text-red-600 shrink-0"
+          className="text-subtle hover:text-red-600 shrink-0"
           title="Remove this font"
         >
           <XMarkIcon className="size-4" />
@@ -1010,15 +1010,15 @@ function PendingGroupCard({
       {open && (
         <div className="px-3 py-3 space-y-3">
           {/* Files */}
-          <ul className="rounded border border-[#2A2A2A] divide-y divide-[#2A2A2A]">
+          <ul className="rounded border border-border divide-y divide-border">
             {group.files.map((p, i) => (
               <li key={i} className="flex items-center gap-2 px-2 py-1.5 text-[11px]">
                 <CheckCircleIcon className="size-3.5 text-emerald-500 shrink-0" />
-                <span className="flex-1 truncate text-[#E5E5EA]">{p.file.name}</span>
+                <span className="flex-1 truncate text-foreground">{p.file.name}</span>
                 <select
                   value={p.weight}
                   onChange={(e) => onFileChange(i, { weight: parseInt(e.target.value, 10) })}
-                  className="text-[11px] px-1.5 py-0.5 border border-[#2A2A2A] rounded"
+                  className="text-[11px] px-1.5 py-0.5 border border-border rounded"
                 >
                   {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((w) => (
                     <option key={w} value={w}>
@@ -1031,14 +1031,14 @@ function PendingGroupCard({
                   onChange={(e) =>
                     onFileChange(i, { style: e.target.value as "normal" | "italic" })
                   }
-                  className="text-[11px] px-1.5 py-0.5 border border-[#2A2A2A] rounded"
+                  className="text-[11px] px-1.5 py-0.5 border border-border rounded"
                 >
                   <option value="normal">Normal</option>
                   <option value="italic">Italic</option>
                 </select>
                 <button
                   onClick={() => onFileRemove(i)}
-                  className="text-[#71757D] hover:text-red-600"
+                  className="text-subtle hover:text-red-600"
                   title="Remove this file"
                 >
                   <XMarkIcon className="size-3.5" />
@@ -1049,7 +1049,7 @@ function PendingGroupCard({
 
           {/* Inline metadata */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mr-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle mr-1">
               Category
             </span>
             {FONT_CATEGORIES.map((c) => (
@@ -1059,8 +1059,8 @@ function PendingGroupCard({
                 onClick={() => onChange({ category: c })}
                 className={`text-[11px] px-2.5 py-0.5 rounded-full border ${
                   group.category === c
-                    ? "bg-white text-[#0C0C0C] border-[#1B1B1B]"
-                    : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:border-[#1B1B1B]"
+                    ? "bg-white text-background border-surface"
+                    : "bg-surface text-foreground border-border hover:border-surface"
                 }`}
               >
                 {FONT_CATEGORY_LABELS[c]}
@@ -1069,7 +1069,7 @@ function PendingGroupCard({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mr-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle mr-1">
               Use for
             </span>
             {FONT_USAGE_OPTIONS.map((u) => (
@@ -1079,8 +1079,8 @@ function PendingGroupCard({
                 onClick={() => toggleUsage(u)}
                 className={`text-[11px] px-2.5 py-0.5 rounded-full border ${
                   group.usage.includes(u)
-                    ? "bg-white text-[#0C0C0C] border-[#1B1B1B]"
-                    : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:border-[#1B1B1B]"
+                    ? "bg-white text-background border-surface"
+                    : "bg-surface text-foreground border-border hover:border-surface"
                 }`}
               >
                 {FONT_USAGE_LABELS[u]}
@@ -1101,7 +1101,7 @@ function PendingGroupCard({
             onChange={(e) => onChange({ notes: e.target.value })}
             rows={1}
             placeholder="Notes (optional) — pairing tips, license caveats…"
-            className="w-full text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-[#1B1B1B] resize-y"
+            className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-surface resize-y"
           />
         </div>
       )}
@@ -1124,17 +1124,17 @@ function NicheInput({
   addNiche: (n: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5 border border-[#2A2A2A] rounded-lg focus-within:border-[#1B1B1B]">
+    <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5 border border-border rounded-lg focus-within:border-surface">
       {niches.map((n) => (
         <span
           key={n}
-          className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[#222222] text-[#E5E5EA] rounded-full"
+          className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 bg-surface-raised text-foreground rounded-full"
         >
           {n}
           <button
             type="button"
             onClick={() => setNiches(niches.filter((x) => x !== n))}
-            className="text-[#71757D] hover:text-[#E5E5EA]"
+            className="text-subtle hover:text-foreground"
           >
             <XMarkIcon className="size-3" />
           </button>
@@ -1262,7 +1262,7 @@ function FontDetailModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+              className="w-full text-sm px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-surface"
             />
           </Field>
           <Field label="Category">
@@ -1274,8 +1274,8 @@ function FontDetailModal({
                   onClick={() => setCategory(c)}
                   className={`text-xs px-3 py-1 rounded-full border ${
                     category === c
-                      ? "bg-white text-[#0C0C0C] border-[#1B1B1B]"
-                      : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:border-[#1B1B1B]"
+                      ? "bg-white text-background border-surface"
+                      : "bg-surface text-foreground border-border hover:border-surface"
                   }`}
                 >
                   {FONT_CATEGORY_LABELS[c]}
@@ -1292,8 +1292,8 @@ function FontDetailModal({
                   onClick={() => toggleUsage(u)}
                   className={`text-xs px-3 py-1 rounded-full border ${
                     usage.includes(u)
-                      ? "bg-white text-[#0C0C0C] border-[#1B1B1B]"
-                      : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:border-[#1B1B1B]"
+                      ? "bg-white text-background border-surface"
+                      : "bg-surface text-foreground border-border hover:border-surface"
                   }`}
                 >
                   {FONT_USAGE_LABELS[u]}
@@ -1315,14 +1315,14 @@ function FontDetailModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full text-sm px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#1B1B1B] resize-none"
+              className="w-full text-sm px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-surface resize-none"
             />
           </Field>
           {dirty && (
             <button
               onClick={saveMeta}
               disabled={savingMeta || !name.trim()}
-              className="text-xs font-medium px-3 py-1.5 bg-[#222222] text-[#E5E5EA] rounded-lg hover:bg-[#2A2A2A] disabled:opacity-40"
+              className="text-xs font-medium px-3 py-1.5 bg-surface-raised text-foreground rounded-lg hover:bg-border disabled:opacity-40"
             >
               {savingMeta ? "Saving…" : "Save changes"}
             </button>
@@ -1330,8 +1330,8 @@ function FontDetailModal({
         </div>
 
         {/* Add another file */}
-        <div className="border-t border-[#2A2A2A] pt-5">
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-3">
+        <div className="border-t border-border pt-5">
+          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-3">
             Add another file
           </h4>
           <div className="flex items-end gap-3 flex-wrap">
@@ -1339,7 +1339,7 @@ function FontDetailModal({
               <select
                 value={pendingWeight}
                 onChange={(e) => setPendingWeight(parseInt(e.target.value, 10))}
-                className="text-sm px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+                className="text-sm px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-surface"
               >
                 {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((w) => (
                   <option key={w} value={w}>
@@ -1352,7 +1352,7 @@ function FontDetailModal({
               <select
                 value={pendingStyle}
                 onChange={(e) => setPendingStyle(e.target.value as "normal" | "italic")}
-                className="text-sm px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+                className="text-sm px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-surface"
               >
                 <option value="normal">Normal</option>
                 <option value="italic">Italic</option>
@@ -1374,8 +1374,8 @@ function FontDetailModal({
               htmlFor="font-extra-file"
               className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg cursor-pointer ${
                 uploading
-                  ? "bg-[#222222] text-[#71757D] cursor-wait"
-                  : "bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A]"
+                  ? "bg-surface-raised text-subtle cursor-wait"
+                  : "bg-surface-raised text-foreground hover:bg-border"
               }`}
             >
               <ArrowUpOnSquareIcon className="size-4" />
@@ -1385,22 +1385,22 @@ function FontDetailModal({
         </div>
 
         {/* Files list */}
-        <div className="border-t border-[#2A2A2A] pt-5">
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-3">
+        <div className="border-t border-border pt-5">
+          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-3">
             Files ({font.files.length})
           </h4>
           {font.files.length === 0 ? (
-            <p className="text-xs text-[#71757D] italic">No files uploaded yet.</p>
+            <p className="text-xs text-subtle italic">No files uploaded yet.</p>
           ) : (
-            <ul className="divide-y divide-[#2A2A2A]">
+            <ul className="divide-y divide-border">
               {font.files
                 .slice()
                 .sort((a, b) => a.weight - b.weight || a.style.localeCompare(b.style))
                 .map((file) => (
                   <li key={file.id} className="flex items-center justify-between gap-3 py-2.5">
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-[#E5E5EA] truncate">{file.fileName}</p>
-                      <p className="text-[10px] text-[#71757D] mt-0.5">
+                      <p className="text-xs font-medium text-foreground truncate">{file.fileName}</p>
+                      <p className="text-[10px] text-subtle mt-0.5">
                         {file.weight} · {file.style} · {file.format} ·{" "}
                         {formatBytes(file.fileSizeBytes)}
                       </p>
@@ -1409,13 +1409,13 @@ function FontDetailModal({
                       <a
                         href={file.publicUrl}
                         download={file.fileName}
-                        className="text-[11px] font-medium text-[#E5E5EA] hover:underline inline-flex items-center gap-1"
+                        className="text-[11px] font-medium text-foreground hover:underline inline-flex items-center gap-1"
                       >
                         <ArrowDownTrayIcon className="size-3" /> Download
                       </a>
                       <button
                         onClick={() => onDeleteFile(file)}
-                        className="text-[11px] text-[#71757D] hover:text-red-600 inline-flex items-center gap-1"
+                        className="text-[11px] text-subtle hover:text-red-600 inline-flex items-center gap-1"
                       >
                         <TrashIcon className="size-3" />
                       </button>
@@ -1427,7 +1427,7 @@ function FontDetailModal({
         </div>
 
         {/* Danger zone */}
-        <div className="border-t border-[#2A2A2A] pt-5">
+        <div className="border-t border-border pt-5">
           <button
             onClick={onDelete}
             className="text-xs font-medium text-red-600 hover:text-red-700 inline-flex items-center gap-1"
@@ -1464,14 +1464,14 @@ function ModalShell({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-xl bg-[#181818] rounded-xl shadow-2xl my-auto"
+        className="w-full max-w-xl bg-surface rounded-xl shadow-2xl my-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#2A2A2A]">
-          <h2 className="text-base font-semibold text-[#E5E5EA]">{title}</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
+            className="p-1 rounded text-subtle hover:text-foreground hover:bg-surface-raised"
           >
             <XMarkIcon className="size-5" />
           </button>
@@ -1496,12 +1496,12 @@ function Field({
 }) {
   return (
     <div>
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] block mb-1.5">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle block mb-1.5">
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </span>
       {children}
-      {hint && <p className="text-[10px] text-[#71757D] mt-1">{hint}</p>}
+      {hint && <p className="text-[10px] text-subtle mt-1">{hint}</p>}
     </div>
   );
 }

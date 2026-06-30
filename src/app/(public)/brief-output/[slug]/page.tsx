@@ -25,11 +25,11 @@ export default function BriefOutputPage({ params }: { params: Promise<{ slug: st
     return () => { cancelled = true; };
   }, [slug]);
 
-  if (loading) return (<div className="min-h-screen bg-[#080808] flex items-center justify-center"><div className="size-8 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" /></div>);
-  if (!brief) return (<div className="min-h-screen bg-[#080808] flex items-center justify-center px-4"><div className="text-center"><h1 className="text-2xl font-semibold text-[#E5E5EA] mb-3">Brief not found</h1></div></div>);
+  if (loading) return (<div className="min-h-screen bg-background flex items-center justify-center"><div className="size-8 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" /></div>);
+  if (!brief) return (<div className="min-h-screen bg-background flex items-center justify-center px-4"><div className="text-center"><h1 className="text-2xl font-semibold text-foreground mb-3">Brief not found</h1></div></div>);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-10 opacity-40" style={{ backgroundImage: "radial-gradient(circle at 80% 0%, rgba(6,182,212,0.12) 0%, transparent 50%)" }} />
       <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-end print:hidden">
         <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white/10 text-white hover:bg-white/15 ring-1 ring-white/20">
@@ -46,10 +46,10 @@ export default function BriefOutputPage({ params }: { params: Promise<{ slug: st
           <h1 className="text-4xl md:text-5xl font-semibold bg-gradient-to-br from-white via-cyan-100 to-sky-200 bg-clip-text text-transparent leading-[1.05] mb-2">
             {brief.title}
           </h1>
-          <p className="text-base text-[#9CA3AF]">
+          <p className="text-base text-muted">
             {brief.client_name}{brief.project_label && ` · ${brief.project_label}`}
           </p>
-          <div className="mt-4 flex items-center gap-2 flex-wrap text-[11px] text-[#71757D]">
+          <div className="mt-4 flex items-center gap-2 flex-wrap text-[11px] text-subtle">
             {brief.owner && <Pill>{brief.owner}</Pill>}
             {brief.deadline && <Pill>Due {new Date(brief.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}</Pill>}
             {brief.audience && <Pill>{brief.audience}</Pill>}
@@ -90,7 +90,7 @@ export default function BriefOutputPage({ params }: { params: Promise<{ slug: st
               <section>
                 <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-emerald-300 mb-3">The hypothesis</h2>
                 <div className="bg-gradient-to-br from-emerald-500/15 to-cyan-500/15 rounded-2xl p-5 ring-1 ring-emerald-500/30">
-                  <p className="text-lg text-[#E5E5EA] leading-relaxed">{brief.hyp_hypothesis_line}</p>
+                  <p className="text-lg text-foreground leading-relaxed">{brief.hyp_hypothesis_line}</p>
                 </div>
               </section>
             )}
@@ -114,7 +114,7 @@ export default function BriefOutputPage({ params }: { params: Promise<{ slug: st
         {brief.references && (<Block title="References + inspiration" body={brief.references} />)}
 
         <footer className="pt-8 pb-4 text-center border-t border-white/[0.04]">
-          <Link href="/" className="text-[11px] text-[#71757D] hover:text-cyan-300">ecomlanders.app</Link>
+          <Link href="/" className="text-[11px] text-subtle hover:text-cyan-300">ecomlanders.app</Link>
         </footer>
       </div>
     </div>
@@ -122,13 +122,13 @@ export default function BriefOutputPage({ params }: { params: Promise<{ slug: st
 }
 
 function Pill({ children }: { children: React.ReactNode }) {
-  return (<span className="px-2.5 py-0.5 rounded-full bg-[#1A1A1A] text-[11px] uppercase tracking-wider text-[#9CA3AF]">{children}</span>);
+  return (<span className="px-2.5 py-0.5 rounded-full bg-surface text-[11px] uppercase tracking-wider text-muted">{children}</span>);
 }
 function Block({ title, body }: { title: string; body: string }) {
   return (
     <section>
-      <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-[#E5E5EA] mb-3">{title}</h2>
-      <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] prose prose-invert prose-sm max-w-none prose-p:text-[#9CA3AF] prose-li:text-[#9CA3AF] prose-strong:text-[#E5E5EA] prose-a:text-cyan-300">
+      <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground mb-3">{title}</h2>
+      <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] prose prose-invert prose-sm max-w-none prose-p:text-muted prose-li:text-muted prose-strong:text-foreground prose-a:text-cyan-300">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
       </div>
     </section>
@@ -136,9 +136,9 @@ function Block({ title, body }: { title: string; body: string }) {
 }
 function Stat({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-xl p-3 ring-1 ${highlight ? "bg-emerald-500/15 ring-emerald-500/30" : "bg-[#0F0F10] ring-white/[0.04]"}`}>
-      <div className="text-[10px] uppercase tracking-wider font-semibold text-[#71757D]">{label}</div>
-      <div className={`text-xl font-semibold ${highlight ? "text-emerald-300 font-mono" : "text-[#E5E5EA]"}`}>{value}</div>
+    <div className={`rounded-xl p-3 ring-1 ${highlight ? "bg-emerald-500/15 ring-emerald-500/30" : "bg-background ring-white/[0.04]"}`}>
+      <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle">{label}</div>
+      <div className={`text-xl font-semibold ${highlight ? "text-emerald-300 font-mono" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }

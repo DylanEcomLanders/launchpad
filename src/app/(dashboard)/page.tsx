@@ -95,15 +95,15 @@ export default function MissionControl() {
       {/* ── Header ── eyebrow date · bold title + light modifier · count top-right ── */}
       <div className="mb-10 flex items-end justify-between gap-6">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle">
             {dateStr}
           </p>
           <h1 className="mt-2 text-[28px] leading-tight">
-            <span className="font-bold text-[#E5E5EA]">Toolkit</span>{" "}
-            <span className="font-normal text-[#71757D]">organised by stage</span>
+            <span className="font-bold text-foreground">Toolkit</span>{" "}
+            <span className="font-normal text-subtle">organised by stage</span>
           </h1>
         </div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D] tabular-nums">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle tabular-nums">
           {totalTools} TOOLS
         </p>
       </div>
@@ -111,17 +111,17 @@ export default function MissionControl() {
       {/* ── Filter strip - labelled like Well's dropdowns ── */}
       <div className="mb-8 flex items-end justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D] mb-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle mb-1.5">
             Search
           </p>
           <div className="relative">
-            <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-[#71757D]" />
+            <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-subtle" />
             <input
               type="text"
               value={toolkitQuery}
               onChange={(e) => setToolkitQuery(e.target.value)}
               placeholder="Search tools..."
-              className="w-[280px] rounded-md border border-[#2A2A2A] bg-[#181818] py-2 pl-9 pr-3 text-sm text-[#E5E5EA] placeholder:text-[#71757D] outline-none focus:border-[#818CF8] transition-colors"
+              className="w-[280px] rounded-md border border-border bg-surface py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-subtle outline-none focus:border-[#818CF8] transition-colors"
             />
           </div>
         </div>
@@ -141,13 +141,13 @@ function ToolkitStageBlock({ stage }: { stage: ToolkitStage }) {
     <div>
       {/* Stage header - monochrome eyebrow + name, no colored pills */}
       <div className="mb-4 flex items-baseline gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D] tabular-nums">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle tabular-nums">
           {stage.number}
         </span>
-        <span className="text-sm font-semibold text-[#E5E5EA]">
+        <span className="text-sm font-semibold text-foreground">
           {stage.name}
         </span>
-        <span className="text-xs text-[#71757D]">{stage.descriptor}</span>
+        <span className="text-xs text-subtle">{stage.descriptor}</span>
       </div>
 
       {/* Tile grid - auto-fit min 200px so tiles breathe more than before */}
@@ -159,7 +159,7 @@ function ToolkitStageBlock({ stage }: { stage: ToolkitStage }) {
           <ToolkitTileLink key={tile.title} tile={tile} />
         ))}
         {stage.tiles.length === 0 && (
-          <p className="py-3 text-xs text-[#4B4D52]">No matching tools.</p>
+          <p className="py-3 text-xs text-border">No matching tools.</p>
         )}
       </div>
     </div>
@@ -170,13 +170,13 @@ function ToolkitTileLink({ tile }: { tile: ToolkitTile }) {
   return (
     <Link
       href={tile.href}
-      className="flex flex-col rounded-lg border border-[#2A2A2A] bg-[#181818] p-4 transition-colors hover:border-[#383838] hover:bg-[#222222]"
+      className="flex flex-col rounded-lg border border-border bg-surface p-4 transition-colors hover:border-border hover:bg-surface-raised"
     >
-      <tile.icon className="mb-2.5 size-4 text-[#71757D] stroke-[1.5]" />
-      <p className="text-sm font-medium leading-snug text-[#E5E5EA]">
+      <tile.icon className="mb-2.5 size-4 text-subtle stroke-[1.5]" />
+      <p className="text-sm font-medium leading-snug text-foreground">
         {tile.title}
       </p>
-      <p className="mt-1 text-xs leading-snug text-[#71757D]">
+      <p className="mt-1 text-xs leading-snug text-subtle">
         {tile.subtitle}
       </p>
     </Link>

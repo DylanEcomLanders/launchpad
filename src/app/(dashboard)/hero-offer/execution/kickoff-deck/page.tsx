@@ -62,7 +62,7 @@ function buildSlides({
           <p className="text-lg leading-relaxed">
             Three months from today, your site should be converting measurably better. Twelve months from today, it should be compounding.
           </p>
-          <p className="text-base text-[#444]">
+          <p className="text-base text-border">
             That&apos;s the only outcome we&apos;re optimising for. Everything we do this quarter ladders up to it.
           </p>
         </SlideBody>
@@ -73,20 +73,20 @@ function buildSlides({
       content: (
         <SlideBody eyebrow="Your pod" title="The team owning your conversion rate.">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-            <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Strategist</div>
-              <div className="text-[#0E0D0B] font-semibold text-lg mb-1">{strategist || "—"}</div>
-              <p className="text-[12px] text-[#6E6E6E]">Owns the roadmap. Your point of contact. Briefs the team, reports to you.</p>
+            <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Strategist</div>
+              <div className="text-background font-semibold text-lg mb-1">{strategist || "—"}</div>
+              <p className="text-[12px] text-subtle">Owns the roadmap. Your point of contact. Briefs the team, reports to you.</p>
             </div>
-            <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Designer</div>
-              <div className="text-[#0E0D0B] font-semibold text-lg mb-1">{designer || "—"}</div>
-              <p className="text-[12px] text-[#6E6E6E]">Conversion-led design. Mobile-first, hierarchy-first.</p>
+            <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Designer</div>
+              <div className="text-background font-semibold text-lg mb-1">{designer || "—"}</div>
+              <p className="text-[12px] text-subtle">Conversion-led design. Mobile-first, hierarchy-first.</p>
             </div>
-            <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Developer</div>
-              <div className="text-[#0E0D0B] font-semibold text-lg mb-1">{dev || "—"}</div>
-              <p className="text-[12px] text-[#6E6E6E]">Ships clean Shopify builds. Tests, monitors, iterates.</p>
+            <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Developer</div>
+              <div className="text-background font-semibold text-lg mb-1">{dev || "—"}</div>
+              <p className="text-[12px] text-subtle">Ships clean Shopify builds. Tests, monitors, iterates.</p>
             </div>
           </div>
         </SlideBody>
@@ -97,10 +97,10 @@ function buildSlides({
       content: (
         <SlideBody eyebrow="First 30 days" title="What happens this month.">
           <ul className="space-y-3 text-base">
-            <li><strong className="text-[#0E0D0B]">Week 1.</strong> Deep dive: site walkthrough, tracking audit, lock the first roadmap.</li>
-            <li><strong className="text-[#0E0D0B]">Week 2.</strong> First designs ship. Dev kicks off.</li>
-            <li><strong className="text-[#0E0D0B]">Week 3.</strong> Build complete. QA. Tests go live.</li>
-            <li><strong className="text-[#0E0D0B]">Week 4.</strong> First monthly review: results in, next month shaped.</li>
+            <li><strong className="text-background">Week 1.</strong> Deep dive: site walkthrough, tracking audit, lock the first roadmap.</li>
+            <li><strong className="text-background">Week 2.</strong> First designs ship. Dev kicks off.</li>
+            <li><strong className="text-background">Week 3.</strong> Build complete. QA. Tests go live.</li>
+            <li><strong className="text-background">Week 4.</strong> First monthly review: results in, next month shaped.</li>
           </ul>
         </SlideBody>
       ),
@@ -110,10 +110,10 @@ function buildSlides({
       content: (
         <SlideBody eyebrow="Cadence" title="How we&apos;ll stay in sync.">
           <ul className="space-y-3 text-base">
-            <li><strong className="text-[#0E0D0B]">Slack channel.</strong> Dedicated. Async questions, designs for review, day-to-day comms.</li>
-            <li><strong className="text-[#0E0D0B]">Strategy call.</strong> Weekly or biweekly depending on tier. 30 minutes. Roadmap, blockers, decisions.</li>
-            <li><strong className="text-[#0E0D0B]">Report.</strong> Weekly or biweekly. What shipped, what tested, CR delta, plan for next.</li>
-            <li><strong className="text-[#0E0D0B]">Monthly review.</strong> Results recap, lessons, next month&apos;s roadmap shaped together.</li>
+            <li><strong className="text-background">Slack channel.</strong> Dedicated. Async questions, designs for review, day-to-day comms.</li>
+            <li><strong className="text-background">Strategy call.</strong> Weekly or biweekly depending on tier. 30 minutes. Roadmap, blockers, decisions.</li>
+            <li><strong className="text-background">Report.</strong> Weekly or biweekly. What shipped, what tested, CR delta, plan for next.</li>
+            <li><strong className="text-background">Monthly review.</strong> Results recap, lessons, next month&apos;s roadmap shaped together.</li>
           </ul>
         </SlideBody>
       ),
@@ -123,9 +123,9 @@ function buildSlides({
       content: (
         <SlideBody eyebrow="What we need from you" title="Three things make the partnership work.">
           <ul className="space-y-3 text-base">
-            <li><strong className="text-[#0E0D0B]">Access.</strong> Shopify admin, GA4, Klaviyo, Meta + Google ads. Send the invites Week 1.</li>
-            <li><strong className="text-[#0E0D0B]">Decisions within 48 hours.</strong> When we ship a design or test for review, fast turnaround keeps the sprint alive.</li>
-            <li><strong className="text-[#0E0D0B]">A willingness to ship.</strong> The best CRO programme dies if recommendations sit in a queue. We move when you move.</li>
+            <li><strong className="text-background">Access.</strong> Shopify admin, GA4, Klaviyo, Meta + Google ads. Send the invites Week 1.</li>
+            <li><strong className="text-background">Decisions within 48 hours.</strong> When we ship a design or test for review, fast turnaround keeps the sprint alive.</li>
+            <li><strong className="text-background">A willingness to ship.</strong> The best CRO programme dies if recommendations sit in a queue. We move when you move.</li>
           </ul>
         </SlideBody>
       ),
@@ -137,7 +137,7 @@ function buildSlides({
           <p className="text-lg leading-relaxed">
             We hit the number. You ship what we recommend. If the lift isn&apos;t there in 90 days, we keep going at no extra cost.
           </p>
-          <p className="text-base text-[#6E6E6E]">The risk sits with us. The system works.</p>
+          <p className="text-base text-subtle">The risk sits with us. The system works.</p>
         </SlideBody>
       ),
     },
@@ -148,7 +148,7 @@ function buildSlides({
           <p className="text-lg leading-relaxed">
             You&apos;re in the system now. We&apos;ll see you on Slack today, and on the strategy call this week.
           </p>
-          <p className="text-base text-[#444] mt-4">— {strategist || "Your strategist"} + the {safeBrand} pod</p>
+          <p className="text-base text-border mt-4">— {strategist || "Your strategist"} + the {safeBrand} pod</p>
         </SlideBody>
       ),
     },
@@ -211,8 +211,8 @@ export default function KickoffDeckPage() {
       icon={<RocketLaunchIcon className="size-4" />}
     >
       {!isPresent && (
-        <section className="bg-[#0F0F10] rounded-2xl ring-1 ring-[#E5E5E5] p-5 mb-4 space-y-4">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-[#6E6E6E]">
+        <section className="bg-background rounded-2xl ring-1 ring-foreground p-5 mb-4 space-y-4">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle">
             Setup
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

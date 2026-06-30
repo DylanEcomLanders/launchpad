@@ -31,14 +31,14 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
   return (
     <div
       className={`
-        min-w-[180px] max-w-[240px] rounded-xl border bg-[#181818] transition-shadow
-        ${selected ? "border-white shadow-lg" : "border-[#2A2A2A] shadow-sm hover:shadow-md"}
+        min-w-[180px] max-w-[240px] rounded-xl border bg-surface transition-shadow
+        ${selected ? "border-white shadow-lg" : "border-border shadow-sm hover:shadow-md"}
       `}
     >
-      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-[#1B1B1B] !border-2 !border-white" />
+      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-surface !border-2 !border-white" />
 
       {/* Header bar */}
-      <div className="flex items-center justify-between px-3.5 py-2 border-b border-[#2A2A2A]">
+      <div className="flex items-center justify-between px-3.5 py-2 border-b border-border">
         <div className="flex items-center gap-1.5">
           <span
             className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
@@ -66,48 +66,48 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
 
       {/* Body */}
       <div className="px-3.5 py-3">
-        <p className="text-[13px] font-semibold text-[#E5E5EA] leading-tight">{data.label || config.label}</p>
+        <p className="text-[13px] font-semibold text-foreground leading-tight">{data.label || config.label}</p>
         {(data as any).description && (
-          <p className="text-[11px] text-[#9CA3AF] mt-1 leading-relaxed whitespace-pre-wrap">{(data as any).description}</p>
+          <p className="text-[11px] text-muted mt-1 leading-relaxed whitespace-pre-wrap">{(data as any).description}</p>
         )}
 
         {/* Content completion badge */}
         {cc && (
           <div className="mt-2 flex items-center gap-1.5">
-            <div className="flex-1 h-1 bg-[#222222] rounded-full overflow-hidden">
-              <div className="h-full bg-[#1B1B1B] rounded-full" style={{ width: `${(cc.done / cc.total) * 100}%` }} />
+            <div className="flex-1 h-1 bg-surface-raised rounded-full overflow-hidden">
+              <div className="h-full bg-surface rounded-full" style={{ width: `${(cc.done / cc.total) * 100}%` }} />
             </div>
-            <span className="text-[9px] text-[#9CA3AF]">{cc.done}/{cc.total}</span>
+            <span className="text-[9px] text-muted">{cc.done}/{cc.total}</span>
           </div>
         )}
 
         {/* Metrics */}
         {hasMetrics && (
-          <div className="mt-3 pt-2.5 border-t border-[#2A2A2A] grid grid-cols-2 gap-x-4 gap-y-2">
+          <div className="mt-3 pt-2.5 border-t border-border grid grid-cols-2 gap-x-4 gap-y-2">
             {m.traffic != null && (
               <div>
-                <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">Traffic</p>
-                <p className="text-xs font-semibold text-[#E5E5EA]">{m.traffic.toLocaleString()}</p>
+                <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">Traffic</p>
+                <p className="text-xs font-semibold text-foreground">{m.traffic.toLocaleString()}</p>
               </div>
             )}
             {m.cvr != null && (
               <div>
-                <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">CVR</p>
-                <p className={`text-xs font-semibold ${m.cvr >= 3 ? "text-emerald-600" : m.cvr < 1 ? "text-red-500" : "text-[#E5E5EA]"}`}>
+                <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">CVR</p>
+                <p className={`text-xs font-semibold ${m.cvr >= 3 ? "text-emerald-600" : m.cvr < 1 ? "text-red-500" : "text-foreground"}`}>
                   {m.cvr}%
                 </p>
               </div>
             )}
             {m.aov != null && (
               <div>
-                <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">AOV</p>
-                <p className="text-xs font-semibold text-[#E5E5EA]">${m.aov}</p>
+                <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">AOV</p>
+                <p className="text-xs font-semibold text-foreground">${m.aov}</p>
               </div>
             )}
             {m.dropOff != null && (
               <div>
-                <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">Drop-off</p>
-                <p className={`text-xs font-semibold ${m.dropOff > 50 ? "text-red-500" : "text-[#E5E5EA]"}`}>
+                <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">Drop-off</p>
+                <p className={`text-xs font-semibold ${m.dropOff > 50 ? "text-red-500" : "text-foreground"}`}>
                   {m.dropOff}%
                 </p>
               </div>
@@ -130,7 +130,7 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
         )}
       </div>
 
-      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-[#1B1B1B] !border-2 !border-white" />
+      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-surface !border-2 !border-white" />
     </div>
   );
 }

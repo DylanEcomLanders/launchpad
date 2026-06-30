@@ -168,11 +168,11 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
   return (
     <div className="min-h-[80vh] flex items-center justify-center animate-fadeInUp">
       <div className="w-full max-w-[280px] text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#222222] border border-[#E5E5EA] mb-5">
-          <LockClosedIcon className="size-6 text-[#7A7A7A]" />
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-raised border border-foreground mb-5">
+          <LockClosedIcon className="size-6 text-subtle" />
         </div>
         <h1 className="text-xl font-bold mb-1">Content Calendar</h1>
-        <p className="text-sm text-[#999] mb-8">Enter your PIN to continue</p>
+        <p className="text-sm text-subtle mb-8">Enter your PIN to continue</p>
 
         {/* PIN dots */}
         <div className={`flex justify-center gap-3 mb-8 ${shake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}>
@@ -181,8 +181,8 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
               key={i}
               className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
                 i < pin.length
-                  ? error ? "bg-red-400 scale-110" : "bg-[#1B1B1B] scale-110"
-                  : "bg-[#E5E5EA]"
+                  ? error ? "bg-red-400 scale-110" : "bg-surface scale-110"
+                  : "bg-foreground"
               }`}
             />
           ))}
@@ -199,7 +199,7 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
             <button
               key={n}
               onClick={() => handleDigit(String(n))}
-              className="h-14 rounded-xl bg-[#181818] border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#222222] active:bg-[#383838] transition-colors"
+              className="h-14 rounded-xl bg-surface border border-foreground text-lg font-semibold text-foreground hover:bg-surface-raised active:bg-border transition-colors"
             >
               {n}
             </button>
@@ -207,13 +207,13 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
           <div />
           <button
             onClick={() => handleDigit("0")}
-            className="h-14 rounded-xl bg-[#181818] border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#222222] active:bg-[#383838] transition-colors"
+            className="h-14 rounded-xl bg-surface border border-foreground text-lg font-semibold text-foreground hover:bg-surface-raised active:bg-border transition-colors"
           >
             0
           </button>
           <button
             onClick={() => { setPin(p => p.slice(0, -1)); setError(false); }}
-            className="h-14 rounded-xl text-sm font-medium text-[#999] hover:text-[#1B1B1B] hover:bg-[#222222] transition-colors"
+            className="h-14 rounded-xl text-sm font-medium text-subtle hover:text-foreground hover:bg-surface-raised transition-colors"
           >
             ⌫
           </button>
@@ -1980,9 +1980,9 @@ export default function CalendarPage() {
     return (
       <div className="max-w-7xl mx-auto py-10 px-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-[#F0F0F0] rounded-lg" />
-          <div className="h-4 w-64 bg-[#F0F0F0] rounded" />
-          <div className="h-[500px] bg-[#F0F0F0] rounded-xl mt-6" />
+          <div className="h-8 w-48 bg-foreground rounded-lg" />
+          <div className="h-4 w-64 bg-foreground rounded" />
+          <div className="h-[500px] bg-foreground rounded-xl mt-6" />
         </div>
       </div>
     );
@@ -2010,22 +2010,22 @@ export default function CalendarPage() {
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold">Content Calendar</h1>
-            <p className="text-sm text-[#7A7A7A] mt-0.5">Plan, write, and organise content before publishing</p>
+            <p className="text-sm text-subtle mt-0.5">Plan, write, and organise content before publishing</p>
           </div>
           {/* Active creator badge + lock */}
           <div className="flex items-center gap-2 ml-2">
-            <div className="flex items-center gap-2 bg-white border border-[#E5E5EA] rounded-xl px-3.5 py-2">
+            <div className="flex items-center gap-2 bg-white border border-foreground rounded-xl px-3.5 py-2">
               <span className={`size-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white ${
-                creator === "ajay" ? "bg-[#1B1B1B]" : "bg-[#2563EB]"
+                creator === "ajay" ? "bg-surface" : "bg-[#2563EB]"
               }`}>
                 {creator === "ajay" ? "AJ" : "DE"}
               </span>
-              <span className="text-sm font-semibold text-[#1B1B1B]">{creator === "ajay" ? "Ajay" : "Dylan"}</span>
+              <span className="text-sm font-semibold text-foreground">{creator === "ajay" ? "Ajay" : "Dylan"}</span>
             </div>
             <button
               onClick={handleLockCalendar}
               title="Lock calendar"
-              className="p-2 rounded-lg text-[#C5C5C5] hover:text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
+              className="p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface-raised transition-colors"
             >
               <LockClosedIcon className="size-4" />
             </button>
@@ -2044,7 +2044,7 @@ export default function CalendarPage() {
           <button
             onClick={() => setShowPipeline(!showPipeline)}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
-              showPipeline ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
+              showPipeline ? "bg-surface text-white border-surface" : "border-foreground text-subtle hover:bg-surface-raised"
             }`}
           >
             <Squares2X2Icon className="size-3.5" />
@@ -2052,7 +2052,7 @@ export default function CalendarPage() {
           </button>
           <button
             onClick={() => { setShowIdeas(true); if (ideas.length === 0) generateIdeas(); }}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-foreground text-subtle hover:bg-surface-raised transition-colors"
           >
             <LightBulbIcon className="size-3.5" />
             Idea Engine
@@ -2069,14 +2069,14 @@ export default function CalendarPage() {
             onClick={syncWithTypefully}
             disabled={syncing}
             title="Reconcile local state with Typefully - clears stale draft refs and flips orphaned posts back to saved"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-foreground text-subtle hover:bg-surface-raised transition-colors disabled:opacity-40"
           >
             {syncing ? "Syncing..." : "Sync"}
           </button>
           <button
             onClick={generateWeeklyDraft}
             disabled={draftLoading}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-[#1B1B1B] text-white hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-surface text-white hover:bg-border transition-colors disabled:opacity-50"
           >
             <BoltIcon className="size-3.5" />
             {draftLoading ? "Generating..." : "Weekly Draft"}
@@ -2107,24 +2107,24 @@ export default function CalendarPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-md p-6 animate-fadeInUp max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-bold text-[#1B1B1B]">Bulk upload posts</h3>
-                <button onClick={() => !bulkLoading && setShowBulkModal(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                <h3 className="text-base font-bold text-foreground">Bulk upload posts</h3>
+                <button onClick={() => !bulkLoading && setShowBulkModal(false)} className="p-1 rounded-lg hover:bg-surface-raised">
+                  <XMarkIcon className="size-5 text-subtle" />
                 </button>
               </div>
 
               {/* Mode toggle */}
-              <div className="flex gap-1 mb-4 bg-[#F3F3F5] p-1 rounded-lg">
+              <div className="flex gap-1 mb-4 bg-surface-raised p-1 rounded-lg">
                 <button
                   onClick={() => { setBulkMode("text"); setBulkFiles([]); }}
-                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "text" ? "bg-white text-[#1B1B1B] shadow-sm" : "text-[#7A7A7A]"}`}
+                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "text" ? "bg-white text-foreground shadow-sm" : "text-subtle"}`}
                 >
                   <DocumentTextIcon className="size-3.5 inline mr-1 -mt-0.5" />
                   Import captions
                 </button>
                 <button
                   onClick={() => { setBulkMode("images"); setBulkParsedCaptions([]); setBulkTextFile(null); }}
-                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "images" ? "bg-white text-[#1B1B1B] shadow-sm" : "text-[#7A7A7A]"}`}
+                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "images" ? "bg-white text-foreground shadow-sm" : "text-subtle"}`}
                 >
                   <PhotoIcon className="size-3.5 inline mr-1 -mt-0.5" />
                   Upload images
@@ -2133,23 +2133,23 @@ export default function CalendarPage() {
 
               {bulkMode === "text" ? (
                 <>
-                  <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
-                    Upload a .txt or .pdf file with each post labelled <code className="bg-[#F0F0F0] px-1 rounded text-[10px]">[POST]</code> on its own line. Each post becomes a draft — add media and mark Ready to Post.
+                  <p className="text-[11px] text-subtle leading-relaxed mb-4">
+                    Upload a .txt or .pdf file with each post labelled <code className="bg-foreground px-1 rounded text-[10px]">[POST]</code> on its own line. Each post becomes a draft — add media and mark Ready to Post.
                   </p>
                   <label className="block mb-4">
-                    <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
-                      <DocumentTextIcon className="size-7 text-[#CCC]" />
+                    <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-surface hover:bg-surface-raised transition-colors">
+                      <DocumentTextIcon className="size-7 text-muted" />
                       {bulkParsing ? (
-                        <span className="text-xs text-[#999]">Parsing...</span>
+                        <span className="text-xs text-subtle">Parsing...</span>
                       ) : bulkParsedCaptions.length > 0 ? (
                         <>
-                          <span className="text-xs font-medium text-[#1B1B1B]">{bulkParsedCaptions.length} posts found</span>
-                          <span className="text-[10px] text-[#999]">{bulkTextFile?.name}</span>
+                          <span className="text-xs font-medium text-foreground">{bulkParsedCaptions.length} posts found</span>
+                          <span className="text-[10px] text-subtle">{bulkTextFile?.name}</span>
                         </>
                       ) : (
                         <>
-                          <span className="text-xs font-medium text-[#1B1B1B]">Upload .txt or .pdf</span>
-                          <span className="text-[10px] text-[#999]">Each post labelled with [POST] on its own line</span>
+                          <span className="text-xs font-medium text-foreground">Upload .txt or .pdf</span>
+                          <span className="text-[10px] text-subtle">Each post labelled with [POST] on its own line</span>
                         </>
                       )}
                     </div>
@@ -2166,28 +2166,28 @@ export default function CalendarPage() {
                   {/* Preview first 3 */}
                   {bulkParsedCaptions.length > 0 && (
                     <div className="mb-4 space-y-2 max-h-40 overflow-y-auto">
-                      <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider">Preview</p>
+                      <p className="text-[10px] font-semibold text-subtle uppercase tracking-wider">Preview</p>
                       {bulkParsedCaptions.slice(0, 3).map((cap, i) => (
-                        <div key={i} className="px-3 py-2 bg-[#F7F8FA] rounded-lg text-[11px] text-[#444] whitespace-pre-wrap line-clamp-3">
+                        <div key={i} className="px-3 py-2 bg-surface-raised rounded-lg text-[11px] text-border whitespace-pre-wrap line-clamp-3">
                           {cap}
                         </div>
                       ))}
                       {bulkParsedCaptions.length > 3 && (
-                        <p className="text-[10px] text-[#999] text-center">+ {bulkParsedCaptions.length - 3} more</p>
+                        <p className="text-[10px] text-subtle text-center">+ {bulkParsedCaptions.length - 3} more</p>
                       )}
                     </div>
                   )}
                 </>
               ) : (
                 <>
-                  <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
+                  <p className="text-[11px] text-subtle leading-relaxed mb-4">
                     Drop up to 50 images. We&apos;ll create one draft post per image, spread across days. Captions stay empty so you can fill them in after.
                   </p>
                   <label className="block mb-4">
-                    <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
-                      <PhotoIcon className="size-7 text-[#CCC]" />
-                      <span className="text-xs font-medium text-[#1B1B1B]">{bulkFiles.length > 0 ? `${bulkFiles.length} image${bulkFiles.length === 1 ? "" : "s"} selected` : "Click or drop images"}</span>
-                      <span className="text-[10px] text-[#999]">Up to 50 · Max 5MB each</span>
+                    <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-surface hover:bg-surface-raised transition-colors">
+                      <PhotoIcon className="size-7 text-muted" />
+                      <span className="text-xs font-medium text-foreground">{bulkFiles.length > 0 ? `${bulkFiles.length} image${bulkFiles.length === 1 ? "" : "s"} selected` : "Click or drop images"}</span>
+                      <span className="text-[10px] text-subtle">Up to 50 · Max 5MB each</span>
                     </div>
                     <input
                       type="file"
@@ -2206,23 +2206,23 @@ export default function CalendarPage() {
               {/* Settings */}
               <div className="space-y-3 mb-5">
                 <div>
-                  <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider mb-1.5">Start date</p>
+                  <p className="text-[10px] font-semibold text-subtle uppercase tracking-wider mb-1.5">Start date</p>
                   <input
                     type="date"
                     value={bulkStartDate}
                     onChange={e => setBulkStartDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-white outline-none focus:border-surface transition-colors"
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider mb-1.5">Posts per day</p>
+                  <p className="text-[10px] font-semibold text-subtle uppercase tracking-wider mb-1.5">Posts per day</p>
                   <div className="flex gap-1">
                     {[1, 2, 3].map(n => (
                       <button
                         key={n}
                         onClick={() => setBulkPostsPerDay(n)}
                         className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                          bulkPostsPerDay === n ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#EBEBEB]"
+                          bulkPostsPerDay === n ? "bg-surface text-white" : "bg-surface-raised text-subtle hover:bg-border"
                         }`}
                       >
                         {n}
@@ -2235,16 +2235,16 @@ export default function CalendarPage() {
                     type="checkbox"
                     checked={bulkSkipWeekends}
                     onChange={e => setBulkSkipWeekends(e.target.checked)}
-                    className="size-4 rounded border-[#E5E5EA]"
+                    className="size-4 rounded border-foreground"
                   />
-                  <span className="text-xs text-[#1B1B1B]">Skip weekends</span>
+                  <span className="text-xs text-foreground">Skip weekends</span>
                 </label>
               </div>
 
               {/* Preview summary */}
               {(bulkMode === "text" ? bulkParsedCaptions.length > 0 : bulkFiles.length > 0) && (
-                <div className="px-3 py-2.5 bg-[#F7F8FA] rounded-lg mb-4">
-                  <p className="text-[11px] text-[#1B1B1B]">
+                <div className="px-3 py-2.5 bg-surface-raised rounded-lg mb-4">
+                  <p className="text-[11px] text-foreground">
                     <span className="font-semibold">{bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length}</span> posts ·{" "}
                     <span className="font-semibold">{Math.ceil((bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length) / bulkPostsPerDay)}</span>{" "}
                     {bulkSkipWeekends ? "weekdays" : "days"} starting {new Date(bulkStartDate + "T00:00:00").toLocaleDateString()}
@@ -2256,14 +2256,14 @@ export default function CalendarPage() {
                 <button
                   onClick={() => setShowBulkModal(false)}
                   disabled={bulkLoading}
-                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-lg hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-subtle bg-surface-raised rounded-lg hover:bg-border transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={bulkMode === "text" ? runBulkTextImport : runBulkUpload}
                   disabled={bulkLoading || (bulkMode === "text" ? bulkParsedCaptions.length === 0 : bulkFiles.length === 0)}
-                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-white bg-[#1B1B1B] rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-white bg-surface rounded-lg hover:bg-border transition-colors disabled:opacity-40"
                 >
                   {bulkLoading ? "Importing..." : `Import ${bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length} post${(bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length) === 1 ? "" : "s"}`}
                 </button>
@@ -2280,13 +2280,13 @@ export default function CalendarPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-sm p-6 animate-fadeInUp">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-bold text-[#1B1B1B]">Schedule to Typefully</h3>
-                <button onClick={() => setShowTypefullyModal(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                <h3 className="text-base font-bold text-foreground">Schedule to Typefully</h3>
+                <button onClick={() => setShowTypefullyModal(false)} className="p-1 rounded-lg hover:bg-surface-raised">
+                  <XMarkIcon className="size-5 text-subtle" />
                 </button>
               </div>
 
-              <p className="text-xs text-[#7A7A7A] mb-4">
+              <p className="text-xs text-subtle mb-4">
                 Pick the platforms to post to. Captions will be automatically adapted for each platform.
               </p>
 
@@ -2299,19 +2299,19 @@ export default function CalendarPage() {
                       onClick={() => toggleTypefullyPlatform(p)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
                         selected
-                          ? "border-[#1B1B1B] bg-[#F7F8FA]"
-                          : "border-[#E5E5EA] hover:border-[#C5C5C5]"
+                          ? "border-surface bg-surface-raised"
+                          : "border-foreground hover:border-muted"
                       }`}
                     >
                       <span
                         className={`size-4 rounded border-2 flex items-center justify-center transition-colors ${
-                          selected ? "border-[#1B1B1B] bg-[#1B1B1B]" : "border-[#D4D4D4]"
+                          selected ? "border-surface bg-surface" : "border-muted"
                         }`}
                       >
                         {selected && <CheckIcon className="size-2.5 text-white" />}
                       </span>
                       <span className="size-2.5 rounded-full" style={{ backgroundColor: platformColors[p] }} />
-                      <span className="text-sm font-medium text-[#1B1B1B]">{platformLabels[p]}</span>
+                      <span className="text-sm font-medium text-foreground">{platformLabels[p]}</span>
                     </button>
                   );
                 })}
@@ -2319,8 +2319,8 @@ export default function CalendarPage() {
 
               {/* X automation toggles */}
               {typefullyPlatforms.has("x") && (
-                <div className="mb-4 p-3 border border-[#EDEDEF] rounded-lg space-y-2">
-                  <p className="text-[10px] uppercase tracking-wider text-[#999] font-semibold">X Automation (uses your Typefully defaults)</p>
+                <div className="mb-4 p-3 border border-border rounded-lg space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider text-subtle font-semibold">X Automation (uses your Typefully defaults)</p>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -2328,7 +2328,7 @@ export default function CalendarPage() {
                       onChange={(e) => setAutoPlugX(e.target.checked)}
                       className="size-3.5"
                     />
-                    <span className="text-xs text-[#1B1B1B]">Auto-plug</span>
+                    <span className="text-xs text-foreground">Auto-plug</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -2337,7 +2337,7 @@ export default function CalendarPage() {
                       onChange={(e) => setAutoRetweetX(e.target.checked)}
                       className="size-3.5"
                     />
-                    <span className="text-xs text-[#1B1B1B]">Auto-retweet</span>
+                    <span className="text-xs text-foreground">Auto-retweet</span>
                   </label>
                 </div>
               )}
@@ -2351,7 +2351,7 @@ export default function CalendarPage() {
                   return new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`) > now;
                 }).length;
                 return (
-                  <p className="text-xs text-[#999] mb-4">
+                  <p className="text-xs text-subtle mb-4">
                     <span className="inline-flex items-center gap-1">
                       <span className="size-2 rounded-full bg-blue-500" />
                       {readyCount} Ready to Post
@@ -2365,7 +2365,7 @@ export default function CalendarPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowTypefullyModal(false)}
-                  className="flex-1 px-4 py-2.5 text-xs font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+                  className="flex-1 px-4 py-2.5 text-xs font-semibold border border-foreground text-subtle rounded-lg hover:bg-surface-raised transition-colors"
                 >
                   Cancel
                 </button>
@@ -2384,17 +2384,17 @@ export default function CalendarPage() {
       )}
 
       {/* ── Calendar header bar (like Untitled UI) ── */}
-      <div className="border border-[#E5E5EA] rounded-t-xl bg-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fadeInUp-d1">
+      <div className="border border-foreground rounded-t-xl bg-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fadeInUp-d1">
         {/* Left: Month + date range */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="text-center bg-[#F7F8FA] rounded-lg px-2.5 py-1.5 border border-[#E5E5EA]">
-              <p className="text-[9px] font-semibold uppercase text-[#7A7A7A] leading-tight">{displayDate.toLocaleDateString("en-GB", { month: "short" })}</p>
-              <p className="text-lg font-bold text-[#1B1B1B] leading-tight">{displayDate.getDate()}</p>
+            <div className="text-center bg-surface-raised rounded-lg px-2.5 py-1.5 border border-foreground">
+              <p className="text-[9px] font-semibold uppercase text-subtle leading-tight">{displayDate.toLocaleDateString("en-GB", { month: "short" })}</p>
+              <p className="text-lg font-bold text-foreground leading-tight">{displayDate.getDate()}</p>
             </div>
             <div>
-              <h2 className="text-base font-semibold text-[#1B1B1B]">{monthLabel}</h2>
-              <p className="text-xs text-[#7A7A7A]">{dateRangeLabel}</p>
+              <h2 className="text-base font-semibold text-foreground">{monthLabel}</h2>
+              <p className="text-xs text-subtle">{dateRangeLabel}</p>
             </div>
           </div>
         </div>
@@ -2402,49 +2402,49 @@ export default function CalendarPage() {
         {/* Right: Controls */}
         <div className="flex items-center gap-2">
           {/* Nav arrows */}
-          <div className="flex items-center border border-[#E5E5EA] rounded-lg overflow-hidden">
+          <div className="flex items-center border border-foreground rounded-lg overflow-hidden">
             <button
               onClick={() => view === "month"
                 ? setMonthDate(d => { const n = new Date(d); n.setMonth(n.getMonth() - 1); return n; })
                 : setWeekOffset(o => o - 1)
               }
-              className="p-2 hover:bg-[#F5F5F5] transition-colors border-r border-[#E5E5EA]"
+              className="p-2 hover:bg-surface-raised transition-colors border-r border-foreground"
             >
-              <ChevronLeftIcon className="size-4 text-[#7A7A7A]" />
+              <ChevronLeftIcon className="size-4 text-subtle" />
             </button>
             <button
               onClick={() => view === "month"
                 ? setMonthDate(d => { const n = new Date(d); n.setMonth(n.getMonth() + 1); return n; })
                 : setWeekOffset(o => o + 1)
               }
-              className="p-2 hover:bg-[#F5F5F5] transition-colors"
+              className="p-2 hover:bg-surface-raised transition-colors"
             >
-              <ChevronRightIcon className="size-4 text-[#7A7A7A]" />
+              <ChevronRightIcon className="size-4 text-subtle" />
             </button>
           </div>
 
           {/* Today button */}
           <button
             onClick={() => { setWeekOffset(0); setMonthDate(new Date()); }}
-            className="px-3 py-2 text-xs font-medium border border-[#E5E5EA] rounded-lg text-[#1B1B1B] hover:bg-[#F5F5F5] transition-colors"
+            className="px-3 py-2 text-xs font-medium border border-foreground rounded-lg text-foreground hover:bg-surface-raised transition-colors"
           >
             Today
           </button>
 
           {/* View toggle */}
-          <div className="flex items-center border border-[#E5E5EA] rounded-lg overflow-hidden">
+          <div className="flex items-center border border-foreground rounded-lg overflow-hidden">
             <button
               onClick={() => setView("month")}
               className={`px-3 py-2 text-xs font-medium transition-colors ${
-                view === "month" ? "bg-[#F7F8FA] text-[#1B1B1B]" : "text-[#7A7A7A] hover:bg-[#F5F5F5]"
+                view === "month" ? "bg-surface-raised text-foreground" : "text-subtle hover:bg-surface-raised"
               }`}
             >
               Month view
             </button>
             <button
               onClick={() => setView("week")}
-              className={`px-3 py-2 text-xs font-medium transition-colors border-l border-[#E5E5EA] ${
-                view === "week" ? "bg-[#F7F8FA] text-[#1B1B1B]" : "text-[#7A7A7A] hover:bg-[#F5F5F5]"
+              className={`px-3 py-2 text-xs font-medium transition-colors border-l border-foreground ${
+                view === "week" ? "bg-surface-raised text-foreground" : "text-subtle hover:bg-surface-raised"
               }`}
             >
               Week view
@@ -2454,7 +2454,7 @@ export default function CalendarPage() {
           {/* Bulk upload */}
           <button
             onClick={() => setShowBulkModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-xs font-medium rounded-lg hover:bg-[#F5F5F5] transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-white border border-foreground text-foreground text-xs font-medium rounded-lg hover:bg-surface-raised transition-colors"
           >
             <PhotoIcon className="size-3.5" />
             Bulk upload
@@ -2463,7 +2463,7 @@ export default function CalendarPage() {
           {/* Add post */}
           <button
             onClick={() => openStudio()}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add post
@@ -2477,11 +2477,11 @@ export default function CalendarPage() {
 
           {/* ═══ MONTH VIEW (default, like Untitled UI) ═══ */}
           {view === "month" && (
-            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden flex-1 flex flex-col">
+            <div className="border-x border-b border-foreground rounded-b-xl overflow-hidden flex-1 flex flex-col">
               {/* Day-of-week header row */}
-              <div className="grid grid-cols-7 border-b border-[#E5E5EA]">
+              <div className="grid grid-cols-7 border-b border-foreground">
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
-                  <div key={d} className={`px-3 py-2.5 text-xs font-semibold text-[#7A7A7A] ${d !== "Mon" ? "border-l border-[#E5E5EA]" : ""}`}>
+                  <div key={d} className={`px-3 py-2.5 text-xs font-semibold text-subtle ${d !== "Mon" ? "border-l border-foreground" : ""}`}>
                     {d}
                   </div>
                 ))}
@@ -2489,7 +2489,7 @@ export default function CalendarPage() {
               {/* Calendar grid — 6 rows of 7 */}
               <div className="flex-1 flex flex-col">
               {Array.from({ length: 6 }).map((_, row) => (
-                <div key={row} className={`grid grid-cols-7 flex-1 ${row < 5 ? "border-b border-[#E5E5EA]" : ""}`}>
+                <div key={row} className={`grid grid-cols-7 flex-1 ${row < 5 ? "border-b border-foreground" : ""}`}>
                   {monthDates.slice(row * 7, row * 7 + 7).map((d, col) => {
                     const isCurrentMonth = d.getMonth() === monthDate.getMonth();
                     const isToday = toDateStr(d) === toDateStr(new Date());
@@ -2501,8 +2501,8 @@ export default function CalendarPage() {
                     return (
                       <div
                         key={col}
-                        className={`min-h-[120px] px-3 py-2 ${col > 0 ? "border-l border-[#E5E5EA]" : ""} ${
-                          !isCurrentMonth ? "bg-[#FAFAFA]" : "bg-white"
+                        className={`min-h-[120px] px-3 py-2 ${col > 0 ? "border-l border-foreground" : ""} ${
+                          !isCurrentMonth ? "bg-surface-raised" : "bg-white"
                         } ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} transition-colors group`}
                         onDragOver={(e) => handleDragOver(e, dStr)}
                         onDragLeave={handleDragLeave}
@@ -2512,16 +2512,16 @@ export default function CalendarPage() {
                         <div className="flex items-center justify-between mb-1.5">
                           <span className={`text-sm font-semibold ${
                             isToday
-                              ? "text-white bg-[#1B1B1B] size-7 flex items-center justify-center rounded-full"
-                              : isCurrentMonth ? "text-[#1B1B1B]" : "text-[#CCC]"
+                              ? "text-white bg-surface size-7 flex items-center justify-center rounded-full"
+                              : isCurrentMonth ? "text-foreground" : "text-muted"
                           }`}>
                             {d.getDate()}
                           </span>
                           <button
                             onClick={() => openStudioForSlot(dStr, "09:00")}
-                            className="size-5 flex items-center justify-center rounded hover:bg-[#F0F0F0] opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="size-5 flex items-center justify-center rounded hover:bg-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <PlusIcon className="size-3 text-[#AAA]" />
+                            <PlusIcon className="size-3 text-muted" />
                           </button>
                         </div>
 
@@ -2559,7 +2559,7 @@ export default function CalendarPage() {
                             );
                           })}
                           {dayPosts.length > 3 && (
-                            <p className="text-[10px] text-[#AAA] pl-2">{dayPosts.length - 3} more...</p>
+                            <p className="text-[10px] text-muted pl-2">{dayPosts.length - 3} more...</p>
                           )}
                         </div>
                       </div>
@@ -2573,19 +2573,19 @@ export default function CalendarPage() {
 
           {/* ═══ WEEK VIEW ═══ */}
           {view === "week" && (
-            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden flex-1 flex flex-col">
+            <div className="border-x border-b border-foreground rounded-b-xl overflow-hidden flex-1 flex flex-col">
               {/* Day headers */}
-              <div className="grid grid-cols-7 border-b border-[#E5E5EA]">
+              <div className="grid grid-cols-7 border-b border-foreground">
                 {weekDates.map((d, i) => {
                   const isToday = toDateStr(d) === toDateStr(new Date());
                   return (
-                    <div key={i} className={`px-3 py-3 ${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]" : ""}`}>
-                      <p className="text-xs font-semibold text-[#7A7A7A]">
+                    <div key={i} className={`px-3 py-3 ${i > 0 ? "border-l border-foreground" : ""} ${isToday ? "bg-[#F5F8FF]" : ""}`}>
+                      <p className="text-xs font-semibold text-subtle">
                         {d.toLocaleDateString("en-GB", { weekday: "short" })}
                       </p>
-                      <p className={`text-lg font-bold ${isToday ? "text-[#1B1B1B]" : "text-[#1B1B1B]"}`}>
+                      <p className={`text-lg font-bold ${isToday ? "text-foreground" : "text-foreground"}`}>
                         {isToday ? (
-                          <span className="text-white bg-[#1B1B1B] size-8 flex items-center justify-center rounded-full text-sm">{d.getDate()}</span>
+                          <span className="text-white bg-surface size-8 flex items-center justify-center rounded-full text-sm">{d.getDate()}</span>
                         ) : (
                           d.getDate()
                         )}
@@ -2605,7 +2605,7 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={i}
-                      className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} px-2 py-2 transition-colors group`}
+                      className={`${i > 0 ? "border-l border-foreground" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} px-2 py-2 transition-colors group`}
                       onDragOver={(e) => handleDragOver(e, dStr)}
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, dStr)}
@@ -2646,7 +2646,7 @@ export default function CalendarPage() {
                       {/* Add post button — only in empty space */}
                       <button
                         onClick={() => openStudioForSlot(dStr, "09:00")}
-                        className={`w-full flex items-center justify-center gap-1 py-2 rounded-md text-[10px] text-[#BBB] hover:bg-[#F3F3F5] hover:text-[#999] transition-all ${
+                        className={`w-full flex items-center justify-center gap-1 py-2 rounded-md text-[10px] text-muted hover:bg-surface-raised hover:text-subtle transition-all ${
                           dayPosts.length === 0 ? "mt-4" : "mt-1 opacity-0 group-hover:opacity-100"
                         }`}
                       >
@@ -2663,11 +2663,11 @@ export default function CalendarPage() {
 
         {/* ── Pipeline sidebar ── */}
         {showPipeline && (
-          <div className="w-56 shrink-0 ml-4 border border-[#E5E5EA] rounded-xl p-4 self-start sticky top-4">
+          <div className="w-56 shrink-0 ml-4 border border-foreground rounded-xl p-4 self-start sticky top-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-semibold text-[#1B1B1B]">Pipeline</h3>
-              <button onClick={() => setShowPipeline(false)} className="p-0.5 hover:bg-[#F3F3F5] rounded">
-                <XMarkIcon className="size-3.5 text-[#AAA]" />
+              <h3 className="text-xs font-semibold text-foreground">Pipeline</h3>
+              <button onClick={() => setShowPipeline(false)} className="p-0.5 hover:bg-surface-raised rounded">
+                <XMarkIcon className="size-3.5 text-muted" />
               </button>
             </div>
             {(["draft", "saved", "scheduled"] as PostStatus[]).map(status => {
@@ -2676,18 +2676,18 @@ export default function CalendarPage() {
                 <div key={status} className="mb-3">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <span className="size-2 rounded-full" style={{ backgroundColor: statusColors[status] }} />
-                    <span className="text-[10px] font-semibold text-[#1B1B1B]">{statusLabels[status]}</span>
-                    <span className="text-[10px] text-[#AAA] ml-auto">{statusPosts.length}</span>
+                    <span className="text-[10px] font-semibold text-foreground">{statusLabels[status]}</span>
+                    <span className="text-[10px] text-muted ml-auto">{statusPosts.length}</span>
                   </div>
                   {statusPosts.slice(0, 3).map(p => (
                     <button
                       key={p.id}
                       onClick={() => openStudio(p)}
-                      className="w-full text-left px-2 py-1.5 rounded-lg mb-1 hover:bg-[#FAFAFA] transition-colors"
+                      className="w-full text-left px-2 py-1.5 rounded-lg mb-1 hover:bg-surface-raised transition-colors"
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                        <span className="text-[10px] text-[#555] truncate">{(p.angle || p.caption).slice(0, 30)}...</span>
+                        <span className="text-[10px] text-subtle truncate">{(p.angle || p.caption).slice(0, 30)}...</span>
                       </div>
                     </button>
                   ))}
@@ -2704,10 +2704,10 @@ export default function CalendarPage() {
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowStudio(false)} />
           <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn" onPaste={handlePaste}>
             {/* Header */}
-            <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-3 flex items-center justify-between z-10">
-              <h2 className="text-sm font-bold text-[#1B1B1B]">{studioPost.id ? "Edit Post" : "New Post"}</h2>
-              <button onClick={() => setShowStudio(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                <XMarkIcon className="size-5 text-[#7A7A7A]" />
+            <div className="shrink-0 bg-white border-b border-foreground px-5 py-3 flex items-center justify-between z-10">
+              <h2 className="text-sm font-bold text-foreground">{studioPost.id ? "Edit Post" : "New Post"}</h2>
+              <button onClick={() => setShowStudio(false)} className="p-1 rounded-lg hover:bg-surface-raised">
+                <XMarkIcon className="size-5 text-subtle" />
               </button>
             </div>
 
@@ -2722,21 +2722,21 @@ export default function CalendarPage() {
             {/* ═══ UNIFIED POST EDITOR ═══ */}
             <div className="flex-1 overflow-y-auto">
               {/* ── Idea / Angle ── */}
-              <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
-                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-2">Idea / Angle</p>
+              <div className="px-5 pt-4 pb-4 border-b border-foreground">
+                <p className="text-[11px] font-semibold text-subtle uppercase tracking-wider mb-2">Idea / Angle</p>
                 <textarea
                   value={studioPost.angle || ""}
                   onChange={e => setStudioPost(prev => ({ ...prev, angle: e.target.value }))}
                   placeholder="What's the idea? e.g. Most brands test button colours but ignore the full purchase flow..."
-                  className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors"
+                  className="w-full bg-surface-raised rounded-lg px-3 py-2.5 text-sm text-foreground leading-relaxed resize-none outline-none placeholder:text-muted border border-foreground focus:border-surface transition-colors"
                   rows={2}
                 />
               </div>
 
               {/* ── Format ── */}
-              <div className="px-5 py-3 border-b border-[#F0F0F0]">
+              <div className="px-5 py-3 border-b border-foreground">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Format</p>
+                  <p className="text-[11px] font-semibold text-subtle uppercase tracking-wider shrink-0">Format</p>
                   <div className="flex gap-1">
                     {(["text", "image", "article"] as PostFormat[]).map(f => {
                       const Icon = formatIcons[f];
@@ -2747,8 +2747,8 @@ export default function CalendarPage() {
                           onClick={() => setStudioPost(prev => ({ ...prev, post_format: f }))}
                           className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
                             active
-                              ? "bg-[#1B1B1B] text-white"
-                              : "text-[#999] hover:bg-[#F3F3F5]"
+                              ? "bg-surface text-white"
+                              : "text-subtle hover:bg-surface-raised"
                           }`}
                         >
                           <Icon className="size-3" />
@@ -2766,12 +2766,12 @@ export default function CalendarPage() {
                 const images = studioPost.media_data_list || (studioPost.media_data ? [studioPost.media_data] : []);
                 const canAddMore = images.length < 4;
                 return (
-                  <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
+                  <div className="px-5 pt-4 pb-4 border-b border-foreground">
                     {images.length > 0 ? (
                       <div className="space-y-2">
                         <div className="grid grid-cols-2 gap-2">
                           {images.map((src, i) => (
-                            <div key={i} className="relative rounded-lg overflow-hidden border border-[#E5E5EA] aspect-square">
+                            <div key={i} className="relative rounded-lg overflow-hidden border border-foreground aspect-square">
                               <img src={src} alt={`Post media ${i + 1}`} className="w-full h-full object-cover" />
                               <button
                                 onClick={() => removeImageAt(i)}
@@ -2785,22 +2785,22 @@ export default function CalendarPage() {
                             </div>
                           ))}
                           {canAddMore && (
-                            <label className="flex flex-col items-center justify-center gap-1 aspect-square border border-dashed border-[#E0E0E0] rounded-lg cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors">
-                              <PhotoIcon className="size-5 text-[#CCC]" />
-                              <span className="text-[10px] text-[#999]">Add image</span>
+                            <label className="flex flex-col items-center justify-center gap-1 aspect-square border border-dashed border-border rounded-lg cursor-pointer hover:border-[#B0B0B0] hover:bg-surface-raised transition-colors">
+                              <PhotoIcon className="size-5 text-muted" />
+                              <span className="text-[10px] text-subtle">Add image</span>
                               <input type="file" accept="image/*" multiple className="hidden" onChange={e => { const fs = Array.from(e.target.files || []); if (fs.length) handleImageUploads(fs); }} />
                             </label>
                           )}
                         </div>
-                        <p className="text-[9px] text-[#BBB] text-center">{images.length}/4 images · Typefully max</p>
+                        <p className="text-[9px] text-muted text-center">{images.length}/4 images · Typefully max</p>
                         {captionLoading && (
-                          <p className="text-[10px] text-[#999] text-center animate-pulse">Generating captions...</p>
+                          <p className="text-[10px] text-subtle text-center animate-pulse">Generating captions...</p>
                         )}
                       </div>
                     ) : (
-                      <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors">
-                        <PhotoIcon className="size-5 text-[#CCC]" />
-                        <span className="text-[11px] text-[#999]">Upload or paste image(s)</span>
+                      <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-border rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-surface-raised transition-colors">
+                        <PhotoIcon className="size-5 text-muted" />
+                        <span className="text-[11px] text-subtle">Upload or paste image(s)</span>
                         <input type="file" accept="image/*" multiple className="hidden" onChange={e => { const fs = Array.from(e.target.files || []); if (fs.length) handleImageUploads(fs); }} />
                       </label>
                     )}
@@ -2809,9 +2809,9 @@ export default function CalendarPage() {
               })()}
 
               {/* ── 5. Caption Length toggle ── */}
-              <div className="px-5 pt-4 pb-3 border-b border-[#F0F0F0]">
+              <div className="px-5 pt-4 pb-3 border-b border-foreground">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Length</p>
+                  <p className="text-[11px] font-semibold text-subtle uppercase tracking-wider shrink-0">Length</p>
                   <div className="flex gap-1">
                     {(["short", "medium", "long"] as CaptionLength[]).map(l => {
                       const active = captionLength === l;
@@ -2821,8 +2821,8 @@ export default function CalendarPage() {
                           onClick={() => setCaptionLength(l)}
                           className={`px-3 py-1.5 text-[10px] font-medium rounded-lg transition-colors capitalize ${
                             active
-                              ? "bg-[#1B1B1B] text-white"
-                              : "text-[#999] hover:bg-[#F3F3F5]"
+                              ? "bg-surface text-white"
+                              : "text-subtle hover:bg-surface-raised"
                           }`}
                         >
                           {l}
@@ -2834,18 +2834,18 @@ export default function CalendarPage() {
               </div>
 
               {/* ── 6. Generate + Caption display ── */}
-              <div className="px-5 pt-4 pb-5 border-b border-[#F0F0F0]">
+              <div className="px-5 pt-4 pb-5 border-b border-foreground">
                 {/* Generate button */}
                 <button
                   onClick={() => generateCaptions()}
                   disabled={captionLoading || !studioPost.angle?.trim()}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 mb-3"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-40 mb-3"
                 >
                   <SparklesIcon className="size-4" />
                   {captionLoading ? "Generating captions..." : "Generate Captions"}
                 </button>
                 {!studioPost.angle?.trim() && !studioPost.caption && (
-                  <p className="text-[10px] text-[#BBB] text-center mb-3">Write an idea above first</p>
+                  <p className="text-[10px] text-muted text-center mb-3">Write an idea above first</p>
                 )}
 
                 {captionError && <p className="text-[11px] text-red-500 mb-2">{captionError}</p>}
@@ -2860,7 +2860,7 @@ export default function CalendarPage() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                           <span className="size-2 rounded-full" style={{ backgroundColor: platformColors[plat] }} />
-                          <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">{platformLabels[plat]} Caption</p>
+                          <p className="text-[11px] font-semibold text-subtle uppercase tracking-wider">{platformLabels[plat]} Caption</p>
                         </div>
                         <div className="flex items-center gap-1">
                           {plat === "linkedin" && xCaption.trim() && (
@@ -2876,7 +2876,7 @@ export default function CalendarPage() {
                           <button
                             onClick={() => generateCaptions({ targetPlatform: plat })}
                             disabled={captionLoading || !studioPost.angle?.trim()}
-                            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
+                            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-subtle bg-surface-raised rounded-md hover:bg-border transition-colors disabled:opacity-50"
                           >
                             <SparklesIcon className="size-3" />
                             {captionLoading ? "..." : "Regenerate"}
@@ -2892,7 +2892,7 @@ export default function CalendarPage() {
                                 key={i}
                                 onClick={() => setDraftCaptions(prev => ({ ...prev, [plat]: c }))}
                                 className={`flex-1 px-2 py-1 text-[9px] font-semibold rounded-md transition-colors ${
-                                  isActive ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#999] hover:bg-[#EBEBEB]"
+                                  isActive ? "bg-surface text-white" : "bg-surface-raised text-subtle hover:bg-border"
                                 }`}
                               >
                                 Variant {i + 1}
@@ -2910,7 +2910,7 @@ export default function CalendarPage() {
                           if (plat === "x") setStudioPost(prev => ({ ...prev, caption: val }));
                         }}
                         placeholder={`${platformLabels[plat]} caption will appear here...`}
-                        className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors min-h-[100px] whitespace-pre-wrap"
+                        className="w-full bg-surface-raised rounded-lg px-3 py-2.5 text-sm text-foreground leading-relaxed resize-none outline-none placeholder:text-muted border border-foreground focus:border-surface transition-colors min-h-[100px] whitespace-pre-wrap"
                         rows={4}
                       />
                     </div>
@@ -2921,13 +2921,13 @@ export default function CalendarPage() {
               {/* ── 7. Schedule (date + time) ── */}
               <div className="px-5 py-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Schedule</p>
+                  <p className="text-[11px] font-semibold text-subtle uppercase tracking-wider">Schedule</p>
                   {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (() => {
                     const score = getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time));
                     return score > 0 ? (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-[#999]">Slot score</span>
-                        <span className={`text-[10px] font-bold ${score >= 80 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-[#999]"}`}>{score}/100</span>
+                        <span className="text-[10px] text-subtle">Slot score</span>
+                        <span className={`text-[10px] font-bold ${score >= 80 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-subtle"}`}>{score}/100</span>
                         {score >= 80 && <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>}
                       </div>
                     ) : null;
@@ -2938,13 +2938,13 @@ export default function CalendarPage() {
                     type="date"
                     value={studioPost.scheduled_date || ""}
                     onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-white outline-none focus:border-surface transition-colors"
                   />
                   <input
                     type="time"
                     value={studioPost.scheduled_time || ""}
                     onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-white outline-none focus:border-surface transition-colors"
                   />
                 </div>
 
@@ -2959,7 +2959,7 @@ export default function CalendarPage() {
                     <div className="mt-2.5">
                       {bestTimes.length > 0 && (
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[9px] text-[#BBB]">Best for {dayNames[dayOfWeek]}:</span>
+                          <span className="text-[9px] text-muted">Best for {dayNames[dayOfWeek]}:</span>
                           {bestTimes.map((t, i) => {
                             const timeStr = t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
                             const displayHour = t.hour % 12 || 12;
@@ -2972,7 +2972,7 @@ export default function CalendarPage() {
                               className={`text-[9px] font-semibold px-2 py-1 rounded-md transition-colors ${
                                 studioPost.scheduled_time === timeStr
                                   ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB]"
+                                  : "bg-surface-raised text-subtle hover:bg-border"
                               }`}
                             >
                               {displayHour}:{displayMin} {ampm}
@@ -2984,7 +2984,7 @@ export default function CalendarPage() {
                       )}
                       {bestTimes.length === 0 && topSlots.length > 0 && (
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[9px] text-[#BBB]">Try instead:</span>
+                          <span className="text-[9px] text-muted">Try instead:</span>
                           {topSlots.map((t, i) => (
                             <button
                               key={i}
@@ -3001,7 +3001,7 @@ export default function CalendarPage() {
                                   scheduled_time: timeStr
                                 }));
                               }}
-                              className="text-[9px] font-semibold px-2 py-1 rounded-md bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB] transition-colors"
+                              className="text-[9px] font-semibold px-2 py-1 rounded-md bg-surface-raised text-subtle hover:bg-border transition-colors"
                             >
                               {dayNames[t.day]} {t.hour % 12 || 12}:{(t.minute || 0).toString().padStart(2, "0")}{t.hour >= 12 ? "pm" : "am"}
                               <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
@@ -3016,11 +3016,11 @@ export default function CalendarPage() {
             </div>
 
             {/* ── 8. Footer (sticky bottom) ── */}
-            <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-3 bg-white flex items-center gap-2">
+            <div className="shrink-0 border-t border-foreground px-5 py-3 bg-white flex items-center gap-2">
               <button
                 onClick={repurposePost}
                 disabled={repurposeLoading || !studioPost.caption?.trim()}
-                className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+                className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-foreground text-subtle rounded-lg hover:bg-surface-raised transition-colors disabled:opacity-40"
               >
                 <ArrowPathIcon className={`size-3 ${repurposeLoading ? "animate-spin" : ""}`} />
                 {repurposeLoading ? "..." : "Repurpose"}
@@ -3028,7 +3028,7 @@ export default function CalendarPage() {
               <button
                 onClick={handleSavePost}
                 disabled={saving}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save Draft"}
               </button>
@@ -3104,7 +3104,7 @@ export default function CalendarPage() {
               {studioPost.id && (
                 <button
                   onClick={() => handleDeletePost(studioPost.id!)}
-                  className="p-2.5 text-[#CCC] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2.5 text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
                   title="Delete post"
                 >
                   <TrashIcon className="size-4" />
@@ -3120,22 +3120,22 @@ export default function CalendarPage() {
         <>
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowIdeas(false)} />
           <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm bg-white shadow-[var(--shadow-elevated)] overflow-y-auto animate-slideIn">
-            <div className="sticky top-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-white border-b border-foreground px-5 py-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-2">
                 <LightBulbIcon className="size-4 text-amber-500" />
-                <h2 className="text-sm font-bold text-[#1B1B1B]">Idea Engine</h2>
+                <h2 className="text-sm font-bold text-foreground">Idea Engine</h2>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={generateIdeas}
                   disabled={ideasLoading}
-                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-surface text-white rounded-lg hover:bg-border transition-colors disabled:opacity-50"
                 >
                   <SparklesIcon className="size-3" />
                   {ideasLoading ? "Generating..." : "Refresh"}
                 </button>
-                <button onClick={() => setShowIdeas(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                <button onClick={() => setShowIdeas(false)} className="p-1 rounded-lg hover:bg-surface-raised">
+                  <XMarkIcon className="size-5 text-subtle" />
                 </button>
               </div>
             </div>
@@ -3147,9 +3147,9 @@ export default function CalendarPage() {
               {ideasLoading && (
                 <div className="space-y-3">
                   {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="animate-pulse border border-[#E5E5EA] rounded-xl p-4">
-                      <div className="h-3 w-20 bg-[#F0F0F0] rounded mb-2" />
-                      <div className="h-4 w-full bg-[#F0F0F0] rounded" />
+                    <div key={i} className="animate-pulse border border-foreground rounded-xl p-4">
+                      <div className="h-3 w-20 bg-foreground rounded mb-2" />
+                      <div className="h-4 w-full bg-foreground rounded" />
                     </div>
                   ))}
                 </div>
@@ -3157,7 +3157,7 @@ export default function CalendarPage() {
               {!ideasLoading && ideas.length > 0 && (
                 <div className="space-y-3">
                   {ideas.map((idea, i) => (
-                    <div key={i} className="border border-[#E5E5EA] rounded-xl p-4 hover:border-[#C5C5C5] transition-colors">
+                    <div key={i} className="border border-foreground rounded-xl p-4 hover:border-muted transition-colors">
                       <div className="flex items-center gap-2 mb-2">
                         <span
                           className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
@@ -3172,10 +3172,10 @@ export default function CalendarPage() {
                           {contentTypeLabels[idea.type]}
                         </span>
                       </div>
-                      <p className="text-xs text-[#1B1B1B] mb-3 leading-relaxed">{idea.brief}</p>
+                      <p className="text-xs text-foreground mb-3 leading-relaxed">{idea.brief}</p>
                       <button
                         onClick={() => addIdeaToCalendar(idea)}
-                        className="flex items-center gap-1 text-[10px] font-semibold text-[#1B1B1B] hover:text-[#555] transition-colors"
+                        className="flex items-center gap-1 text-[10px] font-semibold text-foreground hover:text-subtle transition-colors"
                       >
                         <PlusIcon className="size-3" />
                         Add to calendar
@@ -3186,8 +3186,8 @@ export default function CalendarPage() {
               )}
               {!ideasLoading && ideas.length === 0 && !ideasError && (
                 <div className="text-center py-10">
-                  <LightBulbIcon className="size-8 text-[#DDD] mx-auto mb-2" />
-                  <p className="text-xs text-[#AAA]">Click Refresh to generate content ideas</p>
+                  <LightBulbIcon className="size-8 text-muted mx-auto mb-2" />
+                  <p className="text-xs text-muted">Click Refresh to generate content ideas</p>
                 </div>
               )}
             </div>
@@ -3201,12 +3201,12 @@ export default function CalendarPage() {
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => { if (!draftLoading) setShowWeeklyDraft(false); }} />
           <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-lg bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
             {/* Header */}
-            <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between">
+            <div className="shrink-0 bg-white border-b border-foreground px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BoltIcon className="size-4 text-amber-500" />
                 <div>
-                  <h2 className="text-sm font-bold text-[#1B1B1B]">Weekly Draft</h2>
-                  <p className="text-[10px] text-[#7A7A7A]">
+                  <h2 className="text-sm font-bold text-foreground">Weekly Draft</h2>
+                  <p className="text-[10px] text-subtle">
                     {weekDates[0].toLocaleDateString("en-GB", { month: "short", day: "numeric" })} – {weekDates[6].toLocaleDateString("en-GB", { month: "short", day: "numeric" })}
                   </p>
                 </div>
@@ -3215,14 +3215,14 @@ export default function CalendarPage() {
                 {draftPosts.length > 0 && !draftLoading && (
                   <button
                     onClick={generateWeeklyDraft}
-                    className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+                    className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold border border-foreground text-subtle rounded-lg hover:bg-surface-raised transition-colors"
                   >
                     <SparklesIcon className="size-3" />
                     Regenerate
                   </button>
                 )}
-                <button onClick={() => setShowWeeklyDraft(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                <button onClick={() => setShowWeeklyDraft(false)} className="p-1 rounded-lg hover:bg-surface-raised">
+                  <XMarkIcon className="size-5 text-subtle" />
                 </button>
               </div>
             </div>
@@ -3236,20 +3236,20 @@ export default function CalendarPage() {
               {draftLoading && (
                 <div className="space-y-4">
                   <div className="text-center py-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#F7F8FA] rounded-full">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-raised rounded-full">
                       <SparklesIcon className="size-4 text-amber-500 animate-pulse" />
-                      <span className="text-xs font-medium text-[#7A7A7A]">Analysing performance & generating drafts...</span>
+                      <span className="text-xs font-medium text-subtle">Analysing performance & generating drafts...</span>
                     </div>
                   </div>
                   {[1, 2, 3, 4, 5, 6, 7].map(i => (
-                    <div key={i} className="animate-pulse border border-[#E5E5EA] rounded-xl p-4">
+                    <div key={i} className="animate-pulse border border-foreground rounded-xl p-4">
                       <div className="flex gap-2 mb-3">
-                        <div className="h-3 w-16 bg-[#F0F0F0] rounded-full" />
-                        <div className="h-3 w-14 bg-[#F0F0F0] rounded-full" />
-                        <div className="h-3 w-12 bg-[#F0F0F0] rounded-full" />
+                        <div className="h-3 w-16 bg-foreground rounded-full" />
+                        <div className="h-3 w-14 bg-foreground rounded-full" />
+                        <div className="h-3 w-12 bg-foreground rounded-full" />
                       </div>
-                      <div className="h-3 w-3/4 bg-[#F0F0F0] rounded mb-2" />
-                      <div className="h-10 w-full bg-[#F0F0F0] rounded" />
+                      <div className="h-3 w-3/4 bg-foreground rounded mb-2" />
+                      <div className="h-10 w-full bg-foreground rounded" />
                     </div>
                   ))}
                 </div>
@@ -3267,12 +3267,12 @@ export default function CalendarPage() {
                 return (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                       {draftPosts.filter(d => d.selected).length} of {draftPosts.length} ideas · {sortedDates.length} days
                     </p>
                     <button
                       onClick={() => setDraftPosts(prev => prev.map(d => ({ ...d, selected: !prev.every(p => p.selected) })))}
-                      className="text-[10px] font-semibold text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                      className="text-[10px] font-semibold text-subtle hover:text-foreground transition-colors"
                     >
                       {draftPosts.every(d => d.selected) ? "Deselect all" : "Select all"}
                     </button>
@@ -3288,15 +3288,15 @@ export default function CalendarPage() {
                         {/* Day header */}
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-xs font-bold text-[#1B1B1B]">{dayLabel}</h4>
-                            <span className="text-[9px] text-[#AAA]">{dayItems.length} posts</span>
+                            <h4 className="text-xs font-bold text-foreground">{dayLabel}</h4>
+                            <span className="text-[9px] text-muted">{dayItems.length} posts</span>
                           </div>
                           <button
                             onClick={() => {
                               const indices = dayItems.map(d => d.index);
                               setDraftPosts(prev => prev.map((d, i) => indices.includes(i) ? { ...d, selected: !allSelected } : d));
                             }}
-                            className="text-[9px] font-semibold text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                            className="text-[9px] font-semibold text-subtle hover:text-foreground transition-colors"
                           >
                             {allSelected ? "Deselect day" : "Select day"}
                           </button>
@@ -3313,8 +3313,8 @@ export default function CalendarPage() {
                                 key={index}
                                 className={`border rounded-lg px-3 py-2.5 transition-all ${
                                   draft.selected
-                                    ? "border-[#D4D4D4] bg-white"
-                                    : "border-[#E5E5EA] bg-[#FAFAFA] opacity-40"
+                                    ? "border-muted bg-white"
+                                    : "border-foreground bg-surface-raised opacity-40"
                                 }`}
                               >
                                 <div className="flex items-start gap-2">
@@ -3322,7 +3322,7 @@ export default function CalendarPage() {
                                   <button
                                     onClick={() => toggleDraft(index)}
                                     className={`size-4 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                                      draft.selected ? "bg-[#1B1B1B] border-[#1B1B1B]" : "border-[#D4D4D4]"
+                                      draft.selected ? "bg-surface border-surface" : "border-muted"
                                     }`}
                                   >
                                     {draft.selected && <CheckIcon className="size-2.5 text-white" />}
@@ -3331,25 +3331,25 @@ export default function CalendarPage() {
                                   {/* Content */}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-1.5 mb-1">
-                                      <span className="text-[9px] font-semibold text-[#555]">{fmtTimeStr}</span>
+                                      <span className="text-[9px] font-semibold text-subtle">{fmtTimeStr}</span>
                                       <span
                                         className="text-[8px] font-semibold px-1 py-0.5 rounded-full"
                                         style={{ backgroundColor: contentTypeColors[draft.content_type] + "15", color: contentTypeColors[draft.content_type] }}
                                       >
                                         {contentTypeLabels[draft.content_type]}
                                       </span>
-                                      <span className="flex items-center gap-0.5 text-[8px] font-semibold text-[#999] bg-[#F3F3F5] px-1 py-0.5 rounded-full">
+                                      <span className="flex items-center gap-0.5 text-[8px] font-semibold text-subtle bg-surface-raised px-1 py-0.5 rounded-full">
                                         <Icon className="size-2" />
                                         {postFormatLabels[draft.post_format]}
                                       </span>
                                     </div>
-                                    <p className="text-[11px] font-semibold text-[#1B1B1B] leading-snug">{draft.angle}</p>
-                                    <p className="text-[10px] text-[#7A7A7A] mt-0.5 leading-relaxed">{draft.brief}</p>
+                                    <p className="text-[11px] font-semibold text-foreground leading-snug">{draft.angle}</p>
+                                    <p className="text-[10px] text-subtle mt-0.5 leading-relaxed">{draft.brief}</p>
                                   </div>
 
                                   {/* Remove */}
                                   <button onClick={() => removeDraft(index)} className="p-0.5 rounded hover:bg-red-50 shrink-0">
-                                    <TrashIcon className="size-3 text-[#CCC] hover:text-red-400" />
+                                    <TrashIcon className="size-3 text-muted hover:text-red-400" />
                                   </button>
                                 </div>
                               </div>
@@ -3365,24 +3365,24 @@ export default function CalendarPage() {
 
               {!draftLoading && draftPosts.length === 0 && !draftError && (
                 <div className="text-center py-10">
-                  <BoltIcon className="size-8 text-[#DDD] mx-auto mb-2" />
-                  <p className="text-xs text-[#AAA]">Generating your weekly content plan...</p>
+                  <BoltIcon className="size-8 text-muted mx-auto mb-2" />
+                  <p className="text-xs text-muted">Generating your weekly content plan...</p>
                 </div>
               )}
             </div>
 
             {/* Footer — Apply */}
             {!draftLoading && draftPosts.length > 0 && (
-              <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-4 bg-white">
+              <div className="shrink-0 border-t border-foreground px-5 py-4 bg-white">
                 <button
                   onClick={applyDrafts}
                   disabled={draftSaving || draftPosts.filter(d => d.selected).length === 0}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
                 >
                   <CheckIcon className="size-3.5" />
                   {draftSaving ? "Adding to calendar..." : `Add ${draftPosts.filter(d => d.selected).length} ideas to calendar`}
                 </button>
-                <p className="text-[10px] text-[#AAA] text-center mt-2">
+                <p className="text-[10px] text-muted text-center mt-2">
                   Ideas land as X posts — click each to write the caption, then Repurpose to all platforms
                 </p>
               </div>

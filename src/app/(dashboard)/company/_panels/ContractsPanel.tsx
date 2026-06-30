@@ -86,7 +86,7 @@ export default function ContractsPanel() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto px-6 md:px-10 py-12">
-        <div className="text-sm text-[#71757D]">Loading agreements...</div>
+        <div className="text-sm text-subtle">Loading agreements...</div>
       </div>
     );
   }
@@ -100,10 +100,10 @@ export default function ContractsPanel() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+          <h1 className="text-2xl font-semibold text-foreground">
             Contracts & NDAs
           </h1>
-          <p className="text-[13px] text-[#71757D] mt-1">
+          <p className="text-[13px] text-subtle mt-1">
             {total} total · {awaitingCounter} awaiting your counter-sign ·{" "}
             {awaitingTeam} awaiting team member
           </p>
@@ -111,14 +111,14 @@ export default function ContractsPanel() {
         <div className="flex items-center gap-2">
           <Link
             href="/company/contracts/templates"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#0F0F10] border border-white/[0.04] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:border-white/[0.12] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-background border border-white/[0.04] text-foreground text-[13px] font-medium rounded-lg hover:border-white/[0.12] transition-colors"
           >
             <DocumentTextIcon className="size-4" />
             Templates
           </Link>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-4" />
             New agreement
@@ -127,12 +127,12 @@ export default function ContractsPanel() {
       </div>
 
       {total === 0 ? (
-        <div className="bg-[#0C0C0C] border border-dashed border-white/[0.04] rounded-2xl p-10 text-center">
-          <ShieldCheckIcon className="size-7 text-[#71757D] mx-auto mb-3" />
-          <div className="text-[15px] font-medium text-[#E5E5EA] mb-1">
+        <div className="bg-background border border-dashed border-white/[0.04] rounded-2xl p-10 text-center">
+          <ShieldCheckIcon className="size-7 text-subtle mx-auto mb-3" />
+          <div className="text-[15px] font-medium text-foreground mb-1">
             No agreements yet
           </div>
-          <div className="text-[13px] text-[#71757D] mb-5 max-w-md mx-auto">
+          <div className="text-[13px] text-subtle mb-5 max-w-md mx-auto">
             Click <strong>New agreement</strong> above to spin up an NDA and contract
             from just name, role, and compensation. Or convert a candidate at{" "}
             <Link href="/company/hiring" className="underline">/company/hiring</Link>{" "}
@@ -140,7 +140,7 @@ export default function ContractsPanel() {
           </div>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-4" />
             New agreement
@@ -160,7 +160,7 @@ export default function ContractsPanel() {
                 >
                   {meta.label}
                 </span>
-                <span className="text-[11px] text-[#71757D]">{list.length}</span>
+                <span className="text-[11px] text-subtle">{list.length}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {list.map((a) => {
@@ -169,7 +169,7 @@ export default function ContractsPanel() {
                     <Link
                       key={a.id}
                       href={`/company/contracts/${a.id}`}
-                      className="block bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
+                      className="block bg-background ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
                     >
                       {/* Lead with the contract title (what THIS is), then
                        * the person (who it's for). Was the other way round
@@ -177,26 +177,26 @@ export default function ContractsPanel() {
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <DocumentTextIcon className="size-3.5 text-[#71757D] shrink-0" />
-                            <div className="text-[13px] font-semibold text-[#E5E5EA] truncate">
+                            <DocumentTextIcon className="size-3.5 text-subtle shrink-0" />
+                            <div className="text-[13px] font-semibold text-foreground truncate">
                               {a.template_body.title}
                             </div>
                           </div>
-                          <div className="text-[12px] text-[#9CA3AF] truncate">
+                          <div className="text-[12px] text-muted truncate">
                             For{" "}
-                            <span className="text-[#E5E5EA] font-medium">
+                            <span className="text-foreground font-medium">
                               {a.person_full_name}
                             </span>{" "}
-                            <span className="text-[#71757D]">
+                            <span className="text-subtle">
                               · {a.person_job_title || person?.job_title || "—"}
                             </span>
                           </div>
                         </div>
-                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA] shrink-0">
+                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-surface-raised text-foreground shrink-0">
                           {AGREEMENT_KIND_LABEL[a.kind]}
                         </span>
                       </div>
-                      <div className="text-[11px] text-[#71757D]">
+                      <div className="text-[11px] text-subtle">
                         Updated {fmtRel(a.updated_at)}
                       </div>
                     </Link>

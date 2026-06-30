@@ -120,7 +120,7 @@ export default function WorkspaceClientDetail() {
   );
 
   if (data.loading) {
-    return <div className="h-96 animate-pulse rounded-2xl bg-[#222222]" />;
+    return <div className="h-96 animate-pulse rounded-2xl bg-surface-raised" />;
   }
   if (!vm) {
     return (
@@ -145,16 +145,16 @@ export default function WorkspaceClientDetail() {
         <div>
           <div className="flex items-center gap-3">
             <HealthDot band={vm.band} />
-            <h1 className="font-heading text-2xl font-semibold text-[#E5E5EA]">
+            <h1 className="font-heading text-2xl font-semibold text-foreground">
               {c.name}
             </h1>
             {c.brand_warm && <Pill tone="amber">Brand-warm</Pill>}
             {vm.paused && <Pill tone="amber" dot>Paused</Pill>}
           </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-[#9CA3AF]">
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-muted">
             <Link
               href={`/workspace/pods/${vm.podId}`}
-              className="font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+              className="font-medium text-muted hover:text-foreground"
             >
               {vm.podName}
             </Link>
@@ -181,15 +181,15 @@ export default function WorkspaceClientDetail() {
           )}
           <div className="text-right">
             {vm.day != null && (
-              <div className="font-heading text-lg font-semibold text-[#E5E5EA]">
+              <div className="font-heading text-lg font-semibold text-foreground">
                 Day {vm.day}
-                <span className="text-sm font-normal text-[#71757D]">/90</span>
+                <span className="text-sm font-normal text-subtle">/90</span>
               </div>
             )}
             {!vm.paused && vm.nextDeadline && (
-              <div className="mt-1 text-xs text-[#9CA3AF]">
+              <div className="mt-1 text-xs text-muted">
                 Next:{" "}
-                <span className="font-medium text-[#C7C9CD]">
+                <span className="font-medium text-muted">
                   {formatDue(vm.nextDeadline.dueDate)}
                 </span>
               </div>
@@ -287,12 +287,12 @@ export default function WorkspaceClientDetail() {
         <SectionTitle>Recent notes</SectionTitle>
         <Card className="divide-y divide-slate-100">
           {(c.notes ?? []).length === 0 ? (
-            <div className="px-5 py-6 text-center text-sm text-[#71757D]">No notes yet.</div>
+            <div className="px-5 py-6 text-center text-sm text-subtle">No notes yet.</div>
           ) : (
             (c.notes ?? []).slice(0, 6).map((n) => (
               <div key={n.id} className="px-5 py-3">
-                <p className="text-sm text-[#C7C9CD]">{n.content}</p>
-                <div className="mt-1 text-xs text-[#71757D]">
+                <p className="text-sm text-muted">{n.content}</p>
+                <div className="mt-1 text-xs text-subtle">
                   {n.author ? `${n.author} · ` : ""}
                   {new Date(n.created_at).toLocaleDateString("en-GB", {
                     day: "numeric",
@@ -339,14 +339,14 @@ function ObjectiveCard({
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[#2A2A2A] bg-[#222222]/60 px-5 py-2.5">
-        <span className="text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+      <div className="flex items-center justify-between border-b border-border bg-surface-raised/60 px-5 py-2.5">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted">
           Objective
         </span>
         {!editing && (
           <button
             onClick={() => setEditing(true)}
-            className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+            className="text-xs font-medium text-muted hover:text-foreground"
           >
             Edit
           </button>
@@ -361,7 +361,7 @@ function ObjectiveCard({
               onChange={(e) => setDraft(e.target.value)}
               rows={3}
               placeholder="The core bet for this brand — what we believe will move conversion, and why."
-              className="w-full resize-none rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm leading-relaxed outline-none focus:border-[#383838]"
+              className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm leading-relaxed outline-none focus:border-border"
             />
             <div className="flex items-center gap-2">
               <button
@@ -376,18 +376,18 @@ function ObjectiveCard({
                   setDraft(value);
                   setEditing(false);
                 }}
-                className="text-xs text-[#71757D] hover:text-[#9CA3AF]"
+                className="text-xs text-subtle hover:text-muted"
               >
                 Cancel
               </button>
             </div>
           </div>
         ) : value ? (
-          <p className="text-base leading-relaxed text-[#E5E5EA]">{value}</p>
+          <p className="text-base leading-relaxed text-foreground">{value}</p>
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="text-sm italic text-[#71757D] hover:text-[#9CA3AF]"
+            className="text-sm italic text-subtle hover:text-muted"
           >
             No objective set yet. Click to define the engagement&apos;s core bet.
           </button>
@@ -467,24 +467,24 @@ function BriefPanel({
         className="flex w-full items-center justify-between px-5 py-3 text-left"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
             Client brief
           </span>
-          <span className="text-xs text-[#71757D]">
+          <span className="text-xs text-subtle">
             {filledCount}/{BRIEF_FIELDS.length} filled
             {linkedBriefs.length > 0 && ` · ${linkedBriefs.length} linked`}
           </span>
         </div>
-        <span className="text-[#71757D]">{open ? "−" : "+"}</span>
+        <span className="text-subtle">{open ? "−" : "+"}</span>
       </button>
 
       {open && (
-        <div className="border-t border-[#2A2A2A] p-5">
+        <div className="border-t border-border p-5">
           {!editing && (
             <div className="mb-3 flex justify-end">
               <button
                 onClick={() => setEditing(true)}
-                className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+                className="text-xs font-medium text-muted hover:text-foreground"
               >
                 Edit brief
               </button>
@@ -495,7 +495,7 @@ function BriefPanel({
               const val = (draft[f.key] ?? "").toString();
               return (
                 <div key={f.key} className={f.long ? "md:col-span-2" : ""}>
-                  <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+                  <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-subtle">
                     {f.label}
                   </div>
                   {editing ? (
@@ -504,19 +504,19 @@ function BriefPanel({
                         value={val}
                         onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}
                         rows={2}
-                        className="w-full resize-none rounded-lg border border-[#2A2A2A] px-3 py-1.5 text-sm outline-none focus:border-[#383838]"
+                        className="w-full resize-none rounded-lg border border-border px-3 py-1.5 text-sm outline-none focus:border-border"
                       />
                     ) : (
                       <input
                         value={val}
                         onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}
-                        className="w-full rounded-lg border border-[#2A2A2A] px-3 py-1.5 text-sm outline-none focus:border-[#383838]"
+                        className="w-full rounded-lg border border-border px-3 py-1.5 text-sm outline-none focus:border-border"
                       />
                     )
                   ) : val ? (
-                    <p className="text-sm leading-relaxed text-[#C7C9CD]">{val}</p>
+                    <p className="text-sm leading-relaxed text-muted">{val}</p>
                   ) : (
-                    <p className="text-sm italic text-[#4B4D52]">Not set</p>
+                    <p className="text-sm italic text-border">Not set</p>
                   )}
                 </div>
               );
@@ -536,7 +536,7 @@ function BriefPanel({
                   setDraft(brief);
                   setEditing(false);
                 }}
-                className="text-xs text-[#71757D] hover:text-[#9CA3AF]"
+                className="text-xs text-subtle hover:text-muted"
               >
                 Cancel
               </button>
@@ -544,23 +544,23 @@ function BriefPanel({
           )}
 
           {/* Linked briefs — extra onboarding forms / supplementary docs */}
-          <div className="mt-5 border-t border-[#2A2A2A] pt-4">
-            <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+          <div className="mt-5 border-t border-border pt-4">
+            <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-subtle">
               Linked briefs
             </div>
             <div className="space-y-2">
               {linkedBriefs.length === 0 ? (
-                <p className="text-xs text-[#4B4D52]">
+                <p className="text-xs text-border">
                   No extra briefs. Add one if the client redid onboarding or sent more context.
                 </p>
               ) : (
                 linkedBriefs.map((b) => (
                   <div
                     key={b.id}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
                   >
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-[#E5E5EA]">{b.label}</div>
+                      <div className="truncate text-sm font-medium text-foreground">{b.label}</div>
                       {b.url && (
                         <a
                           href={b.url}
@@ -574,7 +574,7 @@ function BriefPanel({
                     </div>
                     <button
                       onClick={() => removeBrief(b.id)}
-                      className="shrink-0 text-xs text-[#4B4D52] hover:text-rose-500"
+                      className="shrink-0 text-xs text-border hover:text-rose-500"
                     >
                       Remove
                     </button>
@@ -629,27 +629,27 @@ function AssignPodPanel({
 
   return (
     <Card className="overflow-hidden">
-      <div className="border-b border-[#2A2A2A] bg-amber-50/50 px-5 py-3">
+      <div className="border-b border-border bg-amber-50/50 px-5 py-3">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-          <h2 className="font-heading text-sm font-semibold text-[#E5E5EA]">
+          <h2 className="font-heading text-sm font-semibold text-foreground">
             Not assigned yet
           </h2>
         </div>
-        <p className="mt-1 text-xs text-[#9CA3AF]">
+        <p className="mt-1 text-xs text-muted">
           {clientName} came in from onboarding. Assign a pod to start delivery —
           this creates the engagement so you can add deliverables in Strategy.
         </p>
       </div>
       <div className="space-y-4 p-5">
         <label className="block">
-          <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+          <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-subtle">
             Pod
           </span>
           <select
             value={podId}
             onChange={(e) => setPodId(e.target.value)}
-            className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+            className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border"
           >
             {pods.map((p) => (
               <option key={p.id} value={p.id}>
@@ -661,7 +661,7 @@ function AssignPodPanel({
         </label>
 
         <div>
-          <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+          <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-subtle">
             Engagement type
           </span>
           <div className="flex gap-2">
@@ -672,8 +672,8 @@ function AssignPodPanel({
                 onClick={() => setKind(k)}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm capitalize transition-colors ${
                   kind === k
-                    ? "border-slate-900 bg-white text-[#0C0C0C]"
-                    : "border-[#2A2A2A] text-[#9CA3AF] hover:border-[#383838]"
+                    ? "border-slate-900 bg-white text-background"
+                    : "border-border text-muted hover:border-border"
                 }`}
               >
                 {k}
@@ -820,13 +820,13 @@ function StrategySection({
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[#2A2A2A] bg-violet-50/40 px-5 py-3">
+      <div className="flex items-center justify-between border-b border-border bg-violet-50/40 px-5 py-3">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-violet-500" />
-          <h2 className="font-heading text-sm font-semibold text-[#E5E5EA]">Strategy</h2>
-          <span className="text-xs text-[#71757D]">where deliverables start</span>
+          <h2 className="font-heading text-sm font-semibold text-foreground">Strategy</h2>
+          <span className="text-xs text-subtle">where deliverables start</span>
         </div>
-        <span className="text-xs text-[#9CA3AF]">
+        <span className="text-xs text-muted">
           {designDeliverables.length} deliverable{designDeliverables.length === 1 ? "" : "s"} ·{" "}
           {docs.length} doc{docs.length === 1 ? "" : "s"} · {tests.length} test
           {tests.length === 1 ? "" : "s"}
@@ -835,7 +835,7 @@ function StrategySection({
 
       <div className="p-5">
         {/* Deliverable adder */}
-        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-[#71757D]">
+        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-subtle">
           Deliverables
         </div>
 
@@ -864,10 +864,10 @@ function StrategySection({
             </div>
 
             {adding ? (
-              <div className="mt-3 space-y-3 rounded-xl border border-[#2A2A2A] bg-[#222222]/50 p-3">
+              <div className="mt-3 space-y-3 rounded-xl border border-border bg-surface-raised/50 p-3">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="block">
-                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-subtle">
                       Page
                     </span>
                     <select
@@ -877,7 +877,7 @@ function StrategySection({
                         setPageType(pt);
                         setWeight(PAGE_DEFAULT_WEIGHT[pt]);
                       }}
-                      className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border"
                     >
                       {PAGE_OPTIONS.map((pt) => (
                         <option key={pt} value={pt}>
@@ -887,13 +887,13 @@ function StrategySection({
                     </select>
                   </label>
                   <label className="block">
-                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-subtle">
                       Weight
                     </span>
                     <select
                       value={weight}
                       onChange={(e) => setWeight(e.target.value as PageWeight)}
-                      className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border"
                     >
                       <option value="heavy">Heavy</option>
                       <option value="medium">Medium</option>
@@ -912,11 +912,11 @@ function StrategySection({
                   </button>
                   <button
                     onClick={() => setAdding(false)}
-                    className="text-xs text-[#71757D] hover:text-[#9CA3AF]"
+                    className="text-xs text-subtle hover:text-muted"
                   >
                     Cancel
                   </button>
-                  <span className="ml-auto text-[11px] text-[#71757D]">
+                  <span className="ml-auto text-[11px] text-subtle">
                     Strategist sets the brief after
                   </span>
                 </div>
@@ -924,7 +924,7 @@ function StrategySection({
             ) : (
               <button
                 onClick={() => setAdding(true)}
-                className="mt-3 w-full rounded-lg border border-dashed border-[#2A2A2A] px-3 py-2 text-left text-xs font-medium text-[#71757D] transition-colors hover:border-[#383838] hover:text-[#9CA3AF]"
+                className="mt-3 w-full rounded-lg border border-dashed border-border px-3 py-2 text-left text-xs font-medium text-subtle transition-colors hover:border-border hover:text-muted"
               >
                 + Add deliverable
               </button>
@@ -933,12 +933,12 @@ function StrategySection({
         )}
 
         {/* Strategist docs */}
-        <div className="mb-2 mt-6 text-xs font-medium uppercase tracking-wide text-[#71757D]">
+        <div className="mb-2 mt-6 text-xs font-medium uppercase tracking-wide text-subtle">
           Strategist docs
         </div>
         <div className="space-y-2">
           {!loaded ? (
-            <div className="h-8 animate-pulse rounded-lg bg-[#222222]" />
+            <div className="h-8 animate-pulse rounded-lg bg-surface-raised" />
           ) : docs.length === 0 ? (
             <EmptyState>No docs uploaded yet.</EmptyState>
           ) : (
@@ -955,14 +955,14 @@ function StrategySection({
       </div>
 
       {/* Tests tracker */}
-      <div className="border-t border-[#2A2A2A] p-5">
+      <div className="border-t border-border p-5">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-wide text-[#71757D]">
+          <span className="text-xs font-medium uppercase tracking-wide text-subtle">
             Tests
           </span>
           <button
             onClick={() => setTestModal("new")}
-            className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+            className="text-xs font-medium text-muted hover:text-foreground"
           >
             + Add test
           </button>
@@ -1015,15 +1015,15 @@ function DeliverableBriefRow({
   const pending = d.needsBrief === undefined;
 
   return (
-    <div className="rounded-lg border border-[#2A2A2A] px-3 py-2.5">
+    <div className="rounded-lg border border-border px-3 py-2.5">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="truncate text-sm font-medium text-[#E5E5EA]">{page}</div>
+          <div className="truncate text-sm font-medium text-foreground">{page}</div>
           <div className="mt-0.5 text-xs">
             {pending ? (
-              <span className="text-[#71757D]">Awaiting brief decision</span>
+              <span className="text-subtle">Awaiting brief decision</span>
             ) : d.needsBrief === false ? (
-              <span className="text-[#71757D]">No brief needed</span>
+              <span className="text-subtle">No brief needed</span>
             ) : brief ? (
               brief.url ? (
                 <a
@@ -1055,7 +1055,7 @@ function DeliverableBriefRow({
               </button>
               <button
                 onClick={() => onRule(false)}
-                className="rounded-md border border-[#2A2A2A] px-2.5 py-1 text-[11px] font-medium text-[#9CA3AF] hover:border-[#383838]"
+                className="rounded-md border border-border px-2.5 py-1 text-[11px] font-medium text-muted hover:border-border"
               >
                 No brief needed
               </button>
@@ -1089,7 +1089,7 @@ function DeliverableBriefRow({
               if (e.key === "Escape") setAttaching(false);
             }}
             placeholder="Brief link (Google Doc, Figma...) — optional"
-            className="flex-1 rounded-md border border-[#2A2A2A] px-2.5 py-1.5 text-sm outline-none focus:border-[#383838]"
+            className="flex-1 rounded-md border border-border px-2.5 py-1.5 text-sm outline-none focus:border-border"
           />
           <button
             onClick={() => {
@@ -1102,7 +1102,7 @@ function DeliverableBriefRow({
           </button>
           <button
             onClick={() => setAttaching(false)}
-            className="text-[11px] text-[#71757D] hover:text-[#9CA3AF]"
+            className="text-[11px] text-subtle hover:text-muted"
           >
             Cancel
           </button>
@@ -1114,9 +1114,9 @@ function DeliverableBriefRow({
 
 function ResourceRow({ r, onRemove }: { r: StrategyResource; onRemove: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2">
+    <div className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
       <div className="min-w-0">
-        <div className="truncate text-sm font-medium text-[#E5E5EA]">{r.title}</div>
+        <div className="truncate text-sm font-medium text-foreground">{r.title}</div>
         {r.url && (
           <a
             href={r.url}
@@ -1128,7 +1128,7 @@ function ResourceRow({ r, onRemove }: { r: StrategyResource; onRemove: () => voi
           </a>
         )}
       </div>
-      <button onClick={onRemove} className="shrink-0 text-xs text-[#4B4D52] hover:text-rose-500">
+      <button onClick={onRemove} className="shrink-0 text-xs text-border hover:text-rose-500">
         Remove
       </button>
     </div>
@@ -1152,16 +1152,16 @@ function TestRow({ test, onClick }: { test: PodTest; onClick: () => void }) {
   const showCall = test.status === "live" || test.status === "analysing";
   const call = showCall ? callTest(test) : null;
   return (
-    <div className="rounded-xl border border-[#2A2A2A] transition-colors hover:border-[#383838]">
+    <div className="rounded-xl border border-border transition-colors hover:border-border">
       <button
         onClick={onClick}
         className="w-full px-3 py-2.5 text-left"
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-medium text-[#E5E5EA]">{test.name}</span>
+          <span className="truncate text-sm font-medium text-foreground">{test.name}</span>
           <Pill tone={meta.tone}>{meta.label}</Pill>
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#9CA3AF]">
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
           {test.primary_metric && <span>{test.primary_metric}</span>}
           {test.confidence != null && <span className="tabular-nums">{test.confidence}% conf</span>}
           {test.lift_pct != null && (
@@ -1174,7 +1174,7 @@ function TestRow({ test, onClick }: { test: PodTest; onClick: () => void }) {
               {test.lift_pct}%
             </span>
           )}
-          {call && <span className="font-medium text-[#9CA3AF]">· {call.action}</span>}
+          {call && <span className="font-medium text-muted">· {call.action}</span>}
         </div>
       </button>
       {test.link && (
@@ -1296,14 +1296,14 @@ function TestModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-xl"
+        className="w-full max-w-md rounded-2xl bg-surface p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-heading text-base font-semibold text-[#E5E5EA]">
+          <h3 className="font-heading text-base font-semibold text-foreground">
             {existing ? "Edit test" : "New test"}
           </h3>
-          <button onClick={onClose} className="text-[#71757D] hover:text-[#9CA3AF]">
+          <button onClick={onClose} className="text-subtle hover:text-muted">
             ✕
           </button>
         </div>
@@ -1315,7 +1315,7 @@ function TestModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. PDP scarcity badge"
-              className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
             />
           </ModalField>
 
@@ -1324,7 +1324,7 @@ function TestModal({
               value={metric}
               onChange={(e) => setMetric(e.target.value)}
               placeholder="e.g. Add-to-cart rate"
-              className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
             />
           </ModalField>
 
@@ -1337,8 +1337,8 @@ function TestModal({
                   onClick={() => setStatus(s)}
                   className={`flex-1 rounded-lg border px-3 py-2 text-sm capitalize transition-colors ${
                     status === s
-                      ? "border-slate-900 bg-white text-[#0C0C0C]"
-                      : "border-[#2A2A2A] text-[#9CA3AF] hover:border-[#383838]"
+                      ? "border-slate-900 bg-white text-background"
+                      : "border-border text-muted hover:border-border"
                   }`}
                 >
                   {s}
@@ -1362,7 +1362,7 @@ function TestModal({
                           : r === "lost"
                             ? "border-rose-500 bg-rose-500 text-white"
                             : "border-amber-500 bg-amber-500 text-white"
-                        : "border-[#2A2A2A] text-[#9CA3AF] hover:border-[#383838]"
+                        : "border-border text-muted hover:border-border"
                     }`}
                   >
                     {r === "won" ? "Winner" : r === "lost" ? "Loser" : "Inconclusive"}
@@ -1379,7 +1379,7 @@ function TestModal({
                 onChange={(e) => setLift(e.target.value)}
                 placeholder="e.g. 11.4 or -3"
                 inputMode="decimal"
-                className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
               />
             </ModalField>
           )}
@@ -1389,7 +1389,7 @@ function TestModal({
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="Intelligems / Visually / results doc URL"
-              className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
             />
           </ModalField>
 
@@ -1399,7 +1399,7 @@ function TestModal({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="What we're testing and why"
-              className="w-full resize-none rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+              className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
             />
           </ModalField>
         </div>
@@ -1412,14 +1412,14 @@ function TestModal({
           >
             {busy ? "Saving…" : existing ? "Save changes" : "Add test"}
           </button>
-          <button onClick={onClose} className="text-sm text-[#71757D] hover:text-[#9CA3AF]">
+          <button onClick={onClose} className="text-sm text-subtle hover:text-muted">
             Cancel
           </button>
           {existing && (
             <button
               onClick={del}
               disabled={busy}
-              className="ml-auto text-xs text-[#4B4D52] hover:text-rose-500"
+              className="ml-auto text-xs text-border hover:text-rose-500"
             >
               Delete test
             </button>
@@ -1433,7 +1433,7 @@ function TestModal({
 function ModalField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+      <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-subtle">
         {label}
       </span>
       {children}
@@ -1481,9 +1481,9 @@ function LaneColumn({
 
   return (
     <Card className="flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[#2A2A2A] px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <LaneTag lane={lane} label={LANE_LABEL[lane]} />
-        <span className="text-xs text-[#71757D]">
+        <span className="text-xs text-subtle">
           {summary.done}/{summary.total}
         </span>
       </div>
@@ -1496,7 +1496,7 @@ function LaneColumn({
       </div>
       <div className="flex-1 divide-y divide-slate-50 px-1 py-2">
         {items.length === 0 ? (
-          <div className="px-3 py-4 text-center text-xs text-[#4B4D52]">
+          <div className="px-3 py-4 text-center text-xs text-border">
             Added from Strategy above.
           </div>
         ) : (
@@ -1552,7 +1552,7 @@ function DeliverableRow({
         {notReady ? (
           // Locked placeholder instead of a tickable checkbox.
           <span
-            className="flex h-4 w-4 items-center justify-center rounded-full border border-[#2A2A2A] bg-[#222222] text-[#4B4D52]"
+            className="flex h-4 w-4 items-center justify-center rounded-full border border-border bg-surface-raised text-border"
             title="Not ready yet"
           >
             <svg viewBox="0 0 12 12" className="h-2 w-2" fill="currentColor">
@@ -1569,10 +1569,10 @@ function DeliverableRow({
           <span
             className={`text-sm ${
               done
-                ? "text-[#9CA3AF] line-through"
+                ? "text-muted line-through"
                 : notReady
-                  ? "font-medium text-[#71757D]"
-                  : "font-medium text-[#E5E5EA]"
+                  ? "font-medium text-subtle"
+                  : "font-medium text-foreground"
             }`}
           >
             {d.title}
@@ -1584,7 +1584,7 @@ function DeliverableRow({
 
         <div className="mt-1.5 flex items-center justify-between">
           <OwnerChip name={d.ownerName} avatarUrl={d.ownerAvatar} size="xs" />
-          <span className="text-[11px] text-[#71757D]">
+          <span className="text-[11px] text-subtle">
             {designPending
               ? "ready once brief is set"
               : devLocked
@@ -1610,7 +1610,7 @@ function DeliverableRow({
                 <span>✓ Client approved {formatDue(d.designApprovedAt)}</span>
                 <button
                   onClick={onUnapprove}
-                  className="text-[#4B4D52] hover:text-[#9CA3AF]"
+                  className="text-border hover:text-muted"
                 >
                   undo
                 </button>
@@ -1673,7 +1673,7 @@ function PauseControl({
       className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
         paused
           ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-          : "border-[#2A2A2A] bg-[#181818] text-[#9CA3AF] hover:border-[#383838]"
+          : "border-border bg-surface text-muted hover:border-border"
       }`}
     >
       {paused
@@ -1751,7 +1751,7 @@ function AmendsSection({
         action={
           <button
             onClick={() => setAdding((a) => !a)}
-            className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+            className="text-xs font-medium text-muted hover:text-foreground"
           >
             + Add amend
           </button>
@@ -1761,7 +1761,7 @@ function AmendsSection({
       </SectionTitle>
       <Card className="divide-y divide-slate-100">
         {amends.length === 0 && !adding && (
-          <div className="px-5 py-6 text-center text-sm text-[#71757D]">
+          <div className="px-5 py-6 text-center text-sm text-subtle">
             No amends. Add revision tickets for the secondaries here.
           </div>
         )}
@@ -1773,7 +1773,7 @@ function AmendsSection({
               <Checkbox checked={done} onChange={() => toggle(a.id, done)} title="Toggle done" />
               <span
                 className={`flex-1 text-sm ${
-                  done ? "text-[#9CA3AF] line-through" : "font-medium text-[#E5E5EA]"
+                  done ? "text-muted line-through" : "font-medium text-foreground"
                 }`}
               >
                 {a.title}
@@ -1790,13 +1790,13 @@ function AmendsSection({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Amend (e.g. PDP hero spacing, fix mobile CTA)"
-              className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
             />
             <div className="grid grid-cols-2 gap-2">
               <select
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
-                className="rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border"
               >
                 <option value="">Assign to…</option>
                 {members.map((m) => (
@@ -1808,7 +1808,7 @@ function AmendsSection({
               <select
                 value={deliverable}
                 onChange={(e) => setDeliverable(e.target.value)}
-                className="rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border"
               >
                 <option value="">No specific page</option>
                 {pageOptions.map((p) => (
@@ -1828,7 +1828,7 @@ function AmendsSection({
               </button>
               <button
                 onClick={() => setAdding(false)}
-                className="text-xs text-[#71757D] hover:text-[#9CA3AF]"
+                className="text-xs text-subtle hover:text-muted"
               >
                 Cancel
               </button>
@@ -1860,16 +1860,16 @@ function MiniStat({
           ? "bg-violet-500"
           : tone === "green"
             ? "bg-emerald-500"
-            : "bg-[#383838]";
+            : "bg-border";
   return (
     <Card className="px-4 py-3">
       <div className="flex items-center gap-1.5">
         <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
-        <span className="text-[11px] font-medium uppercase tracking-wide text-[#9CA3AF]">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
           {label}
         </span>
       </div>
-      <div className="mt-1 font-heading text-2xl font-semibold tabular-nums text-[#E5E5EA]">
+      <div className="mt-1 font-heading text-2xl font-semibold tabular-nums text-foreground">
         {value}
       </div>
     </Card>
@@ -1880,7 +1880,7 @@ function BackLink() {
   return (
     <Link
       href="/workspace/clients"
-      className="inline-flex items-center gap-1 text-sm text-[#9CA3AF] hover:text-[#E5E5EA]"
+      className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
     >
       ← All clients
     </Link>

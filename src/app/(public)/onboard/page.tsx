@@ -65,16 +65,16 @@ const emptyForm: FormData = {
   additional_info: "",
 };
 
-const inputClass = "w-full px-4 py-3 bg-white border border-[#E5E5EA] rounded-xl text-sm focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all placeholder:text-[#CCC]";
+const inputClass = "w-full px-4 py-3 bg-white border border-foreground rounded-xl text-sm focus:outline-none focus:border-surface focus:ring-1 focus:ring-surface/10 transition-all placeholder:text-muted";
 const textareaClass = `${inputClass} min-h-[100px] resize-y`;
-const labelClass = "block text-sm font-medium text-[#1A1A1A] mb-1.5";
+const labelClass = "block text-sm font-medium text-surface mb-1.5";
 const requiredStar = <span className="text-red-400 ml-0.5">*</span>;
 
 function SectionHeader({ title }: { title: string }) {
   return (
     <div className="pt-8 pb-4 first:pt-0">
-      <h2 className="text-lg font-bold text-[#1A1A1A]">{title}</h2>
-      <div className="h-px bg-[#E5E5EA] mt-3" />
+      <h2 className="text-lg font-bold text-surface">{title}</h2>
+      <div className="h-px bg-foreground mt-3" />
     </div>
   );
 }
@@ -122,8 +122,8 @@ function ChipMultiSelect({
             onClick={() => toggle(opt)}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
               on
-                ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                : "bg-white text-[#555] border-[#E5E5EA] hover:border-[#999]"
+                ? "bg-surface text-white border-surface"
+                : "bg-white text-subtle border-foreground hover:border-subtle"
             }`}
           >
             {opt}
@@ -191,11 +191,11 @@ export default function OnboardingFormPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-surface-raised flex items-center justify-center px-4">
         <div className="max-w-md text-center">
           <CheckCircleIcon className="size-16 text-emerald-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-3">Brief received!</h1>
-          <p className="text-sm text-[#777] leading-relaxed">
+          <h1 className="text-2xl font-bold text-surface mb-3">Brief received!</h1>
+          <p className="text-sm text-subtle leading-relaxed">
             Your brief is now with the team and we'll be getting started shortly. All project updates will run through your Slack channel — we'll be requesting store access and any remaining details in there.
           </p>
         </div>
@@ -204,9 +204,9 @@ export default function OnboardingFormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-surface-raised">
       {/* Header */}
-      <div className="bg-[#1B1B1B] text-white py-8 px-4">
+      <div className="bg-surface text-white py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-3 mb-3">
             <img src="/el-logo.svg" alt="Ecom Landers" className="w-7 h-7 brightness-0 invert" />
@@ -359,14 +359,14 @@ export default function OnboardingFormPage() {
           <SectionHeader title="Final Uploads & Extras" />
           <div>
             <label className={labelClass}>Upload any additional assets not already provided</label>
-            <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#DDD] rounded-xl cursor-pointer hover:border-[#999] transition-colors">
+            <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-muted rounded-xl cursor-pointer hover:border-subtle transition-colors">
               {uploadingFiles ? (
                 <div className="flex items-center gap-2">
-                  <div className="size-5 border-2 border-[#CCC] border-t-[#1B1B1B] rounded-full animate-spin" />
-                  <span className="text-sm text-[#777]">Uploading...</span>
+                  <div className="size-5 border-2 border-muted border-t-[#1B1B1B] rounded-full animate-spin" />
+                  <span className="text-sm text-subtle">Uploading...</span>
                 </div>
               ) : (
-                <span className="text-sm text-[#999]">Drop files here or click to upload</span>
+                <span className="text-sm text-subtle">Drop files here or click to upload</span>
               )}
               <input
                 ref={fileRef}
@@ -380,9 +380,9 @@ export default function OnboardingFormPage() {
             {uploadedFiles.length > 0 && (
               <div className="mt-3 space-y-1.5">
                 {uploadedFiles.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between px-3 py-2 bg-white border border-[#E5E5EA] rounded-lg text-xs">
-                    <span className="text-[#555] truncate">{f.originalName}</span>
-                    <button type="button" onClick={() => setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))} className="text-[#CCC] hover:text-red-500 ml-2">
+                  <div key={i} className="flex items-center justify-between px-3 py-2 bg-white border border-foreground rounded-lg text-xs">
+                    <span className="text-subtle truncate">{f.originalName}</span>
+                    <button type="button" onClick={() => setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))} className="text-muted hover:text-red-500 ml-2">
                       Remove
                     </button>
                   </div>
@@ -401,7 +401,7 @@ export default function OnboardingFormPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 bg-[#1B1B1B] text-white text-sm font-semibold rounded-xl hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+            className="w-full py-4 bg-surface text-white text-sm font-semibold rounded-xl hover:bg-border transition-colors disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}
           </button>
@@ -410,7 +410,7 @@ export default function OnboardingFormPage() {
 
       {/* Footer */}
       <div className="text-center py-6">
-        <p className="text-[10px] text-[#CCC]">Ecom Landers</p>
+        <p className="text-[10px] text-muted">Ecom Landers</p>
       </div>
     </div>
   );

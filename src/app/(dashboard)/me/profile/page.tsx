@@ -39,7 +39,7 @@ export default function MyProfilePage() {
 
   if (!hydrated) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
       </div>
     );
@@ -47,14 +47,14 @@ export default function MyProfilePage() {
 
   if (!person) {
     return (
-      <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-2xl px-6 py-12 text-center">
-          <p className="text-sm text-[#71757D]">
+          <p className="text-sm text-subtle">
             Your account isn&apos;t linked to a team member record yet.
           </p>
           <Link
             href="/me"
-            className="inline-block mt-4 text-xs text-[#E5E5EA] hover:underline"
+            className="inline-block mt-4 text-xs text-foreground hover:underline"
           >
             Back to home
           </Link>
@@ -66,11 +66,11 @@ export default function MyProfilePage() {
   const status = STATUS_BADGE[person.status];
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-6 py-12">
         <Link
           href="/me"
-          className="inline-flex items-center gap-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA] mb-6"
+          className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-foreground mb-6"
         >
           <ArrowLeftIcon className="size-3.5" />
           Back
@@ -96,7 +96,7 @@ export default function MyProfilePage() {
             <h1 className="text-2xl font-bold truncate">
               {person.preferred_name || person.full_name}
             </h1>
-            <div className="text-sm text-[#71757D] mt-0.5">
+            <div className="text-sm text-subtle mt-0.5">
               {person.job_title || ""}{" "}
               {person.department && (
                 <>· {person.department}</>
@@ -143,7 +143,7 @@ export default function MyProfilePage() {
                 <Row k="Method" v={person.payment_method === "bank_transfer" ? "Bank transfer" : person.payment_method === "wise" ? "Wise" : person.payment_method || "—"} />
               </>
             ) : (
-              <p className="text-xs text-[#71757D]">Not set yet.</p>
+              <p className="text-xs text-subtle">Not set yet.</p>
             )}
           </ReadCard>
 
@@ -154,14 +154,14 @@ export default function MyProfilePage() {
           </ReadCard>
 
           <ReadCard label="Notes">
-            <p className="text-sm text-[#9CA3AF] leading-relaxed">
+            <p className="text-sm text-muted leading-relaxed">
               {person.notes ||
                 "Nothing here. Reach out to an admin to add or correct anything."}
             </p>
           </ReadCard>
         </div>
 
-        <p className="mt-6 text-xs text-[#71757D]">
+        <p className="mt-6 text-xs text-subtle">
           Edits to your profile are admin-only. Ask in #team-admin if anything
           looks off.
         </p>
@@ -178,8 +178,8 @@ function ReadCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5">
-      <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+    <div className="bg-surface border border-border rounded-xl p-5">
+      <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
         {label}
       </div>
       <div className="space-y-2">{children}</div>
@@ -190,8 +190,8 @@ function ReadCard({
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex items-center justify-between gap-2 text-sm">
-      <span className="text-[#71757D] text-xs">{k}</span>
-      <span className="text-[#E5E5EA] truncate text-right">{v}</span>
+      <span className="text-subtle text-xs">{k}</span>
+      <span className="text-foreground truncate text-right">{v}</span>
     </div>
   );
 }

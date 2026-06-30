@@ -36,5 +36,5 @@ export const STATUS_TINT: Record<WinStatus, string> = {
   captured: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
   promoted: "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-500/30",
   anonymised: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
-  archived: "bg-[#222222] text-[#9CA3AF]",
+  archived: "bg-surface-raised text-muted",
 };

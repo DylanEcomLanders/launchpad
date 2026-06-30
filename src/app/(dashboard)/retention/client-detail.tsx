@@ -115,8 +115,8 @@ export function ClientDetail({
       kind: "review",
       node: (
         <div>
-          <span className="text-[#E5E5EA]">{r.type === "qbr" ? "QBR" : "Strategic review"}</span>
-          {r.notes && <span className="text-[#71757D]"> — {r.notes}</span>}
+          <span className="text-foreground">{r.type === "qbr" ? "QBR" : "Strategic review"}</span>
+          {r.notes && <span className="text-subtle"> — {r.notes}</span>}
         </div>
       ),
     });
@@ -128,7 +128,7 @@ export function ClientDetail({
       node: (
         <div>
           <span className="text-emerald-400 font-medium">{r.metric || "Result"}</span>
-          <span className="text-[#71757D]"> — {r.title}</span>
+          <span className="text-subtle"> — {r.title}</span>
         </div>
       ),
     });
@@ -139,8 +139,8 @@ export function ClientDetail({
       kind: "test",
       node: (
         <div>
-          <span className="text-[#E5E5EA]">Test shipped: {t.title}</span>
-          <span className="text-[#71757D]"> — {t.outcome}{t.metric ? `, ${t.metric} ${t.upliftPct > 0 ? "+" : ""}${t.upliftPct}%` : ""}</span>
+          <span className="text-foreground">Test shipped: {t.title}</span>
+          <span className="text-subtle"> — {t.outcome}{t.metric ? `, ${t.metric} ${t.upliftPct > 0 ? "+" : ""}${t.upliftPct}%` : ""}</span>
         </div>
       ),
     });
@@ -154,10 +154,10 @@ export function ClientDetail({
           onClick={() => withSave(() => toggleTask(t))}
           className="text-left group"
         >
-          <span className={t.completed_at ? "text-[#71757D] line-through" : "text-[#E5E5EA]"}>
+          <span className={t.completed_at ? "text-subtle line-through" : "text-foreground"}>
             {t.completed_at ? "☑" : "☐"} {t.title}
           </span>
-          <span className="text-[#71757D]"> — due {fmtDate(t.due_at)}</span>
+          <span className="text-subtle"> — due {fmtDate(t.due_at)}</span>
         </button>
       ),
     });
@@ -178,17 +178,17 @@ export function ClientDetail({
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60" />
       <div
-        className="relative w-full max-w-xl h-full overflow-y-auto bg-[#0F0F0F] border-l border-[#2A2A2A] p-6"
+        className="relative w-full max-w-xl h-full overflow-y-auto bg-background border-l border-border p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-[#E5E5EA]">{client.name}</h2>
-            <div className="mt-1 text-sm text-[#71757D]">
+            <h2 className="text-xl font-semibold text-foreground">{client.name}</h2>
+            <div className="mt-1 text-sm text-subtle">
               {client.plan.toUpperCase()} · {fmtMoney(client.mrr)}/mo · CSM {client.owner_id ?? "unassigned"}
             </div>
           </div>
-          <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA] text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-subtle hover:text-foreground text-xl leading-none">×</button>
         </div>
 
         {/* Health + override */}
@@ -196,21 +196,21 @@ export function ClientDetail({
           <HealthPill band={health.band} overridden={health.overridden} />
           <span className={`text-sm ${renewal.tone}`}>Renews in {renewal.text} · {fmtDate(client.renewal_date)}</span>
         </div>
-        <div className="mt-2 text-xs text-[#71757D]">{health.reasons.join(" · ")}</div>
+        <div className="mt-2 text-xs text-subtle">{health.reasons.join(" · ")}</div>
 
         {/* Pillar breakdown — the KPIs behind the band */}
-        <div className="mt-4 bg-[#181818] border border-[#2A2A2A] rounded-lg px-3 py-3">
-          <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-2">Health pillars</div>
+        <div className="mt-4 bg-surface border border-border rounded-lg px-3 py-3">
+          <div className="text-[11px] uppercase tracking-wider text-subtle mb-2">Health pillars</div>
           <PillarDots pillars={health.pillars} showDetail />
         </div>
 
         {/* What to sell next */}
-        <div className="mt-3 bg-[#181818] border border-[#2A2A2A] rounded-lg px-3 py-3">
+        <div className="mt-3 bg-surface border border-border rounded-lg px-3 py-3">
           <div className="flex items-center justify-between mb-1.5">
-            <div className="text-[11px] uppercase tracking-wider text-[#71757D]">What to sell next</div>
+            <div className="text-[11px] uppercase tracking-wider text-subtle">What to sell next</div>
             <UpsellBadge move={row.upsell.move} label={row.upsell.label} />
           </div>
-          <div className="text-xs text-[#71757D]">{row.upsell.reason}</div>
+          <div className="text-xs text-subtle">{row.upsell.reason}</div>
         </div>
 
         <div className="mt-4">
@@ -227,9 +227,9 @@ export function ClientDetail({
                   className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                     active
                       ? b === null
-                        ? "bg-[#E5E5EA] text-[#0F0F0F] border-[#E5E5EA]"
+                        ? "bg-foreground text-background border-foreground"
                         : BAND_META[b].chip
-                      : "bg-[#181818] border-[#2A2A2A] text-[#71757D] hover:text-[#E5E5EA]"
+                      : "bg-surface border-border text-subtle hover:text-foreground"
                   }`}
                 >
                   {lbl}
@@ -248,14 +248,14 @@ export function ClientDetail({
         </div>
 
         {/* Log form */}
-        <div className="mt-6 border-t border-[#2A2A2A] pt-5">
+        <div className="mt-6 border-t border-border pt-5">
           <div className="flex gap-2 mb-4">
             {(["review", "result", "task"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
-                  tab === t ? "bg-[#E5E5EA] text-[#0F0F0F]" : "bg-[#181818] border border-[#2A2A2A] text-[#71757D] hover:text-[#E5E5EA]"
+                  tab === t ? "bg-foreground text-background" : "bg-surface border border-border text-subtle hover:text-foreground"
                 }`}
               >
                 Log {t}
@@ -286,7 +286,7 @@ export function ClientDetail({
                 <label className={labelClass}>Next due (optional)</label>
                 <input type="date" className={inputClass} value={rvNext} onChange={(e) => setRvNext(e.target.value)} />
               </div>
-              <button disabled={saving || !rvNotes.trim()} onClick={submitReview} className="px-4 py-2 rounded-lg bg-[#E5E5EA] text-[#0F0F0F] text-sm font-medium disabled:opacity-40">Save review</button>
+              <button disabled={saving || !rvNotes.trim()} onClick={submitReview} className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium disabled:opacity-40">Save review</button>
             </div>
           )}
 
@@ -306,7 +306,7 @@ export function ClientDetail({
                   <input type="date" className={inputClass} value={resDate} onChange={(e) => setResDate(e.target.value)} />
                 </div>
               </div>
-              <button disabled={saving || !resTitle.trim()} onClick={submitResult} className="px-4 py-2 rounded-lg bg-[#E5E5EA] text-[#0F0F0F] text-sm font-medium disabled:opacity-40">Save result</button>
+              <button disabled={saving || !resTitle.trim()} onClick={submitResult} className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium disabled:opacity-40">Save result</button>
             </div>
           )}
 
@@ -320,16 +320,16 @@ export function ClientDetail({
                 <label className={labelClass}>Due</label>
                 <input type="date" className={inputClass} value={taskDue} onChange={(e) => setTaskDue(e.target.value)} />
               </div>
-              <button disabled={saving || !taskTitle.trim()} onClick={submitTask} className="px-4 py-2 rounded-lg bg-[#E5E5EA] text-[#0F0F0F] text-sm font-medium disabled:opacity-40">Save task</button>
+              <button disabled={saving || !taskTitle.trim()} onClick={submitTask} className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium disabled:opacity-40">Save task</button>
             </div>
           )}
         </div>
 
         {/* Timeline */}
-        <div className="mt-6 border-t border-[#2A2A2A] pt-5">
+        <div className="mt-6 border-t border-border pt-5">
           <div className={labelClass}>Timeline</div>
           {items.length === 0 ? (
-            <div className="text-sm text-[#71757D]">Nothing logged yet.</div>
+            <div className="text-sm text-subtle">Nothing logged yet.</div>
           ) : (
             <div className="space-y-3">
               {items.map((it, i) => (
@@ -339,7 +339,7 @@ export function ClientDetail({
                   </div>
                   <div className="flex-1">
                     {it.node}
-                    <div className="text-xs text-[#71757D] mt-0.5">{fmtDate(it.date)}</div>
+                    <div className="text-xs text-subtle mt-0.5">{fmtDate(it.date)}</div>
                   </div>
                 </div>
               ))}
@@ -353,9 +353,9 @@ export function ClientDetail({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg px-3 py-2">
-      <div className="text-[11px] uppercase tracking-wider text-[#71757D]">{label}</div>
-      <div className="text-[#E5E5EA] font-medium mt-0.5">{value}</div>
+    <div className="bg-surface border border-border rounded-lg px-3 py-2">
+      <div className="text-[11px] uppercase tracking-wider text-subtle">{label}</div>
+      <div className="text-foreground font-medium mt-0.5">{value}</div>
     </div>
   );
 }

@@ -268,7 +268,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
             Project Doc Creation
           </h1>
-          <p className="text-[#71757D]">
+          <p className="text-subtle">
             Generate branded scope documents and service agreements for client projects
           </p>
         </div>
@@ -348,12 +348,12 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
           {/* Deliverables */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-subtle">
                 Deliverables
               </label>
               <button
                 onClick={addDeliverable}
-                className="flex items-center gap-1.5 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-subtle hover:text-foreground transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Add row
@@ -392,7 +392,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
                   <button
                     onClick={() => removeDeliverable(i)}
                     disabled={formData.deliverables.length <= 1}
-                    className="p-2.5 text-[#71757D] hover:text-[#E5E5EA] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2.5 text-subtle hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <TrashIcon className="size-3.5" />
                   </button>
@@ -414,7 +414,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
           </div>
 
           {/* ── Agreement Details ── */}
-          <div className="pt-4 border-t border-[#2A2A2A]">
+          <div className="pt-4 border-t border-border">
             {!agreementAlwaysOpen && (
               <button
                 type="button"
@@ -424,22 +424,22 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
                 className="flex items-center justify-between w-full text-left"
               >
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-subtle">
                     Agreement Details
                   </span>
-                  <span className="ml-2 text-[10px] text-[#71757D]">
+                  <span className="ml-2 text-[10px] text-subtle">
                     Optional
                   </span>
                 </div>
                 <ChevronDownIcon
-                  className={`size-4 text-[#71757D] transition-transform ${
+                  className={`size-4 text-subtle transition-transform ${
                     formData.showAgreement ? "rotate-180" : ""
                   }`}
                 />
               </button>
             )}
             {agreementAlwaysOpen && (
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-subtle mb-2">
                 Agreement Details
               </p>
             )}
@@ -610,12 +610,12 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
                 {ag.paymentStructure === "Milestone-Based" && (
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-subtle">
                         Milestones
                       </label>
                       <button
                         onClick={addMilestone}
-                        className="flex items-center gap-1.5 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                        className="flex items-center gap-1.5 text-xs font-medium text-subtle hover:text-foreground transition-colors"
                       >
                         <PlusIcon className="size-3.5" />
                         Add milestone
@@ -649,7 +649,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
                           <button
                             onClick={() => removeMilestone(i)}
                             disabled={ag.milestones.length <= 1}
-                            className="p-2.5 text-[#71757D] hover:text-[#E5E5EA] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-2.5 text-subtle hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           >
                             <TrashIcon className="size-3.5" />
                           </button>
@@ -765,7 +765,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
               <button
                 onClick={handleGenerateScope}
                 disabled={!isFormValid || generatingScope}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {generatingScope ? (
                   <>
@@ -785,7 +785,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
               <button
                 onClick={handleGenerateAgreement}
                 disabled={!isAgreementValid || generatingAgreement}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {generatingAgreement ? (
                   <>
@@ -807,7 +807,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
                 disabled={
                   !isAgreementValid || generatingScope || generatingAgreement
                 }
-                className="flex items-center gap-2 px-6 py-3 border border-[#2A2A2A] bg-[#181818] text-[#E5E5EA] text-sm font-medium rounded-md hover:bg-[#222222] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 border border-border bg-surface text-foreground text-sm font-medium rounded-md hover:bg-surface-raised transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {generatingScope && generatingAgreement ? (
                   <>
@@ -827,7 +827,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
 
         {/* ── PDF Previews ── */}
         {(showScopePreview || showAgreementPreview) && (
-          <div className="mt-12 pt-12 border-t border-[#2A2A2A] space-y-6">
+          <div className="mt-12 pt-12 border-t border-border space-y-6">
             {showScopePreview && (
               <PdfPreview
                 document={<ScopePdfDocument data={formData} />}
@@ -852,7 +852,7 @@ export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { ag
               <button
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
-                className="flex items-center gap-2 px-5 py-2.5 border border-[#2A2A2A] bg-[#181818] text-[#E5E5EA] text-sm font-medium rounded-md hover:bg-[#222222] transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-5 py-2.5 border border-border bg-surface text-foreground text-sm font-medium rounded-md hover:bg-surface-raised transition-colors disabled:opacity-40"
               >
                 {downloadingAll ? (
                   <>

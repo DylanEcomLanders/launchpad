@@ -85,10 +85,10 @@ export default function UpsellScannerPage() {
     <div className="max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA] mb-1">
+        <h1 className="text-[28px] leading-tight font-bold text-foreground mb-1">
           Upsell Scanner
         </h1>
-        <p className="text-sm text-[#71757D]">
+        <p className="text-sm text-subtle">
           Scan the last 24 hours of Slack for upsell signals
         </p>
       </div>
@@ -98,7 +98,7 @@ export default function UpsellScannerPage() {
         <button
           onClick={runScan}
           disabled={scanning}
-          className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2.5 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {scanning ? (
             <>
@@ -114,7 +114,7 @@ export default function UpsellScannerPage() {
         </button>
 
         {result && !scanning && (
-          <span className="text-xs text-[#71757D]">
+          <span className="text-xs text-subtle">
             {result.messagesScanned} messages scanned ·{" "}
             {(result.elapsedMs / 1000).toFixed(1)}s
           </span>
@@ -123,11 +123,11 @@ export default function UpsellScannerPage() {
 
       {/* Scanning State */}
       {scanning && (
-        <div className="flex items-center gap-3 p-6 bg-[#222222] border border-[#2A2A2A] rounded-lg mb-8">
-          <ArrowPathIcon className="size-5 animate-spin text-[#71757D]" />
+        <div className="flex items-center gap-3 p-6 bg-surface-raised border border-border rounded-lg mb-8">
+          <ArrowPathIcon className="size-5 animate-spin text-subtle" />
           <div>
             <p className="text-sm font-medium">Scanning Slack & analysing with Claude...</p>
-            <p className="text-xs text-[#71757D] mt-0.5">
+            <p className="text-xs text-subtle mt-0.5">
               This usually takes 15–30 seconds
             </p>
           </div>
@@ -147,12 +147,12 @@ export default function UpsellScannerPage() {
         <>
           {/* Summary Bar */}
           {result.opportunities.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3 p-4 bg-[#222222] border border-[#2A2A2A] rounded-lg mb-6">
+            <div className="flex flex-wrap items-center gap-3 p-4 bg-surface-raised border border-border rounded-lg mb-6">
               <span className="text-sm font-semibold">
                 {result.opportunities.length} signal
                 {result.opportunities.length !== 1 ? "s" : ""} detected
               </span>
-              <span className="text-[#E5E5EA]">|</span>
+              <span className="text-foreground">|</span>
               {actNow > 0 && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-900/20 text-red-700 text-xs font-semibold rounded-full">
                   <span className="size-1.5 rounded-full bg-red-500" />
@@ -189,10 +189,10 @@ export default function UpsellScannerPage() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <p className="text-lg font-medium text-[#71757D] mb-1">
+              <p className="text-lg font-medium text-subtle mb-1">
                 📭 No upsell signals detected
               </p>
-              <p className="text-sm text-[#71757D]">
+              <p className="text-sm text-subtle">
                 All quiet in the last 24 hours — check back tomorrow
               </p>
             </div>
@@ -203,8 +203,8 @@ export default function UpsellScannerPage() {
       {/* Initial Empty State */}
       {!result && !scanning && !error && (
         <div className="text-center py-16">
-          <SignalIcon className="size-10 text-[#E5E5EA] mx-auto mb-4" />
-          <p className="text-sm text-[#71757D]">
+          <SignalIcon className="size-10 text-foreground mx-auto mb-4" />
+          <p className="text-sm text-subtle">
             Click &ldquo;Run Scan&rdquo; to search the last 24 hours of Slack
           </p>
         </div>
@@ -257,7 +257,7 @@ function OpportunityCard({
   const s = strengthConfig[opp.signal_strength] || strengthConfig.moderate;
 
   return (
-    <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-6">
+    <div className="bg-surface-raised border border-border rounded-lg p-6">
       {/* Badges */}
       <div className="flex items-center gap-2 mb-4">
         <span
@@ -266,7 +266,7 @@ function OpportunityCard({
           <span className={`size-1.5 rounded-full ${u.dot}`} />
           {u.label}
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#2A2A2A] text-[#71757D] text-xs font-semibold rounded-full">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-border text-subtle text-xs font-semibold rounded-full">
           <span className={`size-1.5 rounded-full ${s.dot}`} />
           {s.label} signal
         </span>
@@ -285,22 +285,22 @@ function OpportunityCard({
 
         {/* Draft Message */}
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-2">
             Ready-to-send message
           </p>
-          <div className="relative bg-[#181818] border-l-2 border-white rounded-r-md p-4">
-            <p className="text-sm text-[#3A3A3A] leading-relaxed pr-8">
+          <div className="relative bg-surface border-l-2 border-white rounded-r-md p-4">
+            <p className="text-sm text-subtle leading-relaxed pr-8">
               {opp.draft_message}
             </p>
             <button
               onClick={() => onCopy(opp, index)}
-              className="absolute top-3 right-3 p-1.5 rounded hover:bg-[#222222] transition-colors"
+              className="absolute top-3 right-3 p-1.5 rounded hover:bg-surface-raised transition-colors"
               title="Copy to clipboard"
             >
               {copiedId === `${index}` ? (
                 <CheckIcon className="size-3.5 text-emerald-500" />
               ) : (
-                <ClipboardDocumentIcon className="size-3.5 text-[#71757D]" />
+                <ClipboardDocumentIcon className="size-3.5 text-subtle" />
               )}
             </button>
           </div>
@@ -313,10 +313,10 @@ function OpportunityCard({
 function Section({ label, content }: { label: string; content: string }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-1">
         {label}
       </p>
-      <p className="text-sm text-[#3A3A3A] leading-relaxed">{content}</p>
+      <p className="text-sm text-subtle leading-relaxed">{content}</p>
     </div>
   );
 }

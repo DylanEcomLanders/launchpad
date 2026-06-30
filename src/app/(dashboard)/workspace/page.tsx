@@ -91,10 +91,10 @@ export default function WorkspaceOverview() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-heading text-2xl font-semibold text-[#E5E5EA]">
+        <h1 className="font-heading text-2xl font-semibold text-foreground">
           Today across every pod
         </h1>
-        <p className="mt-1 text-sm text-[#9CA3AF]">
+        <p className="mt-1 text-sm text-muted">
           Everything that needs a decision, an owner, or a nudge - in one place.
         </p>
       </div>
@@ -135,16 +135,16 @@ export default function WorkspaceOverview() {
         <section>
           <SectionTitle
             action={
-              <span className="text-xs text-[#71757D]">
+              <span className="text-xs text-subtle">
                 {grouped.length} client{grouped.length === 1 ? "" : "s"} · {totalSignals} signals
               </span>
             }
           >
             Needs attention
           </SectionTitle>
-          <Card className="divide-y divide-[#2A2A2A]">
+          <Card className="divide-y divide-border">
             {grouped.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-[#71757D]">
+              <div className="px-5 py-10 text-center text-sm text-subtle">
                 Nothing on fire. Every lane is on track.
               </div>
             ) : (
@@ -154,19 +154,19 @@ export default function WorkspaceOverview() {
                   <Link
                     key={g.clientId}
                     href={`/workspace/clients/${g.clientId}`}
-                    className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-[#222222]"
+                    className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-raised"
                   >
                     <Pill tone={meta.tone} dot>
                       {meta.label}
                     </Pill>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-[#E5E5EA]">
+                      <div className="truncate text-sm font-medium text-foreground">
                         {g.clientName}
                       </div>
-                      <div className="truncate text-xs text-[#9CA3AF]">{g.top.title}</div>
+                      <div className="truncate text-xs text-muted">{g.top.title}</div>
                     </div>
                     {g.extraCount > 0 && (
-                      <span className="shrink-0 rounded-full bg-[#222222] px-2 py-0.5 text-[11px] font-medium text-[#9CA3AF]">
+                      <span className="shrink-0 rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-medium text-muted">
                         +{g.extraCount} more
                       </span>
                     )}
@@ -177,7 +177,7 @@ export default function WorkspaceOverview() {
             {grouped.length > 8 && (
               <Link
                 href="/workspace/clients"
-                className="block px-5 py-3 text-center text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+                className="block px-5 py-3 text-center text-xs font-medium text-muted hover:text-foreground"
               >
                 View {grouped.length - 8} more in Clients →
               </Link>
@@ -191,7 +191,7 @@ export default function WorkspaceOverview() {
             action={
               <Link
                 href="/workspace/pods"
-                className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+                className="text-xs font-medium text-muted hover:text-foreground"
               >
                 All pods →
               </Link>
@@ -206,10 +206,10 @@ export default function WorkspaceOverview() {
                 <Card className="px-5 py-4 transition-shadow hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-heading text-sm font-semibold text-[#E5E5EA]">
+                      <div className="font-heading text-sm font-semibold text-foreground">
                         {p.pod.name}
                       </div>
-                      <div className="text-xs text-[#9CA3AF]">
+                      <div className="text-xs text-muted">
                         {p.retainerCount} retainer · {p.sprintCount} sprint
                       </div>
                     </div>
@@ -220,7 +220,7 @@ export default function WorkspaceOverview() {
                     )}
                   </div>
                   <div className="mt-3">
-                    <div className="mb-1 flex items-center justify-between text-xs text-[#9CA3AF]">
+                    <div className="mb-1 flex items-center justify-between text-xs text-muted">
                       <span>This month</span>
                       <span className="tabular-nums">
                         {p.capacityUsed} / {p.capacityTotal} pts
@@ -241,7 +241,7 @@ export default function WorkspaceOverview() {
           action={
             <Link
               href="/workspace/clients"
-              className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+              className="text-xs font-medium text-muted hover:text-foreground"
             >
               All clients →
             </Link>
@@ -258,9 +258,9 @@ export default function WorkspaceOverview() {
                 <Card className="flex items-center justify-between px-4 py-3 transition-shadow hover:shadow-md">
                   <div className="flex items-center gap-2">
                     <HealthDot band={c.band} />
-                    <span className="text-sm font-medium text-[#E5E5EA]">{c.client.name}</span>
+                    <span className="text-sm font-medium text-foreground">{c.client.name}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-[#71757D]">
+                  <div className="flex items-center gap-2 text-xs text-subtle">
                     {c.day != null && <span>Day {c.day}/90</span>}
                     {c.atRiskCount > 0 && <Pill tone="red">{c.atRiskCount}</Pill>}
                   </div>
@@ -284,7 +284,7 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
   return (
     <section>
       <SectionTitle
-        action={<span className="text-xs text-[#71757D]">{total} due this week</span>}
+        action={<span className="text-xs text-subtle">{total} due this week</span>}
       >
         This week
       </SectionTitle>
@@ -298,19 +298,19 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
               type="button"
               onClick={() => setOpenDay(isOpen ? null : d.count > 0 ? d.ymd : null)}
               disabled={d.count === 0}
-              className={`rounded-2xl border bg-[#181818] px-3 py-3 text-left shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all ${
+              className={`rounded-2xl border bg-surface px-3 py-3 text-left shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all ${
                 d.count === 0 ? "cursor-default" : "hover:shadow-md"
               } ${
                 isOpen
                   ? "border-slate-900/30 ring-1 ring-slate-900/10"
                   : d.isToday
-                    ? "border-[#2A2A2A]/80 ring-1 ring-slate-900/10"
-                    : "border-[#2A2A2A]/80"
+                    ? "border-border/80 ring-1 ring-slate-900/10"
+                    : "border-border/80"
               } ${hasOverdue ? "bg-red-950/20" : ""}`}
             >
               <div
                 className={`text-[11px] font-semibold uppercase tracking-wide ${
-                  d.isToday ? "text-[#E5E5EA]" : "text-[#71757D]"
+                  d.isToday ? "text-foreground" : "text-subtle"
                 }`}
               >
                 {d.weekday} {d.dayNum}
@@ -318,7 +318,7 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
               <div className="mt-1.5 flex items-baseline gap-1.5">
                 <span
                   className={`font-heading text-2xl font-semibold tabular-nums ${
-                    d.count === 0 ? "text-[#4B4D52]" : "text-[#E5E5EA]"
+                    d.count === 0 ? "text-border" : "text-foreground"
                   }`}
                 >
                   {d.count}
@@ -336,15 +336,15 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
 
       {/* Click-in detail for the selected day */}
       {selected && selected.items.length > 0 && (
-        <Card className="mt-2 divide-y divide-[#2A2A2A]">
-          <div className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-[#71757D]">
+        <Card className="mt-2 divide-y divide-border">
+          <div className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-subtle">
             {selected.weekday} {selected.dayNum} · {selected.count} due
           </div>
           {selected.items.map((it) => (
             <Link
               key={it.id}
               href={`/workspace/clients/${it.clientId}`}
-              className="flex items-center gap-3 px-5 py-2.5 transition-colors hover:bg-[#222222]"
+              className="flex items-center gap-3 px-5 py-2.5 transition-colors hover:bg-surface-raised"
             >
               <span
                 className={`h-1.5 w-1.5 shrink-0 rounded-full ${
@@ -356,8 +356,8 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
                 }`}
               />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-[#E5E5EA]">{it.title}</div>
-                <div className="truncate text-xs text-[#9CA3AF]">{it.clientName}</div>
+                <div className="truncate text-sm font-medium text-foreground">{it.title}</div>
+                <div className="truncate text-xs text-muted">{it.clientName}</div>
               </div>
               {it.state === "overdue" && (
                 <span className="shrink-0 text-[11px] font-medium text-rose-600">
@@ -376,13 +376,13 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
 function LoadingState() {
   return (
     <div className="space-y-6">
-      <div className="h-8 w-64 animate-pulse rounded-lg bg-[#222222]" />
+      <div className="h-8 w-64 animate-pulse rounded-lg bg-surface-raised" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-2xl bg-[#222222]" />
+          <div key={i} className="h-24 animate-pulse rounded-2xl bg-surface-raised" />
         ))}
       </div>
-      <div className="h-96 animate-pulse rounded-2xl bg-[#222222]" />
+      <div className="h-96 animate-pulse rounded-2xl bg-surface-raised" />
     </div>
   );
 }

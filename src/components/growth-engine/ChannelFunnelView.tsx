@@ -112,19 +112,19 @@ function ChannelFunnelViewInner({ channel, initialNodes, initialEdges, onSave, o
   return (
     <div className="flex h-[calc(100vh-80px)]">
       {/* Left sidebar — palette or editor */}
-      <div className="w-64 border-r border-[#2A2A2A] bg-[#181818] overflow-y-auto shrink-0">
+      <div className="w-64 border-r border-border bg-surface overflow-y-auto shrink-0">
         {/* Back button */}
-        <button onClick={onBack} className="flex items-center gap-1.5 px-4 py-3 text-xs text-[#9CA3AF] hover:text-[#E5E5EA] border-b border-[#2A2A2A] w-full">
+        <button onClick={onBack} className="flex items-center gap-1.5 px-4 py-3 text-xs text-muted hover:text-foreground border-b border-border w-full">
           ← Back to Overview
         </button>
 
         {/* Channel header */}
-        <div className="px-4 py-3 border-b border-[#2A2A2A]">
+        <div className="px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2">
             <span className="text-lg" style={{ color: channelConfig?.color }}>{channelConfig?.icon}</span>
             <div>
               <p className="text-sm font-semibold">{channelConfig?.label} Funnel</p>
-              <p className="text-[10px] text-[#9CA3AF]">Drag nodes to build your funnel</p>
+              <p className="text-[10px] text-muted">Drag nodes to build your funnel</p>
             </div>
           </div>
         </div>
@@ -132,22 +132,22 @@ function ChannelFunnelViewInner({ channel, initialNodes, initialEdges, onSave, o
         {selectedNode ? (
           /* Node editor */
           <div className="p-4 space-y-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Edit Node</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Edit Node</p>
             <div>
-              <label className="text-[10px] text-[#9CA3AF] block mb-1">Label</label>
+              <label className="text-[10px] text-muted block mb-1">Label</label>
               <input
                 type="text"
                 value={String(selectedNode.data?.label || "")}
                 onChange={(e) => updateNodeData("label", e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
+                className="w-full text-xs px-2 py-1.5 border border-border rounded"
               />
             </div>
             <div>
-              <label className="text-[10px] text-[#9CA3AF] block mb-1">Status</label>
+              <label className="text-[10px] text-muted block mb-1">Status</label>
               <select
                 value={String(selectedNode.data?.status || "planned")}
                 onChange={(e) => updateNodeData("status", e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
+                className="w-full text-xs px-2 py-1.5 border border-border rounded"
               >
                 <option value="planned">Planned</option>
                 <option value="in-progress">In Progress</option>
@@ -155,21 +155,21 @@ function ChannelFunnelViewInner({ channel, initialNodes, initialEdges, onSave, o
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-[#9CA3AF] block mb-1">Notes</label>
+              <label className="text-[10px] text-muted block mb-1">Notes</label>
               <textarea
                 value={String(selectedNode.data?.notes || "")}
                 onChange={(e) => updateNodeData("notes", e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded min-h-[60px]"
+                className="w-full text-xs px-2 py-1.5 border border-border rounded min-h-[60px]"
                 placeholder="Add notes..."
               />
             </div>
             <div>
-              <label className="text-[10px] text-[#9CA3AF] block mb-1">URL</label>
+              <label className="text-[10px] text-muted block mb-1">URL</label>
               <input
                 type="url"
                 value={String(selectedNode.data?.url || "")}
                 onChange={(e) => updateNodeData("url", e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
+                className="w-full text-xs px-2 py-1.5 border border-border rounded"
                 placeholder="https://..."
               />
             </div>
@@ -177,7 +177,7 @@ function ChannelFunnelViewInner({ channel, initialNodes, initialEdges, onSave, o
         ) : (
           /* Palette */
           <div className="p-4 space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">Drag to Canvas</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">Drag to Canvas</p>
             {GROWTH_PALETTE.map((item) => (
               <div
                 key={item.type}
@@ -186,10 +186,10 @@ function ChannelFunnelViewInner({ channel, initialNodes, initialEdges, onSave, o
                   e.dataTransfer.setData("application/growthnode", item.type);
                   e.dataTransfer.effectAllowed = "move";
                 }}
-                className="flex items-center gap-2 px-3 py-2.5 border border-[#2A2A2A] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
+                className="flex items-center gap-2 px-3 py-2.5 border border-border rounded-lg cursor-grab hover:border-subtle hover:shadow-sm transition-all"
               >
                 <span className="size-2 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-xs font-medium text-[#E5E5EA]">{item.label}</span>
+                <span className="text-xs font-medium text-foreground">{item.label}</span>
               </div>
             ))}
           </div>

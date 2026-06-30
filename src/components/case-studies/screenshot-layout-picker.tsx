@@ -21,14 +21,14 @@ export function ScreenshotLayoutPicker({ value, onChange }: Props) {
             onClick={() => onChange(opt.id)}
             className={`p-2.5 border rounded-md text-left transition-colors ${
               active
-                ? "border-white bg-[#0C0C0C]"
-                : "border-[#2A2A2A] bg-[#181818] hover:border-[#A0A0A0]"
+                ? "border-white bg-background"
+                : "border-border bg-surface hover:border-muted"
             }`}
           >
-            <div className="aspect-[4/3] mb-1.5 flex items-center justify-center bg-[#0C0C0C] rounded">
+            <div className="aspect-[4/3] mb-1.5 flex items-center justify-center bg-background rounded">
               <LayoutDiagram layout={opt.id} />
             </div>
-            <p className={`text-[10px] font-semibold leading-tight ${active ? "text-[#E5E5EA]" : "text-[#71757D]"}`}>
+            <p className={`text-[10px] font-semibold leading-tight ${active ? "text-foreground" : "text-subtle"}`}>
               {opt.label}
             </p>
           </button>

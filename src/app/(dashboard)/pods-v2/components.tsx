@@ -59,7 +59,7 @@ const BUCKET_COLOR: Record<Bucket, string> = {
 };
 
 const STATUS_COLOR: Record<ProjectStatus, string> = {
-  queued: "bg-[#222222] text-[#71757D] border-[#2A2A2A]",
+  queued: "bg-surface-raised text-subtle border-border",
   in_progress: "bg-blue-50 text-blue-700 border-blue-200",
   in_review: "bg-amber-500/10 text-amber-300 border-amber-500/30",
   shipped: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -143,19 +143,19 @@ export function CapacityMeter({
       ? "border-rose-500/30 bg-rose-500/10"
       : pct >= 80
         ? "border-amber-500/30 bg-amber-500/10"
-        : "border-[#2A2A2A] bg-[#181818]";
+        : "border-border bg-surface";
   return (
     <div className={`rounded-xl border p-3 ${ring}`}>
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
           {label ?? "Capacity"}
         </span>
         <span className="text-sm tabular-nums">
           <span className="font-semibold">{used}</span>
-          <span className="text-[#71757D]"> / {total} pts</span>
+          <span className="text-subtle"> / {total} pts</span>
         </span>
       </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#222222]">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
         <div
           className={`h-full ${tone} transition-all`}
           style={{ width: `${pct}%` }}
@@ -164,17 +164,17 @@ export function CapacityMeter({
       {nextMonthUsed != null && (
         <div className="mt-1.5">
           <div className="flex items-baseline justify-between text-[10px]">
-            <span className="font-semibold uppercase tracking-wider text-[#71757D]">
+            <span className="font-semibold uppercase tracking-wider text-subtle">
               Next month
             </span>
-            <span className="tabular-nums text-[#71757D]">
+            <span className="tabular-nums text-subtle">
               <span
                 className={
                   nextMonthUsed >= total
                     ? "font-semibold text-rose-700"
                     : nextMonthUsed >= total * 0.8
                       ? "font-semibold text-amber-700"
-                      : "font-semibold text-[#E5E5EA]"
+                      : "font-semibold text-foreground"
                 }
               >
                 {nextMonthUsed}
@@ -182,7 +182,7 @@ export function CapacityMeter({
               <span> / {total} pts</span>
             </span>
           </div>
-          <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[#222222]">
+          <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-surface-raised">
             <div
               className={`h-full transition-all ${
                 nextMonthUsed >= total
@@ -235,19 +235,19 @@ function WeekCell({
       ? "text-rose-700"
       : used >= cap * 0.8
         ? "text-amber-700"
-        : "text-[#E5E5EA]";
+        : "text-foreground";
   return (
-    <div className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1.5">
+    <div className="rounded-md border border-border bg-surface px-2 py-1.5">
       <div className="flex items-baseline justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
           {label}
         </span>
         <span className="text-[11px] tabular-nums">
           <span className={`font-semibold ${valueTone}`}>{used}</span>
-          <span className="text-[#71757D]"> / {cap} pts</span>
+          <span className="text-subtle"> / {cap} pts</span>
         </span>
       </div>
-      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[#222222]">
+      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-surface-raised">
         <div className={`h-full ${tone} transition-all`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -367,12 +367,12 @@ export function MemberRow({
       <div className="min-w-0 leading-tight">
         <div
           className={`truncate text-sm font-medium ${
-            member.is_placeholder ? "italic text-[#71757D]" : ""
+            member.is_placeholder ? "italic text-subtle" : ""
           }`}
         >
           {member.is_placeholder ? "TO HIRE" : member.name}
         </div>
-        <div className="truncate text-[11px] text-[#71757D]">
+        <div className="truncate text-[11px] text-subtle">
           {ROLE_LABEL[member.role]}
           {isOoo && (
             <span className="ml-1 rounded border border-amber-500/30 bg-amber-500/10 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-amber-300">
@@ -397,7 +397,7 @@ export function ProjectCard({
   const midWeekKickoff = !isMonday(project.kickoff_date) && !project.is_rush;
   return (
     <div
-      className={`rounded-lg border border-[#2A2A2A] bg-[#181818] p-3 shadow-[var(--shadow-soft)] transition-all hover:border-[#C5C5C5] ${
+      className={`rounded-lg border border-border bg-surface p-3 shadow-[var(--shadow-soft)] transition-all hover:border-muted ${
         compact ? "" : "min-h-[110px]"
       }`}
     >
@@ -407,7 +407,7 @@ export function ProjectCard({
             {project.name}
           </div>
           {client && (
-            <div className="mt-0.5 truncate text-[11px] text-[#71757D]">
+            <div className="mt-0.5 truncate text-[11px] text-subtle">
               {client.name}
             </div>
           )}
@@ -431,9 +431,9 @@ export function ProjectCard({
       </div>
 
       {!compact && (
-        <div className="mt-2 flex items-center justify-between text-[11px] text-[#71757D]">
+        <div className="mt-2 flex items-center justify-between text-[11px] text-subtle">
           <span>Kickoff {formatDayMonth(project.kickoff_date)}</span>
-          <span className="font-medium text-[#E5E5EA]">
+          <span className="font-medium text-foreground">
             Ships {formatDayMonth(project.delivery_date)}
           </span>
         </div>
@@ -451,10 +451,10 @@ export function PodHeading({
 }) {
   return (
     <div>
-      <h1 className="text-3xl font-medium text-[#E5E5EA]">
+      <h1 className="text-3xl font-medium text-foreground">
         {name}
       </h1>
-      <p className="mt-0.5 text-sm text-[#71757D]">{tagline}</p>
+      <p className="mt-0.5 text-sm text-subtle">{tagline}</p>
     </div>
   );
 }

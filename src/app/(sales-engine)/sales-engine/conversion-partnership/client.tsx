@@ -84,10 +84,10 @@ export default function ConversionPartnershipClient({ modules }: { modules: Wiki
     <div className="flex h-screen bg-white overflow-hidden">
       {/* Sidebar */}
       {navOpen && (
-        <aside className="w-56 shrink-0 border-r border-[#F0F0F0] overflow-y-auto py-4 px-3">
+        <aside className="w-56 shrink-0 border-r border-foreground overflow-y-auto py-4 px-3">
           {(["process", "toolkit", "reference"] as const).map((cat) => (
             <div key={cat} className="mb-5">
-              <p className="text-[10px] font-semibold text-[#BBB] uppercase tracking-wider px-2 mb-2">
+              <p className="text-[10px] font-semibold text-muted uppercase tracking-wider px-2 mb-2">
                 {categoryLabels[cat]}
               </p>
               {grouped[cat].map((m) => (
@@ -96,13 +96,13 @@ export default function ConversionPartnershipClient({ modules }: { modules: Wiki
                   onClick={() => setActiveSlug(m.slug)}
                   className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors mb-0.5 ${
                     activeSlug === m.slug
-                      ? "bg-[#F0F0F0] text-[#1B1B1B] font-medium"
-                      : "text-[#666] hover:bg-[#FAFAFA] hover:text-[#1B1B1B]"
+                      ? "bg-foreground text-foreground font-medium"
+                      : "text-subtle hover:bg-surface-raised hover:text-foreground"
                   }`}
                 >
-                  <span className="shrink-0 text-[#999]">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
+                  <span className="shrink-0 text-subtle">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
                   <span className="truncate">{m.shortTitle}</span>
-                  {m.toolHref && <WrenchScrewdriverIcon className="size-3 text-[#CCC] ml-auto shrink-0" />}
+                  {m.toolHref && <WrenchScrewdriverIcon className="size-3 text-muted ml-auto shrink-0" />}
                 </button>
               ))}
             </div>
@@ -113,43 +113,43 @@ export default function ConversionPartnershipClient({ modules }: { modules: Wiki
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Toolbar */}
-        <header className="shrink-0 flex items-center gap-3 px-4 py-2.5 border-b border-[#F0F0F0]">
+        <header className="shrink-0 flex items-center gap-3 px-4 py-2.5 border-b border-foreground">
           <button
             onClick={() => setNavOpen(!navOpen)}
-            className="text-[#999] hover:text-[#1B1B1B] text-xs"
+            className="text-subtle hover:text-foreground text-xs"
           >
             {navOpen ? "<" : ">"}
           </button>
 
           {/* Search */}
           <div className="relative flex-1 max-w-sm">
-            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#CCC]" />
+            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search this module..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-foreground rounded-lg focus:outline-none focus:border-surface"
             />
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E5E5EA] rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-foreground rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
                 {searchResults.map((r, i) => (
                   <button
                     key={i}
                     onClick={() => { setActiveSlug(r.slug); setSearchQuery(""); }}
-                    className="block w-full text-left px-3 py-2 text-xs hover:bg-[#FAFAFA] border-b border-[#F8F8F8] last:border-0"
+                    className="block w-full text-left px-3 py-2 text-xs hover:bg-surface-raised border-b border-[#F8F8F8] last:border-0"
                   >
-                    <span className="text-[#999]">{r.module}</span>
-                    <span className="mx-1 text-[#DDD]">/</span>
-                    <span className="text-[#666]">{r.heading}</span>
-                    <p className="text-[#999] truncate mt-0.5">{r.line}</p>
+                    <span className="text-subtle">{r.module}</span>
+                    <span className="mx-1 text-muted">/</span>
+                    <span className="text-subtle">{r.heading}</span>
+                    <p className="text-subtle truncate mt-0.5">{r.line}</p>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          <span className="text-xs text-[#CCC] ml-auto">{active.title}</span>
+          <span className="text-xs text-muted ml-auto">{active.title}</span>
         </header>
 
         {/* Content */}
@@ -160,7 +160,7 @@ export default function ConversionPartnershipClient({ modules }: { modules: Wiki
             {active.toolHref && active.slug !== "06-slide-deck" && (
               <Link
                 href={active.toolHref}
-                className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-[#F8F8F8] border border-[#E5E5EA] rounded-lg text-xs text-[#666] hover:bg-[#F0F0F0] hover:text-[#1B1B1B] transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-[#F8F8F8] border border-foreground rounded-lg text-xs text-subtle hover:bg-foreground hover:text-foreground transition-colors"
               >
                 <WrenchScrewdriverIcon className="size-4" />
                 <span>Open {active.shortTitle} tool in Launchpad</span>
@@ -168,7 +168,7 @@ export default function ConversionPartnershipClient({ modules }: { modules: Wiki
               </Link>
             )}
 
-            <article className="prose prose-sm max-w-none prose-headings:text-[#1B1B1B] prose-p:text-[#444] prose-strong:text-[#1B1B1B] prose-a:text-blue-600 prose-table:text-xs prose-th:text-[#999] prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-[#F5F5F5] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[#1B1B1B] prose-code:font-mono prose-code:text-xs prose-pre:bg-[#1B1B1B] prose-pre:text-[#E5E5EA]">
+            <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-border prose-strong:text-foreground prose-a:text-blue-600 prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{active.content}</ReactMarkdown>
             </article>
           </div>

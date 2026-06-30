@@ -98,8 +98,8 @@ export default function IntelligemsDemoPage() {
   const statusColor = (s: string) => {
     if (s === "started") return "bg-emerald-50 text-emerald-700 border-emerald-200";
     if (s === "paused") return "bg-amber-50 text-amber-700 border-amber-200";
-    if (s === "ended") return "bg-[#222222] text-[#9CA3AF] border-[#2A2A2A]";
-    return "bg-[#222222] text-[#71757D] border-[#2A2A2A]";
+    if (s === "ended") return "bg-surface-raised text-muted border-border";
+    return "bg-surface-raised text-subtle border-border";
   };
 
   const statusLabel = (s: string) => {
@@ -112,11 +112,11 @@ export default function IntelligemsDemoPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
-        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA] mb-2">Intelligems Integration Preview</h1>
-        <p className="text-sm text-[#71757D] mb-8">Pulling live A/B test data...</p>
+        <h1 className="text-[28px] leading-tight font-bold text-foreground mb-2">Intelligems Integration Preview</h1>
+        <p className="text-sm text-subtle mb-8">Pulling live A/B test data...</p>
         <div className="flex items-center gap-3">
-          <div className="size-4 border-2 border-[#1A1A1A] border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-[#9CA3AF]">Fetching from Intelligems API...</span>
+          <div className="size-4 border-2 border-surface border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-muted">Fetching from Intelligems API...</span>
         </div>
       </div>
     );
@@ -125,8 +125,8 @@ export default function IntelligemsDemoPage() {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">Intelligems Integration Preview</h1>
-        <p className="text-sm text-[#71757D] mt-1">
+        <h1 className="text-[28px] leading-tight font-bold text-foreground">Intelligems Integration Preview</h1>
+        <p className="text-sm text-subtle mt-1">
           Live A/B test data pulled automatically from the Intelligems API
         </p>
       </div>
@@ -137,12 +137,12 @@ export default function IntelligemsDemoPage() {
           const challengers = test.variations.filter((v) => v !== control);
 
           return (
-            <div key={test.id} className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
+            <div key={test.id} className="border border-border rounded-xl bg-surface overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#2A2A2A]">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-sm font-semibold text-[#E5E5EA]">{test.name}</h3>
-                  <span className="text-[10px] text-[#9CA3AF]">Started {test.startedAt}</span>
+                  <h3 className="text-sm font-semibold text-foreground">{test.name}</h3>
+                  <span className="text-[10px] text-muted">Started {test.startedAt}</span>
                 </div>
                 <span className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${statusColor(test.status)}`}>
                   {statusLabel(test.status)}
@@ -153,24 +153,24 @@ export default function IntelligemsDemoPage() {
               <div className="px-5 py-4">
                 {/* Column Headers */}
                 <div className="grid grid-cols-[1fr_repeat(3,_minmax(0,1fr))_80px] gap-3 mb-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Variation</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] text-right">CVR</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] text-right">AOV</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] text-right">RPV</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] text-right">Lift</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">Variation</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted text-right">CVR</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted text-right">AOV</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted text-right">RPV</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted text-right">Lift</span>
                 </div>
 
                 {/* Control Row */}
                 {control && (
-                  <div className="grid grid-cols-[1fr_repeat(3,_minmax(0,1fr))_80px] gap-3 py-2 border-b border-[#F5F5F5]">
+                  <div className="grid grid-cols-[1fr_repeat(3,_minmax(0,1fr))_80px] gap-3 py-2 border-b border-surface-raised">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center size-5 rounded bg-[#222222] text-[10px] font-bold text-[#9CA3AF]">A</span>
-                      <span className="text-xs font-medium text-[#E5E5EA] truncate">{control.name}</span>
+                      <span className="inline-flex items-center justify-center size-5 rounded bg-surface-raised text-[10px] font-bold text-muted">A</span>
+                      <span className="text-xs font-medium text-foreground truncate">{control.name}</span>
                     </div>
-                    <span className="text-xs font-semibold text-[#E5E5EA] text-right">{(control.conversion_rate * 100).toFixed(1)}%</span>
-                    <span className="text-xs font-semibold text-[#E5E5EA] text-right">${control.aov.toFixed(2)}</span>
-                    <span className="text-xs font-semibold text-[#E5E5EA] text-right">${control.rpv.toFixed(2)}</span>
-                    <span className="text-[10px] text-[#9CA3AF] text-right">baseline</span>
+                    <span className="text-xs font-semibold text-foreground text-right">{(control.conversion_rate * 100).toFixed(1)}%</span>
+                    <span className="text-xs font-semibold text-foreground text-right">${control.aov.toFixed(2)}</span>
+                    <span className="text-xs font-semibold text-foreground text-right">${control.rpv.toFixed(2)}</span>
+                    <span className="text-[10px] text-muted text-right">baseline</span>
                   </div>
                 )}
 
@@ -183,15 +183,15 @@ export default function IntelligemsDemoPage() {
                   const mainLift = rpvLift || cvrLift;
 
                   return (
-                    <div key={v.variation_id} className="grid grid-cols-[1fr_repeat(3,_minmax(0,1fr))_80px] gap-3 py-2 border-b border-[#F5F5F5] last:border-0">
+                    <div key={v.variation_id} className="grid grid-cols-[1fr_repeat(3,_minmax(0,1fr))_80px] gap-3 py-2 border-b border-surface-raised last:border-0">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center size-5 rounded bg-[#1A1A1A] text-[10px] font-bold text-white">
+                        <span className="inline-flex items-center justify-center size-5 rounded bg-surface text-[10px] font-bold text-white">
                           {String.fromCharCode(66 + i)}
                         </span>
-                        <span className="text-xs font-medium text-[#E5E5EA] truncate">{v.name}</span>
+                        <span className="text-xs font-medium text-foreground truncate">{v.name}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-semibold text-[#E5E5EA]">{(v.conversion_rate * 100).toFixed(1)}%</span>
+                        <span className="text-xs font-semibold text-foreground">{(v.conversion_rate * 100).toFixed(1)}%</span>
                         {cvrLift && (
                           <span className={`ml-1 text-[10px] font-medium ${cvrLift.positive ? "text-emerald-600" : "text-red-500"}`}>
                             {cvrLift.value}
@@ -199,7 +199,7 @@ export default function IntelligemsDemoPage() {
                         )}
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-semibold text-[#E5E5EA]">${v.aov.toFixed(2)}</span>
+                        <span className="text-xs font-semibold text-foreground">${v.aov.toFixed(2)}</span>
                         {aovLift && (
                           <span className={`ml-1 text-[10px] font-medium ${aovLift.positive ? "text-emerald-600" : "text-red-500"}`}>
                             {aovLift.value}
@@ -207,7 +207,7 @@ export default function IntelligemsDemoPage() {
                         )}
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-semibold text-[#E5E5EA]">${v.rpv.toFixed(2)}</span>
+                        <span className="text-xs font-semibold text-foreground">${v.rpv.toFixed(2)}</span>
                         {rpvLift && (
                           <span className={`ml-1 text-[10px] font-medium ${rpvLift.positive ? "text-emerald-600" : "text-red-500"}`}>
                             {rpvLift.value}
@@ -227,10 +227,10 @@ export default function IntelligemsDemoPage() {
               </div>
 
               {/* Footer Stats */}
-              <div className="flex items-center gap-4 px-5 py-2.5 bg-[#0C0C0C] border-t border-[#2A2A2A]">
+              <div className="flex items-center gap-4 px-5 py-2.5 bg-background border-t border-border">
                 {test.variations.map((v) => (
-                  <div key={v.variation_id} className="flex items-center gap-3 text-[10px] text-[#71757D]">
-                    <span className="font-medium text-[#9CA3AF]">{v.name}:</span>
+                  <div key={v.variation_id} className="flex items-center gap-3 text-[10px] text-subtle">
+                    <span className="font-medium text-muted">{v.name}:</span>
                     <span>{v.visitors} visitors</span>
                     <span>·</span>
                     <span>{v.orders} orders</span>

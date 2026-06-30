@@ -92,7 +92,7 @@ export const STATUS_LABEL: Record<BriefStatus, string> = {
 };
 
 export const STATUS_TINT: Record<BriefStatus, string> = {
-  draft: "bg-[#222222] text-[#9CA3AF]",
+  draft: "bg-surface-raised text-muted",
   sent: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
   accepted: "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-500/30",
   in_progress: "bg-cyan-500/20 text-cyan-100 ring-1 ring-cyan-500/40",

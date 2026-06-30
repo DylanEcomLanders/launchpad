@@ -18,7 +18,7 @@ import { uid } from "@/lib/utils";
 /* ── Shared classes ─────────────────────────────────────────────── */
 
 const smallInputClass =
-  "w-full px-2.5 py-2 bg-[#181818] border border-[#2A2A2A] rounded-md text-xs focus:outline-none focus:border-[#C5C5C5] transition-colors tabular-nums";
+  "w-full px-2.5 py-2 bg-surface border border-border rounded-md text-xs focus:outline-none focus:border-muted transition-colors tabular-nums";
 
 /* ── Status config ──────────────────────────────────────────────── */
 
@@ -30,7 +30,7 @@ const statusConfig: Record<
   paused: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400", label: "Paused" },
   winner: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500", label: "Winner" },
   loser: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-400", label: "Loser" },
-  inconclusive: { bg: "bg-[#222222]", text: "text-[#9CA3AF]", dot: "bg-gray-400", label: "Inconclusive" },
+  inconclusive: { bg: "bg-surface-raised", text: "text-muted", dot: "bg-gray-400", label: "Inconclusive" },
 };
 
 const ALL_STATUSES: CroTestStatus[] = ["live", "paused", "winner", "loser", "inconclusive"];
@@ -346,16 +346,16 @@ function StatusBadge({ status }: { status: CroTestStatus }) {
 
 function StatSigBar({ value }: { value: number }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
-  const color = pct >= 95 ? "bg-emerald-500" : pct >= 80 ? "bg-amber-400" : "bg-[#D4D4D4]";
+  const color = pct >= 95 ? "bg-emerald-500" : pct >= 80 ? "bg-amber-400" : "bg-muted";
   return (
     <div className="flex items-center gap-3">
-      <div className="flex-1 h-2 bg-[#222222] rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-surface-raised rounded-full overflow-hidden">
         <div
           className={`h-full ${color} transition-all duration-500 rounded-full`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-[11px] font-semibold tabular-nums text-[#71757D] w-10 text-right">
+      <span className="text-[11px] font-semibold tabular-nums text-subtle w-10 text-right">
         {pct.toFixed(0)}%
       </span>
     </div>
@@ -382,13 +382,13 @@ function MetricRow({
 
   return (
     <div className="flex items-center justify-between py-1">
-      <span className="text-[11px] text-[#71757D] uppercase tracking-wider font-medium w-12">{label}</span>
+      <span className="text-[11px] text-subtle uppercase tracking-wider font-medium w-12">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="text-xs text-[#71757D] tabular-nums">{fmtVal(control)}</span>
-        <svg width="12" height="8" viewBox="0 0 12 8" className="text-[#D4D4D4]">
+        <span className="text-xs text-subtle tabular-nums">{fmtVal(control)}</span>
+        <svg width="12" height="8" viewBox="0 0 12 8" className="text-muted">
           <path d="M0 4h9M7 1l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.2" />
         </svg>
-        <span className="text-sm text-[#E5E5EA] font-semibold tabular-nums">{fmtVal(variant)}</span>
+        <span className="text-sm text-foreground font-semibold tabular-nums">{fmtVal(variant)}</span>
         {control > 0 && (
           <span className={`text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded ${
             delta.positive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"
@@ -674,21 +674,21 @@ export default function CroMonitorPage() {
       Number(test.rpv_control) > 0 || Number(test.rpv_variant) > 0;
 
     return (
-      <div key={test.id} className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden hover:border-[#D0D0D0] transition-colors">
+      <div key={test.id} className="bg-surface border border-border rounded-lg overflow-hidden hover:border-[#D0D0D0] transition-colors">
         <div className="p-6">
           {/* Header row */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-[11px] font-semibold text-[#71757D] uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-subtle uppercase tracking-wider">
                 {test.client_name}
               </span>
-              <span className="w-px h-3 bg-[#2A2A2A]" />
-              <span className="text-[11px] text-[#71757D] tabular-nums">{days}d</span>
+              <span className="w-px h-3 bg-border" />
+              <span className="text-[11px] text-subtle tabular-nums">{days}d</span>
               <StatusBadge status={test.status} />
             </div>
             <button
               onClick={() => (isExpanded ? cancelEdit(test.id) : startEdit(test))}
-              className="p-2 -m-1 text-[#C5C5C5] hover:text-[#E5E5EA] transition-colors rounded-lg hover:bg-[#222222]"
+              className="p-2 -m-1 text-muted hover:text-foreground transition-colors rounded-lg hover:bg-surface-raised"
             >
               <PencilSquareIcon className="size-4" />
             </button>
@@ -697,13 +697,13 @@ export default function CroMonitorPage() {
           {/* Test name + variant */}
           <h3 className="text-[15px] font-semibold leading-snug mb-1">{test.test_name}</h3>
           {test.variant_name && (
-            <p className="text-xs text-[#71757D] mb-5">{test.variant_name}</p>
+            <p className="text-xs text-subtle mb-5">{test.variant_name}</p>
           )}
           {!test.variant_name && <div className="mb-5" />}
 
           {/* Metrics */}
           {hasMetrics && (
-            <div className="border-t border-[#2A2A2A] pt-4 mb-4 space-y-0.5">
+            <div className="border-t border-border pt-4 mb-4 space-y-0.5">
               <MetricRow label="CVR" control={test.cvr_control} variant={test.cvr_variant} format="pct" />
               <MetricRow label="RPV" control={test.rpv_control} variant={test.rpv_variant} format="currency" />
               <MetricRow label="AOV" control={test.aov_control} variant={test.aov_variant} format="currency" />
@@ -711,10 +711,10 @@ export default function CroMonitorPage() {
           )}
 
           {/* Stat sig + sessions */}
-          <div className="border-t border-[#2A2A2A] pt-4">
+          <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-[#71757D] uppercase tracking-wider font-semibold">Statistical Significance</span>
-              <span className="text-[11px] text-[#71757D] tabular-nums">
+              <span className="text-[10px] text-subtle uppercase tracking-wider font-semibold">Statistical Significance</span>
+              <span className="text-[11px] text-subtle tabular-nums">
                 {Number(test.sample_size).toLocaleString()} sessions
               </span>
             </div>
@@ -723,16 +723,16 @@ export default function CroMonitorPage() {
 
           {/* Notes */}
           {test.notes && !isExpanded && (
-            <p className="mt-4 text-xs text-[#71757D] leading-relaxed">{test.notes}</p>
+            <p className="mt-4 text-xs text-subtle leading-relaxed">{test.notes}</p>
           )}
         </div>
 
         {/* Edit panel */}
         {isExpanded && editForms[test.id] && (
-          <div className="px-6 pb-6 pt-5 border-t border-[#2A2A2A] bg-[#0C0C0C] space-y-5">
+          <div className="px-6 pb-6 pt-5 border-t border-border bg-background space-y-5">
             {test.hypothesis && (
-              <p className="text-xs text-[#71757D] leading-relaxed">
-                <span className="font-semibold text-[#E5E5EA]">Hypothesis: </span>
+              <p className="text-xs text-subtle leading-relaxed">
+                <span className="font-semibold text-foreground">Hypothesis: </span>
                 {test.hypothesis}
               </p>
             )}
@@ -749,7 +749,7 @@ export default function CroMonitorPage() {
                 { key: "sample_size", label: "Sample Size", step: "1" },
               ].map((field) => (
                 <div key={field.key}>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5">
                     {field.label}
                   </label>
                   <input
@@ -767,7 +767,7 @@ export default function CroMonitorPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4">
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">Status</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5">Status</label>
                 <select
                   value={editForms[test.id].status ?? test.status}
                   onChange={(e) => updateEditField(test.id, "status", e.target.value)}
@@ -779,7 +779,7 @@ export default function CroMonitorPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">Notes</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5">Notes</label>
                 <input
                   type="text"
                   value={editForms[test.id].notes ?? ""}
@@ -793,13 +793,13 @@ export default function CroMonitorPage() {
             <div className="flex items-center gap-3 pt-1">
               <button
                 onClick={() => handleSave(test.id)}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground transition-colors"
               >
                 <CheckIcon className="size-3.5" /> Save
               </button>
               <button
                 onClick={() => cancelEdit(test.id)}
-                className="px-5 py-2.5 border border-[#2A2A2A] bg-[#181818] text-[#71757D] text-xs font-medium rounded-lg hover:bg-[#222222] transition-colors"
+                className="px-5 py-2.5 border border-border bg-surface text-subtle text-xs font-medium rounded-lg hover:bg-surface-raised transition-colors"
               >
                 Cancel
               </button>
@@ -824,14 +824,14 @@ export default function CroMonitorPage() {
       <section>
         <div className="flex items-center gap-3 mb-5">
           <PulseDot color={cfg.dot} pulse={cfg.pulse} size="md" />
-          <h2 className="text-sm font-semibold text-[#E5E5EA]">{cfg.title}</h2>
-          <span className="px-2.5 py-0.5 rounded-full bg-[#222222] text-[11px] font-semibold text-[#71757D] tabular-nums">
+          <h2 className="text-sm font-semibold text-foreground">{cfg.title}</h2>
+          <span className="px-2.5 py-0.5 rounded-full bg-surface-raised text-[11px] font-semibold text-subtle tabular-nums">
             {items.length}
           </span>
         </div>
         {items.length === 0 ? (
-          <div className="border border-dashed border-[#2A2A2A] rounded-lg py-8 text-center">
-            <p className="text-sm text-[#C5C5C5]">{cfg.emptyText}</p>
+          <div className="border border-dashed border-border rounded-lg py-8 text-center">
+            <p className="text-sm text-muted">{cfg.emptyText}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -853,7 +853,7 @@ export default function CroMonitorPage() {
           <h1 className="text-[28px] font-bold mb-2">
             CRO Test Monitor
           </h1>
-          <p className="text-[#71757D] text-sm">
+          <p className="text-subtle text-sm">
             Track live A/B tests, review results, and maintain your weekly CRO cadence
           </p>
         </div>
@@ -878,18 +878,18 @@ export default function CroMonitorPage() {
           <section>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { value: summary.totalLive, label: "Live Tests", color: "text-[#E5E5EA]", dot: "bg-green-500", pulse: true },
+                { value: summary.totalLive, label: "Live Tests", color: "text-foreground", dot: "bg-green-500", pulse: true },
                 { value: summary.needsAttention, label: "Needs Attention", color: "text-amber-600", dot: "bg-red-500", pulse: true },
                 { value: summary.winnersThisMonth, label: "Winners This Month", color: "text-emerald-600", dot: "bg-emerald-500", pulse: false },
-                { value: summary.completed, label: "Tests Completed", color: "text-[#E5E5EA]", dot: "bg-gray-400", pulse: false },
+                { value: summary.completed, label: "Tests Completed", color: "text-foreground", dot: "bg-gray-400", pulse: false },
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-5 hover:border-[#D0D0D0] transition-colors"
+                  className="bg-surface border border-border rounded-lg p-5 hover:border-[#D0D0D0] transition-colors"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <PulseDot color={stat.dot} pulse={stat.pulse} />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                       {stat.label}
                     </span>
                   </div>
@@ -902,16 +902,16 @@ export default function CroMonitorPage() {
           {/* ── Activity Timeline ────────────────────────────────── */}
           <section>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-semibold text-[#E5E5EA]">Activity</h2>
-              <div className="inline-flex rounded-lg border border-[#2A2A2A] bg-[#181818] p-0.5">
+              <h2 className="text-sm font-semibold text-foreground">Activity</h2>
+              <div className="inline-flex rounded-lg border border-border bg-surface p-0.5">
                 {(["week", "month"] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => setTimelinePeriod(p)}
                     className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       timelinePeriod === p
-                        ? "bg-white text-[#0C0C0C]"
-                        : "text-[#71757D] hover:text-[#E5E5EA]"
+                        ? "bg-white text-background"
+                        : "text-subtle hover:text-foreground"
                     }`}
                   >
                     This {p}
@@ -920,28 +920,28 @@ export default function CroMonitorPage() {
               </div>
             </div>
 
-            <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden">
+            <div className="bg-surface border border-border rounded-lg overflow-hidden">
               {timelineEvents.length === 0 ? (
                 <div className="py-10 text-center">
-                  <p className="text-sm text-[#C5C5C5]">No activity this {timelinePeriod}</p>
+                  <p className="text-sm text-muted">No activity this {timelinePeriod}</p>
                 </div>
               ) : (
-                <div className="divide-y divide-[#2A2A2A]">
+                <div className="divide-y divide-border">
                   {timelineEvents.map((event, i) => {
                     const cfg = eventConfig[event.type];
                     return (
                       <div
                         key={`${event.type}-${event.testName}-${i}`}
-                        className="flex items-center gap-4 px-5 py-4 hover:bg-[#0C0C0C] transition-colors"
+                        className="flex items-center gap-4 px-5 py-4 hover:bg-background transition-colors"
                       >
                         <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
-                        <span className="text-xs text-[#71757D] tabular-nums w-16 shrink-0">
+                        <span className="text-xs text-subtle tabular-nums w-16 shrink-0">
                           {formatDateShort(event.date)}
                         </span>
-                        <span className="text-xs font-semibold text-[#71757D] shrink-0">
+                        <span className="text-xs font-semibold text-subtle shrink-0">
                           {event.clientName}
                         </span>
-                        <span className="text-xs text-[#E5E5EA] truncate flex-1">
+                        <span className="text-xs text-foreground truncate flex-1">
                           {event.testName}
                         </span>
                         <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap ${cfg.bg} ${cfg.text}`}>
@@ -959,7 +959,7 @@ export default function CroMonitorPage() {
           <div className="flex justify-end">
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-white text-background text-sm font-medium rounded-lg hover:bg-foreground transition-colors"
             >
               {showAddForm ? <XMarkIcon className="size-4" /> : <PlusIcon className="size-4" />}
               {showAddForm ? "Cancel" : "Add Test"}
@@ -967,7 +967,7 @@ export default function CroMonitorPage() {
           </div>
 
           {showAddForm && (
-            <form onSubmit={handleSubmit} className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="bg-surface border border-border rounded-lg p-6 space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className={labelClass}>Client Name</label>
@@ -996,7 +996,7 @@ export default function CroMonitorPage() {
               <button
                 type="submit"
                 disabled={submitting || !form.client_name.trim() || !form.test_name.trim()}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-lg hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {submitting ? <ArrowPathIcon className="size-4 animate-spin" /> : <PlusIcon className="size-4" />}
                 Add Test
@@ -1007,7 +1007,7 @@ export default function CroMonitorPage() {
           {/* ── Swimlanes ────────────────────────────────────────── */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <ArrowPathIcon className="size-5 animate-spin text-[#C5C5C5]" />
+              <ArrowPathIcon className="size-5 animate-spin text-muted" />
             </div>
           ) : (
             <div className="space-y-14">
@@ -1021,12 +1021,12 @@ export default function CroMonitorPage() {
           {/* ── Weekly Checklist ──────────────────────────────────── */}
           <section>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-semibold text-[#E5E5EA]">Weekly Review</h2>
-              <div className="inline-flex rounded-lg border border-[#2A2A2A] bg-[#181818] p-0.5">
+              <h2 className="text-sm font-semibold text-foreground">Weekly Review</h2>
+              <div className="inline-flex rounded-lg border border-border bg-surface p-0.5">
                 <button
                   onClick={() => setChecklistTab("monday")}
                   className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    checklistTab === "monday" ? "bg-white text-[#0C0C0C]" : "text-[#71757D] hover:text-[#E5E5EA]"
+                    checklistTab === "monday" ? "bg-white text-background" : "text-subtle hover:text-foreground"
                   }`}
                 >
                   Monday
@@ -1034,7 +1034,7 @@ export default function CroMonitorPage() {
                 <button
                   onClick={() => setChecklistTab("friday")}
                   className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    checklistTab === "friday" ? "bg-white text-[#0C0C0C]" : "text-[#71757D] hover:text-[#E5E5EA]"
+                    checklistTab === "friday" ? "bg-white text-background" : "text-subtle hover:text-foreground"
                   }`}
                 >
                   Friday
@@ -1042,8 +1042,8 @@ export default function CroMonitorPage() {
               </div>
             </div>
 
-            <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-6 space-y-4">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
+            <div className="bg-surface border border-border rounded-lg p-6 space-y-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-1">
                 {checklistTab === "monday" ? "Launch Check" : "Results Review"}
               </p>
               {(checklistTab === "monday" ? MONDAY_CHECKS : FRIDAY_CHECKS).map((item, i) => {
@@ -1056,13 +1056,13 @@ export default function CroMonitorPage() {
                       onClick={() => toggleCheck(key)}
                       className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${
                         isChecked
-                          ? "bg-white border-[#0C0C0C]"
-                          : "border-[#D4D4D4] bg-[#181818] group-hover:border-[#999]"
+                          ? "bg-white border-background"
+                          : "border-muted bg-surface group-hover:border-subtle"
                       }`}
                     >
                       {isChecked && <CheckIcon className="size-3 text-white" />}
                     </button>
-                    <span className={`text-sm transition-colors ${isChecked ? "line-through text-[#C5C5C5]" : "text-[#E5E5EA]"}`}>
+                    <span className={`text-sm transition-colors ${isChecked ? "line-through text-muted" : "text-foreground"}`}>
                       {item}
                     </span>
                   </label>

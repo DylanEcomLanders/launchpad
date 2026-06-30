@@ -30,37 +30,37 @@ function Tile({ href, label, desc, icon: Icon }: { href: string; label: string; 
   return (
     <Link
       href={href}
-      className="group relative flex flex-col gap-2 rounded-xl border border-[#2A2A2A] bg-[#181818] px-4 py-4 transition-colors hover:border-[#383838] hover:bg-[#1F1F1F]"
+      className="group relative flex flex-col gap-2 rounded-xl border border-border bg-surface px-4 py-4 transition-colors hover:border-border hover:bg-border"
     >
       <div className="flex items-center gap-2.5">
-        <span className="inline-flex size-7 items-center justify-center rounded-md bg-[#222222] text-[#9CA3AF] transition-colors group-hover:text-white">
+        <span className="inline-flex size-7 items-center justify-center rounded-md bg-surface-raised text-muted transition-colors group-hover:text-white">
           <Icon className="size-4" />
         </span>
-        <span className="text-sm font-semibold text-[#E5E5EA]">{label}</span>
+        <span className="text-sm font-semibold text-foreground">{label}</span>
       </div>
-      <p className="text-xs text-[#71757D] leading-snug">{desc}</p>
+      <p className="text-xs text-subtle leading-snug">{desc}</p>
     </Link>
   );
 }
 
 export default function ShortcutsPage() {
   return (
-    <div className="min-h-screen text-[#E5E5EA]">
+    <div className="min-h-screen text-foreground">
       <div className="mx-auto max-w-6xl px-6 md:px-12 py-10">
         <div className="mb-8">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
             Shortcuts
           </p>
           <h1 className="mt-2 text-[28px] leading-tight">
             <span className="font-bold">Quick access</span>{" "}
-            <span className="font-normal text-[#71757D]">
+            <span className="font-normal text-subtle">
               to the tools you reach for most
             </span>
           </h1>
         </div>
 
         <section className="mb-10">
-          <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Payment
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -71,7 +71,7 @@ export default function ShortcutsPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Client facing
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

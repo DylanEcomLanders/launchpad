@@ -75,17 +75,17 @@ export default function ShareCard({
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] py-10 flex flex-col items-center">
+    <div className="min-h-screen bg-surface-raised py-10 flex flex-col items-center">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={downloadPng}
-          className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#2D2D2D]"
+          className="rounded-lg bg-surface px-3 py-1.5 text-xs font-medium text-white hover:bg-border"
         >
           Save as PNG
         </button>
         <a
           href="/share/test-result"
-          className="rounded-lg border border-[#E5E5EA] bg-white px-3 py-1.5 text-xs font-medium text-[#1B1B1B] hover:bg-[#F3F3F5]"
+          className="rounded-lg border border-foreground bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-raised"
         >
           New test
         </a>
@@ -151,7 +151,7 @@ export default function ShareCard({
         </div>
       </div>
 
-      <p className="mt-4 max-w-md text-center text-[11px] text-[#7A7A7A]">
+      <p className="mt-4 max-w-md text-center text-[11px] text-subtle">
         Generated from a Build task&apos;s test result. Use the Save button to grab a PNG for LinkedIn, X, or a renewal deck.
       </p>
     </div>

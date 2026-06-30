@@ -254,13 +254,13 @@ export default function ClientPortalPage() {
   return (
     <div className="flex min-h-screen">
       {/* ── Left sidebar ── */}
-      <div className="w-52 shrink-0 border-r border-[#2A2A2A] sticky top-0 self-start h-screen flex flex-col">
-        <div className="px-5 py-6 border-b border-[#2A2A2A]">
-          <h2 className="text-sm font-bold text-[#E5E5EA]">Client Portals</h2>
-          <p className="text-[10px] text-[#9CA3AF] mt-0.5">All active projects</p>
+      <div className="w-52 shrink-0 border-r border-border sticky top-0 self-start h-screen flex flex-col">
+        <div className="px-5 py-6 border-b border-border">
+          <h2 className="text-sm font-bold text-foreground">Client Portals</h2>
+          <p className="text-[10px] text-muted mt-0.5">All active projects</p>
           <Link
             href="/tools/client-portal/new"
-            className="w-full flex items-center justify-center gap-1.5 mt-4 px-3 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 mt-4 px-3 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-3.5 shrink-0" />
             New Portal
@@ -274,8 +274,8 @@ export default function ClientPortalPage() {
                 onClick={() => setActiveTab(key)}
                 className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
                   activeTab === key
-                    ? "bg-white text-[#0C0C0C]"
-                    : "text-[#9CA3AF] hover:bg-[#0C0C0C] hover:text-[#E5E5EA]"
+                    ? "bg-white text-background"
+                    : "text-muted hover:bg-background hover:text-foreground"
                 }`}
               >
                 {label}
@@ -283,7 +283,7 @@ export default function ClientPortalPage() {
             ))}
           </nav>
         )}
-        <div className="px-3 py-4 border-t border-[#2A2A2A]">
+        <div className="px-3 py-4 border-t border-border">
           <button
             onClick={() => {
               setShowTrash(!showTrash);
@@ -292,7 +292,7 @@ export default function ClientPortalPage() {
             className={`w-full flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
               showTrash
                 ? "bg-red-50 text-red-600"
-                : "text-[#9CA3AF] hover:bg-[#0C0C0C] hover:text-[#E5E5EA]"
+                : "text-muted hover:bg-background hover:text-foreground"
             }`}
           >
             <TrashIcon className="size-3.5" />
@@ -377,7 +377,7 @@ export default function ClientPortalPage() {
                         <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50 transition-colors">
                           <div className="flex items-center gap-2">
                             <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
-                            <span className="text-xs font-medium text-[#E5E5EA]">{p.client_name}</span>
+                            <span className="text-xs font-medium text-foreground">{p.client_name}</span>
                             <span className="text-[10px] text-red-500">{p.blocker?.reason}</span>
                           </div>
                           <span className="text-[10px] text-red-400">{daysBlocked}d</span>
@@ -397,18 +397,18 @@ export default function ClientPortalPage() {
             {/* ── Upcoming Touchpoints (3-column) ── */}
             {touchpoints.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">Upcoming Touchpoints</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">Upcoming Touchpoints</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {touchpoints.slice(0, 6).map((tp, i) => (
-                    <Link key={i} href={`/tools/client-portal/${tp.portalId}`} className="flex items-center justify-between px-3.5 py-3 border border-[#2A2A2A] rounded-xl bg-[#181818] hover:border-[#C5C5C5] transition-colors">
+                    <Link key={i} href={`/tools/client-portal/${tp.portalId}`} className="flex items-center justify-between px-3.5 py-3 border border-border rounded-xl bg-surface hover:border-muted transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className={`size-1.5 rounded-full shrink-0 ${tp.daysAway < 0 ? "bg-red-500" : tp.daysAway <= 2 ? "bg-amber-500" : "bg-emerald-500"}`} />
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-[#E5E5EA] truncate">{tp.client}</p>
-                          {tp.description && <p className="text-[10px] text-[#71757D] truncate">{tp.description}</p>}
+                          <p className="text-xs font-medium text-foreground truncate">{tp.client}</p>
+                          {tp.description && <p className="text-[10px] text-subtle truncate">{tp.description}</p>}
                         </div>
                       </div>
-                      <span className={`text-[10px] font-medium shrink-0 ml-2 ${tp.daysAway < 0 ? "text-red-500" : tp.daysAway <= 2 ? "text-amber-600" : "text-[#71757D]"}`}>
+                      <span className={`text-[10px] font-medium shrink-0 ml-2 ${tp.daysAway < 0 ? "text-red-500" : tp.daysAway <= 2 ? "text-amber-600" : "text-subtle"}`}>
                         {tp.daysAway < 0 ? `${Math.abs(tp.daysAway)}d overdue` : tp.daysAway === 0 ? "Today" : `${tp.daysAway}d`}
                       </span>
                     </Link>
@@ -420,11 +420,11 @@ export default function ClientPortalPage() {
             {/* ── Clients List (no border, scrollable) ── */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#9CA3AF]">Clients</h3>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#9CA3AF]">Total Clients: {portals.length}</span>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">Clients</h3>
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted">Total Clients: {portals.length}</span>
               </div>
               {portals.length > 0 ? (
-                <div className="divide-y divide-[#2A2A2A]">
+                <div className="divide-y divide-border">
                   {portals.map((p) => {
                     const isBlocked = !!p.blocker;
                     const isRetainer = p.client_type === "retainer" || p.project_type?.toLowerCase().includes("retainer");
@@ -434,13 +434,13 @@ export default function ClientPortalPage() {
                       <Link
                         key={p.id}
                         href={`/tools/client-portal/${p.id}`}
-                        className={`flex items-center justify-between px-3.5 py-3 rounded-lg hover:bg-[#0C0C0C] transition-colors ${isBlocked ? "bg-red-50/40" : ""}`}
+                        className={`flex items-center justify-between px-3.5 py-3 rounded-lg hover:bg-background transition-colors ${isBlocked ? "bg-red-50/40" : ""}`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {isBlocked && <span className="size-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />}
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-[#E5E5EA] truncate">{p.client_name}</p>
-                            <p className="text-[10px] text-[#9CA3AF]">
+                            <p className="text-sm font-semibold text-foreground truncate">{p.client_name}</p>
+                            <p className="text-[10px] text-muted">
                               {isRetainer ? "Retainer" : p.project_type || "Project"}
                               {p.current_phase ? ` · ${p.current_phase}` : ""}
                               {isBlocked ? ` · Blocked: ${p.blocker?.reason}` : ""}
@@ -449,7 +449,7 @@ export default function ClientPortalPage() {
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           {tpDays !== null && (
-                            <span className={`text-[10px] ${tpDays < 0 ? "text-red-500" : tpDays <= 2 ? "text-amber-500" : "text-[#C7C9CD]"}`}>
+                            <span className={`text-[10px] ${tpDays < 0 ? "text-red-500" : tpDays <= 2 ? "text-amber-500" : "text-muted"}`}>
                               {tpDays < 0 ? `${Math.abs(tpDays)}d overdue` : tpDays === 0 ? "Today" : `${tpDays}d`}
                             </span>
                           )}
@@ -464,19 +464,19 @@ export default function ClientPortalPage() {
                           ) : (
                             <button
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(p.id); }}
-                              className="p-1 text-[#C7C9CD] hover:text-red-400 transition-colors"
+                              className="p-1 text-muted hover:text-red-400 transition-colors"
                             >
                               <TrashIcon className="size-3.5" />
                             </button>
                           )}
-                          <svg className="size-4 text-[#C7C9CD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                          <svg className="size-4 text-muted" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                         </div>
                       </Link>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-[#C7C9CD]">No clients yet</p>
+                <p className="text-xs text-muted">No clients yet</p>
               )}
             </div>
           </div>
@@ -497,16 +497,16 @@ export default function ClientPortalPage() {
         return (
           <div className="space-y-6">
             {/* Month Progress Bar */}
-            <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] p-5">
+            <div className="border border-border rounded-xl bg-surface p-5">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-[#E5E5EA]">{currentMonth}</h3>
-                  <p className="text-xs text-[#9CA3AF] mt-0.5">Day {dayOfMonth} of {daysInMonth} · {monthProgress}% through the month</p>
+                  <h3 className="text-sm font-semibold text-foreground">{currentMonth}</h3>
+                  <p className="text-xs text-muted mt-0.5">Day {dayOfMonth} of {daysInMonth} · {monthProgress}% through the month</p>
                 </div>
-                <span className="text-xs font-semibold text-[#E5E5EA]">{retainerPortals.length} retainer{retainerPortals.length !== 1 ? "s" : ""}</span>
+                <span className="text-xs font-semibold text-foreground">{retainerPortals.length} retainer{retainerPortals.length !== 1 ? "s" : ""}</span>
               </div>
-              <div className="h-2 bg-[#222222] rounded-full overflow-hidden">
-                <div className="h-full bg-[#1A1A1A] rounded-full transition-all" style={{ width: `${monthProgress}%` }} />
+              <div className="h-2 bg-surface-raised rounded-full overflow-hidden">
+                <div className="h-full bg-surface rounded-full transition-all" style={{ width: `${monthProgress}%` }} />
               </div>
             </div>
 
@@ -528,28 +528,28 @@ export default function ClientPortalPage() {
                     <Link
                       key={p.id}
                       href={`/tools/client-portal/${p.id}`}
-                      className="block border border-[#2A2A2A] rounded-xl bg-[#181818] p-5 hover:shadow-sm transition-all"
+                      className="block border border-border rounded-xl bg-surface p-5 hover:shadow-sm transition-all"
                     >
                       {/* Header */}
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-sm font-semibold text-[#E5E5EA]">{p.client_name}</h4>
+                        <h4 className="text-sm font-semibold text-foreground">{p.client_name}</h4>
                       </div>
 
                       {/* Test Pipeline */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Pipeline</span>
-                          <span className="text-xs font-semibold text-[#E5E5EA]">{deliveredCount} delivered</span>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">Pipeline</span>
+                          <span className="text-xs font-semibold text-foreground">{deliveredCount} delivered</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1 text-[10px] text-[#9CA3AF]"><span className="size-1.5 rounded-full bg-emerald-500" /> {deliveredCount} delivered</span>
-                          <span className="flex items-center gap-1 text-[10px] text-[#9CA3AF]"><span className="size-1.5 rounded-full bg-blue-400" /> {scheduledCount} scheduled</span>
-                          <span className="flex items-center gap-1 text-[10px] text-[#9CA3AF]"><span className="size-1.5 rounded-full bg-purple-300" /> {ideationCount} ideation</span>
+                          <span className="flex items-center gap-1 text-[10px] text-muted"><span className="size-1.5 rounded-full bg-emerald-500" /> {deliveredCount} delivered</span>
+                          <span className="flex items-center gap-1 text-[10px] text-muted"><span className="size-1.5 rounded-full bg-blue-400" /> {scheduledCount} scheduled</span>
+                          <span className="flex items-center gap-1 text-[10px] text-muted"><span className="size-1.5 rounded-full bg-purple-300" /> {ideationCount} ideation</span>
                         </div>
                       </div>
 
                       {/* Quick Stats Row */}
-                      <div className="flex items-center gap-6 text-xs text-[#9CA3AF]">
+                      <div className="flex items-center gap-6 text-xs text-muted">
                         {(p.results || []).filter(r => r.status === "live").length > 0 && (
                           <span className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full bg-emerald-500" />
@@ -570,9 +570,9 @@ export default function ClientPortalPage() {
                 })}
               </div>
             ) : (
-              <div className="border-2 border-dashed border-[#2A2A2A] rounded-xl p-8 text-center">
-                <p className="text-sm text-[#9CA3AF]">No retainer clients</p>
-                <p className="text-xs text-[#C7C9CD] mt-1">Create a retainer portal to track monthly test delivery</p>
+              <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
+                <p className="text-sm text-muted">No retainer clients</p>
+                <p className="text-xs text-muted mt-1">Create a retainer portal to track monthly test delivery</p>
               </div>
             )}
           </div>
@@ -585,25 +585,25 @@ export default function ClientPortalPage() {
           {/* Filters */}
           {portals.length > 0 && (
             <div className="flex items-center gap-3 mb-4">
-              <FunnelIcon className="size-3.5 text-[#71757D]" />
+              <FunnelIcon className="size-3.5 text-subtle" />
               <div className="flex items-center gap-1.5">
                 {["all", "retainer", "project"].map((t) => (
-                  <button key={t} onClick={() => setFilterType(t)} className={`px-3 py-1 text-[11px] font-medium rounded-full transition-colors ${filterType === t ? "bg-white text-[#0C0C0C]" : "bg-[#222222] text-[#71757D] hover:bg-[#2A2A2A]"}`}>
+                  <button key={t} onClick={() => setFilterType(t)} className={`px-3 py-1 text-[11px] font-medium rounded-full transition-colors ${filterType === t ? "bg-white text-background" : "bg-surface-raised text-subtle hover:bg-border"}`}>
                     {t === "all" ? "All" : t === "retainer" ? "Retainer" : "Project"}
                   </button>
                 ))}
               </div>
               {uniqueStages.length > 0 && (
                 <>
-                  <div className="w-px h-4 bg-[#2A2A2A]" />
-                  <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)} className="text-[11px] font-medium text-[#71757D] bg-[#222222] border-none rounded-full px-3 py-1 cursor-pointer hover:bg-[#2A2A2A] transition-colors">
+                  <div className="w-px h-4 bg-border" />
+                  <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)} className="text-[11px] font-medium text-subtle bg-surface-raised border-none rounded-full px-3 py-1 cursor-pointer hover:bg-border transition-colors">
                     <option value="all">All Stages</option>
                     {uniqueStages.map((s) => (<option key={s} value={s}>{s}</option>))}
                   </select>
                 </>
               )}
               {(filterType !== "all" || filterStage !== "all") && (
-                <button onClick={() => { setFilterType("all"); setFilterStage("all"); }} className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] transition-colors">Clear</button>
+                <button onClick={() => { setFilterType("all"); setFilterStage("all"); }} className="text-[11px] text-subtle hover:text-foreground transition-colors">Clear</button>
               )}
             </div>
           )}
@@ -612,10 +612,10 @@ export default function ClientPortalPage() {
 
       {/* ── Create Form ── */}
       {showForm && (
-        <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-xl p-6 mb-6">
+        <div className="bg-background border border-border rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-sm font-semibold">New Client Portal</h3>
-            <button onClick={() => { setShowForm(false); setClientType(null); }} className="text-[#71757D] hover:text-[#E5E5EA]">
+            <button onClick={() => { setShowForm(false); setClientType(null); }} className="text-subtle hover:text-foreground">
               <XMarkIcon className="size-4" />
             </button>
           </div>
@@ -623,39 +623,39 @@ export default function ClientPortalPage() {
           {/* Step 1: Choose client type */}
           {!clientType && (
             <div>
-              <p className="text-xs text-[#71757D] mb-4">What type of client is this?</p>
+              <p className="text-xs text-subtle mb-4">What type of client is this?</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setClientType("retainer")}
-                  className="border-2 border-[#2A2A2A] rounded-xl p-5 text-left hover:border-white transition-colors group"
+                  className="border-2 border-border rounded-xl p-5 text-left hover:border-white transition-colors group"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className="size-10 rounded-lg bg-emerald-50 flex items-center justify-center">
                       <BeakerIcon className="size-5 text-emerald-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[#E5E5EA] group-hover:text-[#E5E5EA]">Retainer Client</p>
-                      <p className="text-[10px] text-[#9CA3AF]">Weekly A/B testing cycle</p>
+                      <p className="text-sm font-semibold text-foreground group-hover:text-foreground">Retainer Client</p>
+                      <p className="text-[10px] text-muted">Weekly A/B testing cycle</p>
                     </div>
                   </div>
-                  <p className="text-xs text-[#9CA3AF] leading-relaxed">
+                  <p className="text-xs text-muted leading-relaxed">
                     CRO retainer with weekly test cadence. Tier-based testing (1, 2, or 4 tests per week). Page builds available as add-ons.
                   </p>
                 </button>
                 <button
                   onClick={() => setClientType("regular")}
-                  className="border-2 border-[#2A2A2A] rounded-xl p-5 text-left hover:border-white transition-colors group"
+                  className="border-2 border-border rounded-xl p-5 text-left hover:border-white transition-colors group"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className="size-10 rounded-lg bg-blue-50 flex items-center justify-center">
                       <FunnelIcon className="size-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[#E5E5EA] group-hover:text-[#E5E5EA]">Project Client</p>
-                      <p className="text-[10px] text-[#9CA3AF]">Page build or one-off project</p>
+                      <p className="text-sm font-semibold text-foreground group-hover:text-foreground">Project Client</p>
+                      <p className="text-[10px] text-muted">Page build or one-off project</p>
                     </div>
                   </div>
-                  <p className="text-xs text-[#9CA3AF] leading-relaxed">
+                  <p className="text-xs text-muted leading-relaxed">
                     Full page build, landing page, or CRO audit. Linear checkpoint flow. Can add more projects later.
                   </p>
                 </button>
@@ -667,7 +667,7 @@ export default function ClientPortalPage() {
           {clientType && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
-                <button onClick={() => setClientType(null)} className="text-[10px] text-[#9CA3AF] hover:text-[#E5E5EA]">&larr; Back</button>
+                <button onClick={() => setClientType(null)} className="text-[10px] text-muted hover:text-foreground">&larr; Back</button>
                 <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                   clientType === "retainer" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
                 }`}>
@@ -712,7 +712,7 @@ export default function ClientPortalPage() {
               <button
                 onClick={handleCreate}
                 disabled={!clientName.trim()}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40"
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
               >
                 <CheckIcon className="size-3.5" />
                 Create Portal
@@ -726,9 +726,9 @@ export default function ClientPortalPage() {
       {!showTrash && activeTab === "clients" && loading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="border border-[#2A2A2A] rounded-lg p-4 animate-pulse">
-              <div className="h-4 bg-[#222222] rounded w-1/4 mb-2" />
-              <div className="h-3 bg-[#222222] rounded w-1/2" />
+            <div key={i} className="border border-border rounded-lg p-4 animate-pulse">
+              <div className="h-4 bg-surface-raised rounded w-1/4 mb-2" />
+              <div className="h-3 bg-surface-raised rounded w-1/2" />
             </div>
           ))}
         </div>
@@ -736,12 +736,12 @@ export default function ClientPortalPage() {
 
       {/* ── Empty state ── */}
       {!showTrash && activeTab === "clients" && !loading && portals.length === 0 && !showForm && (
-        <div className="border border-dashed border-[#2A2A2A] rounded-lg p-12 text-center">
-          <p className="text-sm text-[#71757D] mb-1">No client portals yet</p>
-          <p className="text-xs text-[#71757D] mb-4">Create your first portal to start tracking projects</p>
+        <div className="border border-dashed border-border rounded-lg p-12 text-center">
+          <p className="text-sm text-subtle mb-1">No client portals yet</p>
+          <p className="text-xs text-subtle mb-4">Create your first portal to start tracking projects</p>
           <Link
             href="/tools/client-portal/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" />
             New Portal
@@ -753,8 +753,8 @@ export default function ClientPortalPage() {
       {!showTrash && activeTab === "clients" && !loading && portals.length > 0 && (
         <div className="space-y-4">
           {filteredPortals.length === 0 ? (
-            <div className="border border-dashed border-[#2A2A2A] rounded-lg p-8 text-center">
-              <p className="text-sm text-[#71757D]">No portals match the current filters</p>
+            <div className="border border-dashed border-border rounded-lg p-8 text-center">
+              <p className="text-sm text-subtle">No portals match the current filters</p>
             </div>
           ) : (
             filteredPortals.map((portal) => (
@@ -777,25 +777,25 @@ export default function ClientPortalPage() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <TrashIcon className="size-4 text-red-400" />
-            <h2 className="text-sm font-semibold text-[#E5E5EA]">Trash</h2>
-            <span className="text-xs text-[#9CA3AF]">({trashedPortals.length} portals)</span>
+            <h2 className="text-sm font-semibold text-foreground">Trash</h2>
+            <span className="text-xs text-muted">({trashedPortals.length} portals)</span>
           </div>
 
           {trashedPortals.length === 0 ? (
-            <div className="border border-dashed border-[#2A2A2A] rounded-lg p-12 text-center">
-              <p className="text-sm text-[#71757D]">Trash is empty</p>
-              <p className="text-xs text-[#71757D] mt-1">Deleted portals will appear here</p>
+            <div className="border border-dashed border-border rounded-lg p-12 text-center">
+              <p className="text-sm text-subtle">Trash is empty</p>
+              <p className="text-xs text-subtle mt-1">Deleted portals will appear here</p>
             </div>
           ) : (
             <div className="space-y-3">
               {trashedPortals.map((portal) => (
                 <div
                   key={portal.id}
-                  className="flex items-center justify-between border border-[#2A2A2A] rounded-lg p-4 bg-[#0C0C0C]"
+                  className="flex items-center justify-between border border-border rounded-lg p-4 bg-background"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-[#E5E5EA]">{portal.client_name}</p>
-                    <p className="text-xs text-[#71757D]">
+                    <p className="text-sm font-semibold text-foreground">{portal.client_name}</p>
+                    <p className="text-xs text-subtle">
                       {portal.project_type} · Deleted{" "}
                       {portal.deleted_at
                         ? new Date(portal.deleted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
@@ -805,7 +805,7 @@ export default function ClientPortalPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleRestore(portal.id)}
-                      className="px-3 py-1.5 text-xs font-medium text-[#E5E5EA] border border-[#2A2A2A] rounded-lg hover:bg-[#181818] transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-foreground border border-border rounded-lg hover:bg-surface transition-colors"
                     >
                       Restore
                     </button>
@@ -879,8 +879,8 @@ function PortalCard({
   return (
     <Link
       href={`/tools/client-portal/${portal.id}`}
-      className={`block border rounded-xl bg-[#181818] hover:shadow-sm transition-all group ${
-        blocker ? "border-red-200 bg-red-50/20" : "border-[#2A2A2A] hover:border-[#C5C5C5]"
+      className={`block border rounded-xl bg-surface hover:shadow-sm transition-all group ${
+        blocker ? "border-red-200 bg-red-50/20" : "border-border hover:border-muted"
       }`}
     >
       {/* Blocker strip */}
@@ -897,26 +897,26 @@ function PortalCard({
         {/* Top row: name + type + actions */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <h3 className="text-sm font-semibold text-[#E5E5EA] truncate">{portal.client_name}</h3>
+            <h3 className="text-sm font-semibold text-foreground truncate">{portal.client_name}</h3>
             <span className={`shrink-0 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full ${
-              isRetainer ? "bg-blue-50 text-blue-600" : "bg-[#222222] text-[#9CA3AF]"
+              isRetainer ? "bg-blue-50 text-blue-600" : "bg-surface-raised text-muted"
             }`}>
               {isRetainer ? "Retainer" : portal.project_type || "Project"}
             </span>
             {portal.current_phase && (
-              <span className="text-[11px] text-[#71757D]">· {portal.current_phase}</span>
+              <span className="text-[11px] text-subtle">· {portal.current_phase}</span>
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0 ml-auto">
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCopyLink(portal.token); }}
-              className="p-1.5 text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
+              className="p-1.5 text-muted hover:text-foreground transition-colors"
             >
               {copiedToken === portal.token ? <CheckIcon className="size-3.5 text-emerald-500" /> : <ClipboardDocumentIcon className="size-3.5" />}
             </button>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(`/portal/${portal.token}`, '_blank'); }}
-              className="p-1.5 text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
+              className="p-1.5 text-muted hover:text-foreground transition-colors"
             >
               <ArrowTopRightOnSquareIcon className="size-3.5" />
             </button>
@@ -931,7 +931,7 @@ function PortalCard({
             ) : (
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
-                className="p-1.5 text-[#C7C9CD] hover:text-red-400 transition-colors"
+                className="p-1.5 text-muted hover:text-red-400 transition-colors"
               >
                 <TrashIcon className="size-3.5" />
               </button>
@@ -940,11 +940,11 @@ function PortalCard({
         </div>
 
         {/* Metrics row */}
-        <div className="flex items-center gap-6 mt-3 pt-3 border-t border-[#2A2A2A]">
+        <div className="flex items-center gap-6 mt-3 pt-3 border-t border-border">
           {/* Touchpoint */}
           <div className="flex items-center gap-1.5">
-            <span className={`size-1.5 rounded-full ${touchpointOverdue ? "bg-red-500" : touchpointDaysAway !== null && touchpointDaysAway <= 2 ? "bg-amber-500" : "bg-[#DDD]"}`} />
-            <span className="text-[11px] text-[#9CA3AF]">
+            <span className={`size-1.5 rounded-full ${touchpointOverdue ? "bg-red-500" : touchpointDaysAway !== null && touchpointDaysAway <= 2 ? "bg-amber-500" : "bg-muted"}`} />
+            <span className="text-[11px] text-muted">
               {touchpoint?.date
                 ? `${touchpointOverdue ? "Overdue" : `${touchpointDaysAway}d`} · ${new Date(touchpoint.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`
                 : "No touchpoint"
@@ -966,7 +966,7 @@ function PortalCard({
           )}
           {/* Phase deadline */}
           {nextPhase?.deadline && (
-            <span className="text-[11px] text-[#9CA3AF]">
+            <span className="text-[11px] text-muted">
               Next: {nextPhase.name} · {new Date(nextPhase.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             </span>
           )}

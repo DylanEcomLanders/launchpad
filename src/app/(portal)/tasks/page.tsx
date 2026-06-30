@@ -173,7 +173,7 @@ export default function TaskBoardPage() {
 
     return (
       <div
-        className={`grid ${GRID} gap-4 items-center ${indented ? "pl-9 pr-5" : "px-5"} py-3.5 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
+        className={`grid ${GRID} gap-4 items-center ${indented ? "pl-9 pr-5" : "px-5"} py-3.5 hover:bg-surface-raised cursor-pointer transition-colors`}
         onClick={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest("select")) return;
@@ -190,17 +190,17 @@ export default function TaskBoardPage() {
                 title={urgency === "overdue" ? "Overdue" : urgency === "due-soon" ? "Due soon" : "On track"}
               />
             )}
-            <p className="text-sm font-medium text-[#1A1A1A] truncate">{task.title}</p>
+            <p className="text-sm font-medium text-surface truncate">{task.title}</p>
           </div>
-          {task.client && <p className="text-[10px] text-[#AAA] mt-0.5 truncate">{task.client}</p>}
+          {task.client && <p className="text-[10px] text-muted mt-0.5 truncate">{task.client}</p>}
         </div>
 
         {/* Assignee (computed) */}
         <div className="min-w-0">
           {assignee ? (
-            <span className="text-xs text-[#1A1A1A] truncate block">{assignee}</span>
+            <span className="text-xs text-surface truncate block">{assignee}</span>
           ) : (
-            <span className="text-xs text-[#CCC]">Unassigned</span>
+            <span className="text-xs text-muted">Unassigned</span>
           )}
         </div>
 
@@ -209,7 +209,7 @@ export default function TaskBoardPage() {
           <select
             value={task.phase || ""}
             onChange={(e) => changePhase(task.id, e.target.value)}
-            className="w-full appearance-none text-[10px] font-semibold uppercase tracking-wider pl-2.5 pr-6 py-1 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 border-0"
+            className="w-full appearance-none text-[10px] font-semibold uppercase tracking-wider pl-2.5 pr-6 py-1 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-surface/10 border-0"
             style={pMeta ? { background: pMeta.bg, color: pMeta.color } : { background: "#F3F3F5", color: "#AAA" }}
             title="Change phase"
           >
@@ -241,12 +241,12 @@ export default function TaskBoardPage() {
               <span className="text-[11px] font-semibold tabular-nums truncate" style={{ color: urgencyColor }}>
                 {formatDeadline(relevantDue)}
               </span>
-              <span className="text-[9px] uppercase tracking-wider text-[#AAA]">{deadlineLabel} deadline</span>
+              <span className="text-[9px] uppercase tracking-wider text-muted">{deadlineLabel} deadline</span>
             </>
           ) : (
             <>
-              <span className="text-[11px] text-[#DDD]">—</span>
-              <span className="text-[9px] uppercase tracking-wider text-[#CCC]">{deadlineLabel} deadline</span>
+              <span className="text-[11px] text-muted">—</span>
+              <span className="text-[9px] uppercase tracking-wider text-muted">{deadlineLabel} deadline</span>
             </>
           )}
         </div>
@@ -269,7 +269,7 @@ export default function TaskBoardPage() {
               {timeInPhase}
             </span>
           ) : (
-            <span className="text-[11px] text-[#DDD]">—</span>
+            <span className="text-[11px] text-muted">—</span>
           )}
         </div>
       </div>
@@ -278,20 +278,20 @@ export default function TaskBoardPage() {
 
   function ColumnHeader() {
     return (
-      <div className={`grid ${GRID} gap-4 px-5 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]`}>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Deadline</span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] text-right">Time in phase</span>
+      <div className={`grid ${GRID} gap-4 px-5 py-2 bg-surface-raised border-b border-foreground`}>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Task</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Assignee</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Phase</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Deadline</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted text-right">Time in phase</span>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
-        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-surface-raised">
+        <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
@@ -307,24 +307,24 @@ export default function TaskBoardPage() {
       : "All assignees";
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
+    <div className="min-h-screen bg-surface-raised">
       {/* Header */}
-      <div className="bg-white border-b border-[#E5E5EA] px-6 py-4">
+      <div className="bg-white border-b border-foreground px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/team"
-              className="flex items-center gap-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1A1A1A] transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-medium text-subtle hover:text-surface transition-colors"
             >
               <ArrowLeftIcon className="size-3" />
               Team Tools
             </Link>
-            <div className="h-4 w-px bg-[#E5E5EA]" />
-            <Logo height={16} className="text-[#1A1A1A]" />
-            <div className="h-4 w-px bg-[#E5E5EA]" />
-            <h1 className="text-sm font-semibold text-[#1A1A1A]">Task Board</h1>
+            <div className="h-4 w-px bg-foreground" />
+            <Logo height={16} className="text-surface" />
+            <div className="h-4 w-px bg-foreground" />
+            <h1 className="text-sm font-semibold text-surface">Task Board</h1>
           </div>
-          <span className="text-[10px] text-[#CCC]">Updated {lastUpdated}</span>
+          <span className="text-[10px] text-muted">Updated {lastUpdated}</span>
         </div>
       </div>
 
@@ -351,12 +351,12 @@ export default function TaskBoardPage() {
                 key={t.value}
                 onClick={() => setTabFilter(t.value)}
                 className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
-                  tabFilter === t.value ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
+                  tabFilter === t.value ? "bg-white text-surface shadow-sm" : "text-subtle hover:text-surface"
                 }`}
               >
                 {t.value !== "all" && <span className="size-1.5 rounded-full" style={{ background: t.color }} />}
                 {t.label}
-                <span className={`text-[10px] font-medium ${tabFilter === t.value ? "text-[#AAA]" : "text-[#BBB]"}`}>
+                <span className={`text-[10px] font-medium ${tabFilter === t.value ? "text-muted" : "text-muted"}`}>
                   {tabCounts[t.value]}
                 </span>
               </button>
@@ -370,7 +370,7 @@ export default function TaskBoardPage() {
                   key={g}
                   onClick={() => setGroupBy(g)}
                   className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-colors ${
-                    groupBy === g ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
+                    groupBy === g ? "bg-white text-surface shadow-sm" : "text-subtle hover:text-surface"
                   }`}
                 >
                   By {g}
@@ -380,7 +380,7 @@ export default function TaskBoardPage() {
             <select
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
-              className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none focus:border-[#999]"
+              className="text-xs px-3 py-1.5 border border-foreground rounded-lg bg-white focus:outline-none focus:border-subtle"
             >
               <option value="">{assigneeFilterLabel}</option>
               {assignees.map((a) => (
@@ -390,7 +390,7 @@ export default function TaskBoardPage() {
               ))}
             </select>
             {assigneeFilter && (
-              <button onClick={() => setAssigneeFilter("")} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">
+              <button onClick={() => setAssigneeFilter("")} className="text-[11px] text-muted hover:text-surface">
                 Clear
               </button>
             )}
@@ -400,21 +400,21 @@ export default function TaskBoardPage() {
         {/* Summary */}
         <div className="flex items-center gap-2 mb-4">
           {tabFilter !== "all" && <div className="size-2 rounded-full" style={{ background: currentTabMeta.color }} />}
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">
             {currentTabMeta.label} ({active.length} active)
-            {assigneeFilter && <span className="text-[#BBB] normal-case font-normal"> · {assigneeFilter}</span>}
+            {assigneeFilter && <span className="text-muted normal-case font-normal"> · {assigneeFilter}</span>}
           </h2>
         </div>
 
         {/* One continuous list, grouped by client via in-table header rows */}
         {active.length === 0 ? (
-          <div className="bg-white border border-[#E5E5EA] rounded-xl">
-            <p className="text-xs text-[#CCC] text-center py-10">
+          <div className="bg-white border border-foreground rounded-xl">
+            <p className="text-xs text-muted text-center py-10">
               No active tasks{assigneeFilter ? ` for ${assigneeFilter}` : ""}
             </p>
           </div>
         ) : (
-          <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
+          <div className="bg-white border border-foreground rounded-xl overflow-hidden">
             <ColumnHeader />
             {activeGroups.map((group, i) => {
               const isLaunchPhaseGroup = group.mode === "phase" && group.key === "launch";
@@ -437,7 +437,7 @@ export default function TaskBoardPage() {
 
               return (
                 <div key={group.key}>
-                  <div className={`flex items-center gap-2 px-5 pb-2 ${i === 0 ? "pt-4" : "pt-10 border-t border-[#E5E5EA] mt-4"}`}>
+                  <div className={`flex items-center gap-2 px-5 pb-2 ${i === 0 ? "pt-4" : "pt-10 border-t border-foreground mt-4"}`}>
                     {group.mode === "phase" && group.color && (
                       <span
                         className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -447,17 +447,17 @@ export default function TaskBoardPage() {
                       </span>
                     )}
                     {group.mode === "client" && (
-                      <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+                      <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-muted italic" : "text-surface"}`}>
                         {group.label.toUpperCase()}
                       </h3>
                     )}
-                    <span className="text-[10px] font-medium text-[#AAA]">
+                    <span className="text-[10px] font-medium text-muted">
                       {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
                     </span>
                     {(isLaunchPhaseGroup || launchedInClient.length > 0) && (
                       <button
                         onClick={() => toggleReveal(group.key)}
-                        className="ml-auto text-[10px] font-medium text-[#777] hover:text-[#1A1A1A] uppercase tracking-wider"
+                        className="ml-auto text-[10px] font-medium text-subtle hover:text-surface uppercase tracking-wider"
                       >
                         {revealed
                           ? "Hide launched"
@@ -474,10 +474,10 @@ export default function TaskBoardPage() {
 
         {done.length > 0 && (
           <details className="mt-4">
-            <summary className="text-[10px] text-[#CCC] cursor-pointer hover:text-[#999]">
+            <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle">
               {done.length} completed
             </summary>
-            <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden mt-2 opacity-60">
+            <div className="bg-white border border-foreground rounded-xl overflow-hidden mt-2 opacity-60">
               <ColumnHeader />
               {done.map((t) => <TaskRow key={t.id} task={t} />)}
             </div>
@@ -487,7 +487,7 @@ export default function TaskBoardPage() {
       </div>
 
       <div className="text-center py-6">
-        <p className="text-[10px] text-[#CCC]">Auto-refreshes every 30 seconds</p>
+        <p className="text-[10px] text-muted">Auto-refreshes every 30 seconds</p>
       </div>
 
       <TaskDetailDrawer task={openTask} onClose={() => setOpenTaskId(null)} />

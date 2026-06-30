@@ -75,7 +75,7 @@ export default function CadencePage() {
     setDraft({ kind: "channel_message", summary: "", by: draft.by, awaiting_reply: false });
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   const rows = clientNames.map((c) => ({
     client_name: c,
@@ -100,25 +100,25 @@ export default function CadencePage() {
             Cadence + at-risk
           </h1>
         </div>
-        <p className="text-sm text-[#9CA3AF] max-w-2xl">
+        <p className="text-sm text-muted max-w-2xl">
           Per-client comms cadence. Three at-risk signals from the playbook: channel silence (3d+), missed onboarding deadlines, test yield drought (3+ inconclusive).
         </p>
       </header>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-background rounded-xl animate-pulse" />)}</div>
       ) : rows.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">No clients to track yet. Start an onboarding or log a touch.</p>
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">No clients to track yet. Start an onboarding or log a touch.</p>
         </div>
       ) : (
         <ul className="space-y-3">
           {rows.map((r) => (
-            <li key={r.client_name} className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
+            <li key={r.client_name} className="bg-background rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
               <div className="p-4 flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-sm font-semibold text-[#E5E5EA]">{r.client_name}</span>
+                    <span className="text-sm font-semibold text-foreground">{r.client_name}</span>
                     {r.risks.length === 0 && (
                       <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30 inline-flex items-center gap-1">
                         <CheckCircleIcon className="size-3" /> Healthy
@@ -131,7 +131,7 @@ export default function CadencePage() {
                       </span>
                     ))}
                   </div>
-                  <div className="text-[12px] text-[#71757D]">
+                  <div className="text-[12px] text-subtle">
                     {r.last_touch ? (
                       <>
                         Last: {TOUCH_LABEL[r.last_touch.kind]} {r.days_silent === 0 ? "today" : `${r.days_silent}d ago`}
@@ -143,10 +143,10 @@ export default function CadencePage() {
                     )}
                   </div>
                   {r.last_touch?.summary && (
-                    <div className="text-[12px] text-[#9CA3AF] mt-1 line-clamp-2">{r.last_touch.summary}</div>
+                    <div className="text-[12px] text-muted mt-1 line-clamp-2">{r.last_touch.summary}</div>
                   )}
                 </div>
-                <button onClick={() => setLogging(r.client_name === logging ? null : r.client_name)} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0">
+                <button onClick={() => setLogging(r.client_name === logging ? null : r.client_name)} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0">
                   <PhoneIcon className="size-3.5" />
                   {logging === r.client_name ? "Cancel" : "Log touch"}
                 </button>
@@ -161,7 +161,7 @@ export default function CadencePage() {
                     <input value={draft.summary} onChange={(e) => setDraft((d) => ({ ...d, summary: e.target.value }))} placeholder="One-line summary" className={`${inputClass} h-9 text-[12px]`} onKeyDown={(e) => { if (e.key === "Enter") logTouch(r.client_name); }} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <label className="inline-flex items-center gap-2 text-[11px] text-[#9CA3AF]">
+                    <label className="inline-flex items-center gap-2 text-[11px] text-muted">
                       <input type="checkbox" checked={draft.awaiting_reply} onChange={(e) => setDraft((d) => ({ ...d, awaiting_reply: e.target.checked }))} className="accent-amber-500" />
                       Awaiting their reply
                     </label>

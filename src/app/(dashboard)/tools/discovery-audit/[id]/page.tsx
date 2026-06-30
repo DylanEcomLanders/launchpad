@@ -155,8 +155,8 @@ export default function DiscoveryAuditDetailPage({
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">Strategist tool. Admin/CRO only.</p>
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">Strategist tool. Admin/CRO only.</p>
         </div>
       </div>
     );
@@ -166,7 +166,7 @@ export default function DiscoveryAuditDetailPage({
     return (
       <div className="p-6 space-y-3 max-w-5xl mx-auto">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -175,8 +175,8 @@ export default function DiscoveryAuditDetailPage({
   if (notFound || !audit) {
     return (
       <div className="p-6">
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D] mb-3">Audit not found.</p>
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle mb-3">Audit not found.</p>
           <Link
             href="/tools/discovery-audit"
             className="text-[12px] uppercase tracking-wider text-emerald-300 hover:text-emerald-200"
@@ -198,7 +198,7 @@ export default function DiscoveryAuditDetailPage({
         <div className="min-w-0 flex-1">
           <Link
             href="/tools/discovery-audit"
-            className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] mb-3"
+            className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground mb-3"
           >
             <ArrowLeftIcon className="size-3.5" />
             All audits
@@ -207,7 +207,7 @@ export default function DiscoveryAuditDetailPage({
             <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
               <DocumentMagnifyingGlassIcon className="size-4 text-white" />
             </div>
-            <h1 className="text-2xl font-semibold text-[#E5E5EA] truncate">
+            <h1 className="text-2xl font-semibold text-foreground truncate">
               {audit.brand_name || "Untitled audit"}
             </h1>
             <span
@@ -216,7 +216,7 @@ export default function DiscoveryAuditDetailPage({
               {STATUS_LABEL[audit.status]}
             </span>
           </div>
-          <div className="text-[12px] text-[#71757D] flex items-center gap-2 flex-wrap">
+          <div className="text-[12px] text-subtle flex items-center gap-2 flex-wrap">
             <span>
               {saving
                 ? "Saving…"
@@ -227,7 +227,7 @@ export default function DiscoveryAuditDetailPage({
             <span>·</span>
             <button
               onClick={copyShareLink}
-              className="inline-flex items-center gap-1 hover:text-[#E5E5EA] transition-colors"
+              className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
               title="Copy public deck URL"
             >
               {copied ? <CheckIcon className="size-3.5" /> : <ClipboardIcon className="size-3.5" />}
@@ -257,14 +257,14 @@ export default function DiscoveryAuditDetailPage({
           {audit.status !== "passed" && audit.status !== "credited" && (
             <button
               onClick={() => transitionStatus("passed")}
-              className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222] hover:text-rose-300"
+              className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-rose-300"
             >
               Mark passed
             </button>
           )}
           <button
             onClick={deleteAudit}
-            className="p-1.5 rounded-md text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.1]"
+            className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]"
             title="Delete audit"
           >
             <TrashIcon className="size-4" />
@@ -427,7 +427,7 @@ export default function DiscoveryAuditDetailPage({
 
       {/* Executive summary */}
       <Section title="Executive summary" defaultOpen>
-        <p className="text-[11px] text-[#71757D] mb-2">
+        <p className="text-[11px] text-subtle mb-2">
           3-5 bullets up top of the deck. A busy founder gets the value in 60s.
         </p>
         <textarea
@@ -505,14 +505,14 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04]">
+    <div className="bg-background rounded-2xl ring-1 ring-white/[0.04]">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] rounded-2xl transition-colors"
       >
-        <span className="text-sm font-semibold text-[#E5E5EA]">{title}</span>
+        <span className="text-sm font-semibold text-foreground">{title}</span>
         <ChevronDownIcon
-          className={`size-4 text-[#71757D] transition-transform ${open ? "rotate-180" : ""}`}
+          className={`size-4 text-subtle transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && <div className="px-5 pb-5 space-y-3">{children}</div>}
@@ -584,7 +584,7 @@ function FindingsEditor({
   return (
     <div className="space-y-3">
       {sorted.length === 0 ? (
-        <p className="text-[11px] italic text-[#71757D]">
+        <p className="text-[11px] italic text-subtle">
           No findings yet. Add per funnel stage.
         </p>
       ) : (
@@ -598,14 +598,14 @@ function FindingsEditor({
         ))
       )}
       <div className="flex items-center gap-1.5 flex-wrap pt-1">
-        <span className="text-[10px] uppercase tracking-wider text-[#71757D] mr-1">
+        <span className="text-[10px] uppercase tracking-wider text-subtle mr-1">
           + Add finding:
         </span>
         {STAGES.map((s) => (
           <button
             key={s}
             onClick={() => add(s)}
-            className="px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222] hover:text-[#E5E5EA] transition-colors"
+            className="px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
             <PlusIcon className="size-3 inline-block mr-1 -translate-y-px" />
             {STAGE_META[s].label}
@@ -635,11 +635,11 @@ function FindingCard({
           onClick={() => setOpen((v) => !v)}
           className="flex-1 min-w-0 text-left flex items-center gap-3"
         >
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-[#71757D] shrink-0 px-2 py-0.5 rounded-full bg-[#1A1A1A]">
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-subtle shrink-0 px-2 py-0.5 rounded-full bg-surface">
             {STAGE_META[finding.stage].label}
           </span>
-          <span className="text-sm text-[#E5E5EA] truncate">
-            {finding.title || <span className="italic text-[#71757D]">Untitled finding</span>}
+          <span className="text-sm text-foreground truncate">
+            {finding.title || <span className="italic text-subtle">Untitled finding</span>}
           </span>
         </button>
         <span
@@ -650,14 +650,14 @@ function FindingCard({
         </span>
         <button
           onClick={onDelete}
-          className="p-1 text-[#71757D] hover:text-rose-400"
+          className="p-1 text-subtle hover:text-rose-400"
           title="Delete finding"
         >
           <TrashIcon className="size-3.5" />
         </button>
         <ChevronDownIcon
           onClick={() => setOpen((v) => !v)}
-          className={`size-4 text-[#71757D] transition-transform cursor-pointer ${open ? "rotate-180" : ""}`}
+          className={`size-4 text-subtle transition-transform cursor-pointer ${open ? "rotate-180" : ""}`}
         />
       </div>
       {open && (
@@ -742,10 +742,10 @@ function FindingCard({
           </div>
           {finding.observation && (
             <details className="mt-2">
-              <summary className="text-[10px] uppercase tracking-wider text-[#71757D] cursor-pointer hover:text-[#E5E5EA]">
+              <summary className="text-[10px] uppercase tracking-wider text-subtle cursor-pointer hover:text-foreground">
                 Preview observation
               </summary>
-              <div className="mt-2 prose prose-invert prose-sm max-w-none prose-p:text-[#9CA3AF] prose-li:text-[#9CA3AF]">
+              <div className="mt-2 prose prose-invert prose-sm max-w-none prose-p:text-muted prose-li:text-muted">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {finding.observation}
                 </ReactMarkdown>

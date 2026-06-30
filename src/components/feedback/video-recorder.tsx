@@ -181,7 +181,7 @@ export function VideoRecorder({
 
   if (!supported) {
     return (
-      <p className="text-xs text-[#71757D]">
+      <p className="text-xs text-subtle">
         Video recording isn&apos;t supported in this browser. Try Chrome, Edge or
         Safari, or just skip the video.
       </p>
@@ -214,7 +214,7 @@ export function VideoRecorder({
         <button
           type="button"
           onClick={startCamera}
-          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#2A2A2A] rounded-lg text-[#E5E5EA] hover:bg-[#222222] transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border border-border rounded-lg text-foreground hover:bg-surface-raised transition-colors"
         >
           <VideoCameraIcon className="size-4" />
           Record a video
@@ -226,7 +226,7 @@ export function VideoRecorder({
           <button
             type="button"
             onClick={startRecording}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-white text-background rounded-lg hover:bg-foreground transition-colors"
           >
             <span className="size-2.5 rounded-full bg-red-500" />
             Start recording
@@ -234,7 +234,7 @@ export function VideoRecorder({
           <button
             type="button"
             onClick={reset}
-            className="text-sm text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+            className="text-sm text-subtle hover:text-foreground transition-colors"
           >
             Cancel
           </button>
@@ -245,7 +245,7 @@ export function VideoRecorder({
         <button
           type="button"
           onClick={stopRecording}
-          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-white text-background rounded-lg hover:bg-foreground transition-colors"
         >
           <StopIcon className="size-4" />
           Stop recording
@@ -254,7 +254,7 @@ export function VideoRecorder({
 
       {status === "recorded" && (
         <div className="flex items-center gap-4">
-          <span className="text-xs font-semibold text-[#15803D]">
+          <span className="text-xs font-semibold text-success">
             Video ready to send
           </span>
           <button
@@ -263,7 +263,7 @@ export function VideoRecorder({
               reset();
               startCamera();
             }}
-            className="inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground transition-colors"
           >
             <ArrowPathIcon className="size-4" />
             Re-record
@@ -271,7 +271,7 @@ export function VideoRecorder({
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-red-500 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-red-500 transition-colors"
           >
             <TrashIcon className="size-4" />
             Remove

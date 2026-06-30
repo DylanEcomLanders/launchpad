@@ -38,28 +38,28 @@ export default function OfferSectionClient({
   return (
     <div className="px-6 py-6 max-w-3xl mx-auto">
       {/* Breadcrumb */}
-      <nav className="mb-5 flex items-center gap-2 text-[11px] text-[#71757D]">
-        <Link href="/offer" className="hover:text-[#E5E5EA] transition-colors">
+      <nav className="mb-5 flex items-center gap-2 text-[11px] text-subtle">
+        <Link href="/offer" className="hover:text-foreground transition-colors">
           Conversion Engine
         </Link>
-        <ChevronRightIcon className="size-3 text-[#C7C9CD]" />
-        <span className="text-[#9CA3AF]">{module.shortTitle}</span>
+        <ChevronRightIcon className="size-3 text-muted" />
+        <span className="text-muted">{module.shortTitle}</span>
       </nav>
 
       {/* Title — hidden for editable docs (they render their own title) */}
       {!isEditableDoc && (
-        <header className="mb-5 border-b border-[#2A2A2A] pb-4">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+        <header className="mb-5 border-b border-border pb-4">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
             Internal · Sales Hub
           </p>
-          <h1 className="text-[28px] font-semibold text-[#E5E5EA] mt-1">
+          <h1 className="text-[28px] font-semibold text-foreground mt-1">
             {module.title}
           </h1>
         </header>
       )}
       {isEditableDoc && (
         <header className="mb-5">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
             Internal · Sales Hub
           </p>
         </header>
@@ -70,7 +70,7 @@ export default function OfferSectionClient({
       {module.toolHref && module.slug !== "06-slide-deck" && (
         <Link
           href={module.toolHref}
-          className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-[#222222] border border-[#2A2A2A] rounded-lg text-xs text-[#9CA3AF] hover:bg-[#222222] hover:text-[#E5E5EA] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-surface-raised border border-border rounded-lg text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
         >
           <WrenchScrewdriverIcon className="size-4" />
           <span>Open {module.shortTitle} tool</span>
@@ -86,21 +86,21 @@ export default function OfferSectionClient({
           sectionLevel={module.slug === "08-faq" ? 3 : 2}
         />
       ) : (
-        <article className="prose prose-sm max-w-none prose-headings:text-[#E5E5EA] prose-p:text-[#C7C9CD] prose-strong:text-[#E5E5EA] prose-a:text-blue-600 prose-table:text-xs prose-th:text-[#71757D] prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-500/10 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-[#222222] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[#E5E5EA] prose-code:font-mono prose-code:text-xs prose-pre:bg-[#1B1B1B] prose-pre:text-[#E5E5EA]">
+        <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-a:text-blue-600 prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-500/10 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{module.content}</ReactMarkdown>
         </article>
       )}
 
       {/* Prev / next */}
-      <nav className="mt-10 pt-5 border-t border-[#2A2A2A] flex items-center justify-between gap-3">
+      <nav className="mt-10 pt-5 border-t border-border flex items-center justify-between gap-3">
         {prev ? (
           <Link
             href={`/offer/${prev.slug}`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#2A2A2A] hover:border-white transition-colors text-[12px] text-[#9CA3AF] hover:text-[#E5E5EA]"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:border-white transition-colors text-[12px] text-muted hover:text-foreground"
           >
             <ChevronLeftIcon className="size-3.5" />
             <span>
-              <span className="text-[10px] uppercase tracking-wider text-[#71757D] block leading-none mb-0.5">
+              <span className="text-[10px] uppercase tracking-wider text-subtle block leading-none mb-0.5">
                 Previous
               </span>
               {prev.shortTitle}
@@ -112,10 +112,10 @@ export default function OfferSectionClient({
         {next ? (
           <Link
             href={`/offer/${next.slug}`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#2A2A2A] hover:border-white transition-colors text-[12px] text-[#9CA3AF] hover:text-[#E5E5EA] text-right"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:border-white transition-colors text-[12px] text-muted hover:text-foreground text-right"
           >
             <span>
-              <span className="text-[10px] uppercase tracking-wider text-[#71757D] block leading-none mb-0.5">
+              <span className="text-[10px] uppercase tracking-wider text-subtle block leading-none mb-0.5">
                 Next
               </span>
               {next.shortTitle}

@@ -221,27 +221,27 @@ export default function NewInvoicePage() {
     <div>
       <Link
         href="/finance/invoices"
-        className="inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA] mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground mb-6 transition-colors"
       >
         <ArrowLeftIcon className="size-4" /> Back to invoices
       </Link>
 
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-[#E5E5EA] mb-1">New invoice</h2>
-        <p className="text-sm text-[#71757D]">
+        <h2 className="text-xl font-semibold text-foreground mb-1">New invoice</h2>
+        <p className="text-sm text-subtle">
           Invoice number is auto-assigned on save (or override below)
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-[#991B1B] rounded-lg text-sm text-[#FCA5A5]">
+        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger rounded-lg text-sm text-[#FCA5A5]">
           {error}
         </div>
       )}
 
       <div className="space-y-10 max-w-3xl">
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Invoice details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -295,7 +295,7 @@ export default function NewInvoicePage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Client
           </h3>
           <ClientPicker
@@ -310,14 +310,14 @@ export default function NewInvoicePage() {
             }}
           />
           {clientId && (
-            <div className="mt-3 px-4 py-3 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg text-xs text-[#71757D]">
-              <div className="text-sm font-medium text-[#E5E5EA]">{clientName}</div>
+            <div className="mt-3 px-4 py-3 bg-background border border-border rounded-lg text-xs text-subtle">
+              <div className="text-sm font-medium text-foreground">{clientName}</div>
               {contactName && <div>{contactName}</div>}
               {clientEmail && <div>{clientEmail}</div>}
               {clientAddress && (
                 <div className="whitespace-pre-wrap mt-1">{clientAddress}</div>
               )}
-              <div className="mt-1 text-[10px] text-[#71757D]">
+              <div className="mt-1 text-[10px] text-subtle">
                 Country {clientCountry}. Snapshot will be written to the invoice on save.
               </div>
             </div>
@@ -325,7 +325,7 @@ export default function NewInvoicePage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Line items
           </h3>
 
@@ -351,15 +351,15 @@ export default function NewInvoicePage() {
             <button
               onClick={addDeliverable}
               disabled={!selectedDeliverable}
-              className="px-4 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
+              className="px-4 py-2.5 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
             >
               <PlusIcon className="size-4" />
             </button>
           </div>
 
           {items.length > 0 && (
-            <div className="border border-[#2A2A2A] rounded-lg overflow-hidden mb-4">
-              <div className="hidden md:grid grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-2.5 bg-[#222222] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <div className="border border-border rounded-lg overflow-hidden mb-4">
+              <div className="hidden md:grid grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-2.5 bg-surface-raised text-[10px] font-semibold uppercase tracking-wider text-subtle">
                 <span>Description</span>
                 <span className="text-center">Qty</span>
                 <span className="text-right">Unit price</span>
@@ -370,8 +370,8 @@ export default function NewInvoicePage() {
               {items.map((item, idx) => (
                 <div
                   key={item.id}
-                  className={`grid grid-cols-1 md:grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-3 border-t border-[#2A2A2A] items-center ${
-                    idx % 2 === 1 ? "bg-[#0C0C0C]" : ""
+                  className={`grid grid-cols-1 md:grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-3 border-t border-border items-center ${
+                    idx % 2 === 1 ? "bg-background" : ""
                   }`}
                 >
                   {item.type === "deliverable" ? (
@@ -413,7 +413,7 @@ export default function NewInvoicePage() {
                       className={`${inputClass} text-right text-sm`}
                     />
                   ) : (
-                    <span className="text-sm text-right text-[#71757D] px-3">
+                    <span className="text-sm text-right text-subtle px-3">
                       {fmtMoney(item.unitPrice)}
                     </span>
                   )}
@@ -424,7 +424,7 @@ export default function NewInvoicePage() {
 
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="p-1 text-[#71757D] hover:text-red-500 transition-colors justify-self-center"
+                    className="p-1 text-subtle hover:text-red-500 transition-colors justify-self-center"
                   >
                     <XMarkIcon className="size-3.5" />
                   </button>
@@ -435,7 +435,7 @@ export default function NewInvoicePage() {
 
           <button
             onClick={addCustomItem}
-            className="flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+            className="flex items-center gap-1.5 text-sm text-subtle hover:text-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add custom line item
@@ -443,7 +443,7 @@ export default function NewInvoicePage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             VAT
           </h3>
           <VatModePicker
@@ -463,28 +463,28 @@ export default function NewInvoicePage() {
 
         {items.length > 0 && (
           <section>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
               Totals
             </h3>
-            <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-5 space-y-2">
+            <div className="bg-background border border-border rounded-lg p-5 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-[#71757D]">Subtotal</span>
+                <span className="text-subtle">Subtotal</span>
                 <span className="font-medium tabular-nums">{fmtMoney(breakdown.subtotal)}</span>
               </div>
               {breakdown.vatAmount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#71757D]">
+                  <span className="text-subtle">
                     VAT ({Math.round(breakdown.vatRate * 100)}%)
                   </span>
                   <span className="font-medium tabular-nums">{fmtMoney(breakdown.vatAmount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-base pt-2 border-t border-[#2A2A2A]">
+              <div className="flex justify-between text-base pt-2 border-t border-border">
                 <span className="font-semibold">Total</span>
                 <span className="font-bold tabular-nums">{fmtMoney(breakdown.total)}</span>
               </div>
               {breakdown.noteForInvoice && (
-                <p className="text-[11px] text-[#71757D] mt-3 pt-3 border-t border-[#2A2A2A]">
+                <p className="text-[11px] text-subtle mt-3 pt-3 border-t border-border">
                   Will be printed on invoice: {breakdown.noteForInvoice}
                 </p>
               )}
@@ -493,7 +493,7 @@ export default function NewInvoicePage() {
         )}
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Payment method
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -507,7 +507,7 @@ export default function NewInvoicePage() {
                 <option value="online">Whop (online)</option>
                 <option value="bank_transfer">Bank transfer (Tide)</option>
               </select>
-              <p className="text-[11px] text-[#71757D] mt-1">
+              <p className="text-[11px] text-subtle mt-1">
                 {paymentMethod === "online"
                   ? "PDF will say payment is processed via Whop. The Whop invoice is handled separately."
                   : "Bank details below print on the invoice PDF."}
@@ -570,11 +570,11 @@ export default function NewInvoicePage() {
           </div>
         </section>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#2A2A2A]">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
           <button
             onClick={() => save("draft")}
             disabled={!canSave || saving}
-            className="flex items-center justify-center gap-2 px-5 py-3 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm font-medium rounded-md hover:bg-[#0C0C0C] transition-colors disabled:opacity-30"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-surface border border-border text-foreground text-sm font-medium rounded-md hover:bg-background transition-colors disabled:opacity-30"
           >
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : null}
             Save as draft
@@ -582,7 +582,7 @@ export default function NewInvoicePage() {
           <button
             onClick={() => save("sent")}
             disabled={!canSave || saving}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
           >
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : null}
             Save & mark as sent
