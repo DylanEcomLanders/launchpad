@@ -21,6 +21,24 @@ import {
   LATE_BAD_DAYS,
 } from "@/lib/kpi/config";
 import type { KpiPeriod, OverdueRow, BreakdownRow } from "@/lib/kpi/types";
+import {
+  PageHeader,
+  Segmented,
+  StatTile,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardBody,
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  Num,
+  Badge,
+  Avatar,
+} from "@/components/ui";
 
 /* ── Helpers ── */
 
@@ -43,16 +61,37 @@ function fmtDate(iso: string): string {
     timeZone: "UTC",
   });
 }
+/* Threshold signal as semantic tokens (success/warning/danger), not raw hues. */
 function rateColor(r: number | null): string {
   if (r === null) return "text-subtle";
-  if (r >= RATE_GOOD) return "text-emerald-400";
-  if (r >= RATE_WARN) return "text-amber-400";
-  return "text-red-400";
+  if (r >= RATE_GOOD) return "text-success";
+  if (r >= RATE_WARN) return "text-warning";
+  return "text-danger";
 }
 function lateColor(days: number): string {
-  if (days > LATE_BAD_DAYS) return "text-red-400";
-  if (days >= LATE_WARN_DAYS) return "text-amber-400";
+  if (days > LATE_BAD_DAYS) return "text-danger";
+  if (days >= LATE_WARN_DAYS) return "text-warning";
   return "text-foreground";
+}
+/* Two-letter mono initials for the Avatar primitive. */
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "–";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+/* Map a delivery phase onto a Badge category tone. */
+type BadgeTone = "neutral" | "dev" | "design" | "copy" | "strategy";
+function phaseTone(phase: string): BadgeTone {
+  const p = phase.toLowerCase();
+  if (p.includes("design")) return "design";
+  if (p.includes("copy")) return "copy";
+  if (p.includes("dev") || p.includes("build")) return "dev";
+  if (p.includes("strateg")) return "strategy";
+  return "neutral";
+}
+function humanizePhase(phase: string): string {
+  return phase.replace(/-/g, " ");
 }
 
 /* ── Page ── */
@@ -91,64 +130,60 @@ export default function KpiPage() {
 
   const asOfLabel = fmtDate(new Date(win.asOfMs).toISOString().slice(0, 10));
 
+  const sourceLabel = loading
+    ? "syncing…"
+    : source === "supabase"
+      ? "live"
+      : "sample data";
+
   return (
     <div className="max-w-6xl mx-auto px-6 md:px-12 py-12">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-[28px] leading-tight font-bold text-foreground">
-            Delivery KPIs
-          </h1>
-          <p className="text-xs text-subtle mt-0.5">
-            From Project Delivery · {win.label}
-            {win.isCurrent ? " · in progress" : ""} ·{" "}
-            {loading
-              ? "syncing…"
-              : source === "supabase"
-                ? "live"
-                : "sample data"}
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2 shrink-0">
-          <PeriodToggle
-            period={period}
-            onChange={(p) => {
-              setPeriod(p);
-              setOffset(0);
-            }}
-          />
-          <PeriodStepper
-            label={win.label}
-            offset={offset}
-            onBack={() => setOffset((o) => o + 1)}
-            onForward={() => setOffset((o) => Math.max(0, o - 1))}
-          />
-        </div>
-      </div>
+      <PageHeader
+        className="mb-8"
+        title="Delivery KPIs"
+        subtitle={`From Project Delivery · ${win.label}${win.isCurrent ? " · in progress" : ""} · ${sourceLabel}`}
+        actions={
+          <div className="flex flex-col items-end gap-2">
+            <Segmented
+              value={period}
+              onChange={(p) => {
+                setPeriod(p);
+                setOffset(0);
+              }}
+              options={PERIODS}
+            />
+            <PeriodStepper
+              label={win.label}
+              offset={offset}
+              onBack={() => setOffset((o) => o + 1)}
+              onForward={() => setOffset((o) => Math.max(0, o - 1))}
+            />
+          </div>
+        }
+      />
 
       {/* Top strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-        <Stat
+        <StatTile
           label="On-time rate"
-          value={fmtRate(summary.onTimeRate)}
-          valueClass={rateColor(summary.onTimeRate)}
-          sub={`${summary.onTimeCount} on time · ${summary.lateCount} late`}
+          value={<span className={rateColor(summary.onTimeRate)}>{fmtRate(summary.onTimeRate)}</span>}
+          context={`${summary.onTimeCount} on time · ${summary.lateCount} late`}
         />
-        <Stat
-          label="Delivered"
-          value={String(summary.delivered)}
-          sub={win.label}
-        />
-        <Stat
+        <StatTile label="Delivered" value={String(summary.delivered)} context={win.label} />
+        <StatTile
           label={win.isCurrent ? "Currently overdue" : "Overdue at close"}
-          value={String(summary.currentlyOverdue)}
-          valueClass={summary.currentlyOverdue > 0 ? "text-red-400" : "text-foreground"}
-          sub={win.isCurrent ? "open · past due now" : `open · as of ${asOfLabel}`}
+          value={
+            <span className={summary.currentlyOverdue > 0 ? "text-danger" : "text-foreground"}>
+              {String(summary.currentlyOverdue)}
+            </span>
+          }
+          context={win.isCurrent ? "open · past due now" : `open · as of ${asOfLabel}`}
         />
-        <Stat
+        <StatTile
           label="Avg turnaround"
           value={fmtDays(summary.avgTurnaroundDays)}
-          sub="started → delivered"
+          context="started → delivered"
         />
       </div>
 
@@ -167,8 +202,6 @@ export default function KpiPage() {
     </div>
   );
 }
-
-/* ── Period toggle ── */
 
 /* ── Test programme stats ──
  * Reads ab_tests and shows: live now, called this period (W/L/I)
@@ -210,7 +243,9 @@ function TestStrip({ win }: { win: { startMs: number; asOfMs: number; isCurrent:
   if (!hydrated) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-        {Array.from({ length: 4 }).map((_, i) => (<div key={i} className="h-20 bg-background rounded-xl animate-pulse" />))}
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-20 rounded-xl border border-border bg-surface-raised animate-pulse" />
+        ))}
       </div>
     );
   }
@@ -218,41 +253,26 @@ function TestStrip({ win }: { win: { startMs: number; asOfMs: number; isCurrent:
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-      <Stat label="Tests live now" value={String(stats.live)} sub={stats.live > 0 ? "in flight" : "—"} />
-      <Stat label="Called this period" value={String(stats.won + stats.lost + stats.inc)} sub={`${stats.won}W · ${stats.lost}L · ${stats.inc}I`} />
-      <Stat label="Period winners" value={String(stats.won)} valueClass={stats.won > 0 ? "text-emerald-400" : "text-foreground"} sub="↑ proof deck candidates" />
-      <Stat
-        label="Cumulative win rate"
-        value={stats.winRate === null ? "–" : `${stats.winRate}%`}
-        valueClass={stats.winRate !== null ? rateColor(stats.winRate) : "text-subtle"}
-        sub="all concluded tests"
+      <StatTile label="Tests live now" value={String(stats.live)} context={stats.live > 0 ? "in flight" : "—"} />
+      <StatTile
+        label="Called this period"
+        value={String(stats.won + stats.lost + stats.inc)}
+        context={`${stats.won}W · ${stats.lost}L · ${stats.inc}I`}
       />
-    </div>
-  );
-}
-
-function PeriodToggle({
-  period,
-  onChange,
-}: {
-  period: KpiPeriod;
-  onChange: (p: KpiPeriod) => void;
-}) {
-  return (
-    <div className="inline-flex p-0.5 rounded-full bg-surface-raised border border-border shrink-0">
-      {PERIODS.map((o) => (
-        <button
-          key={o.value}
-          onClick={() => onChange(o.value)}
-          className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-colors ${
-            period === o.value
-              ? "bg-white text-background"
-              : "text-subtle hover:text-white"
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
+      <StatTile
+        label="Period winners"
+        value={<span className={stats.won > 0 ? "text-success" : "text-foreground"}>{String(stats.won)}</span>}
+        context="proof deck candidates"
+      />
+      <StatTile
+        label="Cumulative win rate"
+        value={
+          <span className={stats.winRate !== null ? rateColor(stats.winRate) : "text-subtle"}>
+            {stats.winRate === null ? "–" : `${stats.winRate}%`}
+          </span>
+        }
+        context="all concluded tests"
+      />
     </div>
   );
 }
@@ -271,13 +291,13 @@ function PeriodStepper({
   onForward: () => void;
 }) {
   const btn =
-    "size-6 inline-flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-border disabled:opacity-30 disabled:hover:text-muted disabled:hover:border-border transition-colors";
+    "size-6 inline-flex items-center justify-center rounded-full border border-border text-muted hover:text-foreground disabled:opacity-30 disabled:hover:text-muted transition-colors";
   return (
     <div className="inline-flex items-center gap-2">
       <button onClick={onBack} className={btn} aria-label="Previous period" title="Previous period">
         ←
       </button>
-      <span className="min-w-[96px] text-center text-[12px] font-medium text-foreground tabular-nums">
+      <span className="min-w-[96px] text-center text-xs font-medium text-foreground tabular-nums">
         {label}
       </span>
       <button
@@ -289,45 +309,6 @@ function PeriodStepper({
       >
         →
       </button>
-    </div>
-  );
-}
-
-/* ── Stat card ── */
-
-function Stat({
-  label,
-  value,
-  sub,
-  valueClass = "text-foreground",
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  valueClass?: string;
-}) {
-  return (
-    <div className="border border-border rounded-lg p-5 bg-surface">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
-        {label}
-      </p>
-      <p className={`mt-2 text-[30px] font-bold leading-none tabular-nums ${valueClass}`}>
-        {value}
-      </p>
-      {sub && <p className="mt-2 text-[11px] text-subtle">{sub}</p>}
-    </div>
-  );
-}
-
-/* ── Section header ── */
-
-function SectionHeader({ title, right }: { title: string; right?: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between mb-3">
-      <h2 className="text-[13px] font-bold uppercase tracking-wider text-foreground">
-        {title}
-      </h2>
-      {right}
     </div>
   );
 }
@@ -368,85 +349,83 @@ function OverdueList({
     }
   }
 
-  const Th = ({ col, label, align = "left" }: { col: OverdueSort; label: string; align?: "left" | "right" }) => (
-    <th
-      onClick={() => toggle(col)}
-      className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle cursor-pointer hover:text-foreground select-none text-${align}`}
-    >
+  const SortTH = ({
+    col,
+    label,
+    align = "left",
+  }: {
+    col: OverdueSort;
+    label: string;
+    align?: "left" | "right";
+  }) => (
+    <TH align={align} onClick={() => toggle(col)} className="cursor-pointer select-none hover:text-foreground">
       {label}
       {sort === col ? (dir === "asc" ? " ↑" : " ↓") : ""}
-    </th>
+    </TH>
   );
 
   return (
-    <section className="mb-10">
-      <SectionHeader
-        title={heading}
-        right={
-          <span className="text-[11px] tabular-nums text-subtle">
-            {rows.length} {note}
-          </span>
-        }
-      />
-      <div className="border border-border rounded-lg overflow-hidden">
-        {rows.length === 0 ? (
-          <p className="text-sm text-subtle text-center py-10">
-            Nothing overdue. 🎉
-          </p>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-surface border-b border-border">
-              <tr>
-                <Th col="title" label="Deliverable" />
-                <Th col="clientName" label="Client" />
-                <Th col="pod" label="Pod" />
-                <Th col="owner" label="Owner" />
-                <Th col="phase" label="Phase" />
-                <Th col="dueDate" label="Due" align="right" />
-                <Th col="daysLate" label="Days late" align="right" />
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((r) => (
-                <tr
-                  key={r.id}
-                  className="border-b border-border last:border-0 hover:bg-[#161616]"
-                >
-                  <td className="px-3 py-2.5 text-[13px] text-foreground">
-                    {r.url ? (
-                      <a
-                        href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:underline"
-                      >
-                        {r.title}
-                      </a>
-                    ) : (
-                      r.title
-                    )}
-                  </td>
-                  <td className="px-3 py-2.5 text-[12px] text-muted">{r.clientName}</td>
-                  <td className="px-3 py-2.5 text-[12px] text-muted">{r.pod ?? "–"}</td>
-                  <td className="px-3 py-2.5 text-[12px] text-muted">{r.owner ?? "–"}</td>
-                  <td className="px-3 py-2.5 text-[12px] text-muted capitalize">
-                    {r.phase.replace(/-/g, " ")}
-                  </td>
-                  <td className="px-3 py-2.5 text-[12px] text-muted text-right tabular-nums">
-                    {fmtDate(r.dueDate)}
-                  </td>
-                  <td
-                    className={`px-3 py-2.5 text-[13px] font-semibold text-right tabular-nums ${lateColor(r.daysLate)}`}
-                  >
-                    {r.daysLate}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </section>
+    <Card className="mb-10">
+      <CardHeader>
+        <CardTitle>{heading}</CardTitle>
+        <span className="text-2xs tabular-nums text-subtle">
+          {rows.length} {note}
+        </span>
+      </CardHeader>
+      {rows.length === 0 ? (
+        <CardBody>
+          <p className="text-sm text-subtle text-center py-6">Nothing overdue. 🎉</p>
+        </CardBody>
+      ) : (
+        <Table>
+          <THead>
+            <TR hover={false}>
+              <SortTH col="title" label="Deliverable" />
+              <SortTH col="clientName" label="Client" />
+              <SortTH col="pod" label="Pod" />
+              <SortTH col="owner" label="Owner" />
+              <SortTH col="phase" label="Phase" />
+              <SortTH col="dueDate" label="Due" align="right" />
+              <SortTH col="daysLate" label="Days late" align="right" />
+            </TR>
+          </THead>
+          <TBody>
+            {sorted.map((r) => (
+              <TR key={r.id}>
+                <TD>
+                  {r.url ? (
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      {r.title}
+                    </a>
+                  ) : (
+                    r.title
+                  )}
+                </TD>
+                <TD className="text-muted">
+                  <div className="flex items-center gap-2">
+                    <Avatar initials={initials(r.clientName)} size={22} />
+                    {r.clientName}
+                  </div>
+                </TD>
+                <TD className="text-muted">{r.pod ?? "–"}</TD>
+                <TD className="text-muted">{r.owner ?? "–"}</TD>
+                <TD>
+                  <Badge tone={phaseTone(r.phase)} className="capitalize">
+                    {humanizePhase(r.phase)}
+                  </Badge>
+                </TD>
+                <TD align="right">
+                  <Num className="text-muted">{fmtDate(r.dueDate)}</Num>
+                </TD>
+                <TD align="right">
+                  <Num className={`font-semibold ${lateColor(r.daysLate)}`}>{r.daysLate}</Num>
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+      )}
+    </Card>
   );
 }
 
@@ -462,62 +441,49 @@ function BreakdownTable({
   rows: BreakdownRow[];
 }) {
   return (
-    <section className="mb-10">
-      <SectionHeader title={title} />
-      <div className="border border-border rounded-lg overflow-hidden">
-        {rows.length === 0 ? (
-          <p className="text-sm text-subtle text-center py-10">No data.</p>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-surface border-b border-border">
-              <tr>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-left">
-                  {keyHeader}
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
-                  Delivered
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
-                  On-time
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
-                  Overdue
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle text-right">
-                  Avg turnaround
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr
-                  key={r.key}
-                  className="border-b border-border last:border-0 hover:bg-[#161616]"
-                >
-                  <td className="px-3 py-2.5 text-[13px] text-foreground">{r.key}</td>
-                  <td className="px-3 py-2.5 text-[13px] text-muted text-right tabular-nums">
-                    {r.delivered}
-                  </td>
-                  <td
-                    className={`px-3 py-2.5 text-[13px] font-semibold text-right tabular-nums ${rateColor(r.onTimeRate)}`}
-                  >
-                    {fmtRate(r.onTimeRate)}
-                  </td>
-                  <td
-                    className={`px-3 py-2.5 text-[13px] text-right tabular-nums ${r.currentlyOverdue > 0 ? "text-red-400" : "text-muted"}`}
-                  >
+    <Card className="mb-10">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      {rows.length === 0 ? (
+        <CardBody>
+          <p className="text-sm text-subtle text-center py-6">No data.</p>
+        </CardBody>
+      ) : (
+        <Table>
+          <THead>
+            <TR hover={false}>
+              <TH>{keyHeader}</TH>
+              <TH align="right">Delivered</TH>
+              <TH align="right">On-time</TH>
+              <TH align="right">Overdue</TH>
+              <TH align="right">Avg turnaround</TH>
+            </TR>
+          </THead>
+          <TBody>
+            {rows.map((r) => (
+              <TR key={r.key}>
+                <TD>{r.key}</TD>
+                <TD align="right">
+                  <Num className="text-muted">{r.delivered}</Num>
+                </TD>
+                <TD align="right">
+                  <Num className={`font-semibold ${rateColor(r.onTimeRate)}`}>{fmtRate(r.onTimeRate)}</Num>
+                </TD>
+                <TD align="right">
+                  <Num className={r.currentlyOverdue > 0 ? "text-danger" : "text-muted"}>
                     {r.currentlyOverdue}
-                  </td>
-                  <td className="px-3 py-2.5 text-[13px] text-muted text-right tabular-nums">
-                    {fmtDays(r.avgTurnaroundDays)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </section>
+                  </Num>
+                </TD>
+                <TD align="right">
+                  <Num className="text-muted">{fmtDays(r.avgTurnaroundDays)}</Num>
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+      )}
+    </Card>
   );
 }
 
@@ -529,12 +495,12 @@ function TrendChart({
   points: { weekStart: string; label: string; onTimeRate: number | null; delivered: number }[];
 }) {
   return (
-    <section className="mb-6">
-      <SectionHeader
-        title="On-time trend"
-        right={<span className="text-[11px] text-subtle">last {points.length} weeks</span>}
-      />
-      <div className="border border-border rounded-lg p-5 bg-surface">
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>On-time trend</CardTitle>
+        <span className="text-2xs text-subtle">last {points.length} weeks</span>
+      </CardHeader>
+      <CardBody>
         <div className="flex items-end justify-between gap-2 h-40">
           {points.map((p) => {
             const h = p.onTimeRate === null ? 0 : Math.max(2, p.onTimeRate);
@@ -542,16 +508,16 @@ function TrendChart({
               p.onTimeRate === null
                 ? "bg-border"
                 : p.onTimeRate >= RATE_GOOD
-                  ? "bg-emerald-500"
+                  ? "bg-success"
                   : p.onTimeRate >= RATE_WARN
-                    ? "bg-amber-400"
-                    : "bg-red-500";
+                    ? "bg-warning"
+                    : "bg-danger";
             return (
               <div
                 key={p.weekStart}
                 className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end"
               >
-                <span className="text-[10px] tabular-nums text-subtle">
+                <span className="font-mono text-2xs tabular-nums text-subtle">
                   {p.onTimeRate === null ? "–" : `${p.onTimeRate}%`}
                 </span>
                 <div className="w-full flex items-end h-full">
@@ -561,13 +527,13 @@ function TrendChart({
                     title={`${p.label}: ${p.onTimeRate ?? "–"}% on time · ${p.delivered} delivered`}
                   />
                 </div>
-                <span className="text-[10px] text-subtle whitespace-nowrap">{p.label}</span>
-                <span className="text-[10px] tabular-nums text-border">{p.delivered}</span>
+                <span className="text-2xs text-subtle whitespace-nowrap">{p.label}</span>
+                <span className="font-mono text-2xs tabular-nums text-border">{p.delivered}</span>
               </div>
             );
           })}
         </div>
-      </div>
-    </section>
+      </CardBody>
+    </Card>
   );
 }

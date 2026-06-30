@@ -11,34 +11,36 @@
    ────────────────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
-  --background: #0C0C0C;        /* canvas            */
-  --surface: #181818;          /* cards             */
-  --surface-raised: #222222;   /* nested / raised   */
-  --border: #2A2A2A;           /* hairlines         */
-  --foreground: #E5E5EA;       /* primary text      */
-  --muted: #9CA3AF;            /* secondary text    */
-  --subtle: #71757D;           /* tertiary / labels */
-  --accent: #FFFFFF;           /* THE primary action only */
-  --accent-foreground: #0C0C0C;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --danger: #DC2626;
+  --background: #0A0A0C;                  /* canvas */
+  --surface: #0E0E11;                     /* flat cards/panels — barely above canvas */
+  --surface-raised: #1A1A1E;              /* floating only: dropdowns, ⌘K, modals, hover */
+  --border: rgba(255, 255, 255, 0.085);   /* hairlines — defines flat cards */
+  --foreground: #EDEEF0;                  /* primary text */
+  --muted: #8A8F98;                       /* secondary text */
+  --subtle: #5E616B;                      /* tertiary / labels */
+  --accent: #EDEEF0;                      /* mono primary action */
+  --accent-foreground: #09090B;
+  --success: #4CB782;
+  --warning: #E5A33D;
+  --danger: #E5484D;
+  --ring: #5E6AD2;                        /* Linear periwinkle — focus/active/select ONLY */
 }
 
 [data-theme="light"] {
   color-scheme: light;
   --background: #FCFCFC;
   --surface: #FFFFFF;
-  --surface-raised: #F7F7F8;
-  --border: #ECECEC;
-  --foreground: #0C0C0C;
-  --muted: #6E6E6E;
-  --subtle: #9A9A9A;
-  --accent: #0C0C0C;
+  --surface-raised: #F6F6F7;
+  --border: rgba(0, 0, 0, 0.08);
+  --foreground: #1A1A1C;
+  --muted: #6B6F76;
+  --subtle: #9A9DA4;
+  --accent: #1A1A1C;
   --accent-foreground: #FFFFFF;
-  --success: #16A34A;
-  --warning: #D97706;
-  --danger: #DC2626;
+  --success: #398E5C;
+  --warning: #C2820F;
+  --danger: #D5474C;
+  --ring: #5E6AD2;
 }
 
 @theme inline {
@@ -56,20 +58,26 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-ring: var(--ring);
   /* back-compat aliases (2 stray usages) — remove after sweep */
   --color-accent-hover: var(--surface-raised);
   --color-accent-light: var(--surface-raised);
 
-  /* TYPE SCALE — target for the Phase 2b type codemod (replaces 4,461
-     arbitrary sizes / ~20 values with 8 steps). Dense-tool floor at 11px. */
-  --text-2xs: 0.6875rem;  /* 11px — labels, meta            */
-  --text-xs:  0.75rem;    /* 12px — table cells, captions   */
-  --text-sm:  0.8125rem;  /* 13px — secondary body          */
-  --text-base:0.875rem;   /* 14px — body                    */
-  --text-lg:  1rem;       /* 16px — card titles             */
-  --text-xl:  1.25rem;    /* 20px — section headers         */
-  --text-2xl: 1.5rem;     /* 24px — page titles             */
-  --text-3xl: 1.875rem;   /* 30px — display                 */
+  /* TYPE SCALE — Linear calibration: nudged up for "comfortable, not cramped". */
+  --text-2xs: 0.75rem;    /* 12px — micro-labels            */
+  --text-xs:  0.8125rem;  /* 13px — table cells, captions   */
+  --text-sm:  0.875rem;   /* 14px — body baseline           */
+  --text-base:0.9375rem;  /* 15px — body                    */
+  --text-lg:  1.0625rem;  /* 17px — card titles             */
+  --text-xl:  1.375rem;   /* 22px — section headers         */
+  --text-2xl: 1.75rem;    /* 28px — page titles             */
+  --text-3xl: 1.875rem;   /* 30px — display / big stat      */
+
+  /* RADIUS — tight, concentric scale (premium = restrained + concentric). */
+  --radius-sm: 6px;       /* chips, badges, kbd          */
+  --radius-md: 8px;       /* buttons, inputs, segmented  */
+  --radius-lg: 10px;      /* cards, panels, tiles        */
+  --radius-xl: 14px;      /* app frame / modals only     */
 
   --font-heading: var(--font-inter-tight), var(--font-inter), "Inter Tight", "Inter", system-ui, sans-serif;
   --font-body: var(--font-articulat), var(--font-inter), "Articulat CF", system-ui, sans-serif;
@@ -181,29 +189,12 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-.animate-fadeInUp {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-.animate-fadeInUp-d1 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
-}
-
-.animate-fadeInUp-d2 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both;
-}
-
-.animate-fadeInUp-d3 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
-}
-
-.animate-fadeInUp-d4 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s both;
-}
-
-.animate-fadeInUp-d5 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both;
-}
+.animate-fadeInUp    { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) both; }
+.animate-fadeInUp-d1 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.03s both; }
+.animate-fadeInUp-d2 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.06s both; }
+.animate-fadeInUp-d3 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.09s both; }
+.animate-fadeInUp-d4 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.12s both; }
+.animate-fadeInUp-d5 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.15s both; }
 
 /* Scale fade for cards / modals */
 @keyframes scaleFadeIn {
