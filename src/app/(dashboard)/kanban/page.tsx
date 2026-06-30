@@ -454,9 +454,14 @@ const STATUS_RANK: Record<StuckStatus, number> = {
 /* Card override for cards in launch + testing with a running test. Overrides
  * the stuck/approaching/on-track palette with a green tint so live tests pop
  * across the board without the strategist having to read the badge. */
+/* V2 calm-board treatment: cards are a neutral surface; status reads through a
+ * thin LEFT-edge accent (so a column is still scannable for amber/red at a
+ * glance) instead of a full coloured fill. `accent`/`dot` keep the hue for
+ * small status text + dots elsewhere. */
 const LIVE_STYLE = {
-  ring: "border-emerald-500/60",
-  bg: "bg-emerald-500/10",
+  ring: "border-border",
+  bg: "bg-surface",
+  edge: "border-l-emerald-500/70",
   accent: "text-emerald-400",
   dot: "#10B981",
   label: "Live",
@@ -465,20 +470,23 @@ const LIVE_STYLE = {
 const STUCK_STYLES: Record<StuckStatus, {
   ring: string;
   bg: string;
+  edge: string;
   accent: string;
   dot: string;
   label: string;
 }> = {
   stuck: {
-    ring: "border-red-500/60",
-    bg: "bg-red-500/10",
-    accent: "text-red-400",
+    ring: "border-border",
+    bg: "bg-surface",
+    edge: "border-l-rose-500/70",
+    accent: "text-rose-400",
     dot: "#F87171",
     label: "Stuck",
   },
   approaching: {
-    ring: "border-amber-500/60",
-    bg: "bg-amber-500/10",
+    ring: "border-border",
+    bg: "bg-surface",
+    edge: "border-l-amber-500/70",
     accent: "text-amber-400",
     dot: "#F59E0B",
     label: "Approaching",
@@ -486,6 +494,7 @@ const STUCK_STYLES: Record<StuckStatus, {
   "on-track": {
     ring: "border-border",
     bg: "bg-surface",
+    edge: "border-l-transparent",
     accent: "text-subtle",
     dot: "#4B4D52",
     label: "On track",
@@ -1443,16 +1452,16 @@ export default function KanbanPage() {
             cluster). Cluster takes auto, stays anchored at the right edge. */}
         <div className="grid grid-cols-[1fr_auto] items-end gap-6 mb-6">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
+            <p className="text-[12px] font-medium text-subtle">
               Mission Control · {viewModeLabel}
               {headerCountLabel && (
-                <span className="text-border normal-case tracking-normal">
+                <span className="text-border">
                   {" · "}{headerCountLabel.toLowerCase()}
                 </span>
               )}
             </p>
-            <h1 className="mt-2 text-[28px] leading-tight truncate">
-              <span className="font-bold text-foreground">{title.bold}</span>{" "}
+            <h1 className="mt-2 text-[26px] font-heading tracking-tight leading-tight truncate">
+              <span className="font-medium text-foreground">{title.bold}</span>{" "}
               <span className="font-normal text-subtle">{title.light}</span>
             </h1>
           </div>
@@ -1474,10 +1483,10 @@ export default function KanbanPage() {
             {meName && (
               <button
                 onClick={() => setMineOnly((v) => !v)}
-                className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
+                className={`px-3 py-1 text-[12px] font-medium rounded-md border transition-colors ${
                   mineOnly
-                    ? "bg-emerald-500/[0.15] text-emerald-200 border border-emerald-500/40"
-                    : "text-subtle hover:text-white border border-border hover:border-border"
+                    ? "bg-surface-raised text-foreground border-border"
+                    : "text-muted hover:text-foreground border-border"
                 }`}
                 title="Show only cards assigned to you"
               >
@@ -1526,7 +1535,7 @@ export default function KanbanPage() {
             {/* View mode pill - anchored to the right edge. Stays put
                 regardless of mode so eye-position doesn't jolt when
                 + Client + the client dropdown appear/disappear. */}
-            <div className="inline-flex p-0.5 rounded-full bg-surface-raised border border-border">
+            <div className="inline-flex gap-0.5 p-0.5 rounded-md bg-surface border border-border">
               {(
                 [
                   { v: "project" as const, label: "By project" },
@@ -1538,10 +1547,10 @@ export default function KanbanPage() {
                 <button
                   key={o.v}
                   onClick={() => setViewMode(o.v)}
-                  className={`px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
+                  className={`px-3 py-1 text-[12px] font-medium rounded transition-colors ${
                     viewMode === o.v
-                      ? "bg-white text-background"
-                      : "text-subtle hover:text-white"
+                      ? "bg-surface-raised text-foreground"
+                      : "text-muted hover:text-foreground"
                   }`}
                 >
                   {o.label}
@@ -2299,18 +2308,14 @@ function BoardColumns(props: BoardColumnsProps) {
             }}
             className={`rounded-xl flex flex-col transition-colors h-full overflow-hidden ${
               isDropTarget
-                ? "bg-surface-raised border-2 border-dashed border-muted"
-                : "bg-surface border border-border"
+                ? "bg-surface-raised/40 border-2 border-dashed border-border"
+                : "border-2 border-transparent"
             }`}
           >
-            <div className="px-3 py-3 border-b border-border shrink-0">
+            <div className="px-2 py-2.5 shrink-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="shrink-0 size-2 rounded-full"
-                    style={{ background: phase.color }}
-                  />
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-foreground truncate">
+                  <span className="text-[12.5px] font-medium text-foreground truncate">
                     {phase.label}
                   </span>
                 </div>
@@ -2628,7 +2633,7 @@ function Card({
         }}
         onDragEnd={onDragEnd}
         onClick={onOpen}
-        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border rounded ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-border transition-all ${
+        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border border-l-2 rounded ${style.ring} ${style.edge} ${style.bg} cursor-grab active:cursor-grabbing hover:bg-surface-raised transition-all ${
           isDragging ? "opacity-40 scale-[0.98]" : ""
         }`}
         title={`${d.title}${role ? ` · ${role}` : ""}`}
@@ -2673,7 +2678,7 @@ function Card({
       }}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      className={`p-3 border rounded-lg ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-border transition-all ${
+      className={`p-3 border border-l-2 rounded-lg ${style.ring} ${style.edge} ${style.bg} cursor-grab active:cursor-grabbing hover:bg-surface-raised transition-all ${
         isDragging ? "opacity-40 scale-[0.98]" : ""
       }`}
     >
