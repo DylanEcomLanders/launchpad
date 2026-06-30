@@ -465,6 +465,7 @@ function OverviewTab({
           onChange={(v) => onPatch({ phone: v || undefined })}
         />
         <InviteButton person={person} />
+        <AccessLevelControl person={person} />
       </Section>
 
       <Section title="Notes" className="md:col-span-2">
@@ -2343,6 +2344,103 @@ function InviteButton({ person }: { person: Person }) {
   );
 }
 
+/* ─────────────── Access level control ───────────────
+ * Standalone Member / Admin toggle, independent of credential resets.
+ * Reads the person's app_users row by email, shows the current level,
+ * and flips it via /api/admin/set-user-role - no password reset
+ * needed. Only renders once a login exists (you set credentials first,
+ * then promote/demote freely). */
+function AccessLevelControl({ person }: { person: Person }) {
+  const [user, setUser] = useState<{ id: string; role: string } | null | "loading">("loading");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
+  const email = person.email?.trim();
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!email) {
+      setUser(null);
+      return;
+    }
+    setUser("loading");
+    import("@/lib/auth/app-users").then(({ findAppUserByEmail }) => {
+      findAppUserByEmail(email).then((u) => {
+        if (!cancelled) setUser(u ? { id: u.id, role: u.role } : null);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [email]);
+
+  async function change(role: "team" | "admin") {
+    if (user === "loading" || !user) return;
+    const currentBucket = user.role === "team" ? "team" : "admin";
+    if (role === currentBucket) return;
+    setBusy(true);
+    setNote(null);
+    const { setAppUserRole } = await import("@/lib/auth/app-users");
+    const ok = await setAppUserRole(user.id, role);
+    setBusy(false);
+    if (ok) {
+      setUser({ ...user, role });
+      setNote(
+        `Now ${role === "admin" ? "Admin" : "Member"}. Takes effect on their next sign-in.`,
+      );
+    } else {
+      setNote("Couldn't change access level - try again.");
+    }
+  }
+
+  if (user === "loading") return null;
+  /* No email or no login yet — InviteButton already prompts to set
+   * credentials, so stay quiet rather than double up the hint. */
+  if (!email || !user) return null;
+
+  const bucket = user.role === "team" ? "team" : "admin";
+
+  return (
+    <div className="pt-3 mt-3 border-t border-white/[0.06]">
+      <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">
+        Access level
+      </div>
+      <div className="grid grid-cols-2 gap-1.5 max-w-[260px]">
+        <button
+          type="button"
+          onClick={() => change("team")}
+          disabled={busy}
+          className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
+            bucket === "team"
+              ? "bg-white text-[#0C0C0C]"
+              : "bg-[#2A2A2A] text-[#9CA3AF] hover:text-[#E5E5EA]"
+          }`}
+        >
+          Member
+        </button>
+        <button
+          type="button"
+          onClick={() => change("admin")}
+          disabled={busy}
+          className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
+            bucket === "admin"
+              ? "bg-white text-[#0C0C0C]"
+              : "bg-[#2A2A2A] text-[#9CA3AF] hover:text-[#E5E5EA]"
+          }`}
+        >
+          Admin
+        </button>
+      </div>
+      <p className="text-[10px] text-[#71757D] mt-1.5 leading-relaxed">
+        {bucket === "team"
+          ? "Member: My Tasks, Delivery, Hero Offer, Training, tools. No finance/admin."
+          : "Admin: full access to every surface (finance + admin still need their own passcode)."}
+      </p>
+      {note && <p className="text-[11px] text-emerald-300 mt-1">{note}</p>}
+    </div>
+  );
+}
+
 /* ── Set Credentials Modal ──
  * Admin-direct provisioning. Hits /api/admin/set-user-credentials
  * which creates the Supabase Auth user with email + password +
@@ -2358,9 +2456,6 @@ function SetCredentialsModal({
 }) {
   const [email, setEmail] = useState(person.email || "");
   const [password, setPassword] = useState(generatePassword());
-  /* Access level for the login. "team" = Member (My Tasks + Delivery
-   * + tools), "admin" = full access. Defaults to Member. */
-  const [accessRole, setAccessRole] = useState<"team" | "admin">("team");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [copiedField, setCopiedField] = useState<"email" | "password" | "both" | null>(null);
@@ -2379,7 +2474,6 @@ function SetCredentialsModal({
           password,
           name: person.full_name,
           podMemberId: person.pod_member_id ?? null,
-          role: accessRole,
         }),
       });
       const body = (await res.json().catch(() => ({}))) as {
@@ -2465,38 +2559,6 @@ function SetCredentialsModal({
               </button>
             </div>
             <p className="text-[10px] text-[#71757D] mt-1">Min 8 chars. Auto-generated; edit if you prefer.</p>
-          </div>
-          <div>
-            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Access level</label>
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setAccessRole("team")}
-                className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors ${
-                  accessRole === "team"
-                    ? "bg-white text-[#0C0C0C]"
-                    : "bg-black/40 text-[#9CA3AF] hover:text-[#E5E5EA]"
-                }`}
-              >
-                Member
-              </button>
-              <button
-                type="button"
-                onClick={() => setAccessRole("admin")}
-                className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors ${
-                  accessRole === "admin"
-                    ? "bg-white text-[#0C0C0C]"
-                    : "bg-black/40 text-[#9CA3AF] hover:text-[#E5E5EA]"
-                }`}
-              >
-                Admin
-              </button>
-            </div>
-            <p className="text-[10px] text-[#71757D] mt-1">
-              {accessRole === "team"
-                ? "Member: My Tasks, Delivery, Hero Offer, Training, tools. No finance/admin."
-                : "Admin: full access to every surface including finance + admin."}
-            </p>
           </div>
         </div>
         {result && (

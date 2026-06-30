@@ -70,36 +70,43 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const role = VALID_ROLES.has(body.role ?? "") ? body.role! : "team";
+  /* Role is OPTIONAL here. It's only applied when the caller
+   * explicitly passes one (used when provisioning a brand-new login).
+   * A plain password reset sends no role, so an existing person's
+   * access level is never touched - changing role is the standalone
+   * Access level control's job (/api/admin/set-user-role). New rows
+   * default to "team" (member). */
+  const roleProvided = VALID_ROLES.has(body.role ?? "");
+  const insertRole = roleProvided ? body.role! : "team";
 
   const client = adminAuthClient();
 
   /* 1. Add to app_users allowlist. Unique-email constraint makes
-   * this idempotent - duplicates are treated as "already on list".
-   * On a duplicate we still apply the chosen role so this doubles as
-   * a promote/demote when the admin resets an existing person's
-   * credentials and picks a different access level. */
+   * this idempotent - duplicates are treated as "already on list". */
   const { error: insertErr } = await client.from("app_users").insert({
     email,
     name,
-    role,
+    role: insertRole,
     pod_member_id: body.podMemberId ?? null,
     invited_by: "admin",
   });
   if (insertErr) {
     const code = (insertErr as { code?: string }).code;
     if (code === "23505") {
-      /* Already on the allowlist — update the role to match the
-       * admin's selection so the picker is authoritative. */
-      const { error: roleErr } = await client
-        .from("app_users")
-        .update({ role })
-        .eq("email", email);
-      if (roleErr) {
-        return NextResponse.json(
-          { error: roleErr.message || "Role update failed" },
-          { status: 500 },
-        );
+      /* Already on the allowlist. Only touch the role if the caller
+       * explicitly sent one - never clobber an admin's level on a
+       * routine password reset. */
+      if (roleProvided) {
+        const { error: roleErr } = await client
+          .from("app_users")
+          .update({ role: body.role! })
+          .eq("email", email);
+        if (roleErr) {
+          return NextResponse.json(
+            { error: roleErr.message || "Role update failed" },
+            { status: 500 },
+          );
+        }
       }
     } else {
       return NextResponse.json(
