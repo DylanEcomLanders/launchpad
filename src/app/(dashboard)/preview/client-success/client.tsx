@@ -1,23 +1,22 @@
 "use client";
 
-/* ── Client Success OS · PREVIEW (v3) ──
+/* ── Client Success OS · PREVIEW (v4) ──
  *
- * Isolated mock. NOT wired. Rebuilt again per feedback:
+ * Isolated mock. NOT wired. Adds the delivery lifecycle per feedback
+ * ("if it's created, how do we know it's been delivered?").
  *
- *   Home      - a real DASHBOARD, not just a client list. A "Coming up"
- *               board across ALL clients in date order so the CSM sees
- *               the whole book at a glance. Each row carries the doc
- *               action: View (already made) or Create (spin one up) -
- *               so the CSM maintains cadence without leaving the surface.
- *               Client list sits below to drill in.
- *   Client    - click in: the engagement timeline. Each step that
- *               produces a doc shows the same View / Create action.
- *   Add       - new engagement: retainer vs single build.
+ * Each client-success doc now has three states, not two:
+ *   · To create  - doesn't exist yet            → "Create"
+ *   · Draft      - built, but NOT sent to client → "Mark sent"
+ *   · Delivered  - sent, with a date stamp       → "Sent 4 Jul"
  *
- * The docs are the "extra mile" client-success outputs: onboarding
- * deck, weekly roundup, monthly report, day-30 review, day-75 refresh,
- * renewal, testing-velocity report. Create links point at the relevant
- * Hero Offer builder. Mock data only.
+ * The draft state is the one that bites: a finished deck sitting unsent
+ * near a renewal. The dashboard counts both gaps (to create / to send),
+ * and clicking "Mark sent" stamps a delivered date so the CSM can prove
+ * cadence at a glance.
+ *
+ * Home is the dashboard ("Coming up" across all clients); click a
+ * client for its timeline. Mock data only.
  */
 
 import { useMemo, useState } from "react";
@@ -28,20 +27,26 @@ import {
   CheckIcon,
   ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
+
+const TODAY = "30 Jun";
 
 /* ── Model ──────────────────────────────────────────────────── */
 
 type Status = "done" | "active" | "upcoming";
 type EngagementType = "retainer" | "build";
+type DocState = "todo" | "draft" | "delivered";
 
 interface Output {
   label: string;
-  created: boolean;
+  state: DocState;
+  deliveredOn?: string;
   href: string;
 }
 
 interface Step {
+  id: string;
   iso: string;
   date: string;
   title: string;
@@ -78,12 +83,12 @@ const ENGAGEMENTS: Engagement[] = [
     progressLabel: "Day 47 of 90",
     health: "on-track",
     schedule: [
-      { iso: "2026-05-19", date: "19 May", title: "Onboarding deck", detail: "Read your brief, here's how it runs from here", owner: "Aanchal", status: "done", output: { label: "Onboarding deck", created: true, href: KICKOFF } },
-      { iso: "2026-06-09", date: "9 Jun", title: "Day 30 review", detail: "What shipped, early test reads, next 30 days", owner: "Amber", status: "done", output: { label: "Day 30 deck", created: true, href: MILESTONE } },
-      { iso: "2026-06-30", date: "30 Jun", title: "Weekly roundup", detail: "What happened this week, where we are", owner: "Amber", status: "active", output: { label: "Weekly roundup", created: false, href: REPORT } },
-      { iso: "2026-07-04", date: "4 Jul", title: "Monthly report + call", detail: "CR + revenue deltas, wins, next month", owner: "Amber", status: "active", output: { label: "Monthly report", created: false, href: REPORT } },
-      { iso: "2026-07-22", date: "22 Jul", title: "Day 75 renewal refresh", detail: "Forward roadmap deck to anchor the renewal", owner: "Aanchal", status: "upcoming", output: { label: "Refresh deck", created: false, href: MILESTONE } },
-      { iso: "2026-08-06", date: "6 Aug", title: "Day 90 renewal close", detail: "Renewal conversation, move to rolling", owner: "Amber", status: "upcoming", output: { label: "Renewal proposal", created: false, href: RENEWAL } },
+      { id: "acme-1", iso: "2026-05-19", date: "19 May", title: "Onboarding deck", detail: "Read your brief, here's how it runs from here", owner: "Aanchal", status: "done", output: { label: "Onboarding deck", state: "delivered", deliveredOn: "19 May", href: KICKOFF } },
+      { id: "acme-2", iso: "2026-06-09", date: "9 Jun", title: "Day 30 review", detail: "What shipped, early test reads, next 30 days", owner: "Amber", status: "done", output: { label: "Day 30 deck", state: "delivered", deliveredOn: "9 Jun", href: MILESTONE } },
+      { id: "acme-3", iso: "2026-06-30", date: "30 Jun", title: "Weekly roundup", detail: "Built Friday, not sent yet", owner: "Amber", status: "active", output: { label: "Weekly roundup", state: "draft", href: REPORT } },
+      { id: "acme-4", iso: "2026-07-04", date: "4 Jul", title: "Monthly report + call", detail: "CR + revenue deltas, wins, next month", owner: "Amber", status: "active", output: { label: "Monthly report", state: "todo", href: REPORT } },
+      { id: "acme-5", iso: "2026-07-22", date: "22 Jul", title: "Day 75 renewal refresh", detail: "Forward roadmap deck to anchor the renewal", owner: "Aanchal", status: "upcoming", output: { label: "Refresh deck", state: "todo", href: MILESTONE } },
+      { id: "acme-6", iso: "2026-08-06", date: "6 Aug", title: "Day 90 renewal close", detail: "Renewal conversation, move to rolling", owner: "Amber", status: "upcoming", output: { label: "Renewal proposal", state: "todo", href: RENEWAL } },
     ],
   },
   {
@@ -95,12 +100,12 @@ const ENGAGEMENTS: Engagement[] = [
     progressLabel: "Build week 2 of 4",
     health: "on-track",
     schedule: [
-      { iso: "2026-06-23", date: "23 Jun", title: "Onboarding deck", detail: "Scope confirmed, expectations aligned", owner: "Aanchal", status: "done", output: { label: "Onboarding deck", created: true, href: KICKOFF } },
-      { iso: "2026-06-30", date: "30 Jun", title: "Weekly roundup", detail: "Build progress, what's next", owner: "Amber", status: "active", output: { label: "Weekly roundup", created: false, href: REPORT } },
-      { iso: "2026-07-03", date: "3 Jul", title: "Framing page · design", detail: "First page to client for review", owner: "Barnaby", status: "done" },
-      { iso: "2026-07-08", date: "8 Jul", title: "Product page · design", detail: "Conversion-led PDP to client", owner: "Barnaby", status: "active" },
-      { iso: "2026-07-17", date: "17 Jul", title: "Launch + handoff", detail: "QA, go-live, walkthrough call", owner: "Brandon", status: "upcoming" },
-      { iso: "2026-07-24", date: "24 Jul", title: "Post-launch review", detail: "First-week numbers, what's next", owner: "Amber", status: "upcoming", output: { label: "Post-launch report", created: false, href: REPORT } },
+      { id: "lumen-1", iso: "2026-06-23", date: "23 Jun", title: "Onboarding deck", detail: "Scope confirmed, expectations aligned", owner: "Aanchal", status: "done", output: { label: "Onboarding deck", state: "delivered", deliveredOn: "23 Jun", href: KICKOFF } },
+      { id: "lumen-2", iso: "2026-06-30", date: "30 Jun", title: "Weekly roundup", detail: "Build progress, what's next", owner: "Amber", status: "active", output: { label: "Weekly roundup", state: "todo", href: REPORT } },
+      { id: "lumen-3", iso: "2026-07-03", date: "3 Jul", title: "Framing page · design", detail: "First page to client for review", owner: "Barnaby", status: "done" },
+      { id: "lumen-4", iso: "2026-07-08", date: "8 Jul", title: "Product page · design", detail: "Conversion-led PDP to client", owner: "Barnaby", status: "active" },
+      { id: "lumen-5", iso: "2026-07-17", date: "17 Jul", title: "Launch + handoff", detail: "QA, go-live, walkthrough call", owner: "Brandon", status: "upcoming" },
+      { id: "lumen-6", iso: "2026-07-24", date: "24 Jul", title: "Post-launch review", detail: "First-week numbers, what's next", owner: "Amber", status: "upcoming", output: { label: "Post-launch report", state: "todo", href: REPORT } },
     ],
   },
   {
@@ -112,10 +117,10 @@ const ENGAGEMENTS: Engagement[] = [
     progressLabel: "Day 82 of 90",
     health: "attention",
     schedule: [
-      { iso: "2026-06-27", date: "27 Jun", title: "Day 75 renewal refresh", detail: "Forward roadmap deck - needs sending", owner: "Aanchal", status: "active", output: { label: "Refresh deck", created: false, href: MILESTONE } },
-      { iso: "2026-06-30", date: "30 Jun", title: "Weekly roundup", detail: "What happened this week", owner: "Amber", status: "active", output: { label: "Weekly roundup", created: false, href: REPORT } },
-      { iso: "2026-07-02", date: "2 Jul", title: "Testing velocity report", detail: "Tests shipped vs planned, win rate", owner: "Aanchal", status: "active", output: { label: "Velocity report", created: false, href: REPORT } },
-      { iso: "2026-07-12", date: "12 Jul", title: "Renewal close + expansion", detail: "Renewal + VIP tier upsell", owner: "Amber", status: "upcoming", output: { label: "Renewal proposal", created: false, href: RENEWAL } },
+      { id: "vertex-1", iso: "2026-06-27", date: "27 Jun", title: "Day 75 renewal refresh", detail: "Built, sitting unsent 3 days from renewal", owner: "Aanchal", status: "active", output: { label: "Refresh deck", state: "draft", href: MILESTONE } },
+      { id: "vertex-2", iso: "2026-06-30", date: "30 Jun", title: "Weekly roundup", detail: "What happened this week", owner: "Amber", status: "active", output: { label: "Weekly roundup", state: "todo", href: REPORT } },
+      { id: "vertex-3", iso: "2026-07-02", date: "2 Jul", title: "Testing velocity report", detail: "Tests shipped vs planned, win rate", owner: "Aanchal", status: "active", output: { label: "Velocity report", state: "todo", href: REPORT } },
+      { id: "vertex-4", iso: "2026-07-12", date: "12 Jul", title: "Renewal close + expansion", detail: "Renewal + VIP tier upsell", owner: "Amber", status: "upcoming", output: { label: "Renewal proposal", state: "todo", href: RENEWAL } },
     ],
   },
 ];
@@ -136,24 +141,58 @@ function StatusDot({ status }: { status: Status }) {
   return <span className="block size-2.5 rounded-full bg-[#3A3A3A]" />;
 }
 
-/* Doc action: View if it exists, Create if it doesn't. The one thing
- * the CSM clicks to keep cadence without leaving the surface. */
-function DocAction({ output }: { output: Output }) {
-  if (output.created) {
+/* Doc cell - the three-state lifecycle control + a view link.
+ *   todo      → [Create]
+ *   draft     → [Mark sent]  (+ view)   ← the "built but not delivered" gap
+ *   delivered → Sent {date}  (+ view) */
+function DocCell({
+  output,
+  onMarkSent,
+}: {
+  output: Output;
+  onMarkSent: () => void;
+}) {
+  const view = (
+    <Link
+      href={output.href}
+      className="inline-flex items-center justify-center size-7 rounded-lg text-[#71757D] hover:text-cyan-200 hover:bg-white/[0.04]"
+      title="View doc"
+    >
+      <ArrowTopRightOnSquareIcon className="size-4" />
+    </Link>
+  );
+
+  if (output.state === "delivered") {
     return (
-      <Link
-        href={output.href}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-white/[0.04] text-cyan-200 ring-1 ring-cyan-500/20 hover:bg-white/[0.08] whitespace-nowrap"
-      >
-        <ArrowTopRightOnSquareIcon className="size-3.5" />
-        View
-      </Link>
+      <div className="flex items-center gap-1 shrink-0">
+        <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-300 whitespace-nowrap">
+          <CheckIcon className="size-3.5" />
+          Sent {output.deliveredOn}
+        </span>
+        {view}
+      </div>
     );
   }
+
+  if (output.state === "draft") {
+    return (
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={onMarkSent}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-amber-400/15 text-amber-200 ring-1 ring-amber-400/30 hover:bg-amber-400/25 whitespace-nowrap"
+        >
+          <PaperAirplaneIcon className="size-3.5" />
+          Mark sent
+        </button>
+        {view}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={output.href}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] whitespace-nowrap"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] whitespace-nowrap shrink-0"
     >
       <PlusIcon className="size-3.5" />
       Create
@@ -171,11 +210,25 @@ const TYPE_LABEL: Record<EngagementType, string> = {
 export default function ClientSuccessPreview() {
   const [view, setView] = useState<"home" | "detail" | "add">("home");
   const [activeId, setActiveId] = useState<string | null>(null);
+  /* Session-only: ids marked sent this visit flip draft → delivered. */
+  const [sent, setSent] = useState<Set<string>>(new Set());
+
   const active = ENGAGEMENTS.find((e) => e.id === activeId) ?? null;
 
   function open(id: string) {
     setActiveId(id);
     setView("detail");
+  }
+  function markSent(stepId: string) {
+    setSent((prev) => new Set(prev).add(stepId));
+  }
+  /* Resolve the live doc state, applying any in-session "mark sent". */
+  function resolveOutput(step: Step): Output | undefined {
+    if (!step.output) return undefined;
+    if (step.output.state === "draft" && sent.has(step.id)) {
+      return { ...step.output, state: "delivered", deliveredOn: TODAY };
+    }
+    return step.output;
   }
 
   return (
@@ -186,9 +239,11 @@ export default function ClientSuccessPreview() {
           Preview · mock data
         </div>
 
-        {view === "home" && <Home onOpen={open} onAdd={() => setView("add")} />}
+        {view === "home" && (
+          <Home onOpen={open} onAdd={() => setView("add")} resolveOutput={resolveOutput} onMarkSent={markSent} />
+        )}
         {view === "detail" && active && (
-          <Detail engagement={active} onBack={() => setView("home")} />
+          <Detail engagement={active} onBack={() => setView("home")} resolveOutput={resolveOutput} onMarkSent={markSent} />
         )}
         {view === "add" && <AddEngagement onBack={() => setView("home")} />}
       </div>
@@ -201,23 +256,26 @@ export default function ClientSuccessPreview() {
 function Home({
   onOpen,
   onAdd,
+  resolveOutput,
+  onMarkSent,
 }: {
   onOpen: (id: string) => void;
   onAdd: () => void;
+  resolveOutput: (s: Step) => Output | undefined;
+  onMarkSent: (id: string) => void;
 }) {
-  /* "Coming up" across every client - the at-a-glance whole-book view.
-   * Active + upcoming steps, date-ordered, capped so it stays scannable. */
   const comingUp = useMemo(() => {
     const rows = ENGAGEMENTS.flatMap((e) =>
       e.schedule
         .filter((s) => s.status !== "done")
-        .map((s) => ({ ...s, client: e.name, clientId: e.id })),
+        .map((s) => ({ ...s, client: e.name })),
     );
     rows.sort((a, b) => a.iso.localeCompare(b.iso));
     return rows.slice(0, 7);
   }, []);
 
-  const needsCreating = comingUp.filter((r) => r.output && !r.output.created).length;
+  const toCreate = comingUp.filter((r) => resolveOutput(r)?.state === "todo").length;
+  const toSend = comingUp.filter((r) => resolveOutput(r)?.state === "draft").length;
 
   return (
     <div>
@@ -225,7 +283,9 @@ function Home({
         <div>
           <h1 className="text-2xl font-semibold">Client success</h1>
           <p className="text-[14px] text-[#9CA3AF] mt-1">
-            {ENGAGEMENTS.length} clients · {needsCreating} docs to create
+            {ENGAGEMENTS.length} clients
+            {toCreate > 0 && <> · {toCreate} to create</>}
+            {toSend > 0 && <> · <span className="text-amber-300">{toSend} to send</span></>}
           </p>
         </div>
         <button
@@ -237,31 +297,28 @@ function Home({
         </button>
       </div>
 
-      {/* Coming up board */}
       <div className="text-[13px] font-medium text-[#71757D] mb-3">Coming up</div>
       <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] divide-y divide-white/[0.05] mb-8">
-        {comingUp.map((r, i) => (
-          <div key={i} className="flex items-center gap-3.5 px-5 py-3.5">
-            <StatusDot status={r.status} />
-            <div className="min-w-0 flex-1">
-              <div className="text-[15px] text-[#E5E5EA] truncate">{r.title}</div>
-              <div className="text-[12px] text-[#71757D] mt-0.5">
-                {r.client} · {r.owner}
+        {comingUp.map((r) => {
+          const out = resolveOutput(r);
+          return (
+            <div key={r.id} className="flex items-center gap-3.5 px-5 py-3.5">
+              <StatusDot status={r.status} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[15px] text-[#E5E5EA] truncate">{r.title}</div>
+                <div className="text-[12px] text-[#71757D] mt-0.5">{r.client} · {r.owner}</div>
               </div>
+              <span className="text-[13px] text-[#71757D] tabular-nums shrink-0">{r.date}</span>
+              {out ? (
+                <DocCell output={out} onMarkSent={() => onMarkSent(r.id)} />
+              ) : (
+                <span className="text-[11px] text-[#5A5C61] w-[58px] text-center shrink-0">deliverable</span>
+              )}
             </div>
-            <span className="text-[13px] text-[#71757D] tabular-nums shrink-0">{r.date}</span>
-            {r.output ? (
-              <DocAction output={r.output} />
-            ) : (
-              <span className="text-[11px] text-[#5A5C61] w-[58px] text-center shrink-0">
-                deliverable
-              </span>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Client list */}
       <div className="text-[13px] font-medium text-[#71757D] mb-3">Clients</div>
       <div className="space-y-2">
         {ENGAGEMENTS.map((e) => (
@@ -277,11 +334,7 @@ function Home({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2.5">
                   <span className="text-[16px] font-semibold truncate">{e.name}</span>
-                  <span
-                    className={`size-2 rounded-full shrink-0 ${
-                      e.health === "on-track" ? "bg-emerald-400" : "bg-amber-400"
-                    }`}
-                  />
+                  <span className={`size-2 rounded-full shrink-0 ${e.health === "on-track" ? "bg-emerald-400" : "bg-amber-400"}`} />
                 </div>
                 <div className="text-[12px] text-[#71757D] mt-0.5">
                   {TYPE_LABEL[e.type]}
@@ -302,9 +355,13 @@ function Home({
 function Detail({
   engagement: e,
   onBack,
+  resolveOutput,
+  onMarkSent,
 }: {
   engagement: Engagement;
   onBack: () => void;
+  resolveOutput: (s: Step) => Output | undefined;
+  onMarkSent: (id: string) => void;
 }) {
   return (
     <div>
@@ -345,30 +402,29 @@ function Detail({
       <div className="relative">
         <div className="absolute left-[10px] top-3 bottom-3 w-px bg-white/[0.06]" />
         <div className="space-y-1">
-          {e.schedule.map((s, i) => (
-            <div key={i} className="relative flex gap-4 py-3">
-              <div className="relative z-10 shrink-0 pt-0.5 w-5 flex justify-center">
-                <StatusDot status={s.status} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span
-                    className={`text-[15px] font-medium ${
-                      s.status === "upcoming" ? "text-[#9CA3AF]" : "text-[#E5E5EA]"
-                    }`}
-                  >
-                    {s.title}
-                  </span>
-                  <span className="text-[13px] text-[#71757D] tabular-nums shrink-0">{s.date}</span>
+          {e.schedule.map((s) => {
+            const out = resolveOutput(s);
+            return (
+              <div key={s.id} className="relative flex gap-4 py-3">
+                <div className="relative z-10 shrink-0 pt-0.5 w-5 flex justify-center">
+                  <StatusDot status={s.status} />
                 </div>
-                <div className="text-[13px] text-[#71757D] mt-0.5">{s.detail}</div>
-                <div className="flex items-center justify-between gap-3 mt-1.5">
-                  <span className="text-[12px] text-[#5A5C61]">Owner: {s.owner}</span>
-                  {s.output && <DocAction output={s.output} />}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className={`text-[15px] font-medium ${s.status === "upcoming" ? "text-[#9CA3AF]" : "text-[#E5E5EA]"}`}>
+                      {s.title}
+                    </span>
+                    <span className="text-[13px] text-[#71757D] tabular-nums shrink-0">{s.date}</span>
+                  </div>
+                  <div className="text-[13px] text-[#71757D] mt-0.5">{s.detail}</div>
+                  <div className="flex items-center justify-between gap-3 mt-1.5">
+                    <span className="text-[12px] text-[#5A5C61]">Owner: {s.owner}</span>
+                    {out && <DocCell output={out} onMarkSent={() => onMarkSent(s.id)} />}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -428,10 +484,7 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
           <Field label="Tier">
             <div className="grid grid-cols-3 gap-2.5">
               {["Entry", "Core", "VIP"].map((tier) => (
-                <div
-                  key={tier}
-                  className="px-3 py-2.5 rounded-lg text-center text-[13px] bg-[#0F0F10] ring-1 ring-white/[0.06] text-[#9CA3AF]"
-                >
+                <div key={tier} className="px-3 py-2.5 rounded-lg text-center text-[13px] bg-[#0F0F10] ring-1 ring-white/[0.06] text-[#9CA3AF]">
                   {tier}
                 </div>
               ))}
@@ -444,10 +497,7 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
           <Field label="Deliverables">
             <div className="space-y-2">
               {["Framing page", "Product page", "Cart"].map((d) => (
-                <div
-                  key={d}
-                  className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg bg-[#0F0F10] ring-1 ring-white/[0.06]"
-                >
+                <div key={d} className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg bg-[#0F0F10] ring-1 ring-white/[0.06]">
                   <span className="text-[14px] text-[#E5E5EA]">{d}</span>
                   <span className="text-[12px] text-[#5A5C61]">client date</span>
                 </div>
