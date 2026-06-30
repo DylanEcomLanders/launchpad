@@ -16,7 +16,7 @@ import {
 import { useWorkspaceData, todayYMD } from "@/lib/workspace/use-workspace-data";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import type { MockDeliverable, MockProject } from "@/lib/projects/mock-data";
-import { useCurrentUser } from "@/components/auth-gate";
+import { useCurrentUser, useRole } from "@/components/auth-gate";
 import {
   formatDue,
   type DeadlineState,
@@ -107,6 +107,11 @@ const STATE_RANK: Record<DeadlineState, number> = {
 
 export default function MyWorkClient() {
   const me = useCurrentUser();
+  const role = useRole();
+  /* Non-member roles (admin / cro) can "view as" anyone for oversight -
+   * e.g. Archie, Head of Development, checking his team's tasks. Members
+   * stay locked to their own assigned work so they can't snoop. */
+  const canViewAs = role !== "team";
   const data = useWorkspaceData();
   const today = todayYMD();
 
@@ -151,12 +156,18 @@ export default function MyWorkClient() {
   // to the picker. Validate the picked id against the real member list so a
   // stale localStorage value doesn't render empty.
   const memberId = useMemo(() => {
+    /* View-as roles: an explicit pick wins, so a lead can flip to a
+     * report and back. With no pick they fall through to their own
+     * auth-resolved identity (their own tasks by default). */
+    if (canViewAs && pickedMemberId && allMembers.some((m) => m.id === pickedMemberId)) {
+      return pickedMemberId;
+    }
     if (authMemberId) return authMemberId;
     if (pickedMemberId && allMembers.some((m) => m.id === pickedMemberId)) {
       return pickedMemberId;
     }
     return null;
-  }, [authMemberId, pickedMemberId, allMembers]);
+  }, [authMemberId, pickedMemberId, allMembers, canViewAs]);
 
   const activeMember = useMemo(
     () => allMembers.find((m) => m.id === memberId) ?? null,
@@ -175,10 +186,13 @@ export default function MyWorkClient() {
     setPodsV2(getPodsV2());
   }, []);
 
-  const displayNameForClassify =
-    me?.name ??
-    activeMember?.name ??
-    null;
+  /* For view-as roles the active member (their own by default, or the
+   * one they picked) drives classification - otherwise a logged-in
+   * admin's own name would always win and the picker would be inert.
+   * Members always classify by their own auth identity. */
+  const displayNameForClassify = canViewAs
+    ? (activeMember?.name ?? me?.name ?? null)
+    : (me?.name ?? activeMember?.name ?? null);
 
   const identity = useMemo(
     () => buildMyWorkIdentity(displayNameForClassify ?? undefined, podsV2),
@@ -232,7 +246,9 @@ export default function MyWorkClient() {
    * that needs it). Title resolves from auth user first (email
    * signin), then the picked member's name (admin "view as"), then
    * neutral fallback. */
-  const displayName = me?.name ?? activeMember?.name ?? null;
+  const displayName = canViewAs
+    ? (activeMember?.name ?? me?.name ?? null)
+    : (me?.name ?? activeMember?.name ?? null);
 
   /* Pin / star priority - per-user, localStorage-backed. Pinned
    * cards bubble to the top of each lane. Keyed by display name so
@@ -547,9 +563,10 @@ export default function MyWorkClient() {
   const overdueCount = open.filter((d) => d.state === "overdue").length;
   const soonCount = open.filter((d) => d.state === "soon").length;
   const firstName = displayName?.split(/\s+/)[0];
-  // Show the "view as" picker whenever the active member came from the picker
-  // (i.e. there's no auth-resolved identity to lock it down).
-  const showPicker = !authMemberId;
+  // Show the "view as" picker for shared-password admin sessions (no
+  // auth identity to lock down) AND for any non-member role, so leads
+  // can oversee their team. Members only ever see their own tasks.
+  const showPicker = !authMemberId || canViewAs;
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
