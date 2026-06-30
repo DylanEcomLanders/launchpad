@@ -233,7 +233,7 @@ export default function ClientSuccessPreview() {
 
   return (
     <div className="min-h-full bg-[#080808] text-[#E5E5EA]">
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-8 py-8">
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 ring-1 ring-amber-500/30 text-[12px] text-amber-200 mb-6">
           <span className="size-1.5 rounded-full bg-amber-400" />
           Preview · mock data
@@ -274,69 +274,95 @@ function Home({
     return rows.slice(0, 7);
   }, []);
 
-  const toCreate = comingUp.filter((r) => resolveOutput(r)?.state === "todo").length;
-  const toSend = comingUp.filter((r) => resolveOutput(r)?.state === "draft").length;
+  /* Full-book stats for the dashboard cards. dueThisWeek = anything not
+   * done landing on/before 7 Jul; toSend = drafts (built, not delivered);
+   * toCreate = docs that don't exist yet. */
+  const stats = useMemo(() => {
+    let dueThisWeek = 0,
+      toSend = 0,
+      toCreate = 0;
+    for (const e of ENGAGEMENTS) {
+      for (const s of e.schedule) {
+        if (s.status === "done") continue;
+        if (s.iso <= "2026-07-07") dueThisWeek++;
+        const out = resolveOutput(s);
+        if (out?.state === "draft") toSend++;
+        if (out?.state === "todo") toCreate++;
+      }
+    }
+    return { dueThisWeek, toSend, toCreate };
+  }, [resolveOutput]);
 
   return (
     <div>
-      <div className="flex items-end justify-between gap-4 mb-6">
+      <div className="flex items-end justify-between gap-4 mb-7">
         <div>
           <h1 className="text-2xl font-semibold">Client success</h1>
-          <p className="text-[14px] text-[#9CA3AF] mt-1">
-            {ENGAGEMENTS.length} clients
-            {toCreate > 0 && <> · {toCreate} to create</>}
-            {toSend > 0 && <> · <span className="text-amber-300">{toSend} to send</span></>}
-          </p>
+          <p className="text-[14px] text-[#9CA3AF] mt-1">{ENGAGEMENTS.length} active clients</p>
         </div>
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-semibold bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
         >
           <PlusIcon className="size-4" />
           Add engagement
         </button>
       </div>
 
-      <div className="text-[13px] font-medium text-[#71757D] mb-3">Coming up</div>
-      <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] divide-y divide-white/[0.05] mb-8">
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <StatCard label="Due this week" value={stats.dueThisWeek} tone="amber" />
+        <StatCard label="To send" value={stats.toSend} tone="amber" hint="built, not delivered" />
+        <StatCard label="To create" value={stats.toCreate} tone="sky" />
+      </div>
+
+      {/* Coming up board */}
+      <h2 className="text-[12px] uppercase tracking-[0.08em] text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+        <span className="size-1.5 rounded-full bg-sky-400" />
+        Coming up · across all clients
+      </h2>
+      <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] divide-y divide-white/[0.05] mb-10">
         {comingUp.map((r) => {
           const out = resolveOutput(r);
           return (
-            <div key={r.id} className="flex items-center gap-3.5 px-5 py-3.5">
+            <div key={r.id} className="flex items-center gap-4 px-6 py-4">
               <StatusDot status={r.status} />
               <div className="min-w-0 flex-1">
                 <div className="text-[15px] text-[#E5E5EA] truncate">{r.title}</div>
                 <div className="text-[12px] text-[#71757D] mt-0.5">{r.client} · {r.owner}</div>
               </div>
-              <span className="text-[13px] text-[#71757D] tabular-nums shrink-0">{r.date}</span>
+              <span className="text-[13px] text-[#71757D] tabular-nums shrink-0 mr-2">{r.date}</span>
               {out ? (
                 <DocCell output={out} onMarkSent={() => onMarkSent(r.id)} />
               ) : (
-                <span className="text-[11px] text-[#5A5C61] w-[58px] text-center shrink-0">deliverable</span>
+                <span className="text-[11px] text-[#5A5C61] w-[64px] text-center shrink-0">deliverable</span>
               )}
             </div>
           );
         })}
       </div>
 
-      <div className="text-[13px] font-medium text-[#71757D] mb-3">Clients</div>
-      <div className="space-y-2">
+      <h2 className="text-[12px] uppercase tracking-[0.08em] text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+        <span className="size-1.5 rounded-full bg-emerald-400" />
+        Clients
+      </h2>
+      <div className="space-y-2.5">
         {ENGAGEMENTS.map((e) => (
           <button
             key={e.id}
             onClick={() => onOpen(e.id)}
-            className="w-full text-left bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] hover:ring-white/[0.14] transition-all px-5 py-4"
+            className="w-full text-left bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] hover:ring-white/[0.14] transition-all px-6 py-5"
           >
             <div className="flex items-center gap-4">
-              <span className="inline-flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-sky-500/25 to-blue-600/25 ring-1 ring-sky-500/25 text-[13px] font-semibold text-sky-100 shrink-0">
+              <span className="inline-flex items-center justify-center size-11 rounded-xl bg-gradient-to-br from-sky-500/25 to-blue-600/25 ring-1 ring-sky-500/25 text-[14px] font-semibold text-sky-100 shrink-0">
                 {e.initials}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-[16px] font-semibold truncate">{e.name}</span>
+                  <span className="text-[17px] font-semibold truncate">{e.name}</span>
                   <span className={`size-2 rounded-full shrink-0 ${e.health === "on-track" ? "bg-emerald-400" : "bg-amber-400"}`} />
                 </div>
-                <div className="text-[12px] text-[#71757D] mt-0.5">
+                <div className="text-[13px] text-[#71757D] mt-0.5">
                   {TYPE_LABEL[e.type]}
                   {e.tier ? ` · ${e.tier}` : ""} · {e.progressLabel}
                 </div>
@@ -346,6 +372,29 @@ function Home({
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  tone,
+  hint,
+}: {
+  label: string;
+  value: number;
+  tone: "amber" | "sky";
+  hint?: string;
+}) {
+  const toneText = tone === "amber" ? "text-amber-300" : "text-sky-300";
+  return (
+    <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.05] px-6 py-5">
+      <div className="text-[12px] uppercase tracking-wider text-[#71757D] font-medium">{label}</div>
+      <div className={`text-[32px] leading-none font-semibold tabular-nums mt-3 ${value === 0 ? "text-[#5A5C61]" : toneText}`}>
+        {value}
+      </div>
+      {hint && <div className="text-[11px] text-[#5A5C61] mt-2">{hint}</div>}
     </div>
   );
 }
