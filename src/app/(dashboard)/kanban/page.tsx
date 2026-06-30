@@ -21,7 +21,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
-import { useCurrentUser } from "@/components/auth-gate";
+import { useCurrentUser, useRole } from "@/components/auth-gate";
 import {
   PREVIEW_PHASES,
   PREVIEW_THRESHOLDS,
@@ -529,6 +529,12 @@ export default function KanbanPage() {
    * once it returns. Mutations through setClients / setPods mirror to
    * Supabase automatically. */
   const { clients, setClients, pods, setPods } = useKanbanData();
+  /* Members (team role) get a read-only-ish board: they can open cards
+   * and add content (notes, Figma, strategy brief, screenshots) but
+   * can't move cards, change due dates, or tick things through phases.
+   * That project-management layer stays with admin/cro. */
+  const role = useRole();
+  const canManage = role !== "team";
   const [viewMode, setViewMode] = useState<ViewMode>("project");
   /* Quality-of-life search: filters cards across the active view by
    * title / client name / assignee. Cleared with Esc when focused.
@@ -1576,6 +1582,7 @@ export default function KanbanPage() {
               onAssignPod={assignPodToProject}
               hasBrief={!!activeClient.onboardingBrief}
               onPreviewOnboarding={() => setOnboardingPreviewOpen(true)}
+              canManage={canManage}
             />
           )}
 
@@ -1681,6 +1688,7 @@ export default function KanbanPage() {
             onSetNewDeliverableCategoryDraft={setNewDeliverableCategoryDraft}
             onAddDeliverable={addDeliverable}
             onUpdate={updateDeliverable}
+            canManage={canManage}
           />
           </div>
         )}
@@ -1725,6 +1733,7 @@ export default function KanbanPage() {
 
       {activeDeliverable && (
         <DetailModal
+          canManage={canManage}
           deliverable={activeDeliverable}
           onClose={() => setActiveId(null)}
           onUpdate={(patch) => updateDeliverable(activeDeliverable.id, patch)}
@@ -1966,6 +1975,7 @@ interface ProjectTabsRowProps {
   // just opens the popup. Editing happens upstream in the onboarding flow.
   hasBrief: boolean;
   onPreviewOnboarding: () => void;
+  canManage: boolean;
 }
 
 function ProjectTabsRow(props: ProjectTabsRowProps) {
@@ -2002,6 +2012,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
             project={active}
             count={props.deliverableCounts[active.id] ?? 0}
             onDelete={() => props.onDeleteProject(active.id)}
+            canManage={props.canManage}
           />
         )}
         {others.length > 0 && (
@@ -2010,6 +2021,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
             counts={props.deliverableCounts}
             onSelect={(id) => props.onSelectProject(id)}
             onDelete={(id) => props.onDeleteProject(id)}
+            canManage={props.canManage}
           />
         )}
         {/* Legacy map kept gone — only the active tab + overflow render now.
@@ -2063,7 +2075,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
             </button>
           );
         })}
-        {addingProject ? (
+        {props.canManage && (addingProject ? (
           <div className="flex items-center gap-1.5 rounded-full bg-[#0C0C0C] border border-[#383838] pl-1.5 pr-1.5 py-1">
             {/* Type toggle - Build vs Retainer. Drives which duration toggle
                 renders to the right (15/20/25 vs 30/60/90). */}
@@ -2152,18 +2164,19 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
             <PlusIcon className="size-3.5" />
             New project
           </button>
-        )}
+        ))}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {/* Custom-styled pod-assignment dropdown (was the native select
-         * popover which looked out of place against the rest of the
-         * dark dashboard). */}
+        {/* Custom-styled pod-assignment dropdown. Management only -
+         * members can't reassign a project's pod. */}
+        {props.canManage && (
         <ProjectPodPicker
           pods={props.pods}
           currentPodId={props.currentPodId}
           onAssign={props.onAssignPod}
         />
+        )}
 
         {props.hasBrief ? (
           <button
@@ -2215,6 +2228,7 @@ interface BoardColumnsProps {
     category?: string,
   ) => void;
   onUpdate: (id: string, patch: Partial<MockDeliverable>) => void;
+  canManage: boolean;
 }
 
 function BoardColumns(props: BoardColumnsProps) {
@@ -2271,6 +2285,12 @@ function BoardColumns(props: BoardColumnsProps) {
             }}
             onDrop={(e) => {
               e.preventDefault();
+              /* Members can't move cards. Cards aren't draggable for
+               * them so a drop shouldn't happen, but guard here too. */
+              if (!props.canManage) {
+                props.onSetDragOverCol(null);
+                return;
+              }
               const id =
                 e.dataTransfer.getData("text/plain") || props.draggingId;
               if (id) props.onMove(id, phase.value);
@@ -2299,9 +2319,9 @@ function BoardColumns(props: BoardColumnsProps) {
                     {cards.length}
                   </span>
                   {/* Quick-add: only in project mode (the add input
-                   * below is gated on project mode too). Click → opens
-                   * the inline form at the bottom of THIS column. */}
-                  {props.viewMode === "project" && (
+                   * below is gated on project mode too) AND management
+                   * only - members can't add cards. */}
+                  {props.canManage && props.viewMode === "project" && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -2357,11 +2377,12 @@ function BoardColumns(props: BoardColumnsProps) {
                     }}
                     onOpen={() => props.onOpenCard(d.id)}
                     onUpdate={(patch) => props.onUpdate(d.id, patch)}
+                    canManage={props.canManage}
                   />
                 ))
               )}
 
-              {props.viewMode === "project" && (
+              {props.viewMode === "project" && props.canManage && (
                 <div className="pt-1" data-add-form-phase={phase.value}>
                   {props.addingToPhase === phase.value ? (
                     phase.value === "tickets" ? (
@@ -2495,6 +2516,7 @@ interface CardProps {
   onDragEnd: () => void;
   onOpen: () => void;
   onUpdate: (patch: Partial<MockDeliverable>) => void;
+  canManage: boolean;
 }
 
 function Card({
@@ -2506,6 +2528,7 @@ function Card({
   onDragEnd,
   onOpen,
   onUpdate,
+  canManage,
 }: CardProps) {
   const categoryLower = d.category?.toLowerCase();
   const categoryMeta = TICKET_CATEGORIES.find((c) => c.value === categoryLower);
@@ -2596,8 +2619,9 @@ function Card({
   if (density === "glance") {
     return (
       <div
-        draggable
+        draggable={canManage}
         onDragStart={(e) => {
+          if (!canManage) return;
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData("text/plain", d.id);
           onDragStart();
@@ -2640,8 +2664,9 @@ function Card({
 
   return (
     <div
-      draggable
+      draggable={canManage}
       onDragStart={(e) => {
+        if (!canManage) return;
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", d.id);
         onDragStart();
@@ -3462,6 +3487,7 @@ function DarkDatePicker({
 }
 
 interface DetailModalProps {
+  canManage: boolean;
   deliverable: ContextDeliverable;
   onClose: () => void;
   onUpdate: (patch: Partial<MockDeliverable>) => void;
@@ -3482,6 +3508,7 @@ interface DetailModalProps {
 }
 
 function DetailModal({
+  canManage,
   deliverable: d,
   onClose,
   onUpdate,
@@ -3811,6 +3838,7 @@ function DetailModal({
                       after the client deadline. Escalate or rescope.
                     </div>
                   )}
+                  {canManage && (
                   <div className="mt-3 pt-3 border-t border-[#2A2A2A] space-y-2 text-[11px]">
                     {/* These two anchors drive the auto-computed per-phase
                       * due dates in the schedule grid above. They're a
@@ -3868,6 +3896,7 @@ function DetailModal({
                       </span>
                     </div>
                   </div>
+                  )}
                 </section>
               );
             })()}
@@ -3879,6 +3908,7 @@ function DetailModal({
             * computed math. When set, override the per-phase due
             * dates for stuck/approaching/on-track on every card in
             * that bucket; Phase 2 also becomes the client deadline. */}
+          {canManage && (
           <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
             <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-3">
               Client deadlines
@@ -3910,17 +3940,21 @@ function DetailModal({
               </div>
             </div>
           </section>
+          )}
 
           {/* Internal Revisions decision bar - Approve pushes the design to
               the client (green state, External Rev), Request revisions
               bounces back to Design with the Revisions tag. Both pair with
               notifyAssigneeChange so whoever owns the next phase gets a ping
-              when Slack wires in. */}
+              when Slack wires in.
+              The phase-transition action blocks below (complete / approve /
+              request revisions / QA / conclude) are all management actions,
+              each gated with canManage so members get a read-only board. */}
           {/* Tickets get a Complete button instead of phase progression. Once
               completed they fall off the active board (filtered out in
               visibleDeliverables); the modal stays openable from the strip
               while open here, with an Undo button if the user wants it back. */}
-          {d.phase === "tickets" && (
+          {canManage && d.phase === "tickets" && (
             <section
               className={`rounded-xl border p-4 ${
                 d.completedAt
@@ -3966,7 +4000,7 @@ function DetailModal({
             </section>
           )}
 
-          {d.phase === "internal-revisions" && !d.testResult && (
+          {canManage && d.phase === "internal-revisions" && !d.testResult && (
             <section
               className={`rounded-xl border p-4 ${
                 d.approvedAt
@@ -4022,7 +4056,7 @@ function DetailModal({
           {/* QA decision bar - mirror of Internal Rev. Approve pushes to
               Launch & Testing; Send back bounces to Dev with the Revisions
               tag (the move handler auto-flags backward moves). */}
-          {d.phase === "qa" && !d.testResult && (
+          {canManage && d.phase === "qa" && !d.testResult && (
             <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -4097,10 +4131,16 @@ function DetailModal({
               <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-2">
                 Due
               </h3>
-              <DarkDatePicker
-                value={d.dueDate}
-                onChange={(v) => onUpdate({ dueDate: v })}
-              />
+              {canManage ? (
+                <DarkDatePicker
+                  value={d.dueDate}
+                  onChange={(v) => onUpdate({ dueDate: v })}
+                />
+              ) : (
+                <p className="text-sm text-[#E5E5EA]">
+                  {d.dueDate ? formatShortDate(d.dueDate) : "Not set"}
+                </p>
+              )}
             </div>
           </section>
 
@@ -4542,7 +4582,7 @@ function DetailModal({
                   {/* Ready -> click sets liveStartedAt to MOCK_TODAY and flips
                       the card into Live state. Live -> click opens the
                       conclude form inline. */}
-                  {!d.liveStartedAt && !d.testResult && (
+                  {canManage && !d.liveStartedAt && !d.testResult && (
                     <button
                       type="button"
                       onClick={() =>
@@ -4554,7 +4594,7 @@ function DetailModal({
                       Set live
                     </button>
                   )}
-                  {d.liveStartedAt && !d.testResult && !concluding && (
+                  {canManage && d.liveStartedAt && !d.testResult && !concluding && (
                     <button
                       type="button"
                       onClick={() => setConcluding(true)}
@@ -4710,7 +4750,8 @@ function DetailModal({
 
           {/* Destructive action - sits at the very bottom of the modal body
               so it's out of the way but reachable. Uses a typed-confirm
-              prompt so accidental deletion is hard. */}
+              prompt so accidental deletion is hard. Management-only. */}
+          {canManage && (
           <section className="pt-2">
             <button
               onClick={onDelete}
@@ -4720,6 +4761,7 @@ function DetailModal({
               Delete card
             </button>
           </section>
+          )}
         </div>
       </div>
     </div>
@@ -4835,10 +4877,12 @@ function ActiveProjectTab({
   project: p,
   count,
   onDelete,
+  canManage,
 }: {
   project: MockProject;
   count: number;
   onDelete: () => void;
+  canManage: boolean;
 }) {
   const isRetainer = p.type === "retainer";
   return (
@@ -4865,13 +4909,15 @@ function ActiveProjectTab({
             : `${p.turnaroundDays}d`}
         </span>
       )}
-      <button
-        onClick={onDelete}
-        className="size-5 inline-flex items-center justify-center rounded-full text-[#0C0C0C]/60 hover:text-rose-700 hover:bg-black/[0.08] opacity-0 group-hover:opacity-100 transition-opacity"
-        title="Delete this project"
-      >
-        <XMarkIcon className="size-3" />
-      </button>
+      {canManage && (
+        <button
+          onClick={onDelete}
+          className="size-5 inline-flex items-center justify-center rounded-full text-[#0C0C0C]/60 hover:text-rose-700 hover:bg-black/[0.08] opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Delete this project"
+        >
+          <XMarkIcon className="size-3" />
+        </button>
+      )}
     </div>
   );
 }
@@ -4885,11 +4931,13 @@ function ProjectOverflow({
   counts,
   onSelect,
   onDelete,
+  canManage,
 }: {
   projects: MockProject[];
   counts: Record<string, number>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  canManage: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -4943,16 +4991,18 @@ function ProjectOverflow({
                       </span>
                     </div>
                   </button>
-                  <button
-                    onClick={() => {
-                      setOpen(false);
-                      onDelete(p.id);
-                    }}
-                    className="size-7 mr-1.5 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
-                    title={`Delete ${p.name}`}
-                  >
-                    <XMarkIcon className="size-3.5" />
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        onDelete(p.id);
+                      }}
+                      className="size-7 mr-1.5 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                      title={`Delete ${p.name}`}
+                    >
+                      <XMarkIcon className="size-3.5" />
+                    </button>
+                  )}
                 </li>
               );
             })}

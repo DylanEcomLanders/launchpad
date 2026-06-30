@@ -229,10 +229,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return;
     const path = window.location.pathname;
     if (path === "/team" || !isTeamAllowedPath(path)) {
-      /* Team members land on /me - their hub with contract sign nudge
-       * + cards for tasks / invoice submission / profile. /my-work
-       * stays reachable from there. */
-      window.location.replace("/me");
+      /* Members land straight on My Tasks - their day-to-day home.
+       * /me (profile / password / invoice) stays reachable by URL +
+       * via the Submit Invoice sidebar item, we just don't make the
+       * card-grid hub their landing. */
+      window.location.replace("/my-work");
     }
   }, [authed, role]);
 
@@ -355,10 +356,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setEntering(true);
     setTimeout(() => {
       if (r === "team") {
-        // Members land on /me unless they deep-linked to an allowed path.
+        // Members land on My Tasks unless they deep-linked to an allowed path.
         const path = typeof window !== "undefined" ? window.location.pathname : "/";
         if (typeof window !== "undefined" && (path === "/team" || !isTeamAllowedPath(path))) {
-          window.location.replace("/me");
+          window.location.replace("/my-work");
           return;
         }
       }

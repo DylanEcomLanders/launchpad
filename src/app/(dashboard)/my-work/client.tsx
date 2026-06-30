@@ -156,17 +156,19 @@ export default function MyWorkClient() {
   // to the picker. Validate the picked id against the real member list so a
   // stale localStorage value doesn't render empty.
   const memberId = useMemo(() => {
-    /* View-as roles: an explicit pick wins, so a lead can flip to a
-     * report and back. With no pick they fall through to their own
-     * auth-resolved identity (their own tasks by default). */
-    if (canViewAs && pickedMemberId && allMembers.some((m) => m.id === pickedMemberId)) {
-      return pickedMemberId;
+    if (canViewAs) {
+      /* View-as roles: an explicit pick wins, so a lead can flip to a
+       * report and back. With no pick they fall through to their own
+       * auth-resolved identity (their own tasks by default), then to
+       * null for shared-password admin sessions until they pick. */
+      if (pickedMemberId && allMembers.some((m) => m.id === pickedMemberId)) {
+        return pickedMemberId;
+      }
+      return authMemberId;
     }
-    if (authMemberId) return authMemberId;
-    if (pickedMemberId && allMembers.some((m) => m.id === pickedMemberId)) {
-      return pickedMemberId;
-    }
-    return null;
+    /* Members: always their own auth identity. Never honour a stored
+     * pick, so they can't peek at anyone else. */
+    return authMemberId;
   }, [authMemberId, pickedMemberId, allMembers, canViewAs]);
 
   const activeMember = useMemo(
@@ -563,10 +565,9 @@ export default function MyWorkClient() {
   const overdueCount = open.filter((d) => d.state === "overdue").length;
   const soonCount = open.filter((d) => d.state === "soon").length;
   const firstName = displayName?.split(/\s+/)[0];
-  // Show the "view as" picker for shared-password admin sessions (no
-  // auth identity to lock down) AND for any non-member role, so leads
-  // can oversee their team. Members only ever see their own tasks.
-  const showPicker = !authMemberId || canViewAs;
+  // The "view as" picker is for oversight - admin/cro only. Members
+  // never see it; they only ever see their own assigned tasks.
+  const showPicker = canViewAs;
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
