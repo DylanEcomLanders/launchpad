@@ -90,6 +90,13 @@ function isTeamAllowedPath(pathname: string): boolean {
     pathname === "/hero-offer" ||
     pathname.startsWith("/hero-offer/") ||
     pathname === "/my-work" ||
+    /* Delivery — members (team role) get the full kanban board so
+     * fulfilment/delivery people like Alister can see + drive client
+     * work, not just their own tasks. The management surfaces around
+     * it (Onboarding, Old Delivery, KPIs, Sales, Retention, Finance,
+     * Admin) stay admin-only via the sidebar gates below. */
+    pathname === "/kanban" ||
+    pathname.startsWith("/kanban/") ||
     pathname === "/workspace" ||
     pathname.startsWith("/workspace/") ||
     pathname === "/wiki-v2" ||

@@ -2358,6 +2358,9 @@ function SetCredentialsModal({
 }) {
   const [email, setEmail] = useState(person.email || "");
   const [password, setPassword] = useState(generatePassword());
+  /* Access level for the login. "team" = Member (My Tasks + Delivery
+   * + tools), "admin" = full access. Defaults to Member. */
+  const [accessRole, setAccessRole] = useState<"team" | "admin">("team");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [copiedField, setCopiedField] = useState<"email" | "password" | "both" | null>(null);
@@ -2376,6 +2379,7 @@ function SetCredentialsModal({
           password,
           name: person.full_name,
           podMemberId: person.pod_member_id ?? null,
+          role: accessRole,
         }),
       });
       const body = (await res.json().catch(() => ({}))) as {
@@ -2461,6 +2465,38 @@ function SetCredentialsModal({
               </button>
             </div>
             <p className="text-[10px] text-[#71757D] mt-1">Min 8 chars. Auto-generated; edit if you prefer.</p>
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Access level</label>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setAccessRole("team")}
+                className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors ${
+                  accessRole === "team"
+                    ? "bg-white text-[#0C0C0C]"
+                    : "bg-black/40 text-[#9CA3AF] hover:text-[#E5E5EA]"
+                }`}
+              >
+                Member
+              </button>
+              <button
+                type="button"
+                onClick={() => setAccessRole("admin")}
+                className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors ${
+                  accessRole === "admin"
+                    ? "bg-white text-[#0C0C0C]"
+                    : "bg-black/40 text-[#9CA3AF] hover:text-[#E5E5EA]"
+                }`}
+              >
+                Admin
+              </button>
+            </div>
+            <p className="text-[10px] text-[#71757D] mt-1">
+              {accessRole === "team"
+                ? "Member: My Tasks, Delivery, Hero Offer, Training, tools. No finance/admin."
+                : "Admin: full access to every surface including finance + admin."}
+            </p>
           </div>
         </div>
         {result && (

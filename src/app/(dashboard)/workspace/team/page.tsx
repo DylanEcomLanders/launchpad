@@ -13,6 +13,7 @@ import {
   listAppUsers,
   inviteAppUser,
   setAppUserActive,
+  setAppUserRole,
   type AppUser,
   type AppUserRole,
 } from "@/lib/auth/app-users";
@@ -20,16 +21,16 @@ import { ROLE_LABEL } from "@/lib/pods-v2/types";
 import {
   Card,
   Pill,
-  OwnerChip,
   SectionTitle,
   EmptyState,
-  type Tone,
 } from "@/lib/workspace/ui";
 
-const ROLE_TONE: Record<AppUserRole, Tone> = {
-  admin: "violet",
-  cro: "blue",
-  team: "neutral",
+/* Member-facing labels. "team" reads as "Member" in the UI so it
+ * matches how the founder thinks about it (member vs admin). */
+const ROLE_LABEL_UI: Record<AppUserRole, string> = {
+  admin: "Admin",
+  cro: "CRO",
+  team: "Member",
 };
 
 export default function WorkspaceTeamAccess() {
@@ -98,6 +99,24 @@ export default function WorkspaceTeamAccess() {
     setBusy(false);
   }
 
+  async function changeRole(u: AppUser, role: AppUserRole) {
+    if (role === u.role) return;
+    setBusy(true);
+    /* Optimistic — flip locally so the dropdown reflects the choice
+     * immediately, then confirm against the server. */
+    setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, role } : x)));
+    const ok = await setAppUserRole(u.id, role);
+    if (ok) {
+      setNotice(
+        `${u.name} is now ${ROLE_LABEL_UI[role]}. They'll get the new access next time they sign in.`,
+      );
+    } else {
+      setNotice(`Couldn't change ${u.name}'s role — try again.`);
+    }
+    await refresh();
+    setBusy(false);
+  }
+
   // Admin-only screen.
   if (role !== "admin") {
     return (
@@ -147,7 +166,6 @@ export default function WorkspaceTeamAccess() {
                         <span className={`text-sm font-medium ${u.active ? "text-[#E5E5EA]" : "text-[#71757D] line-through"}`}>
                           {u.name}
                         </span>
-                        <Pill tone={ROLE_TONE[u.role]}>{u.role}</Pill>
                         {u.auth_id ? (
                           <Pill tone="green">Signed in</Pill>
                         ) : (
@@ -159,6 +177,19 @@ export default function WorkspaceTeamAccess() {
                         {linked && ` · ${linked.name} (${linked.podName})`}
                       </div>
                     </div>
+                    {/* Access level — change inline. Member = team role
+                        (My Tasks + Delivery + tools). Admin = everything. */}
+                    <select
+                      value={u.role}
+                      onChange={(e) => changeRole(u, e.target.value as AppUserRole)}
+                      disabled={busy}
+                      className="shrink-0 rounded-md border border-[#2A2A2A] bg-black/40 px-2 py-1 text-xs text-[#E5E5EA] outline-none focus:border-[#383838] disabled:opacity-50"
+                      title="Access level"
+                    >
+                      <option value="team">Member</option>
+                      <option value="cro">CRO</option>
+                      <option value="admin">Admin</option>
+                    </select>
                     <button
                       onClick={() => toggleActive(u)}
                       disabled={busy}

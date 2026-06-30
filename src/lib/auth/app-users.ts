@@ -173,3 +173,21 @@ export async function setAppUserActive(id: string, active: boolean): Promise<boo
     return false;
   }
 }
+
+/** Promote / demote a person's role (admin / cro / team). Routes through
+ *  the service-role endpoint because role is security-sensitive and the
+ *  anon key's RLS blocks the write from a team-role session. The affected
+ *  user picks up the new role on their next sign-in. */
+export async function setAppUserRole(id: string, role: AppUserRole): Promise<boolean> {
+  try {
+    const res = await fetch("/api/admin/set-user-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, role }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error("[app-users] setAppUserRole:", err);
+    return false;
+  }
+}

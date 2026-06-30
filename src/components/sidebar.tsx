@@ -353,11 +353,12 @@ export function Sidebar() {
     { label: heroOfferItem.label, href: heroOfferItem.href, group: "Pinned", icon: heroOfferItem.icon, keywords: ["conversion engine", "playbook", "offer"] },
     { label: trainingItem.label, href: trainingItem.href, group: "Pinned", icon: trainingItem.icon, keywords: ["wiki", "sop", "knowledge", "playbook", "learning"] },
     { label: submitInvoiceItem.label, href: submitInvoiceItem.href, group: "Pinned", icon: submitInvoiceItem.icon, keywords: ["invoice", "expenses", "submit", "pay"] },
+    // Delivery (kanban board) — visible to everyone including members.
+    { label: missionControlItem.label, href: missionControlItem.href, group: "Pinned", icon: missionControlItem.icon, keywords: ["kanban", "delivery", "board", "project"] },
     // Admin/CRO surfaces.
     ...(role !== "team"
       ? [
           { label: onboardingItem.label, href: onboardingItem.href, group: "Pinned", icon: onboardingItem.icon, keywords: ["onboarding", "inbox", "new clients", "intake"] },
-          { label: missionControlItem.label, href: missionControlItem.href, group: "Pinned", icon: missionControlItem.icon, keywords: ["kanban", "delivery", "board", "project"] },
           { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery", "legacy"] },
           { label: kpiItem.label, href: kpiItem.href, group: "Pinned", icon: kpiItem.icon, keywords: ["metrics", "throughput", "on-time"] },
           { label: salesItem.label, href: salesItem.href, group: "Pinned", icon: salesItem.icon, keywords: ["pipeline", "leads", "deals", "outreach"] },
@@ -366,7 +367,10 @@ export function Sidebar() {
         ]
       : []),
     ...(role === "admin"
-      ? [{ label: adminItem.label, href: adminItem.href, group: "Pinned", icon: adminItem.icon, keywords: ["company", "people", "hiring"] }]
+      ? [
+          { label: adminItem.label, href: adminItem.href, group: "Pinned", icon: adminItem.icon, keywords: ["company", "people", "hiring"] },
+          { label: "Team access", href: "/workspace/team", group: "Pinned", icon: adminItem.icon, keywords: ["roles", "permissions", "member", "admin", "access", "promote", "demote", "login"] },
+        ]
       : []),
     ...(role !== "team"
       ? [{ label: toolkitItem.label, href: toolkitItem.href, group: "Pinned", icon: toolkitItem.icon, keywords: ["tools", "launcher", "payment", "invoice", "intelligems"] }]
@@ -584,18 +588,17 @@ export function Sidebar() {
             {renderTopLink(myWorkItem)}
           </div>
 
-          {/* GROUP 2 — Delivery cluster: Onboarding inbox (lands above
-              Delivery so new clients are surfaced before in-flight work)
-              + kanban (canonical) + Old Delivery (legacy /workspace,
-              until manual migration done) + KPIs (reads kanban metrics). */}
-          {role !== "team" && (
-            <div className="px-3 space-y-0.5 mt-6">
-              {renderTopLink(onboardingItem)}
-              {renderTopLink(missionControlItem)}
-              {renderTopLink(workspaceItem)}
-              {renderTopLink(kpiItem)}
-            </div>
-          )}
+          {/* GROUP 2 — Delivery cluster. Delivery (the kanban board) is
+              visible to EVERYONE including members, so fulfilment/delivery
+              people can see + drive client work. The management surfaces
+              around it — Onboarding inbox, Old Delivery (legacy /workspace),
+              KPIs — stay admin/cro only. */}
+          <div className="px-3 space-y-0.5 mt-6">
+            {role !== "team" && renderTopLink(onboardingItem)}
+            {renderTopLink(missionControlItem)}
+            {role !== "team" && renderTopLink(workspaceItem)}
+            {role !== "team" && renderTopLink(kpiItem)}
+          </div>
 
           {/* GROUP 3 — Revenue surfaces: Sales (Ajay's home) + Retention
               (CSM's home). Admin/CRO only - team doesn't run these. */}
