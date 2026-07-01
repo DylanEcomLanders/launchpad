@@ -69,11 +69,21 @@
   --color-status-approaching: #C99A4D;
   --color-status-late: #C56B6B;
   --color-info: #0EA5E9;
+  /* Floating-surface chrome — the faint white washes on dropdowns/menus.
+     Distinct (fainter) from --border, which is the flat-card hairline. */
+  --color-surface-hover: rgba(255, 255, 255, 0.04);  /* menu row hover / active wash */
+  --color-border-faint:  rgba(255, 255, 255, 0.04);  /* faint internal divider       */
+  --color-panel-line:    rgba(255, 255, 255, 0.08);  /* floating panel hairline ring  */
   /* back-compat aliases (2 stray usages) — remove after sweep */
   --color-accent-hover: var(--surface-raised);
   --color-accent-light: var(--surface-raised);
 
-  /* TYPE SCALE — Linear calibration: nudged up for "comfortable, not cramped". */
+  /* TYPE SCALE — Linear calibration: nudged up for "comfortable, not cramped".
+     3xs–5xs are the dense "micro tier" below the body scale (badges, chips,
+     meta) — formalised so the board's small text tracks one scale. */
+  --text-5xs: 0.5625rem;  /* 9px  — dense micro badges      */
+  --text-4xs: 0.625rem;   /* 10px — micro meta              */
+  --text-3xs: 0.6875rem;  /* 11px — small labels / chips    */
   --text-2xs: 0.75rem;    /* 12px — micro-labels            */
   --text-xs:  0.8125rem;  /* 13px — table cells, captions   */
   --text-sm:  0.875rem;   /* 14px — body baseline           */
@@ -96,6 +106,18 @@
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
   --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
   --shadow-nav-active: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0.5px 1.5px rgba(0, 0, 0, 0.04);
+  --shadow-popover: 0 20px 60px rgba(0, 0, 0, 0.6);  /* dropdown / menu panels */
+}
+
+:root {
+  /* Card-state tints — the whisper gradient behind overdue / live cards.
+     Derived from the status palette via color-mix so they track
+     --color-status-* automatically (no hardcoded rgba). Borders use the
+     Tailwind opacity modifier on the same tokens (border-status-late/20). */
+  --card-overdue: linear-gradient(180deg, color-mix(in srgb, var(--color-status-late) 6%, transparent), color-mix(in srgb, var(--color-status-late) 1.5%, transparent));
+  --card-overdue-hover: linear-gradient(180deg, color-mix(in srgb, var(--color-status-late) 9%, transparent), color-mix(in srgb, var(--color-status-late) 2%, transparent));
+  --card-live: linear-gradient(180deg, color-mix(in srgb, var(--color-status-ontrack) 6%, transparent), color-mix(in srgb, var(--color-status-ontrack) 1.5%, transparent));
+  --card-live-hover: linear-gradient(180deg, color-mix(in srgb, var(--color-status-ontrack) 9%, transparent), color-mix(in srgb, var(--color-status-ontrack) 2%, transparent));
 }
 
 html, body {

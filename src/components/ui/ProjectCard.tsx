@@ -20,6 +20,7 @@ export function ProjectCard({
   description,
   footer,
   overdue = false,
+  live = false,
   dragging = false,
   draggable,
   onDragStart,
@@ -41,6 +42,8 @@ export function ProjectCard({
   /** Footer row — e.g. assignee + due (default variant only). */
   footer?: ReactNode;
   overdue?: boolean;
+  /** Test is live in market — subtle green tint (mirrors `overdue`). */
+  live?: boolean;
   dragging?: boolean;
   draggable?: boolean;
   onDragStart?: (e: DragEvent<HTMLDivElement>) => void;
@@ -61,13 +64,16 @@ export function ProjectCard({
         onClick={onClick}
         title={tooltip}
         className={cn(
-          "flex items-center gap-2 pl-2 pr-2 py-1.5 rounded-[6px] bg-surface border border-white/[0.05] cursor-grab active:cursor-grabbing hover:bg-surface-raised hover:border-white/[0.09] transition-colors",
+          "flex items-center gap-2 pl-2 pr-2 py-1.5 rounded-[6px] border cursor-grab active:cursor-grabbing transition-colors",
+          live
+            ? "bg-[image:var(--card-live)] border-status-ontrack/20 hover:bg-[image:var(--card-live-hover)] hover:border-status-ontrack/30"
+            : "bg-surface border-white/[0.05] hover:bg-surface-raised hover:border-white/[0.09]",
           dragging && "opacity-40 scale-[0.98]",
           className,
         )}
       >
         {icon}
-        <span className="text-[12px] text-foreground truncate flex-1 min-w-0">
+        <span className="text-2xs text-foreground truncate flex-1 min-w-0">
           {title}
         </span>
         {clusterContent}
@@ -85,8 +91,10 @@ export function ProjectCard({
       className={cn(
         "p-3.5 rounded-[6px] border cursor-grab active:cursor-grabbing transition-colors",
         overdue
-          ? "bg-[linear-gradient(180deg,rgba(197,107,107,0.10),rgba(197,107,107,0.03))] border-white/[0.05] hover:bg-[linear-gradient(180deg,rgba(197,107,107,0.14),rgba(197,107,107,0.05))] hover:border-white/[0.09]"
-          : "bg-surface border-white/[0.05] hover:bg-surface-raised hover:border-white/[0.09]",
+          ? "bg-[image:var(--card-overdue)] border-status-late/20 hover:bg-[image:var(--card-overdue-hover)] hover:border-status-late/30"
+          : live
+            ? "bg-[image:var(--card-live)] border-status-ontrack/20 hover:bg-[image:var(--card-live-hover)] hover:border-status-ontrack/30"
+            : "bg-surface border-white/[0.05] hover:bg-surface-raised hover:border-white/[0.09]",
         dragging && "opacity-40 scale-[0.98]",
         className,
       )}
@@ -104,11 +112,11 @@ export function ProjectCard({
       </div>
 
       {description && (
-        <p className="mt-1.5 pl-[26px] text-[11px] text-subtle truncate">{description}</p>
+        <p className="mt-1.5 pl-[26px] text-3xs text-subtle truncate">{description}</p>
       )}
 
       {footer && (
-        <div className="mt-3 pl-[26px] flex items-center justify-between gap-2 text-[11px]">
+        <div className="mt-3 pl-[26px] flex items-center justify-between gap-2 text-3xs">
           {footer}
         </div>
       )}

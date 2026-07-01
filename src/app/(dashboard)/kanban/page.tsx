@@ -26,6 +26,8 @@ import {
   RocketLaunchIcon,
   LightBulbIcon,
   Squares2X2Icon,
+  AdjustmentsHorizontalIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useCurrentUser, useRole } from "@/components/auth-gate";
@@ -52,7 +54,7 @@ import {
   type TestOutcome,
   type TestResult,
 } from "@/lib/projects/preview-phases";
-import { Field, ProjectCard } from "@/components/ui";
+import { Field, Pill, ProjectCard, Segmented } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
@@ -324,9 +326,9 @@ function phaseInternalDueDate(
 }
 
 /** Card status driven by the dated phase deadline (manual override or
- *  computed per-phase). Tightened rule:
- *    - on-track: today < deadline
- *    - approaching: today === deadline (day-of)
+ *  computed per-phase). Rule (matches the per-card dueDate rule):
+ *    - on-track: deadline is 2+ days out
+ *    - approaching: deadline is today OR tomorrow (imminent)
  *    - stuck: today > deadline (any day overdue)
  *  No buffer - day-after-due is red. */
 function deadlineStatus(
@@ -353,10 +355,9 @@ function deadlineStatus(
       : undefined;
   const due = manualDue ?? phaseInternalDueDate(phase, project);
   if (!due) return null;
-  const cmp = todayISO.localeCompare(due);
-  if (cmp < 0) return "on-track";
-  if (cmp === 0) return "approaching";
-  return "stuck";
+  if (todayISO.localeCompare(due) > 0) return "stuck";
+  if (due.localeCompare(addDaysISO(todayISO, 1)) <= 0) return "approaching";
+  return "on-track";
 }
 
 function formatShortDate(iso: string): string {
@@ -1404,21 +1405,14 @@ export default function KanbanPage() {
     // no-op stub
   }
 
+  const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
   const headerCountLabel =
     viewMode === "results"
-      ? `${resultCards.length} test${resultCards.length === 1 ? "" : "s"}`
+      ? plural(resultCards.length, "test")
       : viewMode === "pod"
-        ? `${visibleDeliverables.length} deliverables · ${new Set(visibleDeliverables.map((d) => d.projectId)).size} projects`
-        : `${visibleDeliverables.length} deliverables · ${new Set(visibleDeliverables.map((d) => d.clientId)).size} clients`;
+        ? `${plural(visibleDeliverables.length, "deliverable")} · ${plural(new Set(visibleDeliverables.map((d) => d.projectId)).size, "project")}`
+        : `${plural(visibleDeliverables.length, "deliverable")} · ${plural(new Set(visibleDeliverables.map((d) => d.clientId)).size, "client")}`;
 
-  const viewModeLabel =
-    viewMode === "project"
-      ? "By project"
-      : viewMode === "master"
-        ? "All projects"
-        : viewMode === "pod"
-          ? "By pod"
-          : "Results Library";
 
   const activePod = pods.find((p) => p.id === podId);
 
@@ -1427,12 +1421,12 @@ export default function KanbanPage() {
       return { bold: "Results Library", light: "" };
     }
     if (viewMode === "master") {
-      return { bold: "All projects", light: "in flight" };
+      return { bold: "All projects", light: "" };
     }
     if (viewMode === "pod") {
       return {
         bold: activePod?.name ?? "Pick a pod",
-        light: "on the plate",
+        light: "",
       };
     }
     // Keep the title constant per client so switching between projects
@@ -1440,7 +1434,7 @@ export default function KanbanPage() {
     // already visible in the project tab row directly below.
     return {
       bold: activeClient?.name ?? "Pick a client",
-      light: "in flight",
+      light: "",
     };
   }
 
@@ -1452,202 +1446,141 @@ export default function KanbanPage() {
   }, [clients]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto px-4 sm:px-6 py-8">
+    <div className="h-[calc(100dvh-56px)] flex flex-col bg-background text-foreground">
+      <div className="flex-1 flex flex-col min-h-0 px-4 sm:px-6 py-8">
         {/* 2-col grid so the right cluster never wraps below the title.
             Title takes 1fr (with min-w-0 + truncate so long titles like
             longer titles shrink with ellipsis instead of pushing the
             cluster). Cluster takes auto, stays anchored at the right edge. */}
-        <div className="grid grid-cols-[1fr_auto] items-end gap-6 mb-6">
+        <div className="grid grid-cols-[1fr_auto] items-end gap-6 mb-6 shrink-0">
+          {/* LEFT ZONE - client context. The title IS the client switch
+              (no duplicate picker); project tabs sit below; the ⋯ holds the
+              client-specific actions (onboarding brief + pod assignment). */}
           <div className="min-w-0">
-            <p className="text-[12px] font-medium text-subtle">
-              Mission Control · {viewModeLabel}
+            <p className="text-2xs font-medium text-subtle">
+              Mission Control
               {headerCountLabel && (
                 <span className="text-border">
                   {" · "}{headerCountLabel.toLowerCase()}
                 </span>
               )}
             </p>
-            <h1 className="mt-2 text-[26px] font-heading tracking-tight leading-tight truncate">
-              <span className="font-medium text-foreground">{title.bold}</span>{" "}
-              <span className="font-normal text-subtle">{title.light}</span>
-            </h1>
+            <div className="mt-2 flex items-center gap-2 min-w-0">
+              {viewMode === "project" && clients.length > 0 ? (
+                <>
+                  <KanbanClientPicker
+                    variant="title"
+                    clients={clients}
+                    activeId={clientId}
+                    onSelect={(id) => {
+                      const c = clients.find((x) => x.id === id);
+                      setClientId(id);
+                      setProjectId(c?.projects[0]?.id ?? "");
+                    }}
+                    onDelete={(id) => deleteClient(id)}
+                    onAddClient={() => setAddClientOpen(true)}
+                  />
+                  {activeClient && activeClient.projects.length > 0 && (
+                    <>
+                      <ChevronRightIcon className="size-4 text-subtle shrink-0" />
+                      <ProjectSwitch
+                        projects={activeClient.projects}
+                        activeId={activeProject?.id ?? ""}
+                        onSelect={(id) => setProjectId(id)}
+                        onAddProject={addProject}
+                        onDelete={(pid) => deleteProject(activeClient.id, pid)}
+                        counts={Object.fromEntries(
+                          activeClient.projects.map((p) => [
+                            p.id,
+                            p.deliverables.filter((d) => !d.testResult).length,
+                          ]),
+                        )}
+                        canManage={canManage}
+                      />
+                    </>
+                  )}
+                  {activeProject &&
+                    (!!activeClient?.onboardingBrief || canManage) && (
+                      <ClientActionsMenu
+                        hasBrief={!!activeClient?.onboardingBrief}
+                        onPreviewOnboarding={() => setOnboardingPreviewOpen(true)}
+                        pods={pods}
+                        currentPodId={activeProject.podId}
+                        onAssignPod={assignPodToProject}
+                        canManage={canManage}
+                      />
+                    )}
+                </>
+              ) : viewMode === "pod" && pods.length > 0 ? (
+                <>
+                  <KanbanPodPicker
+                    variant="title"
+                    pods={pods}
+                    activeId={podId}
+                    onSelect={(id) => setPodId(id)}
+                  />
+                  {(() => {
+                    const podProjects = clients.flatMap((c) =>
+                      c.projects
+                        .filter((p) => p.podId === podId)
+                        .map((p) => ({
+                          clientId: c.id,
+                          clientName: c.name,
+                          projectId: p.id,
+                          projectName: p.name,
+                          turnaroundDays: p.turnaroundDays,
+                          openCount: p.deliverables.filter((d) => !d.testResult).length,
+                        })),
+                    );
+                    return podProjects.length > 0 ? (
+                      <>
+                        <ChevronRightIcon className="size-4 text-subtle shrink-0" />
+                        <PodProjectSwitch
+                          projects={podProjects}
+                          onSelectProject={(clientId, projectId) => {
+                            setClientId(clientId);
+                            setProjectId(projectId);
+                            setViewMode("project");
+                          }}
+                        />
+                      </>
+                    ) : null;
+                  })()}
+                </>
+              ) : (
+                <h1 className="text-[26px] font-heading font-medium tracking-tight leading-tight truncate text-foreground">
+                  {title.bold}
+                </h1>
+              )}
+            </div>
           </div>
 
-          {/* Right cluster - decluttered. Primary controls only:
-              Mine + view-mode pill + overflow menu. Search collapses
-              to an icon; Phase rules + Cosy/Glance live in the menu. */}
+          {/* RIGHT ZONE - display only. How you view the board: search,
+              view scope, and Display options. No client-specific controls. */}
           <div className="flex items-center gap-2">
             <SyncErrorToast />
-            {/* Search - icon-only by default to save header real estate.
-                Click or press / to expand into an input; Esc collapses. */}
             <SearchControl
               query={searchQuery}
               onChange={setSearchQuery}
               inputRef={searchInputRef}
             />
-            {/* Mine only - filters to cards where the signed-in user is
-                listed as designer or developer (any slot). */}
-            {meName && (
-              <button
-                onClick={() => setMineOnly((v) => !v)}
-                className={`px-3 py-1 text-[12px] font-medium rounded-md border transition-colors ${
-                  mineOnly
-                    ? "bg-surface-raised text-foreground border-border"
-                    : "text-muted hover:text-foreground border-border"
-                }`}
-                title="Show only cards assigned to you"
-              >
-                Mine
-              </button>
-            )}
-
-            {/* + New client button — moved LEFT of the view mode pill
-                so when it disappears in non-project modes, the pill +
-                overflow stay anchored to the right edge. */}
-            {viewMode === "project" && (
-              <button
-                onClick={() => setAddClientOpen(true)}
-                className="shrink-0 text-[11px] font-semibold text-subtle hover:text-white transition-colors px-3 py-2"
-                title="Add a new client"
-              >
-                + Client
-              </button>
-            )}
-
-            {/* Client / pod selector - custom dropdown matching the
-                app's dark aesthetic (native select popover is browser-
-                styled and looks out of place). Each item shows the
-                name + a project count for clients / member count for
-                pods. */}
-            {viewMode === "project" && clients.length > 0 && (
-              <KanbanClientPicker
-                clients={clients}
-                activeId={clientId}
-                onSelect={(id) => {
-                  const c = clients.find((x) => x.id === id);
-                  setClientId(id);
-                  setProjectId(c?.projects[0]?.id ?? "");
-                }}
-                onDelete={(id) => deleteClient(id)}
-              />
-            )}
-            {viewMode === "pod" && pods.length > 0 && (
-              <KanbanPodPicker
-                pods={pods}
-                activeId={podId}
-                onSelect={(id) => setPodId(id)}
-              />
-            )}
-
-            {/* View mode pill - anchored to the right edge. Stays put
-                regardless of mode so eye-position doesn't jolt when
-                + Client + the client dropdown appear/disappear. */}
-            <div className="inline-flex gap-0.5 p-0.5 rounded-md bg-surface border border-border">
-              {(
-                [
-                  { v: "project" as const, label: "By project" },
-                  { v: "master" as const, label: "All projects" },
-                  { v: "pod" as const, label: "By pod" },
-                  { v: "results" as const, label: "Results Library" },
-                ]
-              ).map((o) => (
-                <button
-                  key={o.v}
-                  onClick={() => setViewMode(o.v)}
-                  className={`px-3 py-1 text-[12px] font-medium rounded transition-colors ${
-                    viewMode === o.v
-                      ? "bg-surface-raised text-foreground"
-                      : "text-muted hover:text-foreground"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Overflow menu - tertiary controls (density, phase rules).
-                Sits at the very right edge alongside the view mode pill. */}
+            <ViewModeMenu value={viewMode} onChange={setViewMode} />
             <OverflowMenu
               density={density}
               onSetDensity={setDensity}
               onOpenRules={() => setRulesOpen(true)}
+              mineOnly={mineOnly}
+              onToggleMine={() => setMineOnly((v) => !v)}
+              showMine={!!meName}
             />
           </div>
         </div>
 
-        {/* Reserve the vertical space owned by the project tabs row in every
-            view mode so toggling between project / master / results doesnt
-            shift the board up or down. min-h matches ProjectTabsRow height
-            plus its mb-5 (one row of pills at py-1.5). */}
-        <div className="min-h-[56px]">
-          {viewMode === "project" && activeClient && (
-            <ProjectTabsRow
-              client={activeClient}
-              projectId={activeProject?.id ?? ""}
-              onSelectProject={(id) => setProjectId(id)}
-              onAddProject={addProject}
-              onDeleteProject={(pid) => deleteProject(activeClient.id, pid)}
-              deliverableCounts={Object.fromEntries(
-                activeClient.projects.map((p) => [
-                  p.id,
-                  p.deliverables.filter((d) => !d.testResult).length,
-                ]),
-              )}
-              pods={pods}
-              currentPodId={activeProject?.podId}
-              onAssignPod={assignPodToProject}
-              hasBrief={!!activeClient.onboardingBrief}
-              onPreviewOnboarding={() => setOnboardingPreviewOpen(true)}
-              canManage={canManage}
-            />
-          )}
-
-          {viewMode === "master" && (
-            <ClientsRow
-              clients={clients.map((c) => ({
-                clientId: c.id,
-                clientName: c.name,
-                openCount: c.projects.reduce(
-                  (sum, p) =>
-                    sum + p.deliverables.filter((d) => !d.testResult).length,
-                  0,
-                ),
-                projectCount: c.projects.length,
-              }))}
-              onSelectClient={(clientId) => {
-                const c = clients.find((x) => x.id === clientId);
-                setClientId(clientId);
-                setProjectId(c?.projects[0]?.id ?? "");
-                setViewMode("project");
-              }}
-              onDeleteClient={(clientId) => deleteClient(clientId)}
-            />
-          )}
-
-          {viewMode === "pod" && (
-            <PodProjectsRow
-              projects={clients.flatMap((c) =>
-                c.projects
-                  .filter((p) => p.podId === podId)
-                  .map((p) => ({
-                    clientId: c.id,
-                    clientName: c.name,
-                    projectId: p.id,
-                    projectName: p.name,
-                    turnaroundDays: p.turnaroundDays,
-                    openCount: p.deliverables.filter((d) => !d.testResult)
-                      .length,
-                  })),
-              )}
-              onSelectProject={(clientId, projectId) => {
-                setClientId(clientId);
-                setProjectId(projectId);
-                setViewMode("project");
-              }}
-            />
-          )}
-
+        {/* Project / master / pod headers are all single-line now (each uses
+            an inline switch above), so they reserve no row and the board sits
+            at the same Y. Only results still carries a sub-row (its filters),
+            so only it reserves the height. */}
+        <div className={`shrink-0 ${viewMode === "results" ? "min-h-[56px]" : ""}`}>
           {viewMode === "results" && (
             <ResultsBankFilters
               outcome={bankOutcome}
@@ -1675,12 +1608,10 @@ export default function KanbanPage() {
             onOpen={(id) => setActiveId(id)}
           />
         ) : (
-          /* Viewport-fit board: columns share one fixed height (the
-           * viewport minus the dashboard header + page chrome) so the
-           * whole board never makes the page scroll. Each column
-           * scrolls its own cards independently. min-h floor keeps it
-           * usable on short windows. */
-          <div className="h-[calc(100dvh-260px)] min-h-[420px]">
+          /* Viewport-fit board: flex-fills the remaining height under the
+           * header (whatever the screen size + current header height), so the
+           * page never scrolls. Each column scrolls its own cards. */
+          <div className="flex-1 min-h-0">
           <BoardColumns
             phases={PREVIEW_PHASES}
             cards={cardsByPhase}
@@ -1788,70 +1719,15 @@ export default function KanbanPage() {
   );
 }
 
-/* Master view's equivalent of the project tabs row. Lists every active
- * client with their open deliverable + project counts. Click a pill to
- * drop into the project view of that client (first project selected). */
-interface ClientsRowProps {
-  clients: {
-    clientId: string;
-    clientName: string;
-    openCount: number;
-    projectCount: number;
-  }[];
-  onSelectClient: (clientId: string) => void;
-  onDeleteClient: (clientId: string) => void;
-}
-
-function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps) {
-  if (clients.length === 0) {
-    return (
-      <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] text-border">
-          No active clients.
-        </span>
-      </div>
-    );
-  }
-  // overflow-x-auto so a long client list scrolls instead of wrapping
-  // vertically (wrap would push the board down and re-introduce the jolt).
-  return (
-    <div className="flex items-center gap-1.5 mb-5 overflow-x-auto scrollbar-thin pb-1">
-      {clients.map((c) => (
-        <div
-          key={c.clientId}
-          className="group inline-flex items-center rounded-lg text-subtle hover:bg-surface hover:text-foreground transition-colors"
-        >
-          <button
-            onClick={() => onSelectClient(c.clientId)}
-            className="pl-3.5 pr-2 py-1.5 text-[12px] font-medium"
-            title={`${c.clientName} - ${c.projectCount} project${c.projectCount === 1 ? "" : "s"}`}
-          >
-            <span>{c.clientName}</span>
-            <span className="ml-2 tabular-nums text-border">{c.openCount}</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteClient(c.clientId);
-            }}
-            className="size-6 mr-1 inline-flex items-center justify-center rounded-full text-border hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
-            title={`Delete ${c.clientName}`}
-          >
-            <XMarkIcon className="size-3" />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* Pod view's equivalent of the project tabs row. Lists every project the
- * active pod is working across (potentially multiple clients), each pill
- * shows the project name with the parent client as a small prefix. Click
- * a pill to drop into the project view of that project. Empty state
- * mirrors the strip height so the board doesnt shift when the pod has no
- * projects yet. */
-interface PodProjectsRowProps {
+/* ── Pod project switch (inline) ──
+ * Pod view's inline equivalent of the client › project breadcrumb: a
+ * compact dropdown of every project on the pod (across clients). Picking
+ * one drills into that project's board. Replaces the old sub-row + its
+ * odd solid-tab pill, so pod view is single-line like the others. */
+function PodProjectSwitch({
+  projects,
+  onSelectProject,
+}: {
   projects: {
     clientId: string;
     clientName: string;
@@ -1861,55 +1737,6 @@ interface PodProjectsRowProps {
     openCount: number;
   }[];
   onSelectProject: (clientId: string, projectId: string) => void;
-}
-
-function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
-  if (projects.length === 0) {
-    return (
-      <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] text-border">
-          No projects on this pod yet.
-        </span>
-      </div>
-    );
-  }
-  /* Same single-tab + overflow pattern as ProjectTabsRow. First
-   * project shows as a prominent pill; the rest live in a "+N"
-   * dropdown to keep the row scannable when a pod has 10+ projects. */
-  const [first, ...rest] = projects;
-  return (
-    <div className="flex items-center gap-1.5 mb-5 min-w-0">
-      <button
-        onClick={() => onSelectProject(first.clientId, first.projectId)}
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-[12px] font-medium border bg-surface-raised text-foreground border-white/[0.08]"
-        title={`${first.clientName} · ${first.projectName}`}
-      >
-        <span className="text-background/50">{first.clientName}</span>
-        <span className="truncate max-w-[200px]">{first.projectName}</span>
-        <span className="tabular-nums text-background/50">{first.openCount}</span>
-        {first.turnaroundDays && (
-          <span className="text-[10px] text-background/60">
-            {first.turnaroundDays}d
-          </span>
-        )}
-      </button>
-      {rest.length > 0 && (
-        <PodProjectsOverflow projects={rest} onSelect={onSelectProject} />
-      )}
-    </div>
-  );
-}
-
-/* Dropdown of "other projects on this pod". Same visual language as
- * ProjectOverflow but scoped to pod view + no delete (these projects
- * are owned by clients elsewhere - delete happens from the project
- * view, not the pod view). */
-function PodProjectsOverflow({
-  projects,
-  onSelect,
-}: {
-  projects: PodProjectsRowProps["projects"];
-  onSelect: (clientId: string, projectId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -1924,43 +1751,33 @@ function PodProjectsOverflow({
   }, [open]);
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-lg text-[12px] font-medium border bg-surface text-muted border-border hover:text-foreground transition-colors"
-        title={`${projects.length} more project${projects.length === 1 ? "" : "s"} on this pod`}
-      >
-        +{projects.length}
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      <Pill active={open} className="pr-2" onClick={() => setOpen((v) => !v)}>
+        Projects
+        <span className="tabular-nums text-subtle">{projects.length}</span>
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+      </Pill>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-80 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
-            Other projects ({projects.length})
+        <div className="absolute left-0 top-9 z-40 w-80 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
+            Projects on this pod ({projects.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
             {projects.map((p) => (
               <li key={p.projectId}>
                 <button
                   onClick={() => {
-                    onSelect(p.clientId, p.projectId);
+                    onSelectProject(p.clientId, p.projectId);
                     setOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors"
+                  className="w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-subtle truncate shrink-0">
-                      {p.clientName}
-                    </span>
-                    <span className="text-[12px] text-foreground truncate flex-1 min-w-0">
-                      {p.projectName}
-                    </span>
-                    <span className="text-[10px] text-subtle tabular-nums shrink-0">
-                      {p.openCount}
-                    </span>
+                    <span className="text-3xs text-subtle truncate shrink-0">{p.clientName}</span>
+                    <span className="text-2xs text-foreground truncate flex-1 min-w-0">{p.projectName}</span>
+                    <span className="text-4xs text-subtle tabular-nums shrink-0">{p.openCount}</span>
                     {p.turnaroundDays && (
-                      <span className="text-[10px] text-subtle tabular-nums shrink-0">
-                        {p.turnaroundDays}d
-                      </span>
+                      <span className="text-4xs text-subtle tabular-nums shrink-0">{p.turnaroundDays}d</span>
                     )}
                   </div>
                 </button>
@@ -1969,249 +1786,6 @@ function PodProjectsOverflow({
           </ul>
         </div>
       )}
-    </div>
-  );
-}
-
-interface ProjectTabsRowProps {
-  client: MockClient;
-  projectId: string;
-  onSelectProject: (id: string) => void;
-  onAddProject: (input: {
-    name: string;
-    type: ProjectType;
-    turnaroundDays?: TurnaroundDays;
-    engagementDays?: EngagementDays;
-  }) => void;
-  onDeleteProject: (projectId: string) => void;
-  deliverableCounts: Record<string, number>;
-  pods: MockPod[];
-  currentPodId: string | undefined;
-  onAssignPod: (podId: string) => void;
-  // Brief is structured Q&A now (see OnboardingBrief in mock-data); the row
-  // just opens the popup. Editing happens upstream in the onboarding flow.
-  hasBrief: boolean;
-  onPreviewOnboarding: () => void;
-  canManage: boolean;
-}
-
-function ProjectTabsRow(props: ProjectTabsRowProps) {
-  const [addingProject, setAddingProject] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [typeDraft, setTypeDraft] = useState<ProjectType>("build");
-  const [turnaroundDraft, setTurnaroundDraft] = useState<TurnaroundDays>(15);
-  const [engagementDraft, setEngagementDraft] = useState<EngagementDays>(30);
-
-  function submitNewProject() {
-    props.onAddProject({
-      name: draft,
-      type: typeDraft,
-      turnaroundDays: typeDraft === "build" ? turnaroundDraft : undefined,
-      engagementDays: typeDraft === "retainer" ? engagementDraft : undefined,
-    });
-    setDraft("");
-    setTypeDraft("build");
-    setTurnaroundDraft(15);
-    setEngagementDraft(30);
-    setAddingProject(false);
-  }
-
-  /* Render only the ACTIVE project tab + a "+N" overflow chip that
-   * pops a dropdown listing the rest (with per-project delete).
-   * Dramatically declutters when a client has 6+ projects. */
-  const active = props.client.projects.find((p) => p.id === props.projectId);
-  const others = props.client.projects.filter((p) => p.id !== props.projectId);
-  return (
-    <div className="flex items-center justify-between gap-3 mb-5">
-      <div className="flex items-center gap-1.5 min-w-0">
-        {active && (
-          <ActiveProjectTab
-            project={active}
-            count={props.deliverableCounts[active.id] ?? 0}
-            onDelete={() => props.onDeleteProject(active.id)}
-            canManage={props.canManage}
-          />
-        )}
-        {others.length > 0 && (
-          <ProjectOverflow
-            projects={others}
-            counts={props.deliverableCounts}
-            onSelect={(id) => props.onSelectProject(id)}
-            onDelete={(id) => props.onDeleteProject(id)}
-            canManage={props.canManage}
-          />
-        )}
-        {/* Legacy map kept gone — only the active tab + overflow render now.
-            The block below is the inline "+ New project" form that was
-            already here; preserved as the trailing add affordance. */}
-        {false && props.client.projects.map((p) => {
-          const isActive = p.id === props.projectId;
-          const count = props.deliverableCounts[p.id] ?? 0;
-          return (
-            <button
-              key={p.id}
-              onClick={() => props.onSelectProject(p.id)}
-              className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
-                isActive
-                  ? p.type === "retainer"
-                    ? "bg-teal-500 text-background border-teal-500"
-                    : "bg-white text-background border-white"
-                  : p.type === "retainer"
-                    ? "bg-teal-500/10 text-teal-300 border-teal-500/40 hover:text-teal-200 hover:border-teal-400/60"
-                    : "bg-surface text-subtle border-border hover:text-white hover:border-border"
-              }`}
-              title={
-                p.type === "retainer" && p.engagementDays
-                  ? `Retainer engagement (${p.engagementDays} days)`
-                  : p.turnaroundDays
-                    ? `Build scoped for a ${p.turnaroundDays}-day turnaround`
-                    : undefined
-              }
-            >
-              <span>{p.name}</span>
-              <span
-                className={`ml-2 tabular-nums ${isActive ? "text-background/50" : "text-border"}`}
-              >
-                {count}
-              </span>
-              {(p.turnaroundDays || p.engagementDays) && (
-                <span
-                  className={`ml-2 text-[10px] tabular-nums ${
-                    isActive
-                      ? "text-background/60"
-                      : p.type === "retainer"
-                        ? "text-teal-300/80"
-                        : "text-foreground/60"
-                  }`}
-                >
-                  {p.type === "retainer"
-                    ? `${p.engagementDays}d retainer`
-                    : `${p.turnaroundDays}d`}
-                </span>
-              )}
-            </button>
-          );
-        })}
-        {props.canManage && (addingProject ? (
-          <div className="flex items-center gap-1.5 rounded-full bg-background border border-border pl-1.5 pr-1.5 py-1">
-            {/* Type toggle - Build vs Retainer. Drives which duration toggle
-                renders to the right (15/20/25 vs 30/60/90). */}
-            <div className="flex items-center gap-0.5 bg-surface rounded-full p-0.5 border border-border">
-              {(["build", "retainer"] as ProjectType[]).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTypeDraft(t)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-colors ${
-                    typeDraft === t
-                      ? t === "retainer"
-                        ? "bg-teal-500 text-background"
-                        : "bg-white text-background"
-                      : "text-subtle hover:text-white"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-            <input
-              autoFocus
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") submitNewProject();
-                if (e.key === "Escape") {
-                  setDraft("");
-                  setTypeDraft("build");
-                  setTurnaroundDraft(15);
-                  setEngagementDraft(30);
-                  setAddingProject(false);
-                }
-              }}
-              placeholder={
-                typeDraft === "retainer" ? "Retainer name" : "Project name"
-              }
-              className="bg-transparent text-[12px] text-foreground focus:outline-none w-32 placeholder:text-border"
-            />
-            <div className="flex items-center gap-0.5 bg-surface rounded-full p-0.5 border border-border">
-              {typeDraft === "retainer"
-                ? ENGAGEMENT_OPTIONS.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setEngagementDraft(t)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-colors ${
-                        engagementDraft === t
-                          ? "bg-teal-500 text-background"
-                          : "text-subtle hover:text-white"
-                      }`}
-                      title={`${ENGAGEMENT_TIER_LABEL[t]} retainer (${t}-day cadence)`}
-                    >
-                      {ENGAGEMENT_TIER_SHORT[t]}
-                    </button>
-                  ))
-                : TURNAROUND_OPTIONS.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setTurnaroundDraft(t)}
-                      className={`px-2 py-1 rounded-full text-[10px] font-semibold tabular-nums transition-colors ${
-                        turnaroundDraft === t
-                          ? "bg-white text-background"
-                          : "text-subtle hover:text-white"
-                      }`}
-                      title={`${t}-day turnaround`}
-                    >
-                      {t}d
-                    </button>
-                  ))}
-            </div>
-            <button
-              onClick={submitNewProject}
-              className="text-[11px] font-semibold text-subtle hover:text-white px-2"
-            >
-              Add
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setAddingProject(true)}
-            className="px-3.5 py-1.5 rounded-lg text-[12px] font-medium bg-transparent text-subtle border border-dashed border-border hover:text-foreground inline-flex items-center gap-1.5"
-          >
-            <PlusIcon className="size-3.5" />
-            New project
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2 shrink-0">
-        {/* Custom-styled pod-assignment dropdown. Management only -
-         * members can't reassign a project's pod. */}
-        {props.canManage && (
-        <ProjectPodPicker
-          pods={props.pods}
-          currentPodId={props.currentPodId}
-          onAssign={props.onAssignPod}
-        />
-        )}
-
-        {props.hasBrief ? (
-          <button
-            onClick={props.onPreviewOnboarding}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-surface text-foreground border border-border hover:bg-surface-raised transition-colors"
-            title="Open the client's onboarding brief"
-          >
-            Onboarding brief
-          </button>
-        ) : (
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-transparent text-border border border-dashed border-border cursor-default"
-            title="Brief lands here once the client completes onboarding"
-          >
-            No brief yet
-          </span>
-        )}
-      </div>
     </div>
   );
 }
@@ -2267,7 +1841,7 @@ function BoardColumns(props: BoardColumnsProps) {
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
   return (
-    <div className="flex gap-3 justify-start overflow-x-auto pb-2 h-full">
+    <div className="flex gap-0.5 justify-start overflow-x-auto pb-2 h-full">
       {props.phases.map((phase) => {
         const cards = props.cards[phase.value] ?? [];
         return (
@@ -2314,7 +1888,7 @@ function BoardColumns(props: BoardColumnsProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[11px] font-medium text-subtle tabular-nums">
+                  <span className="text-3xs font-medium text-subtle tabular-nums">
                     {cards.length}
                   </span>
                   {/* Quick-add: only in project mode (the add input
@@ -2345,9 +1919,9 @@ function BoardColumns(props: BoardColumnsProps) {
               </div>
             </div>
 
-            <div className={`${props.density === "glance" ? "p-1 space-y-1" : "px-1 py-1 space-y-2"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}>
+            <div className={`${props.density === "glance" ? "p-1 flex flex-col gap-1" : "px-1 py-1 flex flex-col gap-2"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}>
               {cards.length === 0 ? (
-                <p className="text-[11px] text-border text-center py-6">
+                <p className="text-3xs text-border text-center py-6">
                   -
                 </p>
               ) : (
@@ -2397,7 +1971,7 @@ function BoardColumns(props: BoardColumnsProps) {
                                 onClick={() =>
                                   props.onSetNewCategoryDraft(c.value)
                                 }
-                                className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-[10px] font-semibold transition-colors ${
+                                className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-4xs font-semibold transition-colors ${
                                   active
                                     ? "bg-white text-background"
                                     : `${c.tone} hover:bg-surface`
@@ -2429,7 +2003,7 @@ function BoardColumns(props: BoardColumnsProps) {
                             }
                           }}
                           placeholder={`New ${props.newCategoryDraft}`}
-                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-foreground focus:outline-none placeholder:text-border"
+                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-border"
                         />
                       </div>
                     ) : (
@@ -2445,7 +2019,7 @@ function BoardColumns(props: BoardColumnsProps) {
                                 e.target.value,
                               )
                             }
-                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-[11px] font-semibold bg-transparent text-foreground border border-border focus:outline-none focus:border-border cursor-pointer"
+                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-3xs font-semibold bg-transparent text-foreground border border-border focus:outline-none focus:border-border cursor-pointer"
                           >
                             <option value="">No category</option>
                             {DELIVERABLE_CATEGORIES.map((c) => (
@@ -2480,14 +2054,14 @@ function BoardColumns(props: BoardColumnsProps) {
                               ? `New ${props.newDeliverableCategoryDraft}`
                               : "New deliverable"
                           }
-                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-foreground focus:outline-none placeholder:text-border"
+                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-border"
                         />
                       </div>
                     )
                   ) : (
                     <button
                       onClick={() => props.onSetAddingToPhase(phase.value)}
-                      className="w-full px-2.5 py-1.5 rounded-md text-[11px] font-medium text-subtle hover:text-white hover:bg-surface-raised inline-flex items-center justify-center gap-1.5 transition-colors"
+                      className="w-full px-2.5 py-1.5 rounded-md text-3xs font-medium text-subtle hover:text-white hover:bg-surface-raised inline-flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <PlusIcon className="size-3.5" />
                       Add
@@ -2569,15 +2143,15 @@ function Card({
       : null;
   /* Per-card dueDate takes top priority - if the card has an explicit
    * due date, the colour reflects that against today's clock per
-   * Dylan's rule: today<due=green, today===due=amber, today>due=red.
-   * Falls through to the phase-specific engine below when no dueDate
-   * is set. */
+   * Dylan's rule: overdue=red, due today OR tomorrow=amber (imminent),
+   * further out=green. Falls through to the phase-specific engine below
+   * when no dueDate is set. */
   const cardDueStatus: StuckStatus | null = d.dueDate
     ? (() => {
-        const cmp = MOCK_TODAY.localeCompare(d.dueDate);
-        if (cmp < 0) return "on-track";
-        if (cmp === 0) return "approaching";
-        return "stuck";
+        if (MOCK_TODAY.localeCompare(d.dueDate) > 0) return "stuck";
+        if (d.dueDate.localeCompare(addDaysISO(MOCK_TODAY, 1)) <= 0)
+          return "approaching";
+        return "on-track";
       })()
     : null;
   const status: StuckStatus =
@@ -2654,6 +2228,7 @@ function Card({
         onDragEnd={onDragEnd}
         onClick={onOpen}
         dragging={isDragging}
+        live={!!live}
         tooltip={`${d.title}${role ? ` · ${role}` : ""}`}
         icon={
           <>
@@ -2689,6 +2264,7 @@ function Card({
       onClick={onOpen}
       dragging={isDragging}
       overdue={isOverdue}
+      live={!!live}
       icon={<LeadIcon className="size-4 shrink-0 mt-px text-muted" title={categoryMeta?.label} />}
       title={d.title}
       description={subhead || undefined}
@@ -2701,7 +2277,7 @@ function Card({
           />
           {d.revisionRequested && (
             <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted"
               title="Bounced back; needs revisions"
             >
               <ArrowUturnLeftIcon className="size-2.5" />
@@ -2709,31 +2285,31 @@ function Card({
             </span>
           )}
           {limbo !== "none" && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               R{rounds}
             </span>
           )}
           {ready && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               Ready
             </span>
           )}
           {live && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-status-ontrack">
               <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-muted opacity-75 animate-ping" />
-                <span className="relative inline-flex rounded-full size-1.5 bg-muted" />
+                <span className="absolute inline-flex h-full w-full rounded-full bg-status-ontrack opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full size-1.5 bg-status-ontrack" />
               </span>
               Live
             </span>
           )}
           {needsConclude && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               Conclude
             </span>
           )}
           {needsInterim && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               Log result
             </span>
           )}
@@ -2763,7 +2339,17 @@ function Card({
               </>
             )}
           </span>
-          <span className={`tabular-nums font-medium shrink-0 ${status === "stuck" && !live && !approved ? "text-status-late" : "text-subtle"}`}>
+          <span
+            className={`tabular-nums font-medium shrink-0 ${
+              live || approved
+                ? "text-subtle"
+                : status === "stuck"
+                  ? "text-status-late"
+                  : status === "approaching"
+                    ? "text-status-approaching"
+                    : "text-subtle"
+            }`}
+          >
             {(() => {
               // Documents column has per-card dueDates from the retainer
               // preload (or manual override on builds).
@@ -2809,64 +2395,92 @@ interface ResultsBankFiltersProps {
   onChangeMetric: (v: string) => void;
 }
 
+/* Compact single-select for the Results filters (client / metric), matching
+ * the app's custom dark dropdowns instead of a browser-styled <select>. */
+function FilterSelect({
+  value,
+  onChange,
+  options,
+  allLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  allLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const all = [{ value: "all", label: allLabel }, ...options];
+  const active = all.find((o) => o.value === value) ?? all[0];
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <Pill active={open} className="pr-2 max-w-[200px]" onClick={() => setOpen((v) => !v)}>
+        <span className="truncate min-w-0">{active.label}</span>
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+      </Pill>
+      {open && (
+        <div className="absolute left-0 top-9 z-40 w-52 max-h-72 overflow-y-auto bg-background rounded-lg ring-1 ring-panel-line shadow-popover py-1">
+          {all.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => {
+                onChange(o.value);
+                setOpen(false);
+              }}
+              className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-2xs transition-colors hover:bg-surface-hover ${
+                o.value === value ? "text-foreground" : "text-muted"
+              }`}
+            >
+              <span className="truncate min-w-0">{o.label}</span>
+              {o.value === value && <CheckIcon className="size-3.5 text-foreground shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ResultsBankFilters(props: ResultsBankFiltersProps) {
-  const outcomes: { v: TestOutcome | "all"; label: string }[] = [
-    { v: "all", label: "All" },
-    { v: "winner", label: "Winners" },
-    { v: "loser", label: "Losers" },
-    { v: "inconclusive", label: "Inconclusive" },
-    { v: "shipped", label: "Shipped" },
+  const outcomes: { label: string; value: TestOutcome | "all" }[] = [
+    { label: "All", value: "all" },
+    { label: "Winners", value: "winner" },
+    { label: "Losers", value: "loser" },
+    { label: "Inconclusive", value: "inconclusive" },
+    { label: "Shipped", value: "shipped" },
   ];
   return (
     <div className="flex items-center gap-2 flex-wrap mb-5">
-      <div className="inline-flex p-0.5 rounded-full bg-surface-raised border border-border">
-        {outcomes.map((o) => (
-          <button
-            key={o.v}
-            onClick={() => props.onChangeOutcome(o.v)}
-            className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-colors ${
-              props.outcome === o.v
-                ? "bg-white text-background"
-                : "text-subtle hover:text-white"
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="relative">
-        <select
-          value={props.client}
-          onChange={(e) => props.onChangeClient(e.target.value)}
-          className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-surface text-foreground border border-border rounded-full focus:outline-none focus:border-border"
-        >
-          <option value="all">All clients</option>
-          {props.clientOptions.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <ChevronDownIcon className="size-3.5 text-subtle absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-      </div>
-
+      <Segmented
+        variant="ghost"
+        value={props.outcome}
+        onChange={props.onChangeOutcome}
+        options={outcomes}
+      />
+      <FilterSelect
+        value={props.client}
+        onChange={props.onChangeClient}
+        options={props.clientOptions.map((c) => ({ value: c.id, label: c.name }))}
+        allLabel="All clients"
+      />
       {props.metricOptions.length > 0 && (
-        <div className="relative">
-          <select
-            value={props.metric}
-            onChange={(e) => props.onChangeMetric(e.target.value)}
-            className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-surface text-foreground border border-border rounded-full focus:outline-none focus:border-border"
-          >
-            <option value="all">All metrics</option>
-            {props.metricOptions.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon className="size-3.5 text-subtle absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
+        <FilterSelect
+          value={props.metric}
+          onChange={props.onChangeMetric}
+          options={props.metricOptions.map((m) => ({ value: m, label: m }))}
+          allLabel="All metrics"
+        />
       )}
     </div>
   );
@@ -2880,7 +2494,7 @@ interface ResultsBankGridProps {
 function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
   if (cards.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface px-6 py-16 text-center">
+      <div className="rounded-lg border border-border bg-surface px-6 py-16 text-center">
         <p className="text-sm font-semibold text-foreground">No tests yet</p>
         <p className="mt-1 text-xs text-subtle">
           Conclude a launch-testing deliverable to build the bank.
@@ -2897,25 +2511,25 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
           <button
             key={d.id}
             onClick={() => onOpen(d.id)}
-            className="text-left p-4 rounded-xl border border-border bg-surface hover:border-border hover:bg-surface-raised transition-colors"
+            className="text-left p-4 rounded-lg border border-border bg-surface hover:bg-surface-raised hover:border-white/[0.09] transition-colors"
           >
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-[11px] font-medium text-subtle truncate">
+              <span className="text-3xs font-medium text-subtle truncate">
                 {d.clientName} · {d.projectName}
               </span>
               <span
-                className="px-1.5 py-0.5 text-[9px] font-bold rounded shrink-0"
+                className="px-1.5 py-0.5 text-5xs font-bold rounded shrink-0"
                 style={{ background: meta.bg, color: meta.color }}
               >
                 {meta.label}
               </span>
             </div>
-            <p className="text-[14px] font-semibold text-foreground leading-tight">
+            <p className="text-sm font-semibold text-foreground leading-tight">
               {d.title}
             </p>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+            <div className="mt-3 grid grid-cols-3 gap-2 text-3xs">
               <div>
-                <p className="text-border text-[9px] font-bold">
+                <p className="text-border text-5xs font-bold">
                   Metric
                 </p>
                 <p className="mt-0.5 text-foreground truncate">
@@ -2923,7 +2537,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-border text-[9px] font-bold">
+                <p className="text-border text-5xs font-bold">
                   Uplift
                 </p>
                 <p
@@ -2931,9 +2545,9 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                     r.upliftPct == null
                       ? "text-subtle"
                       : r.upliftPct > 0
-                        ? "text-emerald-400"
+                        ? "text-status-ontrack"
                         : r.upliftPct < 0
-                          ? "text-red-400"
+                          ? "text-status-late"
                           : "text-foreground"
                   }`}
                 >
@@ -2943,7 +2557,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-border text-[9px] font-bold">
+                <p className="text-border text-5xs font-bold">
                   Confidence
                 </p>
                 <p className="mt-0.5 text-foreground tabular-nums">
@@ -2951,7 +2565,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
             </div>
-            <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-subtle">
+            <div className="mt-3 flex items-center justify-between gap-2 text-4xs text-subtle">
               <span className="inline-flex items-center gap-1.5">
                 <CalendarIcon className="size-3" />
                 {formatDueDate(r.concludedAt)}
@@ -3036,7 +2650,7 @@ function OnboardingPreviewModal({
       >
         <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border shrink-0">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium text-subtle">
+            <p className="text-3xs font-medium text-subtle">
               Onboarding brief
             </p>
             <p className="text-sm font-medium text-foreground truncate">
@@ -3058,13 +2672,13 @@ function OnboardingPreviewModal({
             if (populated.length === 0) return null;
             return (
               <section key={section.title}>
-                <h3 className="text-[11px] font-medium text-subtle mb-3">
+                <h3 className="text-3xs font-medium text-subtle mb-3">
                   {section.title}
                 </h3>
                 <dl className="space-y-3">
                   {populated.map((item) => (
                     <div key={item.label}>
-                      <dt className="text-[11px] font-medium text-subtle mb-0.5">
+                      <dt className="text-3xs font-medium text-subtle mb-0.5">
                         {item.label}
                       </dt>
                       <dd className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
@@ -3114,13 +2728,13 @@ function DarkConfirm({
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-md text-[11px] font-semibold text-subtle hover:text-white transition-colors"
+            className="px-3 py-1.5 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-1.5 rounded-md text-[11px] font-semibold transition-colors ${
+            className={`px-4 py-1.5 rounded-md text-3xs font-semibold transition-colors ${
               destructive
                 ? "bg-rose-500 text-white hover:bg-rose-400"
                 : "bg-white text-background hover:bg-foreground"
@@ -3146,7 +2760,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[11px] font-medium text-subtle">
+            <p className="text-3xs font-medium text-subtle">
               Mission Control
             </p>
             <h2 className="text-xl font-bold text-foreground mt-1">
@@ -3168,7 +2782,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
         </p>
 
         <div className="rounded-lg border border-border divide-y divide-border">
-          <div className="grid grid-cols-3 px-4 py-2.5 text-[11px] font-medium text-subtle">
+          <div className="grid grid-cols-3 px-4 py-2.5 text-3xs font-medium text-subtle">
             <span>Phase</span>
             <span className="text-right">Expected (internal)</span>
             <span className="text-right">Stuck (client-facing)</span>
@@ -3178,7 +2792,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             return (
               <div
                 key={p.value}
-                className="grid grid-cols-3 px-4 py-2.5 text-[12px]"
+                className="grid grid-cols-3 px-4 py-2.5 text-2xs"
               >
                 <span className="inline-flex items-center gap-2 text-foreground">
                   <span
@@ -3198,9 +2812,9 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
           })}
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-3 text-[11px]">
+        <div className="mt-4 grid grid-cols-3 gap-3 text-3xs">
           <div className="rounded-lg border border-border bg-surface p-3">
-            <p className="font-bold text-[10px] text-subtle">
+            <p className="font-bold text-4xs text-subtle">
               On track
             </p>
             <p className="mt-1 text-muted">
@@ -3208,7 +2822,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             </p>
           </div>
           <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
-            <p className="font-bold text-[10px] text-amber-400">
+            <p className="font-bold text-4xs text-amber-400">
               Approaching
             </p>
             <p className="mt-1 text-muted">
@@ -3216,7 +2830,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             </p>
           </div>
           <div className="rounded-lg border border-red-500/40 bg-red-500/5 p-3">
-            <p className="font-bold text-[10px] text-red-400">
+            <p className="font-bold text-4xs text-red-400">
               Stuck
             </p>
             <p className="mt-1 text-muted">
@@ -3225,7 +2839,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <p className="mt-4 text-[11px] text-subtle">
+        <p className="mt-4 text-3xs text-subtle">
           Limbo / revision-round badges fire at R3 (heating) and R4+ (limbo) by
           counting how many times a deliverable has bounced through
           internal-revisions or external-revisions.
@@ -3408,7 +3022,7 @@ function DarkDatePicker({
             {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
               <div
                 key={d}
-                className="text-[10px] text-border text-center py-1"
+                className="text-4xs text-border text-center py-1"
               >
                 {d}
               </div>
@@ -3425,7 +3039,7 @@ function DarkDatePicker({
                   key={i}
                   type="button"
                   onClick={() => pickDay(day)}
-                  className={`size-8 inline-flex items-center justify-center rounded-md text-[12px] tabular-nums transition-colors ${
+                  className={`size-8 inline-flex items-center justify-center rounded-md text-2xs tabular-nums transition-colors ${
                     isSelected
                       ? "bg-white text-background font-semibold"
                       : isToday
@@ -3447,7 +3061,7 @@ function DarkDatePicker({
                 setViewYM({ year: y, month: m - 1 });
                 setOpen(false);
               }}
-              className="text-[11px] font-semibold text-subtle hover:text-white transition-colors"
+              className="text-3xs font-semibold text-subtle hover:text-white transition-colors"
             >
               Today
             </button>
@@ -3458,7 +3072,7 @@ function DarkDatePicker({
                   onChange(undefined);
                   setOpen(false);
                 }}
-                className="text-[11px] font-semibold text-subtle hover:text-rose-400 transition-colors"
+                className="text-3xs font-semibold text-subtle hover:text-rose-400 transition-colors"
               >
                 Clear
               </button>
@@ -3664,7 +3278,7 @@ function DetailModal({
       >
         <div className="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium text-subtle">
+            <p className="text-3xs font-medium text-subtle">
               {d.clientName} · {d.projectName}
               {d.category ? ` · ${d.category}` : ""}
             </p>
@@ -3774,10 +3388,10 @@ function DetailModal({
               return (
                 <section className="border-t border-white/[0.05] pt-6">
                   <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-[11px] font-medium text-subtle">
+                    <h3 className="text-3xs font-medium text-subtle">
                       Build schedule
                     </h3>
-                    <span className="text-[10px] text-subtle">
+                    <span className="text-4xs text-subtle">
                       {d.turnaroundDays}d project
                     </span>
                   </div>
@@ -3798,12 +3412,12 @@ function DetailModal({
                               className="size-1.5 rounded-full"
                               style={{ background: meta?.color ?? "var(--color-subtle)" }}
                             />
-                            <span className="text-[10px] text-muted truncate">
+                            <span className="text-4xs text-muted truncate">
                               {meta?.label ?? phase}
                             </span>
                           </div>
                           <span
-                            className={`text-[12px] tabular-nums ${
+                            className={`text-2xs tabular-nums ${
                               due
                                 ? isCurrent
                                   ? "text-white font-medium"
@@ -3818,19 +3432,19 @@ function DetailModal({
                     })}
                   </div>
                   {isLate && (
-                    <div className="mt-3 px-3 py-2 rounded-md bg-rose-500/10 border border-rose-500/30 text-[11px] text-rose-300">
+                    <div className="mt-3 px-3 py-2 rounded-md bg-rose-500/10 border border-rose-500/30 text-3xs text-rose-300">
                       External revisions ran long: Launch & Testing now lands
                       after the client deadline. Escalate or rescope.
                     </div>
                   )}
                   {canManage && (
-                  <div className="mt-3 pt-3 border-t border-border space-y-2 text-[11px]">
+                  <div className="mt-3 pt-3 border-t border-border space-y-2 text-3xs">
                     {/* These two anchors drive the auto-computed per-phase
                       * due dates in the schedule grid above. They're a
                       * fallback - if Phase 1 / Phase 2 deadlines are set
                       * directly in the Client deadlines section, those
                       * take precedence for stuck/approaching/on-track. */}
-                    <p className="text-[10px] text-border italic pb-1">
+                    <p className="text-4xs text-border italic pb-1">
                       Schedule anchors (used when no manual deadlines set)
                     </p>
                     <div className="flex items-center justify-between gap-2">
@@ -3860,7 +3474,7 @@ function DetailModal({
                         {d.projectClientApprovedAt && (
                           <button
                             onClick={onResetClientApproval}
-                            className="text-[10px] text-subtle hover:text-rose-400 transition-colors shrink-0"
+                            className="text-4xs text-subtle hover:text-rose-400 transition-colors shrink-0"
                             title="Reset client approval - Phase 2 dates go back to TBC"
                           >
                             Reset
@@ -3895,10 +3509,10 @@ function DetailModal({
             * that bucket; Phase 2 also becomes the client deadline. */}
           {canManage && (
           <section className="border-t border-white/[0.05] pt-6">
-            <h3 className="text-[11px] font-medium text-subtle mb-3">
+            <h3 className="text-3xs font-medium text-subtle mb-3">
               Client deadlines
             </h3>
-            <div className="space-y-2 text-[11px]">
+            <div className="space-y-2 text-3xs">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-subtle shrink-0">
                   Phase 1 deadline
@@ -3950,7 +3564,7 @@ function DetailModal({
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
-                    className={`text-[11px] font-bold ${
+                    className={`text-3xs font-bold ${
                       d.completedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
@@ -3966,7 +3580,7 @@ function DetailModal({
                   {d.completedAt ? (
                     <button
                       onClick={onUncompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Reopen
@@ -3974,7 +3588,7 @@ function DetailModal({
                   ) : (
                     <button
                       onClick={onCompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Complete
@@ -3990,7 +3604,7 @@ function DetailModal({
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
-                    className={`text-[11px] font-medium ${
+                    className={`text-3xs font-medium ${
                       d.approvedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
@@ -4005,7 +3619,7 @@ function DetailModal({
                 {d.approvedAt ? (
                   <button
                     onClick={onUndoApprove}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Undo
@@ -4014,14 +3628,14 @@ function DetailModal({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={onRequestRevisions}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Request revisions
                     </button>
                     <button
                       onClick={onApproveInternal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Approve
@@ -4039,7 +3653,7 @@ function DetailModal({
             <section className="border-t border-white/[0.05] pt-6">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-subtle">
+                  <p className="text-3xs font-bold text-subtle">
                     QA sign-off
                   </p>
                   <p className="text-sm text-foreground mt-0.5">
@@ -4050,14 +3664,14 @@ function DetailModal({
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={onKickbackFromQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Send back
                   </button>
                   <button
                     onClick={onApproveQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                   >
                     <CheckCircleIcon className="size-3.5" />
                     Approve
@@ -4069,7 +3683,7 @@ function DetailModal({
 
           <section className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-[11px] font-medium text-subtle mb-2">
+              <h3 className="text-3xs font-medium text-subtle mb-2">
                 Active assignee
               </h3>
               {d.phase === "launch-testing" ? (
@@ -4077,21 +3691,21 @@ function DetailModal({
                   {LAUNCH_TESTING_TESTER}
                   <span className="text-border mx-1.5">·</span>
                   {LAUNCH_TESTING_DEV}
-                  <span className="block text-[10px] text-subtle mt-1">
+                  <span className="block text-4xs text-subtle mt-1">
                     Test / Dev
                   </span>
                 </p>
               ) : d.phase === "strategy" ? (
                 <p className="text-sm text-foreground">
                   {STRATEGY_OWNER}
-                  <span className="block text-[10px] text-subtle mt-1">
+                  <span className="block text-4xs text-subtle mt-1">
                     Strategy owner
                   </span>
                 </p>
               ) : d.phase === "internal-revisions" && d.approvedAt ? (
                 <p className="text-sm text-foreground">
                   {d.designer || role.name}
-                  <span className="block text-[10px] text-emerald-400 mt-1">
+                  <span className="block text-4xs text-emerald-400 mt-1">
                     Approved - send to client
                   </span>
                 </p>
@@ -4107,7 +3721,7 @@ function DetailModal({
               )}
             </div>
             <div>
-              <h3 className="text-[11px] font-medium text-subtle mb-2">
+              <h3 className="text-3xs font-medium text-subtle mb-2">
                 Due
               </h3>
               {canManage ? (
@@ -4125,7 +3739,7 @@ function DetailModal({
 
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[11px] font-medium text-subtle">
+              <h3 className="text-3xs font-medium text-subtle">
                 Strategy brief
               </h3>
               {d.brief && !editingBrief && (
@@ -4135,7 +3749,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(true);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-subtle hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-3xs font-medium text-subtle hover:text-white transition-colors"
                 >
                   <PencilSquareIcon className="size-3" />
                   Edit
@@ -4167,7 +3781,7 @@ function DetailModal({
                     onUpdate({ brief: briefDraft.trim() || undefined });
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold hover:bg-foreground transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4177,7 +3791,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold text-subtle hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4213,7 +3827,7 @@ function DetailModal({
               QA for spec check). Same edit-on-pencil pattern as brief. */}
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[11px] font-medium text-subtle">
+              <h3 className="text-3xs font-medium text-subtle">
                 Figma
               </h3>
               {d.figmaUrl && !editingFigma && (
@@ -4223,7 +3837,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(true);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-subtle hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-3xs font-medium text-subtle hover:text-white transition-colors"
                 >
                   <PencilSquareIcon className="size-3" />
                   Edit
@@ -4255,7 +3869,7 @@ function DetailModal({
                     onUpdate({ figmaUrl: figmaDraft.trim() || undefined });
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold hover:bg-foreground transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4265,7 +3879,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold text-subtle hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4297,7 +3911,7 @@ function DetailModal({
           </section>
 
           <section>
-            <h3 className="text-[11px] font-medium text-subtle mb-2">
+            <h3 className="text-3xs font-medium text-subtle mb-2">
               Notes
             </h3>
             <textarea
@@ -4322,7 +3936,7 @@ function DetailModal({
               identical buttons. */}
           {needsConclude && !d.testResult && !concluding && (
             <section className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
-              <p className="text-[11px] font-bold text-amber-400">
+              <p className="text-3xs font-bold text-amber-400">
                 Time to conclude
               </p>
               <p className="mt-1 text-sm text-foreground">
@@ -4334,7 +3948,7 @@ function DetailModal({
 
           {needsInterim && !concluding && (
             <section className="rounded-lg border border-info/40 bg-info/5 p-4">
-              <p className="text-[11px] font-medium text-info">
+              <p className="text-3xs font-medium text-info">
                 Log an interim result
               </p>
               <p className="mt-1 text-sm text-foreground">
@@ -4355,7 +3969,7 @@ function DetailModal({
 
           {concluding && (
             <section className="rounded-lg border border-border bg-surface p-4 space-y-3">
-              <p className="text-[11px] font-bold text-subtle">
+              <p className="text-3xs font-bold text-subtle">
                 Conclude test
               </p>
 
@@ -4365,7 +3979,7 @@ function DetailModal({
                     <button
                       key={o}
                       onClick={() => setOutcomeDraft(o)}
-                      className={`px-2.5 py-2 rounded-md text-[11px] font-bold transition-colors ${
+                      className={`px-2.5 py-2 rounded-md text-3xs font-bold transition-colors ${
                         outcomeDraft === o
                           ? "text-background"
                           : "bg-background text-muted border border-border hover:text-white"
@@ -4418,13 +4032,13 @@ function DetailModal({
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setConcluding(false)}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold text-subtle hover:text-white"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitConclude}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold bg-white text-background hover:bg-foreground"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold bg-white text-background hover:bg-foreground"
                 >
                   Save result
                 </button>
@@ -4435,11 +4049,11 @@ function DetailModal({
           {d.testResult && (
             <section className="rounded-lg border border-border bg-surface p-4">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <p className="text-[11px] font-bold text-subtle">
+                <p className="text-3xs font-bold text-subtle">
                   Result
                 </p>
                 <span
-                  className="px-2 py-1 rounded text-[10px] font-bold"
+                  className="px-2 py-1 rounded text-4xs font-bold"
                   style={{
                     background: OUTCOME_META[d.testResult.outcome].bg,
                     color: OUTCOME_META[d.testResult.outcome].color,
@@ -4450,7 +4064,7 @@ function DetailModal({
               </div>
               <div className="grid grid-cols-4 gap-3 text-sm">
                 <div>
-                  <p className="text-[10px] font-bold text-border">
+                  <p className="text-4xs font-bold text-border">
                     Metric
                   </p>
                   <p className="mt-0.5 text-foreground">
@@ -4458,7 +4072,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-border">
+                  <p className="text-4xs font-bold text-border">
                     Uplift
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4468,7 +4082,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-border">
+                  <p className="text-4xs font-bold text-border">
                     Confidence
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4478,7 +4092,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-border">
+                  <p className="text-4xs font-bold text-border">
                     Duration
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4503,10 +4117,10 @@ function DetailModal({
                 onClick={() => setHistoryOpen((v) => !v)}
                 className="w-full flex items-center justify-between gap-2 mb-2 group"
               >
-                <h3 className="text-[11px] font-medium text-subtle group-hover:text-muted transition-colors">
+                <h3 className="text-3xs font-medium text-subtle group-hover:text-muted transition-colors">
                   Phase history
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[10px] text-subtle group-hover:text-muted transition-colors">
+                <span className="inline-flex items-center gap-1 text-4xs text-subtle group-hover:text-muted transition-colors">
                   {d.phaseHistory.length} steps
                   <ChevronDownIcon
                     className={`size-3 transition-transform ${historyOpen ? "rotate-180" : ""}`}
@@ -4543,7 +4157,7 @@ function DetailModal({
           {d.phase === "launch-testing" && (
             <section className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h3 className="text-[11px] font-medium text-subtle">
+                <h3 className="text-3xs font-medium text-subtle">
                   Test setup
                 </h3>
                 <div className="flex items-center gap-2">
@@ -4552,7 +4166,7 @@ function DetailModal({
                       href={d.liveTestUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-subtle hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-4xs font-semibold text-subtle hover:text-white transition-colors"
                     >
                       Open live
                       <ArrowTopRightOnSquareIcon className="size-3" />
@@ -4567,7 +4181,7 @@ function DetailModal({
                       onClick={() =>
                         onUpdate({ liveStartedAt: MOCK_TODAY })
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <span className="size-1.5 rounded-full bg-background" />
                       Set live
@@ -4577,7 +4191,7 @@ function DetailModal({
                     <button
                       type="button"
                       onClick={() => setConcluding(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-amber-500 text-background hover:bg-amber-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-amber-500 text-background hover:bg-amber-400 transition-colors"
                     >
                       Conclude test
                     </button>
@@ -4586,7 +4200,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold text-subtle mb-1.5 block">
+                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
                   Test URL
                 </label>
                 <input
@@ -4608,10 +4222,10 @@ function DetailModal({
                   row is treated as primary by the conclude form. */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-semibold text-subtle">
+                  <label className="text-4xs font-semibold text-subtle">
                     Metrics
                   </label>
-                  <span className="text-[10px] text-border">
+                  <span className="text-4xs text-border">
                     Before / After
                   </span>
                 </div>
@@ -4625,7 +4239,7 @@ function DetailModal({
                       onChange={(e) => updateMetric(i, { name: e.target.value })}
                       onBlur={blurCommit}
                       placeholder="Metric"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
                     />
                     <input
                       value={m.baseline ?? ""}
@@ -4634,7 +4248,7 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Baseline"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
                     />
                     <input
                       value={m.interim ?? ""}
@@ -4643,7 +4257,7 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Interim"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
                     />
                     <button
                       type="button"
@@ -4659,7 +4273,7 @@ function DetailModal({
                 <button
                   type="button"
                   onClick={addMetric}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-[11px] font-semibold text-subtle hover:text-foreground hover:border-border transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-3xs font-semibold text-subtle hover:text-foreground hover:border-border transition-colors"
                 >
                   <PlusIcon className="size-3" />
                   Add metric
@@ -4667,7 +4281,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold text-subtle mb-1.5 block">
+                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
                   Interim notes
                 </label>
                 <textarea
@@ -4689,7 +4303,7 @@ function DetailModal({
                   drops the live variant proof in the same place as the URL +
                   metric inputs. */}
               <div>
-                <label className="text-[10px] font-semibold text-subtle mb-1.5 block">
+                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
                   Screenshot
                 </label>
                 {d.screenshot ? (
@@ -4734,7 +4348,7 @@ function DetailModal({
           <section className="pt-2">
             <button
               onClick={onDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold text-subtle hover:text-rose-400 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-semibold text-subtle hover:text-rose-400 transition-colors"
             >
               <XMarkIcon className="size-3.5" />
               Delete card
@@ -4771,9 +4385,9 @@ function SyncErrorToast() {
 
   if (!error) return null;
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg bg-rose-500/[0.95] text-white text-[13px] font-medium shadow-[0_20px_60px_rgba(0,0,0,0.4)] max-w-md">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg bg-rose-500/[0.95] text-white text-xs font-medium shadow-[0_20px_60px_rgba(0,0,0,0.4)] max-w-md">
       <div className="font-semibold mb-0.5">Cloud save failed</div>
-      <div className="text-[12px] opacity-90 break-all">{error}</div>
+      <div className="text-2xs opacity-90 break-all">{error}</div>
     </div>
   );
 }
@@ -4808,9 +4422,9 @@ function SearchControl({
           window.setTimeout(() => inputRef.current?.focus(), 0);
         }}
         title="Search cards (/)"
-        className="size-7 inline-flex items-center justify-center rounded-full text-subtle hover:text-white border border-border hover:border-border transition-colors"
+        className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
       >
-        <MagnifyingGlassIcon className="size-3.5" />
+        <MagnifyingGlassIcon className="size-4" />
       </button>
     );
   }
@@ -4826,7 +4440,7 @@ function SearchControl({
           if (!query) setExpanded(false);
         }}
         placeholder="Search cards…"
-        className="h-7 pl-7 pr-7 w-56 text-[11px] bg-background border border-border rounded-full text-foreground placeholder:text-subtle focus:outline-none focus:border-border transition-all"
+        className="h-7 pl-7 pr-7 w-56 text-3xs bg-background border border-border rounded-full text-foreground placeholder:text-subtle focus:outline-none focus:border-border transition-all"
       />
       {query ? (
         <button
@@ -4840,7 +4454,7 @@ function SearchControl({
           <XMarkIcon className="size-3" />
         </button>
       ) : (
-        <kbd className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-subtle">
+        <kbd className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 text-5xs font-mono text-subtle">
           /
         </kbd>
       )}
@@ -4848,163 +4462,218 @@ function SearchControl({
   );
 }
 
-/* ── Active project tab ──
- * Single pill showing the currently-selected project. Hover →
- * shows a delete (x) action so admin can drop the project with one
- * click + confirm. */
-function ActiveProjectTab({
-  project: p,
-  count,
-  onDelete,
-  canManage,
-}: {
-  project: MockProject;
-  count: number;
-  onDelete: () => void;
-  canManage: boolean;
-}) {
-  const isRetainer = p.type === "retainer";
-  return (
-    <div
-      className="group inline-flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-lg text-[12px] font-medium border bg-surface-raised text-foreground border-white/[0.08]"
-      title={
-        isRetainer && p.engagementDays
-          ? `${ENGAGEMENT_TIER_LABEL[p.engagementDays as EngagementDays]} retainer (${p.engagementDays}-day cadence)`
-          : p.turnaroundDays
-            ? `Build · ${p.turnaroundDays}d turnaround`
-            : undefined
-      }
-    >
-      <span className="truncate max-w-[260px]">{p.name}</span>
-      <span className="tabular-nums text-subtle">{count}</span>
-      {(p.turnaroundDays || p.engagementDays) && (
-        <span className="text-[10px] text-subtle">
-          {p.type === "retainer" && p.engagementDays
-            ? `${ENGAGEMENT_TIER_SHORT[p.engagementDays as EngagementDays]}/mo`
-            : `${p.turnaroundDays}d`}
-        </span>
-      )}
-      {canManage && (
-        <button
-          onClick={onDelete}
-          className="size-5 inline-flex items-center justify-center rounded-md text-subtle hover:text-rose-400 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
-          title="Delete this project"
-        >
-          <XMarkIcon className="size-3" />
-        </button>
-      )}
-    </div>
-  );
-}
-
-/* ── Project overflow chip ──
- * "+N" chip that opens a dropdown listing every project on this
- * client EXCEPT the active one. Each row = click name to switch,
- * trash icon to delete. */
-function ProjectOverflow({
+/* ── Project switch (inline breadcrumb) ──
+ * The project sits one level under the client, so it reads as an inline
+ * `client › project` breadcrumb rather than a separate tab strip below the
+ * header (which made the board jump between views). The project list, the
+ * +N overflow, and the new-project form all fold into this one dropdown. */
+function ProjectSwitch({
   projects,
-  counts,
+  activeId,
   onSelect,
+  onAddProject,
   onDelete,
+  counts,
   canManage,
 }: {
   projects: MockProject[];
-  counts: Record<string, number>;
+  activeId: string;
   onSelect: (id: string) => void;
+  onAddProject: (input: {
+    name: string;
+    type: ProjectType;
+    turnaroundDays?: TurnaroundDays;
+    engagementDays?: EngagementDays;
+  }) => void;
   onDelete: (id: string) => void;
+  counts: Record<string, number>;
   canManage: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [typeDraft, setTypeDraft] = useState<ProjectType>("build");
+  const [turnaroundDraft, setTurnaroundDraft] = useState<TurnaroundDays>(15);
+  const [engagementDraft, setEngagementDraft] = useState<EngagementDays>(30);
   const ref = useRef<HTMLDivElement | null>(null);
+  const active = projects.find((p) => p.id === activeId);
 
   useEffect(() => {
     if (!open) return;
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
+        setAdding(false);
       }
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  function reset() {
+    setDraft("");
+    setTypeDraft("build");
+    setTurnaroundDraft(15);
+    setEngagementDraft(30);
+    setAdding(false);
+  }
+  function submit() {
+    if (!draft.trim()) return;
+    onAddProject({
+      name: draft.trim(),
+      type: typeDraft,
+      turnaroundDays: typeDraft === "build" ? turnaroundDraft : undefined,
+      engagementDays: typeDraft === "retainer" ? engagementDraft : undefined,
+    });
+    reset();
+    setOpen(false);
+  }
+
+  const Check = () => (
+    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+    </svg>
+  );
+
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-lg text-[12px] font-medium border bg-surface text-muted border-border hover:text-foreground transition-colors"
-        title={`${projects.length} more project${projects.length === 1 ? "" : "s"}`}
-      >
-        +{projects.length}
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      <Pill active={open} className="pr-2 max-w-[180px]" onClick={() => setOpen((v) => !v)}>
+        <span className="truncate min-w-0">{active?.name ?? "Project"}</span>
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+      </Pill>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
-            Other projects ({projects.length})
-          </div>
-          <ul className="max-h-80 overflow-y-auto py-1">
-            {projects.map((p) => {
-              const count = counts[p.id] ?? 0;
-              return (
-                <li key={p.id} className="group flex items-center">
-                  <button
-                    onClick={() => {
-                      onSelect(p.id);
-                      setOpen(false);
-                    }}
-                    className="flex-1 min-w-0 text-left px-3 py-2 hover:bg-white/[0.04] transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`shrink-0 size-1.5 rounded-full ${p.type === "retainer" ? "bg-teal-400" : "bg-white"}`}
-                      />
-                      <span className="text-[12px] text-foreground truncate">
-                        {p.name}
-                      </span>
-                      <span className="text-[10px] text-subtle tabular-nums shrink-0">
-                        {count}
-                      </span>
-                    </div>
-                  </button>
-                  {canManage && (
-                    <button
-                      onClick={() => {
-                        setOpen(false);
-                        onDelete(p.id);
-                      }}
-                      className="size-7 mr-1.5 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
-                      title={`Delete ${p.name}`}
-                    >
-                      <XMarkIcon className="size-3.5" />
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+        <div className="absolute left-0 top-9 z-40 w-64 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          {!adding ? (
+            <>
+              <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
+                Projects ({projects.length})
+              </div>
+              <ul className="max-h-72 overflow-y-auto py-1">
+                {projects.map((p) => {
+                  const isActive = p.id === activeId;
+                  return (
+                    <li key={p.id} className="group flex items-center gap-1 pr-1.5">
+                      <button
+                        onClick={() => {
+                          onSelect(p.id);
+                          setOpen(false);
+                        }}
+                        className={`flex-1 min-w-0 text-left pl-3 pr-2 py-2 hover:bg-surface-hover transition-colors ${
+                          isActive ? "bg-surface-hover" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isActive ? <Check /> : <span className="size-3.5 shrink-0" />}
+                          <span className="text-xs text-foreground truncate flex-1 min-w-0">{p.name}</span>
+                          <span className="text-4xs text-subtle tabular-nums shrink-0 pl-2">{counts[p.id] ?? 0}</span>
+                        </div>
+                      </button>
+                      {canManage && (
+                        <button
+                          onClick={() => {
+                            setOpen(false);
+                            onDelete(p.id);
+                          }}
+                          className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                          title={`Delete ${p.name}`}
+                        >
+                          <XMarkIcon className="size-3.5" />
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              {canManage && (
+                <button
+                  onClick={() => setAdding(true)}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-2xs text-muted hover:text-foreground hover:bg-surface-hover border-t border-border-faint transition-colors"
+                >
+                  <PlusIcon className="size-3.5" />
+                  New project
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="p-3 space-y-2.5">
+              <Segmented
+                variant="ghost"
+                className="w-full [&>button]:flex-1"
+                value={typeDraft}
+                onChange={setTypeDraft}
+                options={[
+                  { label: "Build", value: "build" },
+                  { label: "Retainer", value: "retainer" },
+                ]}
+              />
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submit();
+                  if (e.key === "Escape") reset();
+                }}
+                placeholder={typeDraft === "retainer" ? "Retainer name" : "Project name"}
+                className="w-full h-8 px-2.5 rounded-md bg-surface border border-border text-2xs text-foreground focus:outline-none focus:border-subtle placeholder:text-subtle"
+              />
+              <Segmented
+                variant="ghost"
+                className="w-full [&>button]:flex-1"
+                value={String(typeDraft === "retainer" ? engagementDraft : turnaroundDraft)}
+                onChange={(v) => {
+                  if (typeDraft === "retainer") setEngagementDraft(Number(v) as EngagementDays);
+                  else setTurnaroundDraft(Number(v) as TurnaroundDays);
+                }}
+                options={
+                  typeDraft === "retainer"
+                    ? ENGAGEMENT_OPTIONS.map((t) => ({ label: ENGAGEMENT_TIER_SHORT[t], value: String(t) }))
+                    : TURNAROUND_OPTIONS.map((t) => ({ label: `${t}d`, value: String(t) }))
+                }
+              />
+              <div className="flex items-center gap-2 pt-0.5">
+                <button
+                  onClick={submit}
+                  className="flex-1 h-7 rounded-md bg-foreground text-background text-3xs font-semibold hover:opacity-90 transition-opacity"
+                >
+                  Add project
+                </button>
+                <button
+                  onClick={reset}
+                  className="h-7 px-3 rounded-md text-3xs font-medium text-muted hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-/* ── Project pod-assignment picker ──
- * Custom dropdown for the "assign pod to this project" control in
- * the project tabs row. Was a native <select> which clashed with
- * the dark aesthetic. Includes a "No pod" option so admin can
- * unassign. */
-function ProjectPodPicker({
+/* ── Client actions menu (⋯) ──
+ * Lean home for the low-frequency, client-specific actions that used to
+ * clutter the header: open the onboarding brief + reassign this project's
+ * pod. Lives in the client zone, next to the title switch. */
+function ClientActionsMenu({
+  hasBrief,
+  onPreviewOnboarding,
   pods,
   currentPodId,
-  onAssign,
+  onAssignPod,
+  canManage,
 }: {
+  hasBrief: boolean;
+  onPreviewOnboarding: () => void;
   pods: MockPod[];
   currentPodId: string | undefined;
-  onAssign: (podId: string) => void;
+  onAssignPod: (podId: string) => void;
+  canManage: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
-  const active = pods.find((p) => p.id === currentPodId);
 
   useEffect(() => {
     if (!open) return;
@@ -5015,73 +4684,87 @@ function ProjectPodPicker({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  const Check = () => (
+    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+    </svg>
+  );
+
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative shrink-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 text-[12px] font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
+        title="Client actions"
+        className={`size-7 inline-flex items-center justify-center rounded-md border border-border transition-colors ${
+          open ? "text-foreground bg-surface" : "text-subtle hover:text-foreground hover:bg-surface"
+        }`}
       >
-        <span className="truncate max-w-[140px]">{active?.name ?? "No pod"}</span>
-        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+        <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
+          <circle cx="5" cy="12" r="1.5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="19" cy="12" r="1.5" />
+        </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
-            Assign pod
-          </div>
-          <ul className="max-h-72 overflow-y-auto py-1">
-            <li>
-              <button
-                onClick={() => {
-                  onAssign("");
-                  setOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
-                  !currentPodId ? "bg-white/[0.04]" : ""
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {!currentPodId ? (
-                    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <span className="size-3.5 shrink-0" />
-                  )}
-                  <span className="text-[13px] text-subtle italic">No pod</span>
-                </div>
-              </button>
-            </li>
-            {pods.map((p) => {
-              const isActive = p.id === currentPodId;
-              return (
-                <li key={p.id}>
+        <div className="absolute left-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          {hasBrief && (
+            <button
+              onClick={() => {
+                setOpen(false);
+                onPreviewOnboarding();
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors"
+            >
+              <DocumentTextIcon className="size-3.5 text-subtle" />
+              Onboarding brief
+            </button>
+          )}
+          {canManage && (
+            <div className={hasBrief ? "border-t border-border-faint" : ""}>
+              <div className="px-3 pt-2 pb-1 text-4xs text-subtle font-semibold">
+                Assign pod
+              </div>
+              <ul className="max-h-60 overflow-y-auto pb-1">
+                <li>
                   <button
                     onClick={() => {
-                      onAssign(p.id);
+                      onAssignPod("");
                       setOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
-                      isActive ? "bg-white/[0.04]" : ""
+                    className={`w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors ${
+                      !currentPodId ? "bg-surface-hover" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      {isActive ? (
-                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <span className="size-3.5 shrink-0" />
-                      )}
-                      <span className="text-[13px] text-foreground truncate">
-                        {p.name}
-                      </span>
+                      {!currentPodId ? <Check /> : <span className="size-3.5 shrink-0" />}
+                      <span className="text-xs text-subtle italic">No pod</span>
                     </div>
                   </button>
                 </li>
-              );
-            })}
-          </ul>
+                {pods.map((p) => {
+                  const isActive = p.id === currentPodId;
+                  return (
+                    <li key={p.id}>
+                      <button
+                        onClick={() => {
+                          onAssignPod(p.id);
+                          setOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors ${
+                          isActive ? "bg-surface-hover" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isActive ? <Check /> : <span className="size-3.5 shrink-0" />}
+                          <span className="text-xs text-foreground truncate">{p.name}</span>
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -5098,11 +4781,17 @@ function KanbanClientPicker({
   activeId,
   onSelect,
   onDelete,
+  onAddClient,
+  variant = "pill",
 }: {
   clients: MockClient[];
   activeId: string;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  onAddClient: () => void;
+  /** "title" renders the trigger as the page H1 (the client IS the title,
+   *  so it doubles as the switcher — no duplicate picker). */
+  variant?: "pill" | "title";
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -5118,17 +4807,30 @@ function KanbanClientPicker({
   }, [open]);
 
   return (
-    <div ref={ref} className="relative w-[180px] shrink-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
-      >
-        <span className="truncate">{active?.name ?? "Pick a client"}</span>
-        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      {variant === "title" ? (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="group inline-flex items-center gap-2 max-w-full"
+        >
+          <span className="text-[26px] font-heading font-medium tracking-tight leading-tight text-foreground truncate">
+            {active?.name ?? "Pick a client"}
+          </span>
+          <ChevronDownIcon className="size-5 text-subtle group-hover:text-foreground transition-colors shrink-0" />
+        </button>
+      ) : (
+        <Pill active={open} className="pr-2 max-w-[200px]" onClick={() => setOpen((v) => !v)}>
+          <span className="truncate min-w-0">{active?.name ?? "Pick a client"}</span>
+          <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+        </Pill>
+      )}
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
+        <div
+          className={`absolute z-40 w-72 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden ${
+            variant === "title" ? "left-0 top-12" : "right-0 top-9"
+          }`}
+        >
+          <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
             Clients ({clients.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5142,8 +4844,8 @@ function KanbanClientPicker({
                       onSelect(c.id);
                       setOpen(false);
                     }}
-                    className={`flex-1 min-w-0 text-left pl-3 pr-2 py-2 hover:bg-white/[0.04] transition-colors ${
-                      isActive ? "bg-white/[0.04]" : ""
+                    className={`flex-1 min-w-0 text-left pl-3 pr-2 py-2 hover:bg-surface-hover transition-colors ${
+                      isActive ? "bg-surface-hover" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -5154,10 +4856,10 @@ function KanbanClientPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-foreground truncate flex-1 min-w-0">
+                      <span className="text-xs text-foreground truncate flex-1 min-w-0">
                         {c.name}
                       </span>
-                      <span className="text-[10px] text-subtle tabular-nums shrink-0 pl-2">
+                      <span className="text-4xs text-subtle tabular-nums shrink-0 pl-2">
                         {projectCount} proj
                       </span>
                     </div>
@@ -5176,6 +4878,16 @@ function KanbanClientPicker({
               );
             })}
           </ul>
+          <button
+            onClick={() => {
+              setOpen(false);
+              onAddClient();
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-2xs text-muted hover:text-foreground hover:bg-surface-hover border-t border-border-faint transition-colors"
+          >
+            <PlusIcon className="size-3.5" />
+            Add client
+          </button>
         </div>
       )}
     </div>
@@ -5190,10 +4902,13 @@ function KanbanPodPicker({
   pods,
   activeId,
   onSelect,
+  variant = "pill",
 }: {
   pods: MockPod[];
   activeId: string;
   onSelect: (id: string) => void;
+  /** "title" renders the trigger as the page H1 (pod-scope mode). */
+  variant?: "pill" | "title";
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -5209,17 +4924,30 @@ function KanbanPodPicker({
   }, [open]);
 
   return (
-    <div ref={ref} className="relative w-[180px] shrink-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
-      >
-        <span className="truncate">{active?.name ?? "Pick a pod"}</span>
-        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      {variant === "title" ? (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="group inline-flex items-center gap-2 max-w-full"
+        >
+          <span className="text-[26px] font-heading font-medium tracking-tight leading-tight text-foreground truncate">
+            {active?.name ?? "Pick a pod"}
+          </span>
+          <ChevronDownIcon className="size-5 text-subtle group-hover:text-foreground transition-colors shrink-0" />
+        </button>
+      ) : (
+        <Pill active={open} className="pr-2 max-w-[200px]" onClick={() => setOpen((v) => !v)}>
+          <span className="truncate min-w-0">{active?.name ?? "Pick a pod"}</span>
+          <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+        </Pill>
+      )}
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
+        <div
+          className={`absolute z-40 w-72 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden ${
+            variant === "title" ? "left-0 top-12" : "right-0 top-9"
+          }`}
+        >
+          <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
             Pods ({pods.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5232,8 +4960,8 @@ function KanbanPodPicker({
                       onSelect(p.id);
                       setOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
-                      isActive ? "bg-white/[0.04]" : ""
+                    className={`w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors ${
+                      isActive ? "bg-surface-hover" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -5244,7 +4972,7 @@ function KanbanPodPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-foreground truncate">
+                      <span className="text-xs text-foreground truncate">
                         {p.name}
                       </span>
                     </div>
@@ -5297,13 +5025,13 @@ function NewClientModal({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="bg-background rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+        className="bg-background rounded-2xl ring-1 ring-panel-line shadow-popover w-full max-w-md p-6"
       >
         <h2 className="text-lg font-semibold text-foreground mb-1">Add client</h2>
         <p className="text-xs text-subtle mb-5">
           Creates a new client on the kanban. Add projects + cards once it's in.
         </p>
-        <label className="block text-[10px] text-subtle mb-1.5">
+        <label className="block text-4xs text-subtle mb-1.5">
           Client name
         </label>
         <input
@@ -5311,7 +5039,7 @@ function NewClientModal({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Acme Skincare"
-          className="w-full h-10 px-3 bg-black/40 rounded-md text-[14px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+          className="w-full h-10 px-3 bg-black/40 rounded-md text-sm text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
         />
         <div className="flex justify-end gap-2 mt-6">
           <button
@@ -5337,14 +5065,84 @@ function NewClientModal({
 /* ── Overflow menu (…) ──
  * Tertiary controls that aren't worth always-visible header room:
  * card density (Cosy / Glance), Phase rules, room to grow. */
+/* View scope selector — collapses the old 4-wide segmented pill into a
+   single dropdown (By project / All projects / By pod / Results Library).
+   Reclaims header width and drops the heaviest box, Linear-style. */
+const VIEW_MODE_OPTIONS = [
+  { v: "project", label: "By project" },
+  { v: "master", label: "All projects" },
+  { v: "pod", label: "By pod" },
+  { v: "results", label: "Results Library" },
+] as const;
+
+function ViewModeMenu({
+  value,
+  onChange,
+}: {
+  value: ViewMode;
+  onChange: (v: ViewMode) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const active = VIEW_MODE_OPTIONS.find((o) => o.v === value);
+
+  return (
+    <div ref={ref} className="relative">
+      <Pill active={open} className="pr-2" onClick={() => setOpen((v) => !v)}>
+        {active?.label ?? "View"}
+        <ChevronDownIcon className="size-3.5 text-subtle" />
+      </Pill>
+      {open && (
+        <div className="absolute right-0 top-9 z-40 w-44 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden py-1">
+          {VIEW_MODE_OPTIONS.map((o) => (
+            <button
+              key={o.v}
+              onClick={() => {
+                onChange(o.v);
+                setOpen(false);
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2 text-2xs transition-colors hover:bg-surface-hover ${
+                o.v === value ? "text-foreground" : "text-muted"
+              }`}
+            >
+              {o.label}
+              {o.v === value && <CheckIcon className="size-3.5 text-foreground" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OverflowMenu({
   density,
   onSetDensity,
   onOpenRules,
+  mineOnly,
+  onToggleMine,
+  showMine,
 }: {
   density: "cosy" | "glance";
   onSetDensity: (d: "cosy" | "glance") => void;
   onOpenRules: () => void;
+  /** "Mine only" filter — a filter, so it lives in the Display menu. */
+  mineOnly: boolean;
+  onToggleMine: () => void;
+  /** Hide the Mine row when there's no signed-in name to filter by. */
+  showMine: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -5361,51 +5159,64 @@ function OverflowMenu({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  /* Active when any non-default view/filter is set, so the pill signals
+     "something is on" at a glance (Linear-style). */
+  const isActive = mineOnly;
+
   return (
     <div ref={ref} className="relative">
-      <button
+      <Pill
+        tone="action"
+        active={open || isActive}
+        className="pl-2 pr-2.5"
+        title="Display options"
         onClick={() => setOpen((v) => !v)}
-        title="More"
-        className={`size-7 inline-flex items-center justify-center rounded-full transition-colors ${
-          open
-            ? "text-white border border-border bg-surface"
-            : "text-subtle hover:text-white border border-border hover:border-border"
-        }`}
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
-          <circle cx="5" cy="12" r="1.5" />
-          <circle cx="12" cy="12" r="1.5" />
-          <circle cx="19" cy="12" r="1.5" />
-        </svg>
-      </button>
+        <AdjustmentsHorizontalIcon className="size-3.5" />
+        Display
+      </Pill>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="p-2 border-b border-white/[0.04]">
-            <div className="text-[10px] text-subtle font-semibold px-2 mb-2">
+        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          {showMine && (
+            <button
+              onClick={onToggleMine}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors border-b border-border-faint"
+            >
+              <span>Mine only</span>
+              <span
+                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+                  mineOnly ? "bg-foreground" : "bg-white/[0.12]"
+                }`}
+              >
+                <span
+                  className={`inline-block size-3 rounded-full bg-background transition-transform ${
+                    mineOnly ? "translate-x-3.5" : "translate-x-0.5"
+                  }`}
+                />
+              </span>
+            </button>
+          )}
+          <div className="p-2 border-b border-border-faint">
+            <div className="text-4xs text-subtle font-semibold px-2 mb-2">
               Card density
             </div>
-            <div className="inline-flex w-full p-0.5 rounded-md bg-background ring-1 ring-white/[0.04]">
-              {(["cosy", "glance"] as const).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => onSetDensity(d)}
-                  className={`flex-1 px-2 py-1 rounded text-[11px] font-semibold transition-colors ${
-                    density === d
-                      ? "bg-foreground text-background"
-                      : "text-subtle hover:text-foreground"
-                  }`}
-                >
-                  {d === "cosy" ? "Cosy" : "Glance"}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              variant="ghost"
+              className="w-full [&>button]:flex-1"
+              value={density}
+              onChange={onSetDensity}
+              options={[
+                { label: "Cosy", value: "cosy" },
+                { label: "Glance", value: "glance" },
+              ]}
+            />
           </div>
           <button
             onClick={() => {
               setOpen(false);
               onOpenRules();
             }}
-            className="w-full text-left px-4 py-2.5 text-[12px] text-foreground hover:bg-white/[0.04] transition-colors"
+            className="w-full text-left px-4 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors"
           >
             Phase rules
           </button>

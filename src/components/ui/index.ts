@@ -10,6 +10,8 @@ export { Avatar } from "./Avatar";
 export { PageHeader } from "./PageHeader";
 export { Kbd } from "./Kbd";
 export { Segmented } from "./Segmented";
+export { Pill } from "./Pill";
+export type { PillProps } from "./Pill";
 export { Field, Fields } from "./Field";
 export { StatusGlyph } from "./StatusGlyph";
 export type { Status } from "./StatusGlyph";
