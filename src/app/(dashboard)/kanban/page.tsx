@@ -1811,7 +1811,7 @@ function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps
       {clients.map((c) => (
         <div
           key={c.clientId}
-          className="group inline-flex items-center rounded-full border bg-surface text-subtle border-border hover:text-white hover:border-border transition-colors"
+          className="group inline-flex items-center rounded-lg border bg-surface text-subtle border-border hover:text-foreground transition-colors"
         >
           <button
             onClick={() => onSelectClient(c.clientId)}
@@ -1873,7 +1873,7 @@ function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
     <div className="flex items-center gap-1.5 mb-5 min-w-0">
       <button
         onClick={() => onSelectProject(first.clientId, first.projectId)}
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-medium border bg-white text-background border-white"
+        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-[12px] font-medium border bg-surface-raised text-foreground border-white/[0.08]"
         title={`${first.clientName} · ${first.projectName}`}
       >
         <span className="text-background/50">{first.clientName}</span>
@@ -1919,7 +1919,7 @@ function PodProjectsOverflow({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-surface text-muted border-border hover:text-white hover:border-border transition-colors"
+        className="px-3 py-1.5 rounded-lg text-[12px] font-medium border bg-surface text-muted border-border hover:text-foreground transition-colors"
         title={`${projects.length} more project${projects.length === 1 ? "" : "s"} on this pod`}
       >
         +{projects.length}
@@ -2168,7 +2168,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
         ) : (
           <button
             onClick={() => setAddingProject(true)}
-            className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-subtle border border-dashed border-border hover:text-white hover:border-border inline-flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded-lg text-[12px] font-medium bg-transparent text-subtle border border-dashed border-border hover:text-foreground inline-flex items-center gap-1.5"
           >
             <PlusIcon className="size-3.5" />
             New project
@@ -2190,14 +2190,14 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
         {props.hasBrief ? (
           <button
             onClick={props.onPreviewOnboarding}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-surface text-foreground border border-border hover:border-border hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-surface text-foreground border border-border hover:bg-surface-raised transition-colors"
             title="Open the client's onboarding brief"
           >
             Onboarding brief
           </button>
         ) : (
           <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-border border border-dashed border-border cursor-default"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-transparent text-border border border-dashed border-border cursor-default"
             title="Brief lands here once the client completes onboarding"
           >
             No brief yet
@@ -2259,7 +2259,7 @@ function BoardColumns(props: BoardColumnsProps) {
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
   return (
-    <div className="flex gap-5 justify-start overflow-x-auto pb-2 h-full">
+    <div className="flex gap-4 justify-start overflow-x-auto pb-2 h-full">
       {props.phases.map((phase) => {
         const cards = props.cards[phase.value] ?? [];
         const isDropTarget =
@@ -2362,7 +2362,7 @@ function BoardColumns(props: BoardColumnsProps) {
               </p>
             </div>
 
-            <div className={`${props.density === "glance" ? "p-1 space-y-1" : "p-2 space-y-2"} flex-1 min-h-0 overflow-y-auto scrollbar-thin`}>
+            <div className={`${props.density === "glance" ? "p-1 space-y-1" : "px-1 py-1 space-y-1.5"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}>
               {cards.length === 0 ? (
                 <p className="text-[11px] text-border text-center py-6">
                   -
@@ -2590,6 +2590,16 @@ function Card({
   // the primary designer knows it's signed off and needs sending to the
   // client. Once moved to External Rev (sent), green clears.
   const approved = d.phase === "internal-revisions" && !!d.approvedAt;
+  // The one small colour on the card — a Linear-style health mark. Muted
+  // tones: green on-track/live, amber approaching, muted red when late.
+  const statusDot =
+    live || approved
+      ? "#3FA372"
+      : status === "stuck"
+        ? "#C56B6B"
+        : status === "approaching"
+          ? "#C99A4D"
+          : "#3FA372";
   const rounds = revisionRoundCount(d.phaseHistory);
   const limbo = limboStatusFor(rounds);
   const ready =
@@ -2632,7 +2642,7 @@ function Card({
         }}
         onDragEnd={onDragEnd}
         onClick={onOpen}
-        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border rounded border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] cursor-grab active:cursor-grabbing hover:border-white/[0.1] transition-all ${
+        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 rounded-[6px] bg-surface-raised border border-white/[0.04] cursor-grab active:cursor-grabbing hover:bg-[#202024] transition-colors ${
           isDragging ? "opacity-40 scale-[0.98]" : ""
         }`}
         title={`${d.title}${role ? ` · ${role}` : ""}`}
@@ -2670,7 +2680,7 @@ function Card({
       }}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      className={`p-[17px] border rounded-[12px] border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] hover:border-white/[0.1] hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.012))] cursor-grab active:cursor-grabbing transition-all ${
+      className={`p-4 rounded-[8px] bg-surface-raised border border-white/[0.04] hover:bg-[#202024] hover:border-white/[0.08] cursor-grab active:cursor-grabbing transition-colors ${
         isDragging ? "opacity-40 scale-[0.98]" : ""
       }`}
     >
@@ -2692,7 +2702,12 @@ function Card({
             {headerLabel}
           </span>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span
+            className="size-1.5 rounded-full shrink-0"
+            style={{ background: statusDot }}
+            title={status === "stuck" ? "Late" : status === "approaching" ? "Approaching" : "On track"}
+          />
           {d.revisionRequested && (
             <span
               className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted"
@@ -4880,11 +4895,7 @@ function ActiveProjectTab({
   const isRetainer = p.type === "retainer";
   return (
     <div
-      className={`group inline-flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-full text-[12px] font-medium border ${
-        isRetainer
-          ? "bg-teal-500 text-background border-teal-500"
-          : "bg-white text-background border-white"
-      }`}
+      className="group inline-flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-lg text-[12px] font-medium border bg-surface-raised text-foreground border-white/[0.08]"
       title={
         isRetainer && p.engagementDays
           ? `${ENGAGEMENT_TIER_LABEL[p.engagementDays as EngagementDays]} retainer (${p.engagementDays}-day cadence)`
@@ -4894,9 +4905,9 @@ function ActiveProjectTab({
       }
     >
       <span className="truncate max-w-[260px]">{p.name}</span>
-      <span className="tabular-nums text-background/50">{count}</span>
+      <span className="tabular-nums text-subtle">{count}</span>
       {(p.turnaroundDays || p.engagementDays) && (
-        <span className="text-[10px] uppercase tracking-wider text-background/60">
+        <span className="text-[10px] uppercase tracking-wider text-subtle">
           {p.type === "retainer" && p.engagementDays
             ? `${ENGAGEMENT_TIER_SHORT[p.engagementDays as EngagementDays]}/mo`
             : `${p.turnaroundDays}d`}
@@ -4905,7 +4916,7 @@ function ActiveProjectTab({
       {canManage && (
         <button
           onClick={onDelete}
-          className="size-5 inline-flex items-center justify-center rounded-full text-background/60 hover:text-rose-700 hover:bg-black/[0.08] opacity-0 group-hover:opacity-100 transition-opacity"
+          className="size-5 inline-flex items-center justify-center rounded-md text-subtle hover:text-rose-400 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
           title="Delete this project"
         >
           <XMarkIcon className="size-3" />
@@ -4950,7 +4961,7 @@ function ProjectOverflow({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-surface text-muted border-border hover:text-white hover:border-border transition-colors"
+        className="px-3 py-1.5 rounded-lg text-[12px] font-medium border bg-surface text-muted border-border hover:text-foreground transition-colors"
         title={`${projects.length} more project${projects.length === 1 ? "" : "s"}`}
       >
         +{projects.length}

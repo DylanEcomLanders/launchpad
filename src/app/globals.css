@@ -97,20 +97,21 @@ html, body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #D4D4D4 transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 *::-webkit-scrollbar {
-  width: 2px;
+  width: 8px;
+  height: 8px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #D4D4D4;
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #A0A0A0;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 body {
