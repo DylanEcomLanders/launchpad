@@ -19,6 +19,13 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
+  CodeBracketIcon,
+  SwatchIcon,
+  ArrowPathIcon,
+  PaperAirplaneIcon,
+  RocketLaunchIcon,
+  LightBulbIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useCurrentUser, useRole } from "@/components/auth-gate";
@@ -45,6 +52,7 @@ import {
   type TestOutcome,
   type TestResult,
 } from "@/lib/projects/preview-phases";
+import { ProjectCard } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
@@ -1500,7 +1508,7 @@ export default function KanbanPage() {
             {viewMode === "project" && (
               <button
                 onClick={() => setAddClientOpen(true)}
-                className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors px-3 py-2"
+                className="shrink-0 text-[11px] font-semibold text-subtle hover:text-white transition-colors px-3 py-2"
                 title="Add a new client"
               >
                 + Client
@@ -1798,7 +1806,7 @@ function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps
   if (clients.length === 0) {
     return (
       <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] uppercase tracking-wider text-border">
+        <span className="text-[11px] text-border">
           No active clients.
         </span>
       </div>
@@ -1811,7 +1819,7 @@ function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps
       {clients.map((c) => (
         <div
           key={c.clientId}
-          className="group inline-flex items-center rounded-lg border bg-surface text-subtle border-border hover:text-foreground transition-colors"
+          className="group inline-flex items-center rounded-lg text-subtle hover:bg-surface hover:text-foreground transition-colors"
         >
           <button
             onClick={() => onSelectClient(c.clientId)}
@@ -1859,7 +1867,7 @@ function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
   if (projects.length === 0) {
     return (
       <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] uppercase tracking-wider text-border">
+        <span className="text-[11px] text-border">
           No projects on this pod yet.
         </span>
       </div>
@@ -1880,7 +1888,7 @@ function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
         <span className="truncate max-w-[200px]">{first.projectName}</span>
         <span className="tabular-nums text-background/50">{first.openCount}</span>
         {first.turnaroundDays && (
-          <span className="text-[10px] uppercase tracking-wider text-background/60">
+          <span className="text-[10px] text-background/60">
             {first.turnaroundDays}d
           </span>
         )}
@@ -1926,7 +1934,7 @@ function PodProjectsOverflow({
       </button>
       {open && (
         <div className="absolute left-0 top-9 z-40 w-80 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
+          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
             Other projects ({projects.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -1950,7 +1958,7 @@ function PodProjectsOverflow({
                       {p.openCount}
                     </span>
                     {p.turnaroundDays && (
-                      <span className="text-[10px] uppercase tracking-wider text-subtle tabular-nums shrink-0">
+                      <span className="text-[10px] text-subtle tabular-nums shrink-0">
                         {p.turnaroundDays}d
                       </span>
                     )}
@@ -2068,7 +2076,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
               </span>
               {(p.turnaroundDays || p.engagementDays) && (
                 <span
-                  className={`ml-2 text-[10px] tabular-nums uppercase tracking-wider ${
+                  className={`ml-2 text-[10px] tabular-nums ${
                     isActive
                       ? "text-background/60"
                       : p.type === "retainer"
@@ -2094,7 +2102,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                   key={t}
                   type="button"
                   onClick={() => setTypeDraft(t)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-colors ${
                     typeDraft === t
                       ? t === "retainer"
                         ? "bg-teal-500 text-background"
@@ -2132,7 +2140,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                       key={t}
                       type="button"
                       onClick={() => setEngagementDraft(t)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-colors ${
                         engagementDraft === t
                           ? "bg-teal-500 text-background"
                           : "text-subtle hover:text-white"
@@ -2147,7 +2155,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                       key={t}
                       type="button"
                       onClick={() => setTurnaroundDraft(t)}
-                      className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider tabular-nums transition-colors ${
+                      className={`px-2 py-1 rounded-full text-[10px] font-semibold tabular-nums transition-colors ${
                         turnaroundDraft === t
                           ? "bg-white text-background"
                           : "text-subtle hover:text-white"
@@ -2160,7 +2168,7 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
             </div>
             <button
               onClick={submitNewProject}
-              className="text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white px-2"
+              className="text-[11px] font-semibold text-subtle hover:text-white px-2"
             >
               Add
             </button>
@@ -2259,19 +2267,9 @@ function BoardColumns(props: BoardColumnsProps) {
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
   return (
-    <div className="flex gap-4 justify-start overflow-x-auto pb-2 h-full">
+    <div className="flex gap-3 justify-start overflow-x-auto pb-2 h-full">
       {props.phases.map((phase) => {
         const cards = props.cards[phase.value] ?? [];
-        const isDropTarget =
-          props.dragOverCol === phase.value && props.draggingId !== null;
-        // Scale the column header expectation to the active project's
-        // turnaround. Master / pod / results modes mix projects, so fall
-        // back to the baseline.
-        const expected =
-          props.viewMode === "project"
-            ? formatScaledExpected(phase.value, props.activeTurnaround)
-            : formatExpected(phase.value);
-
         return (
           <div
             key={phase.value}
@@ -2306,11 +2304,7 @@ function BoardColumns(props: BoardColumnsProps) {
               props.onSetDragOverCol(null);
               props.onSetDraggingId(null);
             }}
-            className={`w-[312px] shrink-0 rounded-xl flex flex-col transition-colors h-full overflow-hidden ${
-              isDropTarget
-                ? "bg-surface-raised/40 border-2 border-dashed border-border"
-                : "border-2 border-transparent"
-            }`}
+            className="w-[312px] shrink-0 rounded-xl flex flex-col h-full overflow-hidden"
           >
             <div className="px-2 py-2.5 shrink-0">
               <div className="flex items-center justify-between gap-2">
@@ -2349,20 +2343,9 @@ function BoardColumns(props: BoardColumnsProps) {
                   )}
                 </div>
               </div>
-              {/* Always render the expected line so column header heights
-                  match. Not Started has no SLA; render an invisible spacer
-                  so the bottom border lines up across every column. */}
-              <p
-                className={`mt-1 text-[10px] tabular-nums ${
-                  expected ? "text-border" : "invisible select-none"
-                }`}
-                aria-hidden={!expected}
-              >
-                {expected || "placeholder"}
-              </p>
             </div>
 
-            <div className={`${props.density === "glance" ? "p-1 space-y-1" : "px-1 py-1 space-y-1.5"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}>
+            <div className={`${props.density === "glance" ? "p-1 space-y-1" : "px-1 py-1 space-y-2"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}>
               {cards.length === 0 ? (
                 <p className="text-[11px] text-border text-center py-6">
                   -
@@ -2387,6 +2370,14 @@ function BoardColumns(props: BoardColumnsProps) {
                 ))
               )}
 
+              {/* Ghost drop-slot: shows where the card will land when hovering
+                  a different column (not the card's own source column). */}
+              {props.dragOverCol === phase.value &&
+                props.draggingId !== null &&
+                !cards.some((c) => c.id === props.draggingId) && (
+                  <div className="rounded-[6px] border border-dashed border-white/[0.16] bg-white/[0.03] h-[92px]" />
+                )}
+
               {props.viewMode === "project" && props.canManage && (
                 <div className="pt-1" data-add-form-phase={phase.value}>
                   {props.addingToPhase === phase.value ? (
@@ -2406,7 +2397,7 @@ function BoardColumns(props: BoardColumnsProps) {
                                 onClick={() =>
                                   props.onSetNewCategoryDraft(c.value)
                                 }
-                                className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+                                className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-[10px] font-semibold transition-colors ${
                                   active
                                     ? "bg-white text-background"
                                     : `${c.tone} hover:bg-surface`
@@ -2454,7 +2445,7 @@ function BoardColumns(props: BoardColumnsProps) {
                                 e.target.value,
                               )
                             }
-                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-[11px] font-semibold uppercase tracking-wider bg-transparent text-foreground border border-border focus:outline-none focus:border-border cursor-pointer"
+                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-[11px] font-semibold bg-transparent text-foreground border border-border focus:outline-none focus:border-border cursor-pointer"
                           >
                             <option value="">No category</option>
                             {DELIVERABLE_CATEGORIES.map((c) => (
@@ -2522,6 +2513,23 @@ interface CardProps {
   onOpen: () => void;
   onUpdate: (patch: Partial<MockDeliverable>) => void;
   canManage: boolean;
+}
+
+/* Leading icon per deliverable type, so a card reads at a glance (Linear
+ * style). Ticket categories keep their own icon; everything else maps by
+ * phase. */
+function phaseIcon(phase: string | undefined) {
+  const p = (phase ?? "").toLowerCase();
+  if (p.includes("internal")) return ArrowPathIcon;
+  if (p.includes("external")) return PaperAirplaneIcon;
+  if (p.includes("design")) return SwatchIcon;
+  if (p.includes("develop") || p === "dev" || p.includes("build")) return CodeBracketIcon;
+  if (p.includes("copy")) return PencilSquareIcon;
+  if (p.includes("doc")) return DocumentTextIcon;
+  if (p.includes("launch") || p.includes("test")) return RocketLaunchIcon;
+  if (p.includes("strateg")) return LightBulbIcon;
+  if (p.includes("qa")) return CheckCircleIcon;
+  return Squares2X2Icon;
 }
 
 function Card({
@@ -2600,6 +2608,8 @@ function Card({
         : status === "approaching"
           ? "#C99A4D"
           : "#3FA372";
+  const LeadIcon = categoryMeta?.icon ?? phaseIcon(d.phase);
+  const isOverdue = status === "stuck" && !live && !approved;
   const rounds = revisionRoundCount(d.phaseHistory);
   const limbo = limboStatusFor(rounds);
   const ready =
@@ -2611,8 +2621,6 @@ function Card({
     daysLive >= INTERIM_NUDGE_DAYS &&
     !(d.metrics ?? []).some(isMetricLogged);
 
-  const headerLabel =
-    viewMode === "master" ? d.clientName : d.category ?? d.projectName;
   const subhead =
     viewMode === "master"
       ? `${d.projectName}${d.category ? ` · ${d.category}` : ""}`
@@ -2630,79 +2638,62 @@ function Card({
    * the column for amber/reds in one look). Click to open the
    * full card; drag still works. Falls through to the full card
    * render below for cosy. */
+  const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
+    if (!canManage) return;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", d.id);
+    onDragStart();
+  };
+
   if (density === "glance") {
     return (
-      <div
+      <ProjectCard
+        variant="compact"
         draggable={canManage}
-        onDragStart={(e) => {
-          if (!canManage) return;
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", d.id);
-          onDragStart();
-        }}
+        onDragStart={handleDragStart}
         onDragEnd={onDragEnd}
         onClick={onOpen}
-        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 rounded-[6px] bg-surface-raised border border-white/[0.04] cursor-grab active:cursor-grabbing hover:bg-[#202024] transition-colors ${
-          isDragging ? "opacity-40 scale-[0.98]" : ""
-        }`}
-        title={`${d.title}${role ? ` · ${role}` : ""}`}
-      >
-        {categoryMeta && (
-          <categoryMeta.icon className="size-3 shrink-0 text-subtle" />
-        )}
-        {d.projectType === "retainer" && (
-          <StarSolid
-            className="size-3 shrink-0 text-subtle"
-            title="Retainer (priority)"
-          />
-        )}
-        <span className="text-[12px] text-foreground truncate flex-1 min-w-0">
-          {d.title}
-        </span>
-        {(needsConclude || needsInterim || limbo) && (
-          <span
-            className="size-1.5 rounded-full shrink-0 bg-subtle"
-            aria-label={needsConclude ? "Conclude" : needsInterim ? "Interim due" : "Many rounds"}
-          />
-        )}
-      </div>
+        dragging={isDragging}
+        tooltip={`${d.title}${role ? ` · ${role}` : ""}`}
+        icon={
+          <>
+            {categoryMeta && (
+              <categoryMeta.icon className="size-3 shrink-0 text-subtle" />
+            )}
+            {d.projectType === "retainer" && (
+              <StarSolid
+                className="size-3 shrink-0 text-subtle"
+                title="Retainer (priority)"
+              />
+            )}
+          </>
+        }
+        title={d.title}
+        cluster={
+          needsConclude || needsInterim || limbo ? (
+            <span
+              className="size-1.5 rounded-full shrink-0 bg-subtle"
+              aria-label={needsConclude ? "Conclude" : needsInterim ? "Interim due" : "Many rounds"}
+            />
+          ) : null
+        }
+      />
     );
   }
 
   return (
-    <div
+    <ProjectCard
       draggable={canManage}
-      onDragStart={(e) => {
-        if (!canManage) return;
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", d.id);
-        onDragStart();
-      }}
+      onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      className={`p-4 rounded-[8px] bg-surface-raised border border-white/[0.04] hover:bg-[#202024] hover:border-white/[0.08] cursor-grab active:cursor-grabbing transition-colors ${
-        isDragging ? "opacity-40 scale-[0.98]" : ""
-      }`}
-    >
-      <div className="flex items-center justify-between gap-2 mb-3.5">
-        <div className="flex items-center gap-1.5 min-w-0">
-          {categoryMeta && (
-            <categoryMeta.icon
-              className="size-3.5 shrink-0 text-subtle"
-              title={categoryMeta.label}
-            />
-          )}
-          {d.projectType === "retainer" && (
-            <StarSolid
-              className="size-3.5 shrink-0 text-subtle"
-              title="Retainer (priority)"
-            />
-          )}
-          <span className="text-[10px] font-medium uppercase tracking-wider text-subtle truncate">
-            {headerLabel}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
+      dragging={isDragging}
+      overdue={isOverdue}
+      icon={<LeadIcon className="size-4 shrink-0 mt-px text-muted" title={categoryMeta?.label} />}
+      title={d.title}
+      description={subhead || undefined}
+      cluster={
+        <>
           <span
             className="size-1.5 rounded-full shrink-0"
             style={{ background: statusDot }}
@@ -2710,7 +2701,7 @@ function Card({
           />
           {d.revisionRequested && (
             <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted"
               title="Bounced back; needs revisions"
             >
               <ArrowUturnLeftIcon className="size-2.5" />
@@ -2718,19 +2709,17 @@ function Card({
             </span>
           )}
           {limbo !== "none" && (
-            <span
-              className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted"
-            >
+            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
               R{rounds}
             </span>
           )}
           {ready && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
+            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
               Ready
             </span>
           )}
           {live && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
               <span className="relative flex size-1.5">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-muted opacity-75 animate-ping" />
                 <span className="relative inline-flex rounded-full size-1.5 bg-muted" />
@@ -2739,85 +2728,73 @@ function Card({
             </span>
           )}
           {needsConclude && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
+            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
               Conclude
             </span>
           )}
           {needsInterim && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
+            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-raised text-muted">
               Log result
             </span>
           )}
-        </div>
-      </div>
-
-      {subhead && (
-        <p className="text-[10px] text-subtle truncate mb-1.5">{subhead}</p>
-      )}
-
-      <p className="text-[14px] font-medium leading-tight text-foreground">
-        {d.title}
-      </p>
-
-      {/* Set Live + Conclude controls live inside the detail modal now (the
-          Test setup section). Card stays a quiet display surface; the badges
-          in the header strip (Ready / Live / Conclude / Log result) signal
-          what the strategist needs to act on. */}
-
-      <div className="mt-3 flex items-center justify-between gap-2 text-[11px]">
-        <span className="text-muted truncate min-w-0">
-          {d.phase === "launch-testing" ? (
-            <>
-              {LAUNCH_TESTING_TESTER}
-              <span className="text-border mx-1">·</span>
-              {LAUNCH_TESTING_DEV}
-            </>
-          ) : d.phase === "strategy" ? (
-            <>{STRATEGY_OWNER}</>
-          ) : approved ? (
-            // Approved-in-internal-rev cards flip to the primary designer -
-            // they own the "send it to the client" action.
-            <>{d.designer || role.name}</>
-          ) : (
-            <>
-              {role.name}
-              {role.isSecondary && (
-                <span className="text-border ml-1">(2nd)</span>
-              )}
-            </>
-          )}
-        </span>
-        <span className={`tabular-nums font-medium shrink-0 ${status === "stuck" && !live && !approved ? "text-[#C56B6B]" : "text-subtle"}`}>
-          {(() => {
-            // Documents column has per-card dueDates from the retainer
-            // preload (or manual override on builds).
-            if (d.phase === "documents" && d.dueDate)
-              return formatShortDate(d.dueDate);
-            // External Rev shows the 48h client clock target.
-            if (d.phase === "external-revisions" && d.sentToClientAt)
-              return formatShortDate(
-                addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS),
-              );
-            // Builds use the project-derived phase due date everywhere else.
-            const due =
-              d.projectType === "build"
-                ? phaseInternalDueDate(d.phase, {
-                    type: d.projectType,
-                    turnaroundDays: d.turnaroundDays,
-                    startDate: d.projectStartDate,
-                    clientApprovedAt: d.projectClientApprovedAt,
-                  })
-                : null;
-            if (due) return formatShortDate(due);
-            // Last fallback - per-card dueDate (legacy / manual override),
-            // then a TBD if there's literally no date anchor anywhere.
-            if (d.dueDate) return formatShortDate(d.dueDate);
-            if (d.phase === "not-started") return "TBD";
-            return formatHours(d.hoursInPhase);
-          })()}
-        </span>
-      </div>
-    </div>
+        </>
+      }
+      footer={
+        <>
+          <span className="text-subtle truncate min-w-0">
+            {d.phase === "launch-testing" ? (
+              <>
+                {LAUNCH_TESTING_TESTER}
+                <span className="text-border mx-1">·</span>
+                {LAUNCH_TESTING_DEV}
+              </>
+            ) : d.phase === "strategy" ? (
+              <>{STRATEGY_OWNER}</>
+            ) : approved ? (
+              // Approved-in-internal-rev cards flip to the primary designer -
+              // they own the "send it to the client" action.
+              <>{d.designer || role.name}</>
+            ) : (
+              <>
+                {role.name}
+                {role.isSecondary && (
+                  <span className="text-border ml-1">(2nd)</span>
+                )}
+              </>
+            )}
+          </span>
+          <span className={`tabular-nums font-medium shrink-0 ${status === "stuck" && !live && !approved ? "text-[#C56B6B]" : "text-subtle"}`}>
+            {(() => {
+              // Documents column has per-card dueDates from the retainer
+              // preload (or manual override on builds).
+              if (d.phase === "documents" && d.dueDate)
+                return formatShortDate(d.dueDate);
+              // External Rev shows the 48h client clock target.
+              if (d.phase === "external-revisions" && d.sentToClientAt)
+                return formatShortDate(
+                  addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS),
+                );
+              // Builds use the project-derived phase due date everywhere else.
+              const due =
+                d.projectType === "build"
+                  ? phaseInternalDueDate(d.phase, {
+                      type: d.projectType,
+                      turnaroundDays: d.turnaroundDays,
+                      startDate: d.projectStartDate,
+                      clientApprovedAt: d.projectClientApprovedAt,
+                    })
+                  : null;
+              if (due) return formatShortDate(due);
+              // Last fallback - per-card dueDate (legacy / manual override),
+              // then a TBD if there's literally no date anchor anywhere.
+              if (d.dueDate) return formatShortDate(d.dueDate);
+              if (d.phase === "not-started") return "TBD";
+              return formatHours(d.hoursInPhase);
+            })()}
+          </span>
+        </>
+      }
+    />
   );
 }
 
@@ -2847,7 +2824,7 @@ function ResultsBankFilters(props: ResultsBankFiltersProps) {
           <button
             key={o.v}
             onClick={() => props.onChangeOutcome(o.v)}
-            className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
+            className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-colors ${
               props.outcome === o.v
                 ? "bg-white text-background"
                 : "text-subtle hover:text-white"
@@ -2923,11 +2900,11 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
             className="text-left p-4 rounded-xl border border-border bg-surface hover:border-border hover:bg-[#1E1E1E] transition-colors"
           >
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-subtle truncate">
+              <span className="text-[11px] font-medium text-subtle truncate">
                 {d.clientName} · {d.projectName}
               </span>
               <span
-                className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded shrink-0"
+                className="px-1.5 py-0.5 text-[9px] font-bold rounded shrink-0"
                 style={{ background: meta.bg, color: meta.color }}
               >
                 {meta.label}
@@ -2938,7 +2915,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
               <div>
-                <p className="text-border uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border text-[9px] font-bold">
                   Metric
                 </p>
                 <p className="mt-0.5 text-foreground truncate">
@@ -2946,7 +2923,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-border uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border text-[9px] font-bold">
                   Uplift
                 </p>
                 <p
@@ -2966,7 +2943,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-border uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border text-[9px] font-bold">
                   Confidence
                 </p>
                 <p className="mt-0.5 text-foreground tabular-nums">
@@ -3059,7 +3036,7 @@ function OnboardingPreviewModal({
       >
         <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border shrink-0">
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-subtle">
+            <p className="text-[11px] font-medium text-subtle">
               Onboarding brief
             </p>
             <p className="text-sm font-medium text-foreground truncate">
@@ -3081,13 +3058,13 @@ function OnboardingPreviewModal({
             if (populated.length === 0) return null;
             return (
               <section key={section.title}>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-3">
+                <h3 className="text-[11px] font-medium text-subtle mb-3">
                   {section.title}
                 </h3>
                 <dl className="space-y-3">
                   {populated.map((item) => (
                     <div key={item.label}>
-                      <dt className="text-[11px] font-medium uppercase tracking-wider text-subtle mb-0.5">
+                      <dt className="text-[11px] font-medium text-subtle mb-0.5">
                         {item.label}
                       </dt>
                       <dd className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
@@ -3137,13 +3114,13 @@ function DarkConfirm({
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
+            className="px-3 py-1.5 rounded-md text-[11px] font-semibold text-subtle hover:text-white transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+            className={`px-4 py-1.5 rounded-md text-[11px] font-semibold transition-colors ${
               destructive
                 ? "bg-rose-500 text-white hover:bg-rose-400"
                 : "bg-white text-background hover:bg-foreground"
@@ -3169,7 +3146,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
+            <p className="text-[11px] font-medium text-subtle">
               Mission Control
             </p>
             <h2 className="text-xl font-bold text-foreground mt-1">
@@ -3191,7 +3168,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
         </p>
 
         <div className="rounded-lg border border-border divide-y divide-border">
-          <div className="grid grid-cols-3 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-subtle">
+          <div className="grid grid-cols-3 px-4 py-2.5 text-[11px] font-medium text-subtle">
             <span>Phase</span>
             <span className="text-right">Expected (internal)</span>
             <span className="text-right">Stuck (client-facing)</span>
@@ -3223,7 +3200,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
 
         <div className="mt-4 grid grid-cols-3 gap-3 text-[11px]">
           <div className="rounded-lg border border-border bg-surface p-3">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-subtle">
+            <p className="font-bold text-[10px] text-subtle">
               On track
             </p>
             <p className="mt-1 text-muted">
@@ -3231,7 +3208,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             </p>
           </div>
           <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-amber-400">
+            <p className="font-bold text-[10px] text-amber-400">
               Approaching
             </p>
             <p className="mt-1 text-muted">
@@ -3239,7 +3216,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             </p>
           </div>
           <div className="rounded-lg border border-red-500/40 bg-red-500/5 p-3">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-red-400">
+            <p className="font-bold text-[10px] text-red-400">
               Stuck
             </p>
             <p className="mt-1 text-muted">
@@ -3431,7 +3408,7 @@ function DarkDatePicker({
             {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
               <div
                 key={d}
-                className="text-[10px] uppercase tracking-wider text-border text-center py-1"
+                className="text-[10px] text-border text-center py-1"
               >
                 {d}
               </div>
@@ -3470,7 +3447,7 @@ function DarkDatePicker({
                 setViewYM({ year: y, month: m - 1 });
                 setOpen(false);
               }}
-              className="text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
+              className="text-[11px] font-semibold text-subtle hover:text-white transition-colors"
             >
               Today
             </button>
@@ -3481,7 +3458,7 @@ function DarkDatePicker({
                   onChange(undefined);
                   setOpen(false);
                 }}
-                className="text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-rose-400 transition-colors"
+                className="text-[11px] font-semibold text-subtle hover:text-rose-400 transition-colors"
               >
                 Clear
               </button>
@@ -3687,41 +3664,47 @@ function DetailModal({
       >
         <div className="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
+            <p className="text-[11px] font-medium text-subtle">
               {d.clientName} · {d.projectName}
               {d.category ? ` · ${d.category}` : ""}
             </p>
-            <h2 className="mt-1 text-xl font-bold text-foreground leading-tight">
+            <h2 className="mt-1.5 font-heading text-xl font-medium tracking-tight text-foreground leading-tight">
               {d.title}
             </h2>
-            <div className="mt-3 flex items-center gap-2 flex-wrap">
-              <span
-                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${style.bg} ${style.accent}`}
-              >
-                <span
-                  className="size-1.5 rounded-full"
-                  style={{ background: style.dot }}
-                />
-                {style.label}
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface text-muted">
-                {formatHours(d.hoursInPhase)} in phase
-              </span>
+            <div className="mt-5 flex items-start gap-x-10 gap-y-3 flex-wrap">
+              <div>
+                <div className="text-xs text-subtle mb-1.5">Status</div>
+                <div className="text-sm text-foreground flex items-center gap-1.5">
+                  <span
+                    className="size-1.5 rounded-full"
+                    style={{ background: style.dot }}
+                  />
+                  {style.label}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-subtle mb-1.5">In phase</div>
+                <div className="text-sm text-foreground tabular-nums">
+                  {formatHours(d.hoursInPhase)}
+                </div>
+              </div>
               {calDays > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface text-muted">
-                  {calDays}d calendar
-                </span>
+                <div>
+                  <div className="text-xs text-subtle mb-1.5">Calendar</div>
+                  <div className="text-sm text-foreground tabular-nums">{calDays}d</div>
+                </div>
               )}
               {rounds > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface text-muted">
-                  R{rounds} revisions
-                </span>
+                <div>
+                  <div className="text-xs text-subtle mb-1.5">Revisions</div>
+                  <div className="text-sm text-foreground tabular-nums">R{rounds}</div>
+                </div>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="size-8 rounded-full bg-surface border border-border text-subtle hover:text-white flex items-center justify-center shrink-0"
+            className="size-8 rounded-md text-subtle hover:text-foreground hover:bg-surface flex items-center justify-center shrink-0 transition-colors"
           >
             <XMarkIcon className="size-4" />
           </button>
@@ -3795,12 +3778,12 @@ function DetailModal({
                 })),
               ];
               return (
-                <section className="rounded-xl border border-border bg-background p-4">
+                <section className="border-t border-white/[0.05] pt-6">
                   <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
+                    <h3 className="text-[11px] font-medium text-subtle">
                       Build schedule
                     </h3>
-                    <span className="text-[10px] uppercase tracking-wider text-subtle">
+                    <span className="text-[10px] text-subtle">
                       {d.turnaroundDays}d project
                     </span>
                   </div>
@@ -3821,7 +3804,7 @@ function DetailModal({
                               className="size-1.5 rounded-full"
                               style={{ background: meta?.color ?? "#71757D" }}
                             />
-                            <span className="text-[10px] uppercase tracking-wider text-muted truncate">
+                            <span className="text-[10px] text-muted truncate">
                               {meta?.label ?? phase}
                             </span>
                           </div>
@@ -3857,7 +3840,7 @@ function DetailModal({
                       Schedule anchors (used when no manual deadlines set)
                     </p>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-subtle uppercase tracking-wider shrink-0">
+                      <span className="text-subtle shrink-0">
                         Project start
                       </span>
                       <div className="min-w-0 flex-1 max-w-[180px]">
@@ -3869,7 +3852,7 @@ function DetailModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-subtle uppercase tracking-wider shrink-0">
+                      <span className="text-subtle shrink-0">
                         Client approved
                       </span>
                       <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
@@ -3883,7 +3866,7 @@ function DetailModal({
                         {d.projectClientApprovedAt && (
                           <button
                             onClick={onResetClientApproval}
-                            className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400 transition-colors shrink-0"
+                            className="text-[10px] text-subtle hover:text-rose-400 transition-colors shrink-0"
                             title="Reset client approval - Phase 2 dates go back to TBC"
                           >
                             Reset
@@ -3892,7 +3875,7 @@ function DetailModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-subtle uppercase tracking-wider">
+                      <span className="text-subtle">
                         Client deadline
                       </span>
                       <span
@@ -3917,13 +3900,13 @@ function DetailModal({
             * dates for stuck/approaching/on-track on every card in
             * that bucket; Phase 2 also becomes the client deadline. */}
           {canManage && (
-          <section className="rounded-xl border border-border bg-background p-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-3">
+          <section className="border-t border-white/[0.05] pt-6">
+            <h3 className="text-[11px] font-medium text-subtle mb-3">
               Client deadlines
             </h3>
             <div className="space-y-2 text-[11px]">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-subtle uppercase tracking-wider shrink-0">
+                <span className="text-subtle shrink-0">
                   Phase 1 deadline
                 </span>
                 <div className="min-w-0 flex-1 max-w-[180px]">
@@ -3935,7 +3918,7 @@ function DetailModal({
                 </div>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-subtle uppercase tracking-wider shrink-0">
+                <span className="text-subtle shrink-0">
                   Phase 2 deadline
                 </span>
                 <div className="min-w-0 flex-1 max-w-[180px]">
@@ -3973,7 +3956,7 @@ function DetailModal({
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
-                    className={`text-[11px] font-bold uppercase tracking-wider ${
+                    className={`text-[11px] font-bold ${
                       d.completedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
@@ -3989,7 +3972,7 @@ function DetailModal({
                   {d.completedAt ? (
                     <button
                       onClick={onUncompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Reopen
@@ -3997,7 +3980,7 @@ function DetailModal({
                   ) : (
                     <button
                       onClick={onCompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Complete
@@ -4009,17 +3992,11 @@ function DetailModal({
           )}
 
           {canManage && d.phase === "internal-revisions" && !d.testResult && (
-            <section
-              className={`rounded-xl border p-4 ${
-                d.approvedAt
-                  ? "border-emerald-500/40 bg-emerald-500/5"
-                  : "border-border bg-background"
-              }`}
-            >
+            <section className="border-t border-white/[0.05] pt-6">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
-                    className={`text-[11px] font-bold uppercase tracking-wider ${
+                    className={`text-[11px] font-medium ${
                       d.approvedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
@@ -4034,7 +4011,7 @@ function DetailModal({
                 {d.approvedAt ? (
                   <button
                     onClick={onUndoApprove}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Undo
@@ -4043,14 +4020,14 @@ function DetailModal({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={onRequestRevisions}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Request revisions
                     </button>
                     <button
                       onClick={onApproveInternal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Approve
@@ -4065,10 +4042,10 @@ function DetailModal({
               Launch & Testing; Send back bounces to Dev with the Revisions
               tag (the move handler auto-flags backward moves). */}
           {canManage && d.phase === "qa" && !d.testResult && (
-            <section className="rounded-xl border border-border bg-background p-4">
+            <section className="border-t border-white/[0.05] pt-6">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-subtle">
+                  <p className="text-[11px] font-bold text-subtle">
                     QA sign-off
                   </p>
                   <p className="text-sm text-foreground mt-0.5">
@@ -4079,14 +4056,14 @@ function DetailModal({
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={onKickbackFromQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Send back
                   </button>
                   <button
                     onClick={onApproveQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
                   >
                     <CheckCircleIcon className="size-3.5" />
                     Approve
@@ -4098,7 +4075,7 @@ function DetailModal({
 
           <section className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-2">
+              <h3 className="text-[11px] font-medium text-subtle mb-2">
                 Active assignee
               </h3>
               {d.phase === "launch-testing" ? (
@@ -4106,21 +4083,21 @@ function DetailModal({
                   {LAUNCH_TESTING_TESTER}
                   <span className="text-border mx-1.5">·</span>
                   {LAUNCH_TESTING_DEV}
-                  <span className="block text-[10px] text-subtle mt-1 uppercase tracking-wider">
+                  <span className="block text-[10px] text-subtle mt-1">
                     Test / Dev
                   </span>
                 </p>
               ) : d.phase === "strategy" ? (
                 <p className="text-sm text-foreground">
                   {STRATEGY_OWNER}
-                  <span className="block text-[10px] text-subtle mt-1 uppercase tracking-wider">
+                  <span className="block text-[10px] text-subtle mt-1">
                     Strategy owner
                   </span>
                 </p>
               ) : d.phase === "internal-revisions" && d.approvedAt ? (
                 <p className="text-sm text-foreground">
                   {d.designer || role.name}
-                  <span className="block text-[10px] text-emerald-400 mt-1 uppercase tracking-wider">
+                  <span className="block text-[10px] text-emerald-400 mt-1">
                     Approved - send to client
                   </span>
                 </p>
@@ -4136,7 +4113,7 @@ function DetailModal({
               )}
             </div>
             <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-2">
+              <h3 className="text-[11px] font-medium text-subtle mb-2">
                 Due
               </h3>
               {canManage ? (
@@ -4154,7 +4131,7 @@ function DetailModal({
 
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
+              <h3 className="text-[11px] font-medium text-subtle">
                 Strategy brief
               </h3>
               {d.brief && !editingBrief && (
@@ -4196,7 +4173,7 @@ function DetailModal({
                     onUpdate({ brief: briefDraft.trim() || undefined });
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold uppercase tracking-wider hover:bg-foreground transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4206,7 +4183,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4242,7 +4219,7 @@ function DetailModal({
               QA for spec check). Same edit-on-pencil pattern as brief. */}
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
+              <h3 className="text-[11px] font-medium text-subtle">
                 Figma
               </h3>
               {d.figmaUrl && !editingFigma && (
@@ -4284,7 +4261,7 @@ function DetailModal({
                     onUpdate({ figmaUrl: figmaDraft.trim() || undefined });
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold uppercase tracking-wider hover:bg-foreground transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-[11px] font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4294,7 +4271,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4326,7 +4303,7 @@ function DetailModal({
           </section>
 
           <section>
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-2">
+            <h3 className="text-[11px] font-medium text-subtle mb-2">
               Notes
             </h3>
             <textarea
@@ -4351,7 +4328,7 @@ function DetailModal({
               identical buttons. */}
           {needsConclude && !d.testResult && !concluding && (
             <section className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+              <p className="text-[11px] font-bold text-amber-400">
                 Time to conclude
               </p>
               <p className="mt-1 text-sm text-foreground">
@@ -4363,7 +4340,7 @@ function DetailModal({
 
           {needsInterim && !concluding && (
             <section className="rounded-lg border border-[#0EA5E9]/40 bg-[#0EA5E9]/5 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#0EA5E9]">
+              <p className="text-[11px] font-bold text-[#0EA5E9]">
                 Log an interim result
               </p>
               <p className="mt-1 text-sm text-foreground">
@@ -4384,7 +4361,7 @@ function DetailModal({
 
           {concluding && (
             <section className="rounded-lg border border-border bg-surface p-4 space-y-3">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-subtle">
+              <p className="text-[11px] font-bold text-subtle">
                 Conclude test
               </p>
 
@@ -4394,7 +4371,7 @@ function DetailModal({
                     <button
                       key={o}
                       onClick={() => setOutcomeDraft(o)}
-                      className={`px-2.5 py-2 rounded-md text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                      className={`px-2.5 py-2 rounded-md text-[11px] font-bold transition-colors ${
                         outcomeDraft === o
                           ? "text-background"
                           : "bg-background text-muted border border-border hover:text-white"
@@ -4447,13 +4424,13 @@ function DetailModal({
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setConcluding(false)}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold text-subtle hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitConclude}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
+                  className="px-3 py-2 rounded-md text-[11px] font-semibold bg-white text-background hover:bg-foreground"
                 >
                   Save result
                 </button>
@@ -4464,11 +4441,11 @@ function DetailModal({
           {d.testResult && (
             <section className="rounded-lg border border-border bg-surface p-4">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-subtle">
+                <p className="text-[11px] font-bold text-subtle">
                   Result
                 </p>
                 <span
-                  className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider"
+                  className="px-2 py-1 rounded text-[10px] font-bold"
                   style={{
                     background: OUTCOME_META[d.testResult.outcome].bg,
                     color: OUTCOME_META[d.testResult.outcome].color,
@@ -4479,7 +4456,7 @@ function DetailModal({
               </div>
               <div className="grid grid-cols-4 gap-3 text-sm">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
+                  <p className="text-[10px] font-bold text-border">
                     Metric
                   </p>
                   <p className="mt-0.5 text-foreground">
@@ -4487,7 +4464,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
+                  <p className="text-[10px] font-bold text-border">
                     Uplift
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4497,7 +4474,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
+                  <p className="text-[10px] font-bold text-border">
                     Confidence
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4507,7 +4484,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-border">
+                  <p className="text-[10px] font-bold text-border">
                     Duration
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4532,10 +4509,10 @@ function DetailModal({
                 onClick={() => setHistoryOpen((v) => !v)}
                 className="w-full flex items-center justify-between gap-2 mb-2 group"
               >
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle group-hover:text-muted transition-colors">
+                <h3 className="text-[11px] font-medium text-subtle group-hover:text-muted transition-colors">
                   Phase history
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-subtle group-hover:text-muted transition-colors">
+                <span className="inline-flex items-center gap-1 text-[10px] text-subtle group-hover:text-muted transition-colors">
                   {d.phaseHistory.length} steps
                   <ChevronDownIcon
                     className={`size-3 transition-transform ${historyOpen ? "rotate-180" : ""}`}
@@ -4572,7 +4549,7 @@ function DetailModal({
           {d.phase === "launch-testing" && (
             <section className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-subtle">
+                <h3 className="text-[11px] font-medium text-subtle">
                   Test setup
                 </h3>
                 <div className="flex items-center gap-2">
@@ -4581,7 +4558,7 @@ function DetailModal({
                       href={d.liveTestUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-subtle hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-subtle hover:text-white transition-colors"
                     >
                       Open live
                       <ArrowTopRightOnSquareIcon className="size-3" />
@@ -4596,7 +4573,7 @@ function DetailModal({
                       onClick={() =>
                         onUpdate({ liveStartedAt: MOCK_TODAY })
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-background hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
                     >
                       <span className="size-1.5 rounded-full bg-background" />
                       Set live
@@ -4606,7 +4583,7 @@ function DetailModal({
                     <button
                       type="button"
                       onClick={() => setConcluding(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-amber-500 text-background hover:bg-amber-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-amber-500 text-background hover:bg-amber-400 transition-colors"
                     >
                       Conclude test
                     </button>
@@ -4615,7 +4592,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5 block">
+                <label className="text-[10px] font-semibold text-subtle mb-1.5 block">
                   Test URL
                 </label>
                 <input
@@ -4637,10 +4614,10 @@ function DetailModal({
                   row is treated as primary by the conclude form. */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
+                  <label className="text-[10px] font-semibold text-subtle">
                     Metrics
                   </label>
-                  <span className="text-[10px] text-border uppercase tracking-wider">
+                  <span className="text-[10px] text-border">
                     Before / After
                   </span>
                 </div>
@@ -4688,7 +4665,7 @@ function DetailModal({
                 <button
                   type="button"
                   onClick={addMetric}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-foreground hover:border-border transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-[11px] font-semibold text-subtle hover:text-foreground hover:border-border transition-colors"
                 >
                   <PlusIcon className="size-3" />
                   Add metric
@@ -4696,7 +4673,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5 block">
+                <label className="text-[10px] font-semibold text-subtle mb-1.5 block">
                   Interim notes
                 </label>
                 <textarea
@@ -4718,7 +4695,7 @@ function DetailModal({
                   drops the live variant proof in the same place as the URL +
                   metric inputs. */}
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5 block">
+                <label className="text-[10px] font-semibold text-subtle mb-1.5 block">
                   Screenshot
                 </label>
                 {d.screenshot ? (
@@ -4763,7 +4740,7 @@ function DetailModal({
           <section className="pt-2">
             <button
               onClick={onDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-rose-400 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold text-subtle hover:text-rose-400 transition-colors"
             >
               <XMarkIcon className="size-3.5" />
               Delete card
@@ -4907,7 +4884,7 @@ function ActiveProjectTab({
       <span className="truncate max-w-[260px]">{p.name}</span>
       <span className="tabular-nums text-subtle">{count}</span>
       {(p.turnaroundDays || p.engagementDays) && (
-        <span className="text-[10px] uppercase tracking-wider text-subtle">
+        <span className="text-[10px] text-subtle">
           {p.type === "retainer" && p.engagementDays
             ? `${ENGAGEMENT_TIER_SHORT[p.engagementDays as EngagementDays]}/mo`
             : `${p.turnaroundDays}d`}
@@ -4968,7 +4945,7 @@ function ProjectOverflow({
       </button>
       {open && (
         <div className="absolute left-0 top-9 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
+          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
             Other projects ({projects.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5055,7 +5032,7 @@ function ProjectPodPicker({
       </button>
       {open && (
         <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
+          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
             Assign pod
           </div>
           <ul className="max-h-72 overflow-y-auto py-1">
@@ -5157,7 +5134,7 @@ function KanbanClientPicker({
       </button>
       {open && (
         <div className="absolute right-0 top-11 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
+          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
             Clients ({clients.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5248,7 +5225,7 @@ function KanbanPodPicker({
       </button>
       {open && (
         <div className="absolute right-0 top-11 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
+          <div className="px-3 py-2 text-[10px] text-subtle font-semibold border-b border-white/[0.04]">
             Pods ({pods.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5332,7 +5309,7 @@ function NewClientModal({
         <p className="text-xs text-subtle mb-5">
           Creates a new client on the kanban. Add projects + cards once it's in.
         </p>
-        <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">
+        <label className="block text-[10px] text-subtle mb-1.5">
           Client name
         </label>
         <input
@@ -5410,7 +5387,7 @@ function OverflowMenu({
       {open && (
         <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
           <div className="p-2 border-b border-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold px-2 mb-2">
+            <div className="text-[10px] text-subtle font-semibold px-2 mb-2">
               Card density
             </div>
             <div className="inline-flex w-full p-0.5 rounded-md bg-background ring-1 ring-white/[0.04]">
@@ -5418,7 +5395,7 @@ function OverflowMenu({
                 <button
                   key={d}
                   onClick={() => onSetDensity(d)}
-                  className={`flex-1 px-2 py-1 rounded text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+                  className={`flex-1 px-2 py-1 rounded text-[11px] font-semibold transition-colors ${
                     density === d
                       ? "bg-foreground text-background"
                       : "text-subtle hover:text-foreground"
