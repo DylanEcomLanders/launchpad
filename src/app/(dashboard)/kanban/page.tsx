@@ -2259,7 +2259,7 @@ function BoardColumns(props: BoardColumnsProps) {
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
   return (
-    <div className="grid gap-3 grid-flow-col auto-cols-[minmax(280px,1fr)] overflow-x-auto pb-2 h-full">
+    <div className="grid gap-4 grid-flow-col auto-cols-[312px] justify-start overflow-x-auto pb-2 h-full">
       {props.phases.map((phase) => {
         const cards = props.cards[phase.value] ?? [];
         const isDropTarget =
@@ -2678,11 +2678,11 @@ function Card({
       }}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      className={`p-3 border border-l-2 rounded-lg ${style.ring} ${style.edge} ${style.bg} cursor-grab active:cursor-grabbing hover:bg-surface-raised transition-all ${
+      className={`p-[17px] border border-l-2 rounded-[12px] border-white/[0.06] ${style.edge} bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] hover:border-white/[0.1] hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.012))] cursor-grab active:cursor-grabbing transition-all ${
         isDragging ? "opacity-40 scale-[0.98]" : ""
       }`}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
+      <div className="flex items-center justify-between gap-2 mb-3.5">
         <div className="flex items-center gap-1.5 min-w-0">
           {categoryMeta && (
             <categoryMeta.icon
