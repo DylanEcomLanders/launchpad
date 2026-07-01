@@ -2259,7 +2259,7 @@ function BoardColumns(props: BoardColumnsProps) {
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
   return (
-    <div className="grid gap-4 grid-flow-col auto-cols-[312px] justify-start overflow-x-auto pb-2 h-full">
+    <div className="flex gap-5 justify-start overflow-x-auto pb-2 h-full">
       {props.phases.map((phase) => {
         const cards = props.cards[phase.value] ?? [];
         const isDropTarget =
@@ -2306,7 +2306,7 @@ function BoardColumns(props: BoardColumnsProps) {
               props.onSetDragOverCol(null);
               props.onSetDraggingId(null);
             }}
-            className={`rounded-xl flex flex-col transition-colors h-full overflow-hidden ${
+            className={`w-[312px] shrink-0 rounded-xl flex flex-col transition-colors h-full overflow-hidden ${
               isDropTarget
                 ? "bg-surface-raised/40 border-2 border-dashed border-border"
                 : "border-2 border-transparent"
@@ -2590,7 +2590,6 @@ function Card({
   // the primary designer knows it's signed off and needs sending to the
   // client. Once moved to External Rev (sent), green clears.
   const approved = d.phase === "internal-revisions" && !!d.approvedAt;
-  const style = live || approved ? LIVE_STYLE : STUCK_STYLES[status];
   const rounds = revisionRoundCount(d.phaseHistory);
   const limbo = limboStatusFor(rounds);
   const ready =
@@ -2633,17 +2632,17 @@ function Card({
         }}
         onDragEnd={onDragEnd}
         onClick={onOpen}
-        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border border-l-2 rounded ${style.ring} ${style.edge} ${style.bg} cursor-grab active:cursor-grabbing hover:bg-surface-raised transition-all ${
+        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border rounded border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] cursor-grab active:cursor-grabbing hover:border-white/[0.1] transition-all ${
           isDragging ? "opacity-40 scale-[0.98]" : ""
         }`}
         title={`${d.title}${role ? ` · ${role}` : ""}`}
       >
         {categoryMeta && (
-          <categoryMeta.icon className={`size-3 shrink-0 ${categoryMeta.tone}`} />
+          <categoryMeta.icon className="size-3 shrink-0 text-subtle" />
         )}
         {d.projectType === "retainer" && (
           <StarSolid
-            className="size-3 shrink-0 text-amber-400"
+            className="size-3 shrink-0 text-subtle"
             title="Retainer (priority)"
           />
         )}
@@ -2652,14 +2651,7 @@ function Card({
         </span>
         {(needsConclude || needsInterim || limbo) && (
           <span
-            className="size-1.5 rounded-full shrink-0"
-            style={{
-              background: needsConclude
-                ? "#F97066"
-                : needsInterim
-                  ? "#F5A623"
-                  : "#5B8DEF",
-            }}
+            className="size-1.5 rounded-full shrink-0 bg-subtle"
             aria-label={needsConclude ? "Conclude" : needsInterim ? "Interim due" : "Many rounds"}
           />
         )}
@@ -2678,7 +2670,7 @@ function Card({
       }}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      className={`p-[17px] border border-l-2 rounded-[12px] border-white/[0.06] ${style.edge} bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] hover:border-white/[0.1] hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.012))] cursor-grab active:cursor-grabbing transition-all ${
+      className={`p-[17px] border rounded-[12px] border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] hover:border-white/[0.1] hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.012))] cursor-grab active:cursor-grabbing transition-all ${
         isDragging ? "opacity-40 scale-[0.98]" : ""
       }`}
     >
@@ -2686,24 +2678,24 @@ function Card({
         <div className="flex items-center gap-1.5 min-w-0">
           {categoryMeta && (
             <categoryMeta.icon
-              className={`size-3.5 shrink-0 ${categoryMeta.tone}`}
+              className="size-3.5 shrink-0 text-subtle"
               title={categoryMeta.label}
             />
           )}
           {d.projectType === "retainer" && (
             <StarSolid
-              className="size-3.5 shrink-0 text-amber-400"
+              className="size-3.5 shrink-0 text-subtle"
               title="Retainer (priority)"
             />
           )}
-          <span className="text-[10px] font-bold uppercase tracking-wider text-foreground truncate">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-subtle truncate">
             {headerLabel}
           </span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {d.revisionRequested && (
             <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-rose-500/15 text-rose-400"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted"
               title="Bounced back; needs revisions"
             >
               <ArrowUturnLeftIcon className="size-2.5" />
@@ -2712,36 +2704,32 @@ function Card({
           )}
           {limbo !== "none" && (
             <span
-              className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded ${
-                limbo === "limbo"
-                  ? "bg-red-500/15 text-red-400"
-                  : "bg-amber-500/15 text-amber-400"
-              }`}
+              className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted"
             >
               R{rounds}
             </span>
           )}
           {ready && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-[#A78BFA]/15 text-[#A78BFA]">
+            <span className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
               Ready
             </span>
           )}
           {live && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-emerald-500/15 text-emerald-400">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
               <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                <span className="relative inline-flex rounded-full size-1.5 bg-emerald-400" />
+                <span className="absolute inline-flex h-full w-full rounded-full bg-muted opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full size-1.5 bg-muted" />
               </span>
               Live
             </span>
           )}
           {needsConclude && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-amber-500/15 text-amber-400">
+            <span className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
               Conclude
             </span>
           )}
           {needsInterim && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-[#0EA5E9]/15 text-[#0EA5E9]">
+            <span className="px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider rounded bg-surface-raised text-muted">
               Log result
             </span>
           )}
@@ -2752,7 +2740,7 @@ function Card({
         <p className="text-[10px] text-subtle truncate mb-1.5">{subhead}</p>
       )}
 
-      <p className="text-[14px] font-semibold leading-tight text-foreground">
+      <p className="text-[14px] font-medium leading-tight text-foreground">
         {d.title}
       </p>
 
@@ -2784,7 +2772,7 @@ function Card({
             </>
           )}
         </span>
-        <span className={`tabular-nums font-medium shrink-0 ${style.accent}`}>
+        <span className={`tabular-nums font-medium shrink-0 ${status === "stuck" && !live && !approved ? "text-[#C56B6B]" : "text-subtle"}`}>
           {(() => {
             // Documents column has per-card dueDates from the retainer
             // preload (or manual override on builds).
