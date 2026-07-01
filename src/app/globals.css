@@ -59,6 +59,10 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-ring: var(--ring);
+  /* Category data-viz hues — the ONE sanctioned fixed palette (Badge tones,
+     ProjectCard clusters). Never inline hex for these elsewhere. */
+  --color-cat-dev: #6366F1;
+  --color-cat-design: #EC4899;
   /* back-compat aliases (2 stray usages) — remove after sweep */
   --color-accent-hover: var(--surface-raised);
   --color-accent-light: var(--surface-raised);

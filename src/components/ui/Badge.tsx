@@ -10,8 +10,8 @@ const DOT: Record<Tone, string> = {
   success: "bg-success",
   warning: "bg-warning",
   danger: "bg-danger",
-  dev: "bg-[#6366F1]",
-  design: "bg-[#EC4899]",
+  dev: "bg-cat-dev",
+  design: "bg-cat-design",
   copy: "bg-warning",
   strategy: "bg-success",
 };

@@ -10,3 +10,7 @@ export { Avatar } from "./Avatar";
 export { PageHeader } from "./PageHeader";
 export { Kbd } from "./Kbd";
 export { Segmented } from "./Segmented";
+export { Field, Fields } from "./Field";
+export { StatusGlyph } from "./StatusGlyph";
+export type { Status } from "./StatusGlyph";
+export { ProjectCard } from "./ProjectCard";
