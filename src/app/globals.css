@@ -63,6 +63,12 @@
      ProjectCard clusters). Never inline hex for these elsewhere. */
   --color-cat-dev: #6366F1;
   --color-cat-design: #EC4899;
+  /* Muted status palette — softer than the solid success/warning/danger,
+     for status dots + overdue emphasis (Linear-calm). */
+  --color-status-ontrack: #3FA372;
+  --color-status-approaching: #C99A4D;
+  --color-status-late: #C56B6B;
+  --color-info: #0EA5E9;
   /* back-compat aliases (2 stray usages) — remove after sweep */
   --color-accent-hover: var(--surface-raised);
   --color-accent-light: var(--surface-raised);

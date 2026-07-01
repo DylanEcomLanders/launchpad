@@ -52,7 +52,7 @@ import {
   type TestOutcome,
   type TestResult,
 } from "@/lib/projects/preview-phases";
-import { ProjectCard } from "@/components/ui";
+import { Field, ProjectCard } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
@@ -471,7 +471,7 @@ const LIVE_STYLE = {
   bg: "bg-surface",
   edge: "border-l-emerald-500/70",
   accent: "text-emerald-400",
-  dot: "#10B981",
+  dot: "var(--color-status-ontrack)",
   label: "Live",
 };
 
@@ -488,7 +488,7 @@ const STUCK_STYLES: Record<StuckStatus, {
     bg: "bg-surface",
     edge: "border-l-rose-500/70",
     accent: "text-rose-400",
-    dot: "#F87171",
+    dot: "var(--color-status-late)",
     label: "Stuck",
   },
   approaching: {
@@ -496,7 +496,7 @@ const STUCK_STYLES: Record<StuckStatus, {
     bg: "bg-surface",
     edge: "border-l-amber-500/70",
     accent: "text-amber-400",
-    dot: "#F59E0B",
+    dot: "var(--color-status-approaching)",
     label: "Approaching",
   },
   "on-track": {
@@ -504,7 +504,7 @@ const STUCK_STYLES: Record<StuckStatus, {
     bg: "bg-surface",
     edge: "border-l-transparent",
     accent: "text-subtle",
-    dot: "#4B4D52",
+    dot: "var(--color-subtle)",
     label: "On track",
   },
 };
@@ -2602,12 +2602,12 @@ function Card({
   // tones: green on-track/live, amber approaching, muted red when late.
   const statusDot =
     live || approved
-      ? "#3FA372"
+      ? "var(--color-status-ontrack)"
       : status === "stuck"
-        ? "#C56B6B"
+        ? "var(--color-status-late)"
         : status === "approaching"
-          ? "#C99A4D"
-          : "#3FA372";
+          ? "var(--color-status-approaching)"
+          : "var(--color-status-ontrack)";
   const LeadIcon = categoryMeta?.icon ?? phaseIcon(d.phase);
   const isOverdue = status === "stuck" && !live && !approved;
   const rounds = revisionRoundCount(d.phaseHistory);
@@ -2763,7 +2763,7 @@ function Card({
               </>
             )}
           </span>
-          <span className={`tabular-nums font-medium shrink-0 ${status === "stuck" && !live && !approved ? "text-[#C56B6B]" : "text-subtle"}`}>
+          <span className={`tabular-nums font-medium shrink-0 ${status === "stuck" && !live && !approved ? "text-status-late" : "text-subtle"}`}>
             {(() => {
               // Documents column has per-card dueDates from the retainer
               // preload (or manual override on builds).
@@ -2897,7 +2897,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
           <button
             key={d.id}
             onClick={() => onOpen(d.id)}
-            className="text-left p-4 rounded-xl border border-border bg-surface hover:border-border hover:bg-[#1E1E1E] transition-colors"
+            className="text-left p-4 rounded-xl border border-border bg-surface hover:border-border hover:bg-surface-raised transition-colors"
           >
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="text-[11px] font-medium text-subtle truncate">
@@ -3672,33 +3672,27 @@ function DetailModal({
               {d.title}
             </h2>
             <div className="mt-5 flex items-start gap-x-10 gap-y-3 flex-wrap">
-              <div>
-                <div className="text-xs text-subtle mb-1.5">Status</div>
-                <div className="text-sm text-foreground flex items-center gap-1.5">
-                  <span
-                    className="size-1.5 rounded-full"
-                    style={{ background: style.dot }}
-                  />
-                  {style.label}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-subtle mb-1.5">In phase</div>
-                <div className="text-sm text-foreground tabular-nums">
-                  {formatHours(d.hoursInPhase)}
-                </div>
-              </div>
+              <Field
+                label="Status"
+                value={
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className="size-1.5 rounded-full"
+                      style={{ background: style.dot }}
+                    />
+                    {style.label}
+                  </span>
+                }
+              />
+              <Field
+                label="In phase"
+                value={<span className="tabular-nums">{formatHours(d.hoursInPhase)}</span>}
+              />
               {calDays > 0 && (
-                <div>
-                  <div className="text-xs text-subtle mb-1.5">Calendar</div>
-                  <div className="text-sm text-foreground tabular-nums">{calDays}d</div>
-                </div>
+                <Field label="Calendar" value={<span className="tabular-nums">{calDays}d</span>} />
               )}
               {rounds > 0 && (
-                <div>
-                  <div className="text-xs text-subtle mb-1.5">Revisions</div>
-                  <div className="text-sm text-foreground tabular-nums">R{rounds}</div>
-                </div>
+                <Field label="Revisions" value={<span className="tabular-nums">R{rounds}</span>} />
               )}
             </div>
           </div>
@@ -3802,7 +3796,7 @@ function DetailModal({
                           <div className="flex items-center gap-1.5 mb-1">
                             <span
                               className="size-1.5 rounded-full"
-                              style={{ background: meta?.color ?? "#71757D" }}
+                              style={{ background: meta?.color ?? "var(--color-subtle)" }}
                             />
                             <span className="text-[10px] text-muted truncate">
                               {meta?.label ?? phase}
@@ -3980,7 +3974,7 @@ function DetailModal({
                   ) : (
                     <button
                       onClick={onCompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Complete
@@ -4027,7 +4021,7 @@ function DetailModal({
                     </button>
                     <button
                       onClick={onApproveInternal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Approve
@@ -4063,7 +4057,7 @@ function DetailModal({
                   </button>
                   <button
                     onClick={onApproveQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                   >
                     <CheckCircleIcon className="size-3.5" />
                     Approve
@@ -4165,7 +4159,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste brief URL (Google Doc, Notion, SharePoint, etc.)"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-[#525252] placeholder:text-border"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-border"
                 />
                 <button
                   type="button"
@@ -4253,7 +4247,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste Figma file or frame URL"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-[#525252] placeholder:text-border"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-border"
                 />
                 <button
                   type="button"
@@ -4339,8 +4333,8 @@ function DetailModal({
           )}
 
           {needsInterim && !concluding && (
-            <section className="rounded-lg border border-[#0EA5E9]/40 bg-[#0EA5E9]/5 p-4">
-              <p className="text-[11px] font-bold text-[#0EA5E9]">
+            <section className="rounded-lg border border-info/40 bg-info/5 p-4">
+              <p className="text-[11px] font-medium text-info">
                 Log an interim result
               </p>
               <p className="mt-1 text-sm text-foreground">
@@ -4531,7 +4525,7 @@ function DetailModal({
                         <span className="inline-flex items-center gap-2 text-foreground">
                           <span
                             className="size-1.5 rounded-full"
-                            style={{ background: meta?.color ?? "#71757D" }}
+                            style={{ background: meta?.color ?? "var(--color-subtle)" }}
                           />
                           {meta?.label ?? h.phase}
                         </span>
@@ -4573,7 +4567,7 @@ function DetailModal({
                       onClick={() =>
                         onUpdate({ liveStartedAt: MOCK_TODAY })
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-[#3FA372] text-white hover:bg-[#47b07f] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <span className="size-1.5 rounded-full bg-background" />
                       Set live
