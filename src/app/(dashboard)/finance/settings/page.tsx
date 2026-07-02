@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { ArrowPathIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { loadCompanyProfile, saveCompanyProfile } from "@/lib/finance/profile";
 import type { InvoicePaymentMethod } from "@/lib/finance/types";
-import { inputClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { inputClass, textareaClass } from "@/lib/form-styles";
+
+const fieldLabelClass = "block text-2xs uppercase tracking-wider text-subtle font-medium mb-2";
 
 interface MigrationResult {
   companyInvoicesImported: number;
@@ -111,12 +113,12 @@ export default function FinanceSettingsPage() {
   }
 
   if (loading || !profile) {
-    return <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />;
+    return <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />;
   }
 
   return (
-    <div className="space-y-3">
-      <div className="bg-surface border border-border rounded-lg p-5">
+    <div className="space-y-6">
+      <div className="bg-surface border border-border-faint rounded-md p-5">
         <h2 className="text-lg font-medium text-foreground mb-1">Company profile</h2>
         <p className="text-sm text-muted leading-relaxed max-w-2xl">
           These details appear on every invoice you generate and feed the dashboard tax logic.
@@ -124,19 +126,19 @@ export default function FinanceSettingsPage() {
       </div>
 
       {error && (
-        <div className="px-4 py-3 bg-danger/10 rounded-lg text-sm text-danger">
+        <div className="px-4 py-3 bg-surface-raised rounded-md text-sm text-status-late">
           {error}
         </div>
       )}
 
-      <div className="space-y-3">
-        <section className="bg-surface border border-border rounded-lg p-5">
+      <div className="space-y-6">
+        <section className="bg-surface border border-border-faint rounded-md p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             Legal
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="md:col-span-2">
-              <label className={labelClass}>Legal name</label>
+              <label className={fieldLabelClass}>Legal name</label>
               <input
                 type="text"
                 value={legalName}
@@ -145,7 +147,7 @@ export default function FinanceSettingsPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Registered address (one line per row)</label>
+              <label className={fieldLabelClass}>Registered address (one line per row)</label>
               <textarea
                 value={addressLines}
                 onChange={(e) => setAddressLines(e.target.value)}
@@ -154,7 +156,7 @@ export default function FinanceSettingsPage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Company number</label>
+              <label className={fieldLabelClass}>Company number</label>
               <input
                 type="text"
                 value={companyNumber}
@@ -163,7 +165,7 @@ export default function FinanceSettingsPage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Public email</label>
+              <label className={fieldLabelClass}>Public email</label>
               <input
                 type="email"
                 value={email}
@@ -172,7 +174,7 @@ export default function FinanceSettingsPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Website</label>
+              <label className={fieldLabelClass}>Website</label>
               <input
                 type="text"
                 value={website}
@@ -183,14 +185,14 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <section className="bg-surface border border-border rounded-lg p-5">
+        <section className="bg-surface border border-border-faint rounded-md p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             VAT
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>VAT registered?</label>
-              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface-raised border border-border rounded-lg cursor-pointer">
+              <label className={fieldLabelClass}>VAT registered?</label>
+              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface-raised border border-border rounded-md cursor-pointer">
                 <input
                   type="checkbox"
                   checked={vatRegistered}
@@ -204,7 +206,7 @@ export default function FinanceSettingsPage() {
             </div>
             {vatRegistered && (
               <div>
-                <label className={labelClass}>VAT number</label>
+                <label className={fieldLabelClass}>VAT number</label>
                 <input
                   type="text"
                   value={vatNumber}
@@ -217,13 +219,13 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <section className="bg-surface border border-border rounded-lg p-5">
+        <section className="bg-surface border border-border-faint rounded-md p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             Default payment method (pre-fill on new invoices)
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="md:col-span-2">
-              <label className={labelClass}>Default method</label>
+              <label className={fieldLabelClass}>Default method</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as InvoicePaymentMethod)}
@@ -241,7 +243,7 @@ export default function FinanceSettingsPage() {
             {paymentMethod === "bank_transfer" && (
               <>
                 <div>
-                  <label className={labelClass}>Bank name</label>
+                  <label className={fieldLabelClass}>Bank name</label>
                   <input
                     type="text"
                     value={bankName}
@@ -250,7 +252,7 @@ export default function FinanceSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Account name</label>
+                  <label className={fieldLabelClass}>Account name</label>
                   <input
                     type="text"
                     value={accountName}
@@ -259,7 +261,7 @@ export default function FinanceSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Sort code</label>
+                  <label className={fieldLabelClass}>Sort code</label>
                   <input
                     type="text"
                     value={sortCode}
@@ -269,7 +271,7 @@ export default function FinanceSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Account number</label>
+                  <label className={fieldLabelClass}>Account number</label>
                   <input
                     type="text"
                     value={accountNumber}
@@ -280,7 +282,7 @@ export default function FinanceSettingsPage() {
               </>
             )}
             <div className="md:col-span-2">
-              <label className={labelClass}>Default payment terms</label>
+              <label className={fieldLabelClass}>Default payment terms</label>
               <select
                 value={paymentTerm}
                 onChange={(e) => setPaymentTerm(e.target.value as PaymentTerm | "")}
@@ -299,7 +301,7 @@ export default function FinanceSettingsPage() {
 
         <div className="flex items-center justify-end gap-3">
           {saved && (
-            <span className="inline-flex items-center gap-1.5 text-sm text-success">
+            <span className="inline-flex items-center gap-1.5 text-sm text-status-ontrack">
               <CheckIcon className="size-4" /> Saved
             </span>
           )}
@@ -313,7 +315,7 @@ export default function FinanceSettingsPage() {
           </button>
         </div>
 
-        <section className="bg-surface border border-border rounded-lg p-5">
+        <section className="bg-surface border border-border-faint rounded-md p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-2">
             Legacy data
           </h3>
@@ -329,12 +331,12 @@ export default function FinanceSettingsPage() {
             {migrating ? "Importing..." : "Import legacy data"}
           </button>
           {migrationResult && (
-            <div className="mt-4 p-3 bg-success/10 rounded-lg text-sm text-success">
+            <div className="mt-4 p-3 bg-surface-raised rounded-md text-sm text-status-ontrack">
               Imported {migrationResult.companyInvoicesImported} from company_invoices,{" "}
               {migrationResult.expensesImported} from expenses.{" "}
               {migrationResult.skipped > 0 && `Skipped ${migrationResult.skipped} already-imported.`}
               {migrationResult.errors.length > 0 && (
-                <div className="mt-2 text-danger">
+                <div className="mt-2 text-status-late">
                   Errors: {migrationResult.errors.join("; ")}
                 </div>
               )}

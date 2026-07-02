@@ -40,16 +40,18 @@ import {
 import { deriveVatTreatment, vatTreatmentToMode } from "@/lib/finance/vat";
 import { VatModePicker } from "@/components/finance/vat-mode-picker";
 import { selectClass } from "@/lib/form-styles";
+import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
 
-/* Token-class status badges (no hex). Matches the invoices list + expenses
- * table treatment. */
-const STATUS_BADGE: Record<InvoiceStatus, string> = {
-  draft: "bg-info/10 text-info",
-  sent: "bg-info/10 text-info",
-  paid: "bg-success/10 text-success",
-  overdue: "bg-danger/10 text-danger",
-  disputed: "bg-warning/10 text-warning",
-  void: "bg-subtle/10 text-subtle",
+/* Status = a quiet Badge (subtle bg, muted text, one leading dot). Matches the
+ * invoices list + expenses table treatment. */
+type StatusTone = "success" | "warning" | "danger" | "neutral";
+const STATUS_TONE: Record<InvoiceStatus, StatusTone> = {
+  draft: "neutral",
+  sent: "warning",
+  paid: "success",
+  overdue: "danger",
+  disputed: "warning",
+  void: "neutral",
 };
 
 export default function InvoiceDetailPage() {
@@ -217,12 +219,12 @@ export default function InvoiceDetailPage() {
   }
 
   if (loading) {
-    return <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />;
+    return <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />;
   }
 
   if (!invoice) {
     return (
-      <div className="bg-surface border border-border rounded-lg p-12 text-center">
+      <div className="bg-surface border border-border-faint rounded-md p-12 text-center">
         <p className="text-sm text-subtle mb-3">Invoice not found</p>
         <Link href="/finance/invoices" className="text-sm text-foreground underline">
           Back to invoices
@@ -253,11 +255,9 @@ export default function InvoiceDetailPage() {
             <h2 className="text-lg font-semibold text-foreground">
               {invoice.invoice_number}
             </h2>
-            <span
-              className={`text-2xs uppercase tracking-wider font-medium px-2 py-0.5 rounded ${STATUS_BADGE[derivedStatus]}`}
-            >
+            <Badge tone={STATUS_TONE[derivedStatus]}>
               {INVOICE_STATUS_LABELS[derivedStatus]}
-            </span>
+            </Badge>
           </div>
           <p className="text-sm text-muted">
             {invoice.client_name} · Issued {fmtDateUK(invoice.invoice_date)} · Due{" "}
@@ -266,7 +266,7 @@ export default function InvoiceDetailPage() {
         </div>
 
         {!editing && (
-          <div className="inline-flex items-center divide-x divide-dashed divide-border border border-border rounded-lg bg-surface overflow-hidden">
+          <div className="inline-flex items-center divide-x divide-dashed divide-border border border-border rounded-md bg-surface overflow-hidden">
             <ToolbarButton onClick={startEdit} icon={<PencilSquareIcon className="size-4" />}>
               Edit
             </ToolbarButton>
@@ -301,17 +301,17 @@ export default function InvoiceDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-md text-sm text-danger">
           {error}
         </div>
       )}
       {sendError && (
-        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-md text-sm text-danger">
           {sendError}
         </div>
       )}
       {sendSuccess && (
-        <div className="mb-4 px-4 py-3 bg-success/10 border border-success/20 rounded-lg text-sm text-success">
+        <div className="mb-4 px-4 py-3 bg-success/10 border border-success/20 rounded-md text-sm text-success">
           Invoice emailed successfully.
         </div>
       )}
@@ -348,30 +348,30 @@ export default function InvoiceDetailPage() {
 
               <Card title="Line items">
                 <div className="overflow-x-auto -mx-5">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-dashed border-border">
-                        <th className="text-left px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Description</th>
-                        <th className="text-center px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Qty</th>
-                        <th className="text-right px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Unit price</th>
-                        <th className="text-right px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                  <Table>
+                    <THead>
+                      <TR hover={false}>
+                        <TH className="px-5">Description</TH>
+                        <TH align="center">Qty</TH>
+                        <TH align="right">Unit price</TH>
+                        <TH align="right" className="px-5">Amount</TH>
+                      </TR>
+                    </THead>
+                    <TBody>
                       {invoice.items.map((item) => (
-                        <tr key={item.id} className="border-b border-dashed border-border last:border-0">
-                          <td className="px-5 py-2.5 text-sm text-foreground">{item.name}</td>
-                          <td className="px-5 py-2.5 text-center text-xs text-muted tabular-nums">{item.quantity}</td>
-                          <td className="px-5 py-2.5 text-right text-xs text-muted tabular-nums">
-                            {fmtMoney(item.unitPrice, invoice.currency)}
-                          </td>
-                          <td className="px-5 py-2.5 text-right text-sm text-foreground tabular-nums">
-                            {fmtMoney(item.quantity * item.unitPrice, invoice.currency)}
-                          </td>
-                        </tr>
+                        <TR key={item.id} hover={false}>
+                          <TD className="px-5">{item.name}</TD>
+                          <TD align="center" className="text-muted"><Num>{item.quantity}</Num></TD>
+                          <TD align="right" className="text-muted">
+                            <Num>{fmtMoney(item.unitPrice, invoice.currency)}</Num>
+                          </TD>
+                          <TD align="right" className="px-5 text-muted">
+                            <Num>{fmtMoney(item.quantity * item.unitPrice, invoice.currency)}</Num>
+                          </TD>
+                        </TR>
                       ))}
-                    </tbody>
-                  </table>
+                    </TBody>
+                  </Table>
                 </div>
 
                 <div className="mt-3 space-y-1 max-w-[220px] ml-auto">
@@ -1020,7 +1020,7 @@ function ToolbarButton({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface border border-border rounded-lg p-5">
+    <div className="bg-surface border border-border-faint rounded-md p-5">
       <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-3">
         {title}
       </h3>

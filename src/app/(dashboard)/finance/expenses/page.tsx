@@ -19,13 +19,22 @@ import {
   type ExpenseCategory,
   type ExpenseStatus,
 } from "@/lib/finance/types";
-import { inputClass, selectClass } from "@/lib/form-styles";
+import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
 
-const STATUS_BADGE: Record<ExpenseStatus, { cls: string; label: string }> = {
-  due: { cls: "bg-warning/10 text-warning", label: "Due" },
-  paid: { cls: "bg-success/10 text-success", label: "Paid" },
-  overdue: { cls: "bg-danger/10 text-danger", label: "Overdue" },
-  disputed: { cls: "bg-warning/10 text-warning", label: "Disputed" },
+/* Status = the only colour in the table body: a quiet Badge (subtle bg,
+ * muted text, one leading dot). All statuses share the pill shape. */
+type StatusTone = "success" | "warning" | "danger" | "neutral";
+const STATUS_TONE: Record<ExpenseStatus, StatusTone> = {
+  due: "warning",
+  paid: "success",
+  overdue: "danger",
+  disputed: "neutral",
+};
+const STATUS_LABEL: Record<ExpenseStatus, string> = {
+  due: "Due",
+  paid: "Paid",
+  overdue: "Overdue",
+  disputed: "Disputed",
 };
 
 export default function ExpensesListPage() {
@@ -124,7 +133,7 @@ export default function ExpensesListPage() {
         e.vat_amount?.toFixed(2) || "",
         e.date_due,
         e.date_paid || "",
-        STATUS_BADGE[e.status].label,
+        STATUS_LABEL[e.status],
         e.recurring || "",
       ]),
     ];
@@ -150,51 +159,34 @@ export default function ExpensesListPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <SummaryCard label="Due" amount={summary.due} accent="red" />
         <SummaryCard label="Paid this month" amount={summary.paidThisMonth} />
         <SummaryCard label="Monthly recurring" amount={summary.recurringMonthly} />
       </div>
 
-      {/* Category filter - quiet chips, count beside each */}
-      {hydrated && categoryPills.length > 1 && (
-        <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex items-center gap-0.5 min-w-max">
-            {categoryPills.map((p) => {
-              const active = categoryFilter === p.key;
-              return (
-                <button
-                  key={p.key}
-                  onClick={() => setCategoryFilter(p.key as "all" | ExpenseCategory)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-2xs font-medium transition-colors ${
-                    active ? "bg-surface-raised text-foreground" : "text-muted hover:text-foreground hover:bg-surface-raised"
-                  }`}
-                >
-                  {p.label}
-                  <span className="tabular-nums text-subtle">{p.count}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
+      {/* Toolbar: count + filters left, search right. One quiet row. */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative w-64">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
-            <input
-              placeholder="Search supplier or description..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={`${inputClass} pl-8`}
-            />
-          </div>
+          <span className="text-xs text-subtle tabular-nums mr-1">
+            {filtered.length} of {enriched.length}
+          </span>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value as "all" | ExpenseCategory)}
+            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
+          >
+            {categoryPills.map((p) => (
+              <option key={p.key} value={p.key}>
+                {p.key === "all" ? "All categories" : p.label} ({p.count})
+              </option>
+            ))}
+          </select>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as "all" | ExpenseStatus)}
-            className={`${selectClass} w-36`}
+            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
             <option value="all">All statuses</option>
             <option value="due">Due</option>
@@ -202,86 +194,88 @@ export default function ExpensesListPage() {
             <option value="overdue">Overdue</option>
             <option value="disputed">Disputed</option>
           </select>
-        </div>
-        <div className="flex items-center gap-2">
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
           >
-            <ArrowDownTrayIcon className="size-4" /> CSV
+            <ArrowDownTrayIcon className="size-3.5" /> CSV
           </button>
           <Link
             href="/finance/expenses/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <PlusIcon className="size-4" /> New expense
+            <PlusIcon className="size-3.5" /> New expense
           </Link>
+        </div>
+        <div className="relative w-full md:w-64">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
+          <input
+            placeholder="Search supplier or description"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-8 w-full pl-8 pr-3 rounded-md border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+          />
         </div>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />
+        <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-surface border border-border rounded-lg p-12 text-center">
-          <p className="text-sm text-subtle mb-3">
-            {expenses.length === 0
-              ? "No expenses yet. Log your first one."
-              : "No expenses match these filters."}
+        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
+          <p className="text-sm text-subtle">
+            {expenses.length === 0 ? "No expenses yet." : "No expenses match these filters."}
           </p>
           {expenses.length === 0 && (
             <Link
               href="/finance/expenses/new"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
+              className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
             >
-              <PlusIcon className="size-4" /> New expense
+              <PlusIcon className="size-3.5" /> New expense
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-dashed border-border">
-                <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Supplier</th>
-                <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Category</th>
-                <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Due</th>
-                <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Status</th>
-                <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((e) => {
-                const badge = STATUS_BADGE[e.status];
-                return (
-                  <tr key={e.id} className="border-b border-dashed border-border last:border-0 hover:bg-surface-hover transition-colors">
-                    <td className="px-5 py-3">
-                      <Link
-                        href={`/finance/expenses/${e.id}`}
-                        className="text-sm text-foreground hover:underline"
-                      >
-                        {e.supplier_name}
-                      </Link>
+        <div className="bg-surface border border-border-faint rounded-md overflow-x-auto">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Supplier</TH>
+                <TH>Category</TH>
+                <TH>Due</TH>
+                <TH>Status</TH>
+                <TH align="right">Amount</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {filtered.map((e) => (
+                <TR key={e.id}>
+                  <TD className="max-w-[240px]">
+                    <Link
+                      href={`/finance/expenses/${e.id}`}
+                      className="text-foreground hover:underline truncate block"
+                    >
+                      {e.supplier_name}
                       {e.recurring && (
-                        <span className="ml-2 text-2xs uppercase tracking-wider text-subtle">{e.recurring}</span>
+                        <span className="ml-2 text-2xs text-subtle">{e.recurring}</span>
                       )}
-                    </td>
-                    <td className="px-5 py-3 text-xs text-muted">{EXPENSE_CATEGORY_LABELS[e.category]}</td>
-                    <td className="px-5 py-3 text-xs text-muted tabular-nums">{fmtDateUK(e.date_due)}</td>
-                    <td className="px-5 py-3">
-                      <span className={`text-2xs uppercase tracking-wider font-medium px-2 py-0.5 rounded ${badge.cls}`}>
-                        {badge.label}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">
-                      {fmtMoney(e.amount)}
-                      {e.vat_included && <div className="text-2xs text-subtle">incl VAT</div>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </Link>
+                  </TD>
+                  <TD className="text-muted truncate max-w-[160px]">
+                    {EXPENSE_CATEGORY_LABELS[e.category]}
+                  </TD>
+                  <TD className="text-muted"><Num>{fmtDateUK(e.date_due)}</Num></TD>
+                  <TD>
+                    <Badge tone={STATUS_TONE[e.status]}>{STATUS_LABEL[e.status]}</Badge>
+                  </TD>
+                  <TD align="right" className="text-muted">
+                    <Num>{fmtMoney(e.amount)}</Num>
+                    {e.vat_included && <span className="ml-1.5 text-2xs text-subtle">inc VAT</span>}
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
         </div>
       )}
     </div>
@@ -297,9 +291,9 @@ function SummaryCard({
   amount: number;
   accent?: "red";
 }) {
-  const color = accent === "red" ? "text-danger" : "text-foreground";
+  const color = accent === "red" ? "text-status-late" : "text-foreground";
   return (
-    <div className="bg-surface border border-border rounded-lg p-5">
+    <div className="bg-surface border border-border-faint rounded-md p-5">
       <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
       <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${color}`}>{fmtMoney(amount)}</div>
     </div>

@@ -51,8 +51,8 @@ const EXPENSE_HEADER =
 
 export default function ImportPage() {
   return (
-    <div className="space-y-3">
-      <div className="bg-surface border border-border rounded-lg p-5">
+    <div className="space-y-6">
+      <div className="bg-surface border border-border-faint rounded-md p-5">
         <h2 className="text-lg font-medium text-foreground mb-1">Bulk import</h2>
         <p className="text-sm text-muted leading-relaxed max-w-2xl">
           Four-stage CSV import. Run masters first (clients, suppliers) so the transactional imports (invoices, expenses) can match by name. All four endpoints are idempotent on the natural key.
@@ -138,7 +138,7 @@ function ImportSection<R extends { errors: string[] }>({
   }
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-5">
+    <div className="bg-surface border border-border-faint rounded-md p-5">
       <div className="flex items-start gap-3 mb-4">
         {icon}
         <div>
@@ -177,7 +177,7 @@ function ImportSection<R extends { errors: string[] }>({
         </button>
 
         {error && (
-          <div className="px-3 py-2 bg-danger/10 rounded-md text-xs text-danger">
+          <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-late">
             {error}
           </div>
         )}
@@ -196,7 +196,7 @@ function ImportSection<R extends { errors: string[] }>({
 
 function ClientResult({ result }: { result: ClientImportResult }) {
   return (
-    <div className="px-3 py-2 bg-success/10 rounded-md text-xs text-success">
+    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -212,7 +212,7 @@ function ClientResult({ result }: { result: ClientImportResult }) {
 
 function InvoiceResult({ result }: { result: InvoiceImportResult }) {
   return (
-    <div className="px-3 py-2 bg-success/10 rounded-md text-xs text-success">
+    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -229,7 +229,7 @@ function InvoiceResult({ result }: { result: InvoiceImportResult }) {
 
 function SupplierResult({ result }: { result: SupplierImportResult }) {
   return (
-    <div className="px-3 py-2 bg-success/10 rounded-md text-xs text-success">
+    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -245,7 +245,7 @@ function SupplierResult({ result }: { result: SupplierImportResult }) {
 
 function ExpenseResult({ result }: { result: ExpenseImportResult }) {
   return (
-    <div className="px-3 py-2 bg-success/10 rounded-md text-xs text-success">
+    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -263,10 +263,10 @@ function ExpenseResult({ result }: { result: ExpenseImportResult }) {
 function ErrorDetails({ errors }: { errors: string[] }) {
   return (
     <details className="mt-2">
-      <summary className="cursor-pointer text-warning font-medium">
+      <summary className="cursor-pointer text-status-approaching font-medium">
         {errors.length} row error{errors.length === 1 ? "" : "s"}
       </summary>
-      <ul className="mt-1 text-2xs text-warning space-y-0.5 max-h-56 overflow-y-auto ml-4 list-disc">
+      <ul className="mt-1 text-2xs text-status-approaching space-y-0.5 max-h-56 overflow-y-auto ml-4 list-disc">
         {errors.map((e, i) => (
           <li key={i}>{e}</li>
         ))}

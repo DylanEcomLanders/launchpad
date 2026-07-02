@@ -10,6 +10,7 @@ import {
   type RecurringFrequency,
 } from "@/lib/finance/types";
 import { inputClass, selectClass } from "@/lib/form-styles";
+import { Table, THead, TBody, TR, TH, TD, Num } from "@/components/ui";
 
 const FREQUENCY_LABELS: Record<RecurringFrequency, string> = {
   monthly: "Monthly",
@@ -109,7 +110,7 @@ export default function MonthlyCostsPage() {
   }, [active]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {/* Page intro */}
       <div>
         <h2 className="text-lg font-semibold text-foreground">Monthly costs</h2>
@@ -120,7 +121,7 @@ export default function MonthlyCostsPage() {
       </div>
 
       {loadError && (
-        <div className="rounded-lg border border-warning/20 bg-warning/10 px-4 py-3 text-xs text-warning">
+        <div className="rounded-md border border-border-faint bg-surface px-4 py-3 text-xs text-status-approaching">
           Couldn&apos;t load saved costs. The{" "}
           <code className="font-mono">finance_monthly_costs</code> table may need
           migration 026 applied. You can still calculate below, but changes
@@ -130,7 +131,7 @@ export default function MonthlyCostsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-surface border border-border rounded-lg p-5">
+        <div className="bg-surface border border-border-faint rounded-md p-5">
           <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Total per month
           </div>
@@ -138,7 +139,7 @@ export default function MonthlyCostsPage() {
             {fmtMoneyShort(monthlyTotal)}
           </div>
         </div>
-        <div className="bg-surface border border-border rounded-lg p-5">
+        <div className="bg-surface border border-border-faint rounded-md p-5">
           <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Per year
           </div>
@@ -146,7 +147,7 @@ export default function MonthlyCostsPage() {
             {fmtMoneyShort(annualTotal)}
           </div>
         </div>
-        <div className="bg-surface border border-border rounded-lg p-5">
+        <div className="bg-surface border border-border-faint rounded-md p-5">
           <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Active lines
           </div>
@@ -158,7 +159,7 @@ export default function MonthlyCostsPage() {
 
       {/* Category breakdown */}
       {byCategory.length > 0 && (
-        <div className="bg-surface border border-border rounded-lg p-5">
+        <div className="bg-surface border border-border-faint rounded-md p-5">
           <h3 className="text-sm font-medium text-foreground mb-4">
             By category, per month
           </h3>
@@ -186,7 +187,7 @@ export default function MonthlyCostsPage() {
       )}
 
       {/* Add a cost */}
-      <div className="bg-surface border border-border rounded-lg p-5">
+      <div className="bg-surface border border-border-faint rounded-md p-5">
         <div className="flex flex-col md:flex-row gap-2 md:items-end">
           <div className="flex-1">
             <label className="block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">
@@ -249,9 +250,9 @@ export default function MonthlyCostsPage() {
           <button
             onClick={addCost}
             disabled={!draftName.trim()}
-            className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            <PlusIcon className="size-4" />
+            <PlusIcon className="size-3.5" />
             Add
           </button>
         </div>
@@ -259,124 +260,125 @@ export default function MonthlyCostsPage() {
 
       {/* List */}
       {hydrated && items.length === 0 ? (
-        <div className="bg-surface border border-border rounded-lg p-12 text-center">
+        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
           <p className="text-sm text-subtle">
             No costs yet. Add your recurring outgoings above to see your monthly
             burn.
           </p>
         </div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden">
-          {/* Header (desktop) */}
-          <div className="hidden md:grid grid-cols-[1fr_160px_120px_140px_110px_44px] gap-3 px-5 py-3 border-b border-dashed border-border">
-            {["Cost", "Category", "Amount", "Frequency", "Per month", ""].map(
-              (h, i) => (
-                <span
-                  key={i}
-                  className={`text-2xs uppercase tracking-wider font-medium text-subtle ${i === 4 ? "text-right" : ""}`}
-                >
-                  {h}
-                </span>
-              ),
-            )}
-          </div>
-
-          <div className="divide-y divide-dashed divide-border">
-            {items.map((it) => (
-              <div
-                key={it.id}
-                className={`grid grid-cols-2 md:grid-cols-[1fr_160px_120px_140px_110px_44px] gap-2 md:gap-3 px-5 py-3 md:items-center ${it.active ? "" : "opacity-50"}`}
-              >
-                {/* Name */}
-                <input
-                  className="col-span-2 md:col-span-1 w-full bg-transparent text-sm font-medium text-foreground focus:outline-none focus:bg-surface-raised rounded px-1 py-1 -mx-1"
-                  value={it.name}
-                  onChange={(e) => patchLocal(it.id, { name: e.target.value })}
-                  onBlur={(e) => persist(it.id, { name: e.target.value.trim() })}
-                />
-                {/* Category */}
-                <select
-                  className="w-full bg-transparent text-xs text-subtle focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-surface-raised"
-                  value={it.category}
-                  onChange={(e) => {
-                    const category = e.target.value as ExpenseCategory;
-                    patchLocal(it.id, { category });
-                    persist(it.id, { category });
-                  }}
-                >
-                  {CATEGORY_OPTIONS.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                {/* Amount */}
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-subtle">£</span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    className="w-full bg-transparent text-sm tabular-nums text-foreground focus:outline-none focus:bg-surface-raised rounded px-1 py-1"
-                    value={it.amount}
-                    onChange={(e) =>
-                      patchLocal(it.id, { amount: Number(e.target.value) || 0 })
-                    }
-                    onBlur={(e) =>
-                      persist(it.id, { amount: Number(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-                {/* Frequency */}
-                <select
-                  className="w-full bg-transparent text-xs text-subtle focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-surface-raised"
-                  value={it.frequency}
-                  onChange={(e) => {
-                    const frequency = e.target.value as RecurringFrequency;
-                    patchLocal(it.id, { frequency });
-                    persist(it.id, { frequency });
-                  }}
-                >
-                  {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                {/* Per month */}
-                <span className="text-sm font-semibold tabular-nums text-foreground md:text-right">
-                  {fmtMoney(toMonthly(it.amount, it.frequency))}
-                  <span className="md:hidden text-2xs font-normal text-subtle">
-                    {" "}
-                    / mo
-                  </span>
-                </span>
-                {/* Actions */}
-                <div className="flex items-center justify-end gap-1.5">
-                  <button
-                    onClick={() => {
-                      patchLocal(it.id, { active: !it.active });
-                      persist(it.id, { active: !it.active });
-                    }}
-                    title={it.active ? "Pause (exclude from totals)" : "Activate"}
-                    className={`text-2xs font-medium uppercase tracking-wider px-2 py-1 rounded transition-colors ${
-                      it.active
-                        ? "text-subtle hover:bg-surface-raised"
-                        : "text-warning bg-warning/10"
-                    }`}
-                  >
-                    {it.active ? "On" : "Off"}
-                  </button>
-                  <button
-                    onClick={() => removeCost(it.id)}
-                    title="Remove"
-                    className="text-muted hover:text-danger transition-colors"
-                  >
-                    <TrashIcon className="size-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="bg-surface border border-border-faint rounded-md overflow-x-auto">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Cost</TH>
+                <TH>Category</TH>
+                <TH>Amount</TH>
+                <TH>Frequency</TH>
+                <TH align="right">Per month</TH>
+                <TH align="right"> </TH>
+              </TR>
+            </THead>
+            <TBody>
+              {items.map((it) => (
+                <TR key={it.id} className={it.active ? "" : "opacity-50"}>
+                  {/* Name: identity column, foreground */}
+                  <TD className="max-w-[240px]">
+                    <input
+                      className="w-full bg-transparent text-sm text-foreground focus:outline-none focus:bg-surface-raised rounded px-1 py-1 -mx-1"
+                      value={it.name}
+                      onChange={(e) => patchLocal(it.id, { name: e.target.value })}
+                      onBlur={(e) => persist(it.id, { name: e.target.value.trim() })}
+                    />
+                  </TD>
+                  {/* Category: muted */}
+                  <TD>
+                    <select
+                      className="w-full bg-transparent text-sm text-muted focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-surface-raised"
+                      value={it.category}
+                      onChange={(e) => {
+                        const category = e.target.value as ExpenseCategory;
+                        patchLocal(it.id, { category });
+                        persist(it.id, { category });
+                      }}
+                    >
+                      {CATEGORY_OPTIONS.map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </TD>
+                  {/* Amount: muted */}
+                  <TD className="text-muted">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-subtle">£</span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        className="w-full bg-transparent text-sm tabular-nums text-muted focus:outline-none focus:bg-surface-raised rounded px-1 py-1"
+                        value={it.amount}
+                        onChange={(e) =>
+                          patchLocal(it.id, { amount: Number(e.target.value) || 0 })
+                        }
+                        onBlur={(e) =>
+                          persist(it.id, { amount: Number(e.target.value) || 0 })
+                        }
+                      />
+                    </div>
+                  </TD>
+                  {/* Frequency: muted */}
+                  <TD>
+                    <select
+                      className="w-full bg-transparent text-sm text-muted focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-surface-raised"
+                      value={it.frequency}
+                      onChange={(e) => {
+                        const frequency = e.target.value as RecurringFrequency;
+                        patchLocal(it.id, { frequency });
+                        persist(it.id, { frequency });
+                      }}
+                    >
+                      {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </TD>
+                  {/* Per month: muted figure */}
+                  <TD align="right" className="text-muted">
+                    <Num>{fmtMoney(toMonthly(it.amount, it.frequency))}</Num>
+                  </TD>
+                  {/* Actions */}
+                  <TD align="right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => {
+                          patchLocal(it.id, { active: !it.active });
+                          persist(it.id, { active: !it.active });
+                        }}
+                        title={it.active ? "Pause (exclude from totals)" : "Activate"}
+                        className={`text-2xs font-medium uppercase tracking-wider px-2 py-1 rounded transition-colors ${
+                          it.active
+                            ? "text-subtle hover:bg-surface-raised"
+                            : "text-status-approaching bg-surface-raised"
+                        }`}
+                      >
+                        {it.active ? "On" : "Off"}
+                      </button>
+                      <button
+                        onClick={() => removeCost(it.id)}
+                        title="Remove"
+                        className="text-muted hover:text-status-late transition-colors"
+                      >
+                        <TrashIcon className="size-4" />
+                      </button>
+                    </div>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
         </div>
       )}
     </div>

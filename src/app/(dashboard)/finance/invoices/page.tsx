@@ -19,17 +19,18 @@ import {
   type InvoiceStatus,
 } from "@/lib/finance/types";
 import { calculateVatBreakdown } from "@/lib/finance/vat";
-import { inputClass, selectClass } from "@/lib/form-styles";
+import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
 
-/* Status badges use token classes only (no hex). Mirrors the expenses
- * table treatment: quiet 10%-opacity fill on a semantic foreground. */
-const STATUS_BADGE: Record<InvoiceStatus, string> = {
-  draft: "bg-info/10 text-info",
-  sent: "bg-info/10 text-info",
-  paid: "bg-success/10 text-success",
-  overdue: "bg-danger/10 text-danger",
-  disputed: "bg-warning/10 text-warning",
-  void: "bg-subtle/10 text-subtle",
+/* Status = the only colour in the table body: a quiet Badge (subtle bg,
+ * muted text, one leading dot). All statuses share the pill shape. */
+type StatusTone = "success" | "warning" | "danger" | "neutral";
+const STATUS_TONE: Record<InvoiceStatus, StatusTone> = {
+  draft: "neutral",
+  sent: "warning",
+  paid: "success",
+  overdue: "danger",
+  disputed: "warning",
+  void: "neutral",
 };
 
 type SortKey = "invoice_date" | "due_date" | "client_name" | "total" | "status";
@@ -50,8 +51,9 @@ export default function ReceivablesListPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | InvoiceStatus>("all");
   const [vatFilter, setVatFilter] = useState<"all" | "vat" | "no_vat">("all");
   const [countryFilter, setCountryFilter] = useState<CountryFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("invoice_date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  // Default sort: newest issued first. Header sort controls were removed in the
+  // decluttered toolbar pass; the list keeps this stable ordering.
+  const sortKey: SortKey = "invoice_date";
 
   useEffect(() => {
     invoicesIssuedStore.getAll().then((rows) => {
@@ -94,14 +96,14 @@ export default function ReceivablesListPage() {
       return hay.includes(q);
     });
     rows = [...rows].sort((a, b) => {
-      const dir = sortDir === "asc" ? 1 : -1;
+      const dir = -1; // newest first
       const av = a[sortKey] ?? "";
       const bv = b[sortKey] ?? "";
       if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
       return String(av).localeCompare(String(bv)) * dir;
     });
     return rows;
-  }, [enriched, statusFilter, vatFilter, query, sortKey, sortDir]);
+  }, [enriched, statusFilter, vatFilter, query, sortKey]);
 
   const summary = useMemo(() => {
     // Always sum in GBP using the stored gbp_equivalent (snapshot from
@@ -149,14 +151,6 @@ export default function ReceivablesListPage() {
       ...perCountry,
     ];
   }, [enriched]);
-
-  function toggleSort(key: SortKey) {
-    if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortKey(key);
-      setSortDir("desc");
-    }
-  }
 
   function exportCSV() {
     const rows = [
@@ -208,51 +202,23 @@ export default function ReceivablesListPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <SummaryCard label="Outstanding" amount={summary.outstanding} />
         <SummaryCard label="Overdue" amount={summary.overdue} accent="red" />
-        <SummaryCard label="Paid this month" amount={summary.paidThisMonth} accent="green" />
+        <SummaryCard label="Paid this month" amount={summary.paidThisMonth} />
       </div>
 
-      {/* Country filter - quiet chips, count beside each */}
-      {hydrated && countryPills.length > 1 && (
-        <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex items-center gap-0.5 min-w-max">
-            {countryPills.map((p) => {
-              const active = countryFilter === p.key;
-              return (
-                <button
-                  key={p.key}
-                  onClick={() => setCountryFilter(p.key)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-2xs font-medium transition-colors ${
-                    active ? "bg-surface-raised text-foreground" : "text-muted hover:text-foreground hover:bg-surface-raised"
-                  }`}
-                >
-                  {p.label}
-                  <span className="tabular-nums text-subtle">{p.count}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
+      {/* Toolbar: count + filters left, search right. One quiet row. */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative w-64">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
-            <input
-              placeholder="Search invoice # or client..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={`${inputClass} pl-8`}
-            />
-          </div>
+          <span className="text-xs text-subtle tabular-nums mr-1">
+            {filtered.length} of {enriched.length}
+          </span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as "all" | InvoiceStatus)}
-            className={`${selectClass} w-36`}
+            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
             <option value="all">All statuses</option>
             <option value="draft">Draft</option>
@@ -264,116 +230,113 @@ export default function ReceivablesListPage() {
           <select
             value={vatFilter}
             onChange={(e) => setVatFilter(e.target.value as "all" | "vat" | "no_vat")}
-            className={`${selectClass} w-36`}
+            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
             <option value="all">All VAT</option>
             <option value="vat">VAT charged</option>
             <option value="no_vat">No VAT</option>
           </select>
-        </div>
-        <div className="flex items-center gap-2">
+          {countryPills.length > 1 && (
+            <select
+              value={countryFilter}
+              onChange={(e) => setCountryFilter(e.target.value)}
+              className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
+            >
+              {countryPills.map((p) => (
+                <option key={p.key} value={p.key}>
+                  {p.key === "all" ? "All countries" : p.label} ({p.count})
+                </option>
+              ))}
+            </select>
+          )}
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
           >
-            <ArrowDownTrayIcon className="size-4" /> CSV
+            <ArrowDownTrayIcon className="size-3.5" /> CSV
           </button>
           <Link
             href="/finance/invoices/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <PlusIcon className="size-4" /> New invoice
+            <PlusIcon className="size-3.5" /> New invoice
           </Link>
+        </div>
+        <div className="relative w-full md:w-64">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
+          <input
+            placeholder="Search invoice # or client"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-8 w-full pl-8 pr-3 rounded-md border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+          />
         </div>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />
+        <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-surface border border-border rounded-lg p-12 text-center">
-          <p className="text-sm text-subtle mb-3">
+        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
+          <p className="text-sm text-subtle">
             {invoices.length === 0
-              ? "No invoices yet. Create your first one."
+              ? "No invoices yet."
               : "No invoices match these filters."}
           </p>
           {invoices.length === 0 && (
             <Link
               href="/finance/invoices/new"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
+              className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
             >
-              <PlusIcon className="size-4" /> New invoice
+              <PlusIcon className="size-3.5" /> New invoice
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-dashed border-border">
-                <Th onClick={() => toggleSort("invoice_date")}>Invoice #</Th>
-                <Th onClick={() => toggleSort("client_name")}>Client</Th>
-                <Th onClick={() => toggleSort("invoice_date")}>Issued</Th>
-                <Th onClick={() => toggleSort("due_date")}>Due</Th>
-                <Th onClick={() => toggleSort("status")}>Status</Th>
-                <th
-                  className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle cursor-pointer select-none hover:text-foreground"
-                  onClick={() => toggleSort("total")}
-                >
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="bg-surface border border-border-faint rounded-md overflow-x-auto">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Invoice #</TH>
+                <TH>Client</TH>
+                <TH>Issued</TH>
+                <TH>Due</TH>
+                <TH>Status</TH>
+                <TH align="right">Total</TH>
+              </TR>
+            </THead>
+            <TBody>
               {filtered.map((i) => (
-                <tr
-                  key={i.id}
-                  className="border-b border-dashed border-border last:border-0 hover:bg-surface-hover transition-colors"
-                >
-                  <td className="px-5 py-3">
+                <TR key={i.id}>
+                  <TD>
                     <Link
                       href={`/finance/invoices/${i.id}`}
-                      className="text-sm text-foreground hover:underline"
+                      className="text-foreground hover:underline"
                     >
                       {i.invoice_number}
                     </Link>
-                  </td>
-                  <td className="px-5 py-3 text-sm text-foreground">{i.client_name}</td>
-                  <td className="px-5 py-3 text-xs text-muted tabular-nums">{fmtDateUK(i.invoice_date)}</td>
-                  <td className="px-5 py-3 text-xs text-muted tabular-nums">{fmtDateUK(i.due_date)}</td>
-                  <td className="px-5 py-3">
-                    <span
-                      className={`text-2xs uppercase tracking-wider font-medium px-2 py-0.5 rounded ${STATUS_BADGE[i.status]}`}
-                    >
-                      {INVOICE_STATUS_LABELS[i.status]}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">
-                    {fmtMoney(i.total, i.currency)}
+                  </TD>
+                  <TD className="text-muted truncate max-w-[240px]">{i.client_name}</TD>
+                  <TD className="text-muted"><Num>{fmtDateUK(i.invoice_date)}</Num></TD>
+                  <TD className="text-muted"><Num>{fmtDateUK(i.due_date)}</Num></TD>
+                  <TD>
+                    <Badge tone={STATUS_TONE[i.status]}>{INVOICE_STATUS_LABELS[i.status]}</Badge>
+                  </TD>
+                  <TD align="right" className="text-muted">
+                    <Num>{fmtMoney(i.total, i.currency)}</Num>
                     {i.currency !== "GBP" && i.gbp_equivalent !== i.total && (
                       <div className="text-2xs text-subtle">
-                        {fmtMoney(i.gbp_equivalent, "GBP")}
+                        <Num>{fmtMoney(i.gbp_equivalent, "GBP")}</Num>
                       </div>
                     )}
-                  </td>
-                </tr>
+                  </TD>
+                </TR>
               ))}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </div>
       )}
     </div>
-  );
-}
-
-function Th({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
-  return (
-    <th
-      className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle cursor-pointer select-none hover:text-foreground"
-      onClick={onClick}
-    >
-      {children}
-    </th>
   );
 }
 
@@ -384,16 +347,11 @@ function SummaryCard({
 }: {
   label: string;
   amount: number;
-  accent?: "red" | "green";
+  accent?: "red";
 }) {
-  const color =
-    accent === "red"
-      ? "text-danger"
-      : accent === "green"
-        ? "text-success"
-        : "text-foreground";
+  const color = accent === "red" ? "text-status-late" : "text-foreground";
   return (
-    <div className="bg-surface border border-border rounded-lg p-5">
+    <div className="bg-surface border border-border-faint rounded-md p-5">
       <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
       <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${color}`}>{fmtMoney(amount)}</div>
     </div>

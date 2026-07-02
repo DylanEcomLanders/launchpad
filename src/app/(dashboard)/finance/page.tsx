@@ -169,16 +169,16 @@ export default function FinanceDashboardPage() {
 
   if (!hydrated) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-6">
         <div className="h-8 w-56 bg-surface rounded-lg animate-pulse" />
-        <div className="h-72 bg-surface rounded-lg border border-border animate-pulse" />
-        <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />
+        <div className="h-72 bg-surface rounded-md border border-border-faint animate-pulse" />
+        <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {/* Controls */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -223,7 +223,7 @@ export default function FinanceDashboardPage() {
       </div>
 
       {/* HERO: period P&L + trend, one dominant surface */}
-      <div className="bg-surface border border-border rounded-lg grid grid-cols-1 lg:grid-cols-[minmax(0,360px)_1fr]">
+      <div className="bg-surface border border-border-faint rounded-md grid grid-cols-1 lg:grid-cols-[minmax(0,360px)_1fr]">
         {/* Left: the number + story, with a full-bleed supporting strip */}
         <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-dashed border-border">
           <div className="p-5 flex-1">
@@ -232,7 +232,7 @@ export default function FinanceDashboardPage() {
             </div>
             <div
               className={`mt-2 text-2xl font-semibold tabular-nums tracking-tight leading-none ${
-                net >= 0 ? "text-foreground" : "text-danger"
+                net >= 0 ? "text-foreground" : "text-status-late"
               }`}
             >
               {fmtMoney(net)}
@@ -317,7 +317,7 @@ export default function FinanceDashboardPage() {
 
       {/* Secondary row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div className="lg:col-span-2 bg-surface border border-border rounded-lg p-5">
+        <div className="lg:col-span-2 bg-surface border border-border-faint rounded-md p-5">
           <h3 className="text-sm font-medium text-foreground mb-4">Expense breakdown</h3>
           {expenseSlices.length === 0 ? (
             <p className="text-sm text-subtle py-12 text-center">No expenses this period</p>
@@ -349,7 +349,7 @@ export default function FinanceDashboardPage() {
         </div>
 
         {/* Right column: one full-height panel */}
-        <div className="bg-surface border border-border rounded-lg p-5 h-full flex flex-col gap-6">
+        <div className="bg-surface border border-border-faint rounded-md p-5 h-full flex flex-col gap-6">
           {showVat && (
             <section>
               <h3 className="text-sm font-medium text-foreground mb-3">
@@ -411,7 +411,7 @@ function PeriodPills({
     { key: "custom", label: "Custom" },
   ];
   return (
-    <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-raised rounded-lg border border-border">
+    <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-raised rounded-md border border-border">
       {options.map((o) => {
         const active = value === o.key;
         return (
@@ -441,7 +441,7 @@ function MiniStat({
   sub?: string;
   accent?: "green" | "red";
 }) {
-  const color = accent === "green" ? "text-success" : accent === "red" ? "text-danger" : "text-foreground";
+  const color = accent === "green" ? "text-status-ontrack" : accent === "red" ? "text-status-late" : "text-foreground";
   return (
     <div className="px-5 py-4">
       <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
@@ -462,7 +462,7 @@ function KeyRow({
   accent?: "red" | "amber";
   strong?: boolean;
 }) {
-  const color = accent === "red" ? "text-danger" : accent === "amber" ? "text-warning" : "text-foreground";
+  const color = accent === "red" ? "text-status-late" : accent === "amber" ? "text-status-approaching" : "text-foreground";
   return (
     <div className="flex items-center justify-between gap-3">
       <span className={`text-xs ${strong ? "text-foreground" : "text-muted"}`}>{label}</span>

@@ -23,11 +23,13 @@ export function TR({
   );
 }
 type Align = { align?: "left" | "right" | "center" };
+/* Header cells are the QUIETEST text in the table: sentence case, regular
+ * weight, subtle colour. Never bold/uppercase/accent (per the table rules). */
 export function TH({ className, align = "left", ...p }: ThHTMLAttributes<HTMLTableCellElement> & Align) {
   return (
     <th
       className={cn(
-        "px-5 py-3 text-2xs font-semibold uppercase tracking-wider text-subtle",
+        "px-4 py-2.5 text-xs font-normal text-subtle whitespace-nowrap",
         align === "right" && "text-right",
         align === "center" && "text-center",
         align === "left" && "text-left",
@@ -37,11 +39,13 @@ export function TH({ className, align = "left", ...p }: ThHTMLAttributes<HTMLTab
     />
   );
 }
+/* Generous single-line rows (~52px). Identity column passes text-foreground;
+ * every other column stays muted (set in usage). */
 export function TD({ className, align = "left", ...p }: TdHTMLAttributes<HTMLTableCellElement> & Align) {
   return (
     <td
       className={cn(
-        "px-5 py-3 text-sm text-foreground align-middle",
+        "px-4 py-4 text-sm text-foreground align-middle",
         align === "right" && "text-right",
         align === "center" && "text-center",
         className,
