@@ -56,6 +56,9 @@ interface NavItem {
   href: string;
   external?: boolean;
   icon?: React.ReactNode;
+  /** Per-item visibility. Omit = everyone (incl. team). A section can mix
+   *  team-visible and admin-only items (e.g. Delivery vs Onboarding). */
+  roles?: ("admin" | "cro" | "team")[];
 }
 
 interface NavSection {
@@ -86,10 +89,8 @@ const teamZones = [
  *
  * Shelved housekeeping: review every 3 months — promote what's back in
  * use, or kill what's truly dead. Don't let it become a graveyard. */
-const navSections: NavSection[] = [
-  // Delivery + Operations sections promoted to pinned items in the cluster
-  // above (Onboarding, Feedback).
-];
+/* navSections is defined below, after the individual item consts it
+   references (Delivery, Onboarding, etc.). */
 
 /* Shelved tools — listed on /shelved as a read-only catalogue. Code stays
  * in git so we can promote items back into the sidebar if needed; we just
@@ -209,7 +210,7 @@ const financeItem = {
  * previous tabs (Overview / People / Structure / Hiring / Contracts / Settings)
  * live as tabs inside /company's layout. CompanyGate handles the password. */
 const adminItem = {
-  label: "Admin",
+  label: "Company",
   href: "/company",
   icon: <BuildingOffice2Icon className="size-4" />,
 };
@@ -245,13 +246,8 @@ const heroOfferItem = {
   label: "Hero Offer",
   href: "/hero-offer",
   icon: (
-    <span className="relative size-5 rounded-md bg-gradient-to-br from-emerald-400 via-cyan-400 to-sky-400 flex items-center justify-center shrink-0 overflow-hidden animate-hero-offer-glow">
-      <StarIcon className="size-3 text-white relative z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.6)]" />
-      {/* Diagonal light sweep across the tile every 2.8s */}
-      <span
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/55 to-transparent animate-hero-offer-shimmer pointer-events-none"
-      />
+    <span className="size-5 rounded-md bg-surface-raised border border-border flex items-center justify-center shrink-0">
+      <StarIcon className="size-3 text-foreground" />
     </span>
   ),
 };
@@ -310,25 +306,99 @@ const submitInvoiceItem = {
   icon: <DocumentPlusIcon className="size-4" />,
 };
 
+/* Outbound — the sales outbound tool (being built; empty placeholder for
+   now). Lives in the Sales section. */
+const outboundItem = {
+  label: "Outbound",
+  href: "/outbound",
+  icon: <ShareIcon className="size-4" />,
+};
+
+/* Grouped, collapsible navigation. Each section is a dropdown; items carry
+   their own role gating so a section can mix team-visible and admin-only
+   entries (Delivery is everyone; Onboarding / KPIs / etc. are admin+cro). */
+const ADMIN_CRO: ("admin" | "cro")[] = ["admin", "cro"];
+const navSections: NavSection[] = [
+  {
+    title: "Client Health",
+    icon: <BriefcaseIcon className="size-4" />,
+    group: "lifecycle",
+    items: [
+      { ...onboardingItem, roles: ADMIN_CRO },
+      missionControlItem,
+      { ...kpiItem, roles: ADMIN_CRO },
+      { ...workspaceItem, roles: ADMIN_CRO },
+      { ...feedbackItem, roles: ADMIN_CRO },
+    ],
+  },
+  {
+    title: "Sales",
+    icon: <RocketLaunchIcon className="size-4" />,
+    group: "lifecycle",
+    roles: ADMIN_CRO,
+    items: [outboundItem],
+  },
+  {
+    title: "Offer",
+    icon: <SparklesIcon className="size-4" />,
+    group: "lifecycle",
+    items: [offerItem, heroOfferItem],
+  },
+  {
+    title: "Team",
+    icon: <UsersIcon className="size-4" />,
+    group: "ops",
+    items: [
+      trainingItem,
+      teamToolsItem,
+      submitInvoiceItem,
+      { ...toolkitItem, roles: ADMIN_CRO },
+    ],
+  },
+  {
+    title: "Company",
+    icon: <BuildingOffice2Icon className="size-4" />,
+    group: "ops",
+    roles: ADMIN_CRO,
+    items: [financeItem, { ...adminItem, roles: ["admin"] }],
+  },
+];
+
 export function Sidebar() {
   const pathname = usePathname();
   const role = useRole();
   const currentUser = useCurrentUser();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  /* Accordion behaviour — at most one nav section open at a time. Initial
-   * open is the first section flagged defaultOpen so the user lands on a
-   * useful default; everything else stays collapsed until explicitly opened. */
+  /* Per-item role gating: a section can mix team-visible and admin-only items
+   * (Delivery is everyone; Onboarding/KPIs are admin/cro), so filter items by
+   * role and drop any section left empty for this role. */
+  const visibleSections = navSections
+    .filter((s) => !s.roles || (role !== "team" && s.roles.includes(role)))
+    .map((s) => ({
+      ...s,
+      items: s.items.filter((i) => !i.roles || i.roles.includes(role)),
+    }))
+    .filter((s) => s.items.length > 0);
+
+  /* Collapsible sections. On mount, open the section that holds the current
+   * route (so you land where you are); the rest start closed. Toggle is
+   * independent — several sections can be open at once. */
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     () => {
-      const firstDefaultOpen = navSections.find((s) => s.defaultOpen !== false);
+      const activeTitle = visibleSections.find((s) =>
+        s.items.some(
+          (i) =>
+            !i.external &&
+            (pathname === i.href || pathname.startsWith(i.href + "/")),
+        ),
+      )?.title;
+      const openTitle = activeTitle ?? visibleSections[0]?.title;
       return Object.fromEntries(
-        navSections.map((s) => [s.title, s.title === firstDefaultOpen?.title]),
+        visibleSections.map((s) => [s.title, s.title === openTitle]),
       );
-    }
+    },
   );
-
-  const visibleSections = navSections.filter((s) => !s.roles || (role !== "team" && s.roles.includes(role)));
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -384,20 +454,11 @@ export function Sidebar() {
     ...(role === "admin" ? [{ label: "Settings", href: "/settings", group: "System" }] : []),
   ];
 
-  /* Accordion: opening a section closes every other one. Clicking the
-   * currently-open section closes it (so user can still get to a fully
-   * collapsed state if they want pure focus). */
+  /* Independent toggle — each section opens/closes on its own, so several
+   * can stay open at once (the section holding the active route is opened on
+   * mount; the rest start closed). */
   function toggleSection(title: string) {
-    setOpenSections((prev) => {
-      if (prev[title]) {
-        return { ...prev, [title]: false };
-      }
-      const next: Record<string, boolean> = {};
-      for (const s of navSections) {
-        next[s.title] = s.title === title;
-      }
-      return next;
-    });
+    setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
   }
 
   // Poll onboarding submissions every 5 minutes
@@ -443,13 +504,13 @@ export function Sidebar() {
         key={item.href}
         href={item.href}
         onClick={() => setMobileOpen(false)}
-        className={`flex items-center gap-3 px-2.5 py-2 rounded-md text-[14px] transition-colors ${
+        className={`flex items-center gap-3 px-2.5 py-2.5 rounded-md text-sm transition-colors ${
           active
-            ? "bg-foreground text-background font-medium"
-            : "text-muted hover:bg-surface-raised hover:text-white"
+            ? "bg-surface-raised text-foreground font-medium"
+            : "text-muted hover:bg-surface-hover hover:text-foreground"
         }`}
       >
-        <span className={active ? "text-background" : "text-muted"}>{item.icon}</span>
+        <span className={active ? "text-foreground" : "text-muted"}>{item.icon}</span>
         {!collapsed && <span className="flex-1">{item.label}</span>}
       </Link>
     );
@@ -464,20 +525,31 @@ export function Sidebar() {
       return (
         <div key={section.title} className="mb-6" title={section.title}>
             <div className="flex justify-center py-1.5">
-            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-blue-600" : "bg-border"}`} />
+            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-foreground" : "bg-border"}`} />
           </div>
         </div>
       );
     }
+    const open = openSections[section.title] ?? false;
     return (
-      <div key={section.title} className="mb-6">
-        {section.badge && (
-          <div className="px-3 pb-1.5 flex items-center gap-1.5">
-            <LockClosedIcon className="size-2.5 text-subtle" />
-            <span className="text-[10px] uppercase tracking-wider text-subtle">{section.badge}</span>
-          </div>
-        )}
-        <div className="px-3 space-y-0.5">
+      <div key={section.title}>
+        <button
+          onClick={() => toggleSection(section.title)}
+          className="w-full group flex items-center gap-3 px-2.5 py-2.5 rounded-md text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
+        >
+          <span className="text-subtle group-hover:text-muted transition-colors">
+            {section.icon}
+          </span>
+          <span className="flex-1 text-left text-sm font-medium">{section.title}</span>
+          {sectionHasActive && !open && (
+            <span className="size-1.5 rounded-full bg-foreground shrink-0" />
+          )}
+          <ChevronDownIcon
+            className={`size-3.5 text-subtle transition-transform ${open ? "" : "-rotate-90"}`}
+          />
+        </button>
+        {open && (
+          <div className="pl-3 mt-1 mb-1 space-y-1">
           {section.items.map((item) => {
             const active = !item.external && isActive(item.href);
             if (item.external) {
@@ -488,7 +560,7 @@ export function Sidebar() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between gap-3 px-2.5 py-2 text-[14px] rounded-md text-muted hover:text-white hover:bg-surface-raised transition-colors"
+                  className="flex items-center justify-between gap-3 px-2.5 py-2 text-xs rounded-md text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
                 >
                   <span className="flex items-center gap-3">
                     <span className="text-muted">{item.icon}</span>
@@ -509,18 +581,19 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-2.5 py-2 text-[14px] rounded-md transition-colors ${
+                className={`flex items-center gap-3 px-2.5 py-2 text-xs rounded-md transition-colors ${
                   active
-                    ? "bg-foreground text-background font-medium"
-                    : "text-muted hover:text-white hover:bg-surface-raised"
+                    ? "bg-surface-raised text-foreground font-medium"
+                    : "text-muted hover:text-foreground hover:bg-surface-hover"
                 }`}
               >
-                <span className={active ? "text-background" : "text-muted"}>{item.icon}</span>
+                <span className={active ? "text-foreground" : "text-muted"}>{item.icon}</span>
                 <span>{item.label}</span>
               </Link>
             );
           })}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -584,60 +657,17 @@ export function Sidebar() {
         {/* Navigation. Search trigger lives in the top bar — open via window
             event dispatched there (or ⌘K from anywhere). */}
         <nav className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {/* GROUP 1 — My Work: top for everyone. Personal surface. */}
-          <div className="px-3 space-y-0.5">
+          {/* My Tasks — personal home, pinned above the grouped sections. */}
+          <div className="px-3 space-y-1">
             {renderTopLink(myWorkItem)}
           </div>
 
-          {/* GROUP 2 — Delivery cluster. Delivery (the kanban board) is
-              visible to EVERYONE including members, so fulfilment/delivery
-              people can see + drive client work. The management surfaces
-              around it — Onboarding inbox, Old Delivery (legacy /workspace),
-              KPIs — stay admin/cro only. */}
-          <div className="px-3 space-y-0.5 mt-6">
-            {role !== "team" && renderTopLink(onboardingItem)}
-            {renderTopLink(missionControlItem)}
-            {role !== "team" && renderTopLink(workspaceItem)}
-            {role !== "team" && renderTopLink(kpiItem)}
+          {/* Grouped, collapsible navigation. Sections + per-item role
+              gating are defined in navSections; visibleSections filters to
+              what this role can see. */}
+          <div className="mt-5 px-3 space-y-1.5">
+            {visibleSections.map(renderSection)}
           </div>
-
-          {/* GROUP 3 — Revenue surfaces: Sales (Ajay's home) + Retention
-              (CSM's home). Admin/CRO only - team doesn't run these. */}
-          {role !== "team" && (
-            <div className="px-3 space-y-0.5 mt-6">
-              {renderTopLink(salesItem)}
-              {renderTopLink(feedbackItem)}
-            </div>
-          )}
-
-          {/* GROUP 4 — Offer + Knowledge: Hero Offer (Conversion Engine
-              house, everyone) + Training (wiki/SOP/playbook home, everyone).
-              The two reference surfaces, tight scopes each. */}
-          <div className="px-3 space-y-0.5 mt-6">
-            {renderTopLink(heroOfferItem)}
-            {renderTopLink(trainingItem)}
-          </div>
-
-          {/* GROUP 5 — Hubs for sub-tools. Team Tools lands on /team
-              (card grid of team-facing surfaces). Toolkit lands on /
-              (card grid of admin utility tools: Payment Link, Invoice
-              Generator, Dev Hours, Intelligems demo, Hook Generator,
-              etc). Both keep the long tail discoverable without
-              spamming the sidebar. */}
-          <div className="px-3 space-y-0.5 mt-6">
-            {renderTopLink(teamToolsItem)}
-            {renderTopLink(submitInvoiceItem)}
-            {role !== "team" && renderTopLink(toolkitItem)}
-          </div>
-
-          {/* GROUP 6 — Admin cluster: Finance (locked) above Admin
-              (locked, admin-only). Both wear lock icons. */}
-          {role !== "team" && (
-            <div className="px-3 space-y-0.5 mt-6">
-              {renderTopLink(financeItem)}
-              {role === "admin" && renderTopLink(adminItem)}
-            </div>
-          )}
         </nav>
 
         {/* Team Timezones — moved up off the footer. */}
@@ -645,7 +675,7 @@ export function Sidebar() {
           <div className="mx-3 mt-3 mb-3 px-3 py-2 rounded-md bg-background border border-border shrink-0">
             <div className="flex items-center gap-1.5 mb-1.5">
               <ClockIcon className="size-3 text-subtle" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-subtle">
+              <span className="text-4xs font-medium uppercase tracking-wider text-subtle">
                 Team
               </span>
             </div>
@@ -653,7 +683,7 @@ export function Sidebar() {
               {teamZones.map((z) => (
                 <div
                   key={z.tz}
-                  className="flex items-center justify-between text-[11px]"
+                  className="flex items-center justify-between text-3xs"
                 >
                   <span className="text-subtle">
                     {z.flag} {z.label}
@@ -685,17 +715,17 @@ export function Sidebar() {
         {!collapsed && (
           <div className="px-4 pt-3 pb-2 mt-auto border-t border-surface flex items-center justify-between gap-2 shrink-0">
             <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-medium text-foreground truncate">
+              <div className="text-2xs font-medium text-foreground truncate">
                 {currentUser?.name ?? "Shared session"}
               </div>
-              <div className="text-[10px] uppercase tracking-wider text-subtle truncate">
+              <div className="text-4xs uppercase tracking-wider text-subtle truncate">
                 {currentUser?.email ?? `${role} role`}
               </div>
             </div>
             <button
               onClick={() => signOut()}
               title="Sign out"
-              className="shrink-0 p-1.5 rounded-md text-subtle hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+              className="shrink-0 p-1.5 rounded-md text-subtle hover:text-danger hover:bg-danger/10 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="size-4" />
             </button>
@@ -706,7 +736,7 @@ export function Sidebar() {
             <button
               onClick={() => signOut()}
               title="Sign out"
-              className="p-1.5 rounded-md text-subtle hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+              className="p-1.5 rounded-md text-subtle hover:text-danger hover:bg-danger/10 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="size-4" />
             </button>
@@ -719,27 +749,27 @@ export function Sidebar() {
         {!collapsed && (
           <div className="px-4 pb-4 pt-1 flex items-center gap-2 shrink-0 flex-wrap">
             <ThemeToggle />
-            <span className="text-[10px] text-[#3F3F46]">·</span>
+            <span className="text-4xs text-subtle">·</span>
             <Link
               href="/changelog"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-subtle hover:text-white transition-colors"
+              className="text-3xs text-subtle hover:text-foreground transition-colors"
             >
               Launchpad v1.0.0
             </Link>
-            <span className="text-[10px] text-[#3F3F46]">·</span>
+            <span className="text-4xs text-subtle">·</span>
             <Link
               href="/shortcuts"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-subtle hover:text-white transition-colors"
+              className="text-3xs text-subtle hover:text-foreground transition-colors"
             >
               Shortcuts
             </Link>
-            <span className="text-[10px] text-[#3F3F46]">·</span>
+            <span className="text-4xs text-subtle">·</span>
             <Link
               href="/shelved"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-subtle hover:text-white transition-colors"
+              className="text-3xs text-subtle hover:text-foreground transition-colors"
             >
               Shelved
             </Link>
