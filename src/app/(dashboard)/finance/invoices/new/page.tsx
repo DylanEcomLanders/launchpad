@@ -6,7 +6,7 @@ import Link from "next/link";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { ArrowPathIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { paymentTerms, type PaymentTerm } from "@/lib/config";
-import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { inputClass, selectClass, textareaClass } from "@/lib/form-styles";
 import { fmtMoney } from "@/lib/finance/data";
 import {
   calculateVatBreakdown,
@@ -35,6 +35,23 @@ import type {
   InvoicePaymentMethod,
   CompanyProfile,
 } from "@/lib/finance/types";
+
+/* Field label matching the DESIGN spec: text-2xs uppercase tracking-wider
+ * text-subtle font-medium. Used for every form field label on this page. */
+const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5";
+
+/* Card-wrapped form section. Title whispers (token label), fields grouped
+ * inside one p-5 surface card. */
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="bg-surface border border-border rounded-lg p-5">
+      <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
 
 export default function NewInvoicePage() {
   const router = useRouter();
@@ -226,27 +243,24 @@ export default function NewInvoicePage() {
         <ArrowLeftIcon className="size-4" /> Back to invoices
       </Link>
 
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-foreground mb-1">New invoice</h2>
-        <p className="text-sm text-subtle">
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-foreground mb-1">New invoice</h2>
+        <p className="text-sm text-muted">
           Invoice number is auto-assigned on save (or override below)
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
 
-      <div className="space-y-10 max-w-3xl">
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            Invoice details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-3 max-w-3xl">
+        <Section title="Invoice details">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Invoice number (optional override)</label>
+              <label className={fieldLabel}>Invoice number (optional override)</label>
               <input
                 type="text"
                 value={invoiceNumber}
@@ -259,7 +273,7 @@ export default function NewInvoicePage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Payment terms</label>
+              <label className={fieldLabel}>Payment terms</label>
               <select
                 value={paymentTerm}
                 onChange={(e) => setPaymentTerm(e.target.value as PaymentTerm | "")}
@@ -274,7 +288,7 @@ export default function NewInvoicePage() {
               </select>
             </div>
             <div>
-              <label className={labelClass}>Invoice date</label>
+              <label className={fieldLabel}>Invoice date</label>
               <input
                 type="date"
                 value={invoiceDate}
@@ -283,7 +297,7 @@ export default function NewInvoicePage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Due date</label>
+              <label className={fieldLabel}>Due date</label>
               <input
                 type="date"
                 value={dueDate}
@@ -292,12 +306,9 @@ export default function NewInvoicePage() {
               />
             </div>
           </div>
-        </section>
+        </Section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            Client
-          </h3>
+        <Section title="Client">
           <ClientPicker
             clientId={clientId}
             onSelect={(c: Client | null) => {
@@ -310,25 +321,21 @@ export default function NewInvoicePage() {
             }}
           />
           {clientId && (
-            <div className="mt-3 px-4 py-3 bg-background border border-border rounded-lg text-xs text-subtle">
+            <div className="mt-3 px-4 py-3 bg-surface-raised border border-border rounded-md text-xs text-muted">
               <div className="text-sm font-medium text-foreground">{clientName}</div>
               {contactName && <div>{contactName}</div>}
               {clientEmail && <div>{clientEmail}</div>}
               {clientAddress && (
                 <div className="whitespace-pre-wrap mt-1">{clientAddress}</div>
               )}
-              <div className="mt-1 text-[10px] text-subtle">
+              <div className="mt-1 text-2xs text-subtle">
                 Country {clientCountry}. Snapshot will be written to the invoice on save.
               </div>
             </div>
           )}
-        </section>
+        </Section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            Line items
-          </h3>
-
+        <Section title="Line items">
           <div className="flex gap-2 mb-4">
             <select
               value={selectedDeliverable}
@@ -358,8 +365,8 @@ export default function NewInvoicePage() {
           </div>
 
           {items.length > 0 && (
-            <div className="border border-border rounded-lg overflow-hidden mb-4">
-              <div className="hidden md:grid grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-2.5 bg-surface-raised text-[10px] font-semibold uppercase tracking-wider text-subtle">
+            <div className="border border-border rounded-md overflow-hidden mb-4">
+              <div className="hidden md:grid grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-2.5 bg-surface-raised text-2xs font-medium uppercase tracking-wider text-subtle">
                 <span>Description</span>
                 <span className="text-center">Qty</span>
                 <span className="text-right">Unit price</span>
@@ -367,12 +374,10 @@ export default function NewInvoicePage() {
                 <span />
               </div>
 
-              {items.map((item, idx) => (
+              {items.map((item) => (
                 <div
                   key={item.id}
-                  className={`grid grid-cols-1 md:grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-3 border-t border-border items-center ${
-                    idx % 2 === 1 ? "bg-background" : ""
-                  }`}
+                  className="grid grid-cols-1 md:grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-3 border-t border-dashed border-border items-center"
                 >
                   {item.type === "deliverable" ? (
                     <span className="text-sm">{item.name}</span>
@@ -440,12 +445,9 @@ export default function NewInvoicePage() {
             <PlusIcon className="size-3.5" />
             Add custom line item
           </button>
-        </section>
+        </Section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            VAT
-          </h3>
+        <Section title="VAT">
           <VatModePicker
             mode={vatMode}
             onChange={(next) => {
@@ -455,50 +457,44 @@ export default function NewInvoicePage() {
             clientCountry={clientCountry}
           />
           {vatMode !== "off" && profile && !profile.vat_registered && (
-            <p className="text-[11px] text-warning mt-2">
+            <p className="text-2xs text-warning mt-2">
               Heads-up: profile is marked as not VAT registered. Update in Settings before sending.
             </p>
           )}
-        </section>
+        </Section>
 
         {items.length > 0 && (
-          <section>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-              Totals
-            </h3>
-            <div className="bg-background border border-border rounded-lg p-5 space-y-2">
+          <Section title="Totals">
+            <div className="bg-surface-raised border border-border rounded-md p-5 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-subtle">Subtotal</span>
+                <span className="text-muted">Subtotal</span>
                 <span className="font-medium tabular-nums">{fmtMoney(breakdown.subtotal)}</span>
               </div>
               {breakdown.vatAmount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-subtle">
+                  <span className="text-muted">
                     VAT ({Math.round(breakdown.vatRate * 100)}%)
                   </span>
                   <span className="font-medium tabular-nums">{fmtMoney(breakdown.vatAmount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-base pt-2 border-t border-border">
-                <span className="font-semibold">Total</span>
-                <span className="font-bold tabular-nums">{fmtMoney(breakdown.total)}</span>
+              <div className="flex justify-between text-sm pt-2 border-t border-dashed border-border">
+                <span className="font-semibold text-foreground">Total</span>
+                <span className="font-semibold tabular-nums">{fmtMoney(breakdown.total)}</span>
               </div>
               {breakdown.noteForInvoice && (
-                <p className="text-[11px] text-subtle mt-3 pt-3 border-t border-border">
+                <p className="text-2xs text-subtle mt-3 pt-3 border-t border-dashed border-border">
                   Will be printed on invoice: {breakdown.noteForInvoice}
                 </p>
               )}
             </div>
-          </section>
+          </Section>
         )}
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            Payment method
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Section title="Payment method">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="md:col-span-2">
-              <label className={labelClass}>How does this client pay?</label>
+              <label className={fieldLabel}>How does this client pay?</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as InvoicePaymentMethod)}
@@ -507,7 +503,7 @@ export default function NewInvoicePage() {
                 <option value="online">Whop (online)</option>
                 <option value="bank_transfer">Bank transfer (Tide)</option>
               </select>
-              <p className="text-[11px] text-subtle mt-1">
+              <p className="text-2xs text-subtle mt-1">
                 {paymentMethod === "online"
                   ? "PDF will say payment is processed via Whop. The Whop invoice is handled separately."
                   : "Bank details below print on the invoice PDF."}
@@ -516,7 +512,7 @@ export default function NewInvoicePage() {
             {paymentMethod === "bank_transfer" && (
               <>
                 <div>
-                  <label className={labelClass}>Bank name</label>
+                  <label className={fieldLabel}>Bank name</label>
                   <input
                     type="text"
                     value={bankName}
@@ -526,7 +522,7 @@ export default function NewInvoicePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Account name</label>
+                  <label className={fieldLabel}>Account name</label>
                   <input
                     type="text"
                     value={accountName}
@@ -536,7 +532,7 @@ export default function NewInvoicePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Sort code</label>
+                  <label className={fieldLabel}>Sort code</label>
                   <input
                     type="text"
                     value={sortCode}
@@ -546,7 +542,7 @@ export default function NewInvoicePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Account number</label>
+                  <label className={fieldLabel}>Account number</label>
                   <input
                     type="text"
                     value={accountNumber}
@@ -559,7 +555,7 @@ export default function NewInvoicePage() {
             )}
           </div>
           <div className="mt-4">
-            <label className={labelClass}>Notes</label>
+            <label className={fieldLabel}>Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -568,13 +564,13 @@ export default function NewInvoicePage() {
               className={textareaClass}
             />
           </div>
-        </section>
+        </Section>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+        <div className="flex flex-col sm:flex-row gap-3 pt-1">
           <button
             onClick={() => save("draft")}
             disabled={!canSave || saving}
-            className="flex items-center justify-center gap-2 px-5 py-3 bg-surface border border-border text-foreground text-sm font-medium rounded-md hover:bg-background transition-colors disabled:opacity-30"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-surface border border-border text-foreground text-sm font-medium rounded-md hover:bg-surface-raised transition-colors disabled:opacity-30"
           >
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : null}
             Save as draft

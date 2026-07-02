@@ -109,7 +109,7 @@ export default function MonthlyCostsPage() {
   }, [active]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Page intro */}
       <div>
         <h2 className="text-lg font-semibold text-foreground">Monthly costs</h2>
@@ -130,53 +130,53 @@ export default function MonthlyCostsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border border-border bg-surface text-foreground p-5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-1">
+        <div className="bg-surface border border-border rounded-lg p-5">
+          <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Total per month
-          </p>
-          <p className="text-3xl font-bold tabular-nums">
+          </div>
+          <div className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
             {fmtMoneyShort(monthlyTotal)}
-          </p>
+          </div>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-1">
+        <div className="bg-surface border border-border rounded-lg p-5">
+          <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Per year
-          </p>
-          <p className="text-3xl font-bold tabular-nums text-foreground">
+          </div>
+          <div className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
             {fmtMoneyShort(annualTotal)}
-          </p>
+          </div>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-1">
+        <div className="bg-surface border border-border rounded-lg p-5">
+          <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Active lines
-          </p>
-          <p className="text-3xl font-bold tabular-nums text-foreground">
+          </div>
+          <div className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
             {active.length}
-          </p>
+          </div>
         </div>
       </div>
 
       {/* Category breakdown */}
       {byCategory.length > 0 && (
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-3">
+        <div className="bg-surface border border-border rounded-lg p-5">
+          <h3 className="text-sm font-medium text-foreground mb-4">
             By category, per month
-          </p>
+          </h3>
           <div className="space-y-2.5">
             {byCategory.map(([cat, total]) => (
-              <div key={cat} className="flex items-center gap-3">
-                <span className="text-xs text-foreground w-40 shrink-0 truncate">
+              <div key={cat} className="flex items-center gap-3 text-xs">
+                <span className="text-muted w-40 shrink-0 truncate">
                   {EXPENSE_CATEGORY_LABELS[cat]}
                 </span>
-                <div className="flex-1 h-2 bg-surface-raised rounded-full overflow-hidden">
+                <div className="flex-1 h-1 rounded-full bg-surface-raised overflow-hidden">
                   <div
-                    className="h-full bg-surface rounded-full"
+                    className="h-full rounded-full bg-subtle"
                     style={{
                       width: `${monthlyTotal > 0 ? (total / monthlyTotal) * 100 : 0}%`,
                     }}
                   />
                 </div>
-                <span className="text-xs font-semibold tabular-nums text-foreground w-20 text-right shrink-0">
+                <span className="tabular-nums text-foreground w-20 text-right shrink-0">
                   {fmtMoney(total)}
                 </span>
               </div>
@@ -186,10 +186,10 @@ export default function MonthlyCostsPage() {
       )}
 
       {/* Add a cost */}
-      <div className="rounded-xl border border-border bg-surface p-4">
+      <div className="bg-surface border border-border rounded-lg p-5">
         <div className="flex flex-col md:flex-row gap-2 md:items-end">
           <div className="flex-1">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-subtle mb-1.5">
+            <label className="block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">
               Cost
             </label>
             <input
@@ -201,7 +201,7 @@ export default function MonthlyCostsPage() {
             />
           </div>
           <div className="w-full md:w-44">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-subtle mb-1.5">
+            <label className="block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">
               Category
             </label>
             <select
@@ -217,7 +217,7 @@ export default function MonthlyCostsPage() {
             </select>
           </div>
           <div className="w-full md:w-32">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-subtle mb-1.5">
+            <label className="block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">
               Amount
             </label>
             <input
@@ -231,7 +231,7 @@ export default function MonthlyCostsPage() {
             />
           </div>
           <div className="w-full md:w-36">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-subtle mb-1.5">
+            <label className="block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">
               Frequency
             </label>
             <select
@@ -249,7 +249,7 @@ export default function MonthlyCostsPage() {
           <button
             onClick={addCost}
             disabled={!draftName.trim()}
-            className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <PlusIcon className="size-4" />
             Add
@@ -259,21 +259,21 @@ export default function MonthlyCostsPage() {
 
       {/* List */}
       {hydrated && items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-surface p-10 text-center">
+        <div className="bg-surface border border-border rounded-lg p-12 text-center">
           <p className="text-sm text-subtle">
             No costs yet. Add your recurring outgoings above to see your monthly
             burn.
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-surface overflow-hidden">
+        <div className="bg-surface border border-border rounded-lg overflow-hidden">
           {/* Header (desktop) */}
-          <div className="hidden md:grid grid-cols-[1fr_160px_120px_140px_110px_44px] gap-3 px-4 py-2.5 border-b border-border bg-background">
+          <div className="hidden md:grid grid-cols-[1fr_160px_120px_140px_110px_44px] gap-3 px-5 py-3 border-b border-dashed border-border">
             {["Cost", "Category", "Amount", "Frequency", "Per month", ""].map(
               (h, i) => (
                 <span
                   key={i}
-                  className={`text-[10px] font-bold uppercase tracking-wider text-subtle ${i === 4 ? "text-right" : ""}`}
+                  className={`text-2xs uppercase tracking-wider font-medium text-subtle ${i === 4 ? "text-right" : ""}`}
                 >
                   {h}
                 </span>
@@ -281,22 +281,22 @@ export default function MonthlyCostsPage() {
             )}
           </div>
 
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-dashed divide-border">
             {items.map((it) => (
               <div
                 key={it.id}
-                className={`grid grid-cols-2 md:grid-cols-[1fr_160px_120px_140px_110px_44px] gap-2 md:gap-3 px-4 py-3 md:items-center ${it.active ? "" : "opacity-50"}`}
+                className={`grid grid-cols-2 md:grid-cols-[1fr_160px_120px_140px_110px_44px] gap-2 md:gap-3 px-5 py-3 md:items-center ${it.active ? "" : "opacity-50"}`}
               >
                 {/* Name */}
                 <input
-                  className="col-span-2 md:col-span-1 w-full bg-transparent text-sm font-medium text-foreground focus:outline-none focus:bg-background rounded px-1 py-1 -mx-1"
+                  className="col-span-2 md:col-span-1 w-full bg-transparent text-sm font-medium text-foreground focus:outline-none focus:bg-surface-raised rounded px-1 py-1 -mx-1"
                   value={it.name}
                   onChange={(e) => patchLocal(it.id, { name: e.target.value })}
                   onBlur={(e) => persist(it.id, { name: e.target.value.trim() })}
                 />
                 {/* Category */}
                 <select
-                  className="w-full bg-transparent text-xs text-subtle focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-background"
+                  className="w-full bg-transparent text-xs text-subtle focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-surface-raised"
                   value={it.category}
                   onChange={(e) => {
                     const category = e.target.value as ExpenseCategory;
@@ -316,7 +316,7 @@ export default function MonthlyCostsPage() {
                   <input
                     type="number"
                     inputMode="decimal"
-                    className="w-full bg-transparent text-sm tabular-nums text-foreground focus:outline-none focus:bg-background rounded px-1 py-1"
+                    className="w-full bg-transparent text-sm tabular-nums text-foreground focus:outline-none focus:bg-surface-raised rounded px-1 py-1"
                     value={it.amount}
                     onChange={(e) =>
                       patchLocal(it.id, { amount: Number(e.target.value) || 0 })
@@ -328,7 +328,7 @@ export default function MonthlyCostsPage() {
                 </div>
                 {/* Frequency */}
                 <select
-                  className="w-full bg-transparent text-xs text-subtle focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-background"
+                  className="w-full bg-transparent text-xs text-subtle focus:outline-none rounded px-1 py-1 cursor-pointer hover:bg-surface-raised"
                   value={it.frequency}
                   onChange={(e) => {
                     const frequency = e.target.value as RecurringFrequency;
@@ -345,7 +345,7 @@ export default function MonthlyCostsPage() {
                 {/* Per month */}
                 <span className="text-sm font-semibold tabular-nums text-foreground md:text-right">
                   {fmtMoney(toMonthly(it.amount, it.frequency))}
-                  <span className="md:hidden text-[10px] font-normal text-subtle">
+                  <span className="md:hidden text-2xs font-normal text-subtle">
                     {" "}
                     / mo
                   </span>
@@ -358,10 +358,10 @@ export default function MonthlyCostsPage() {
                       persist(it.id, { active: !it.active });
                     }}
                     title={it.active ? "Pause (exclude from totals)" : "Activate"}
-                    className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded transition-colors ${
+                    className={`text-2xs font-medium uppercase tracking-wider px-2 py-1 rounded transition-colors ${
                       it.active
                         ? "text-subtle hover:bg-surface-raised"
-                        : "text-warning bg-warning/15"
+                        : "text-warning bg-warning/10"
                     }`}
                   >
                     {it.active ? "On" : "Off"}

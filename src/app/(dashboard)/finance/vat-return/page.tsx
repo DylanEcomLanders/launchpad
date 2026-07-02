@@ -92,19 +92,19 @@ export default function VatReturnPage() {
   }
 
   if (!hydrated) {
-    return <div className="h-96 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-surface rounded-lg border border-border animate-pulse" />;
   }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-foreground mb-1">VAT return</h2>
-        <p className="text-sm text-subtle">
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">VAT return</h2>
+        <p className="text-sm text-subtle mt-0.5">
           Standard 9-box HMRC summary for any period, plus a CSV pack the accountant can drop straight into filing.
         </p>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div className="flex flex-wrap items-end gap-3">
           <div>
             <label className={labelClass}>Period</label>
@@ -155,17 +155,17 @@ export default function VatReturnPage() {
         </div>
         <button
           onClick={downloadPack}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-lg hover:opacity-90"
         >
           <ArrowDownTrayIcon className="size-4" /> Download VAT pack (.zip)
         </button>
       </div>
 
-      <p className="text-xs text-subtle mb-6">
+      <p className="text-2xs text-subtle">
         {ret.period.start} → {ret.period.end} · {ret.sales.length} sales · {ret.purchases.length} purchases
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <BoxRow num={1} label="VAT due on sales (output VAT)" value={ret.box1_vatOnSales} primary />
         <BoxRow num={2} label="VAT due on EU acquisitions (NI only)" value={ret.box2_vatOnAcquisitions} muted />
         <BoxRow num={3} label="Total VAT due (1 + 2)" value={ret.box3_totalVatDue} primary />
@@ -184,48 +184,48 @@ export default function VatReturnPage() {
       </div>
 
       {ret.reverseChargeTotal > 0 && (
-        <div className="mb-6 px-4 py-3 bg-info/10 border border-info/20 rounded-lg text-sm text-info">
+        <div className="bg-info/10 border border-info/20 rounded-lg px-4 py-3 text-sm text-info">
           <strong>Reverse charge:</strong> {fmtMoney(ret.reverseChargeTotal)} of non-UK B2B sales in
           this period are zero-VAT under reverse charge. The net value is included in Box 6; output
           VAT on those supplies is zero.
         </div>
       )}
 
-      <div className="bg-warning/15 border border-warning/30 rounded-xl p-4 text-xs text-warning mb-8">
+      <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 text-xs text-warning">
         <strong>Estimate only - confirm with accountant before filing.</strong> {ret.noteForAccountant}
       </div>
 
       {ret.sales.length > 0 && (
-        <details className="bg-surface border border-border rounded-xl shadow-[var(--shadow-soft)] mb-4" open>
-          <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-foreground flex items-center justify-between">
+        <details className="bg-surface border border-border rounded-lg" open>
+          <summary className="px-5 py-3 cursor-pointer text-sm font-medium text-foreground flex items-center justify-between">
             <span>Sales detail ({ret.sales.length})</span>
             <span className="text-xs font-normal text-subtle">
               Net {fmtMoney(ret.box6_totalSalesExVat)} · VAT {fmtMoney(ret.box1_vatOnSales)}
             </span>
           </summary>
-          <div className="overflow-x-auto border-t border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
-                <tr>
-                  <th className="text-left px-4 py-2 font-semibold">Invoice #</th>
-                  <th className="text-left px-4 py-2 font-semibold">Date</th>
-                  <th className="text-left px-4 py-2 font-semibold">Client</th>
-                  <th className="text-left px-4 py-2 font-semibold">Treatment</th>
-                  <th className="text-right px-4 py-2 font-semibold">Net</th>
-                  <th className="text-right px-4 py-2 font-semibold">VAT</th>
-                  <th className="text-right px-4 py-2 font-semibold">Gross</th>
+          <div className="overflow-x-auto border-t border-dashed border-border">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-dashed border-border">
+                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Invoice #</th>
+                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Date</th>
+                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Client</th>
+                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Treatment</th>
+                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Net</th>
+                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">VAT</th>
+                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Gross</th>
                 </tr>
               </thead>
               <tbody>
                 {ret.sales.map((s, i) => (
-                  <tr key={i} className="border-t border-border">
-                    <td className="px-4 py-2 font-medium">{s.invoice_number}</td>
-                    <td className="px-4 py-2 text-subtle">{s.date}</td>
-                    <td className="px-4 py-2">{s.client_name}</td>
-                    <td className="px-4 py-2 text-subtle text-xs">{s.treatment}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(s.net)}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(s.vat)}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(s.gross)}</td>
+                  <tr key={i} className="border-b border-dashed border-border last:border-0">
+                    <td className="px-5 py-3 text-sm text-foreground font-medium">{s.invoice_number}</td>
+                    <td className="px-5 py-3 text-xs text-muted tabular-nums">{s.date}</td>
+                    <td className="px-5 py-3 text-sm text-foreground">{s.client_name}</td>
+                    <td className="px-5 py-3 text-xs text-muted">{s.treatment}</td>
+                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(s.net)}</td>
+                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(s.vat)}</td>
+                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(s.gross)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -235,34 +235,34 @@ export default function VatReturnPage() {
       )}
 
       {ret.purchases.length > 0 && (
-        <details className="bg-surface border border-border rounded-xl shadow-[var(--shadow-soft)]" open>
-          <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-foreground flex items-center justify-between">
+        <details className="bg-surface border border-border rounded-lg" open>
+          <summary className="px-5 py-3 cursor-pointer text-sm font-medium text-foreground flex items-center justify-between">
             <span>Purchases detail ({ret.purchases.length})</span>
             <span className="text-xs font-normal text-subtle">
               Net {fmtMoney(ret.box7_totalPurchasesExVat)} · VAT {fmtMoney(ret.box4_vatReclaimed)}
             </span>
           </summary>
-          <div className="overflow-x-auto border-t border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
-                <tr>
-                  <th className="text-left px-4 py-2 font-semibold">Date</th>
-                  <th className="text-left px-4 py-2 font-semibold">Supplier</th>
-                  <th className="text-left px-4 py-2 font-semibold">Category</th>
-                  <th className="text-right px-4 py-2 font-semibold">Net</th>
-                  <th className="text-right px-4 py-2 font-semibold">VAT</th>
-                  <th className="text-right px-4 py-2 font-semibold">Gross</th>
+          <div className="overflow-x-auto border-t border-dashed border-border">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-dashed border-border">
+                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Date</th>
+                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Supplier</th>
+                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Category</th>
+                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Net</th>
+                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">VAT</th>
+                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Gross</th>
                 </tr>
               </thead>
               <tbody>
                 {ret.purchases.map((p, i) => (
-                  <tr key={i} className="border-t border-border">
-                    <td className="px-4 py-2 text-subtle">{p.date}</td>
-                    <td className="px-4 py-2 font-medium">{p.supplier_name}</td>
-                    <td className="px-4 py-2 text-subtle text-xs">{p.category}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(p.net)}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(p.vat)}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtMoney(p.gross)}</td>
+                  <tr key={i} className="border-b border-dashed border-border last:border-0">
+                    <td className="px-5 py-3 text-xs text-muted tabular-nums">{p.date}</td>
+                    <td className="px-5 py-3 text-sm text-foreground font-medium">{p.supplier_name}</td>
+                    <td className="px-5 py-3 text-xs text-muted">{p.category}</td>
+                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(p.net)}</td>
+                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(p.vat)}</td>
+                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(p.gross)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -272,7 +272,7 @@ export default function VatReturnPage() {
       )}
 
       {ret.sales.length === 0 && ret.purchases.length === 0 && (
-        <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+        <div className="bg-surface border border-border rounded-lg p-12 text-center">
           <p className="text-sm text-subtle">No invoices or expenses in this period.</p>
         </div>
       )}
@@ -303,17 +303,17 @@ function BoxRow({
         : "text-foreground";
   return (
     <div
-      className={`bg-surface border rounded-xl p-4 shadow-[var(--shadow-soft)] flex items-center justify-between ${
+      className={`bg-surface border border-border rounded-lg p-5 flex items-center justify-between ${
         muted ? "opacity-60" : ""
-      } ${primary ? "border-border" : "border-border"}`}
+      }`}
     >
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-surface-raised text-[10px] font-bold text-subtle">
+        <span className="inline-flex items-center justify-center size-6 rounded-md bg-surface-raised text-2xs font-medium tabular-nums text-subtle">
           {num}
         </span>
         <span className="text-sm text-foreground">{label}</span>
       </div>
-      <span className={`text-base font-semibold tabular-nums ${color}`}>
+      <span className={`text-lg font-semibold tabular-nums ${color}`}>
         {fmtMoney(value)}
       </span>
     </div>

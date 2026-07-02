@@ -9,7 +9,7 @@ export default function FinanceLayout({
 }) {
   return (
     <FinanceGate>
-      <div className="max-w-6xl mx-auto px-6 md:px-12 py-5 md:py-6">
+      <div className="px-6 md:px-10 py-5 md:py-6">
         {/* Title + tabs share one row to reclaim vertical space.
          * "Founder access" eyebrow dropped since the passcode gate
          * already conveys that. */}

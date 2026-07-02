@@ -28,7 +28,16 @@ import {
   type ExpenseStatus,
   type RecurringFrequency,
 } from "@/lib/finance/types";
-import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { inputClass, selectClass, textareaClass } from "@/lib/form-styles";
+
+const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-medium mb-2";
+
+const STATUS_BADGE: Record<ExpenseStatus, { cls: string; label: string }> = {
+  due: { cls: "bg-warning/10 text-warning", label: "Due" },
+  paid: { cls: "bg-success/10 text-success", label: "Paid" },
+  overdue: { cls: "bg-danger/10 text-danger", label: "Overdue" },
+  disputed: { cls: "bg-warning/10 text-warning", label: "Disputed" },
+};
 
 export default function ExpenseDetailPage() {
   const params = useParams<{ id: string }>();
@@ -213,11 +222,11 @@ export default function ExpenseDetailPage() {
     }
   }
 
-  if (loading) return <div className="h-48 bg-background rounded-xl animate-pulse" />;
+  if (loading) return <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />;
 
   if (!expense) {
     return (
-      <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+      <div className="bg-surface border border-border rounded-lg p-12 text-center">
         <p className="text-sm text-subtle mb-3">Expense not found</p>
         <Link href="/finance/expenses" className="text-sm text-foreground underline">
           Back to expenses
@@ -227,91 +236,19 @@ export default function ExpenseDetailPage() {
   }
 
   const status = deriveExpenseStatus(expense);
+  const badge = STATUS_BADGE[status];
 
   return (
-    <div>
+    <div className="space-y-3">
       <Link
         href="/finance/expenses"
-        className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground transition-colors"
       >
         <ArrowLeftIcon className="size-4" /> Back to expenses
       </Link>
 
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-1">
-            {expense.supplier_name}
-          </h2>
-          <p className="text-sm text-subtle">
-            {EXPENSE_CATEGORY_LABELS[expense.category]}
-            {expense.recurring ? ` · ${expense.recurring} recurring` : ""} · Due{" "}
-            {fmtDateUK(expense.date_due)}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {!editing && (
-            <button
-              onClick={startEdit}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background"
-            >
-              <PencilSquareIcon className="size-4" /> Edit
-            </button>
-          )}
-          {!editing && expense.recurring && (
-            <button
-              onClick={rollForward}
-              disabled={rolling}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background disabled:opacity-40"
-            >
-              <ForwardIcon className="size-4" /> {rolling ? "Rolling..." : "Roll forward"}
-            </button>
-          )}
-          {!editing && status !== "paid" && status !== "disputed" && (
-            <button
-              onClick={markPaid}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-success text-white text-sm rounded-lg hover:opacity-90"
-            >
-              <CheckIcon className="size-4" /> Mark paid
-            </button>
-          )}
-          {!editing && status === "paid" && (
-            <button
-              onClick={markDue}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background"
-            >
-              Mark unpaid
-            </button>
-          )}
-          {!editing && status !== "disputed" && status !== "paid" && (
-            <button
-              onClick={() => changeStatus("disputed")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-warning text-sm rounded-lg hover:bg-surface-raised"
-            >
-              Mark disputed
-            </button>
-          )}
-          {!editing && status === "disputed" && (
-            <button
-              onClick={() => changeStatus("due")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background"
-            >
-              Resolve dispute
-            </button>
-          )}
-          {!editing && (
-            <button
-              onClick={handleDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-danger text-sm rounded-lg hover:bg-surface-raised"
-            >
-              <TrashIcon className="size-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
       {error && (
-        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
+        <div className="px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
@@ -325,102 +262,189 @@ export default function ExpenseDetailPage() {
           saving={saving}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
-            <Card title="Amount">
-              <KV label="Amount" value={fmtMoney(expense.amount)} />
-              <KV label="VAT included" value={expense.vat_included ? "Yes" : "No"} />
-              {expense.vat_amount !== undefined && (
-                <KV label="VAT amount" value={fmtMoney(expense.vat_amount)} />
-              )}
-            </Card>
-
-            {expense.description && (
-              <Card title="Description">
-                <p className="text-sm whitespace-pre-wrap">{expense.description}</p>
-              </Card>
-            )}
-
-            {expense.notes && (
-              <Card title="Notes">
-                <p className="text-sm whitespace-pre-wrap">{expense.notes}</p>
-              </Card>
-            )}
-
-            {expense.file_name && (
-              <Card title="Document">
-                <button
-                  onClick={openDoc}
-                  disabled={openingDoc}
-                  className="inline-flex items-center gap-2 text-sm text-foreground underline hover:opacity-80 disabled:opacity-40"
-                >
-                  {openingDoc ? (
-                    <ArrowPathIcon className="size-4 animate-spin" />
-                  ) : (
-                    <DocumentIcon className="size-4" />
-                  )}{" "}
-                  {expense.file_name}
-                </button>
-                <p className="text-[11px] text-subtle mt-1">
-                  Link signed on click, expires 15min
+        <>
+          {/* Header card: amount is the dominant value */}
+          <div className="bg-surface border border-border rounded-lg p-5">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    {expense.supplier_name}
+                  </h2>
+                  <span className={`text-2xs uppercase tracking-wider font-medium px-2 py-0.5 rounded ${badge.cls}`}>
+                    {badge.label}
+                  </span>
+                </div>
+                <p className="text-2xs text-subtle mt-1">
+                  {EXPENSE_CATEGORY_LABELS[expense.category]}
+                  {expense.recurring ? ` · ${expense.recurring} recurring` : ""} · Due{" "}
+                  {fmtDateUK(expense.date_due)}
                 </p>
-              </Card>
-            )}
+                <div className="mt-4 text-2xl font-semibold tabular-nums tracking-tight leading-none text-foreground">
+                  {fmtMoney(expense.amount)}
+                </div>
+                {expense.vat_included && (
+                  <p className="text-2xs text-subtle mt-1.5">
+                    incl VAT{expense.vat_amount !== undefined ? ` · ${fmtMoney(expense.vat_amount)}` : ""}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={startEdit}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised transition-colors"
+                >
+                  <PencilSquareIcon className="size-4" /> Edit
+                </button>
+                {expense.recurring && (
+                  <button
+                    onClick={rollForward}
+                    disabled={rolling}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised disabled:opacity-40 transition-colors"
+                  >
+                    <ForwardIcon className="size-4" /> {rolling ? "Rolling..." : "Roll forward"}
+                  </button>
+                )}
+                {status !== "paid" && status !== "disputed" && (
+                  <button
+                    onClick={markPaid}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
+                  >
+                    <CheckIcon className="size-4" /> Mark paid
+                  </button>
+                )}
+                {status === "paid" && (
+                  <button
+                    onClick={markDue}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised transition-colors"
+                  >
+                    Mark unpaid
+                  </button>
+                )}
+                {status !== "disputed" && status !== "paid" && (
+                  <button
+                    onClick={() => changeStatus("disputed")}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-warning text-xs rounded-md hover:bg-surface-raised transition-colors"
+                  >
+                    Mark disputed
+                  </button>
+                )}
+                {status === "disputed" && (
+                  <button
+                    onClick={() => changeStatus("due")}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised transition-colors"
+                  >
+                    Resolve dispute
+                  </button>
+                )}
+                <button
+                  onClick={handleDelete}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-danger text-xs rounded-md hover:bg-surface-raised transition-colors"
+                >
+                  <TrashIcon className="size-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <Card title="Status">
-              <div>
-                <div className="text-[11px] uppercase tracking-wider text-subtle mb-1">
-                  Change to
-                </div>
-                <select
-                  value={status}
-                  onChange={(e) => changeStatus(e.target.value as ExpenseStatus)}
-                  className={selectClass}
-                >
-                  <option value="due">Due</option>
-                  <option value="paid">Paid</option>
-                  {status === "overdue" && <option value="overdue">Overdue (auto)</option>}
-                  <option value="disputed">Disputed</option>
-                </select>
-              </div>
-              <KV label="Date due" value={fmtDateUK(expense.date_due)} />
-              {expense.date_paid && <KV label="Date paid" value={fmtDateUK(expense.date_paid)} />}
-              {expense.disputed_at && (
-                <KV label="Disputed" value={fmtDateUK(expense.disputed_at)} />
-              )}
-              {expense.disputed_reason && (
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider text-subtle mb-0.5">
-                    Reason
-                  </div>
-                  <div className="text-sm text-foreground whitespace-pre-wrap">
-                    {expense.disputed_reason}
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {expense.recurring && (
-              <Card title="Recurring">
-                <KV label="Frequency" value={expense.recurring} />
-                {expense.recurring_next_date && (
-                  <KV label="Next occurrence" value={fmtDateUK(expense.recurring_next_date)} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="md:col-span-2 space-y-3">
+              <Card title="Amount">
+                <KV label="Amount" value={fmtMoney(expense.amount)} />
+                <KV label="VAT included" value={expense.vat_included ? "Yes" : "No"} />
+                {expense.vat_amount !== undefined && (
+                  <KV label="VAT amount" value={fmtMoney(expense.vat_amount)} />
                 )}
               </Card>
-            )}
 
-            {expense.legacy_source && (
-              <Card title="Migration source">
-                <p className="text-[11px] text-subtle">
-                  Imported from {expense.legacy_source}
-                  {expense.legacy_id ? ` (${expense.legacy_id})` : ""}
-                </p>
+              {expense.description && (
+                <Card title="Description">
+                  <p className="text-sm text-muted whitespace-pre-wrap leading-relaxed">{expense.description}</p>
+                </Card>
+              )}
+
+              {expense.notes && (
+                <Card title="Notes">
+                  <p className="text-sm text-muted whitespace-pre-wrap leading-relaxed">{expense.notes}</p>
+                </Card>
+              )}
+
+              {expense.file_name && (
+                <Card title="Document">
+                  <button
+                    onClick={openDoc}
+                    disabled={openingDoc}
+                    className="inline-flex items-center gap-2 text-sm text-foreground underline hover:opacity-80 disabled:opacity-40"
+                  >
+                    {openingDoc ? (
+                      <ArrowPathIcon className="size-4 animate-spin" />
+                    ) : (
+                      <DocumentIcon className="size-4" />
+                    )}{" "}
+                    {expense.file_name}
+                  </button>
+                  <p className="text-2xs text-subtle mt-1">
+                    Link signed on click, expires 15min
+                  </p>
+                </Card>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <Card title="Status">
+                <div>
+                  <div className="text-2xs uppercase tracking-wider text-subtle font-medium mb-2">
+                    Change to
+                  </div>
+                  <select
+                    value={status}
+                    onChange={(e) => changeStatus(e.target.value as ExpenseStatus)}
+                    className={selectClass}
+                  >
+                    <option value="due">Due</option>
+                    <option value="paid">Paid</option>
+                    {status === "overdue" && <option value="overdue">Overdue (auto)</option>}
+                    <option value="disputed">Disputed</option>
+                  </select>
+                </div>
+                <KV label="Date due" value={fmtDateUK(expense.date_due)} />
+                {expense.date_paid && <KV label="Date paid" value={fmtDateUK(expense.date_paid)} />}
+                {expense.disputed_at && (
+                  <KV label="Disputed" value={fmtDateUK(expense.disputed_at)} />
+                )}
+                {expense.disputed_reason && (
+                  <div>
+                    <div className="text-2xs uppercase tracking-wider text-subtle font-medium mb-0.5">
+                      Reason
+                    </div>
+                    <div className="text-sm text-foreground whitespace-pre-wrap">
+                      {expense.disputed_reason}
+                    </div>
+                  </div>
+                )}
               </Card>
-            )}
+
+              {expense.recurring && (
+                <Card title="Recurring">
+                  <KV label="Frequency" value={expense.recurring} />
+                  {expense.recurring_next_date && (
+                    <KV label="Next occurrence" value={fmtDateUK(expense.recurring_next_date)} />
+                  )}
+                </Card>
+              )}
+
+              {expense.legacy_source && (
+                <Card title="Migration source">
+                  <p className="text-2xs text-subtle">
+                    Imported from {expense.legacy_source}
+                    {expense.legacy_id ? ` (${expense.legacy_id})` : ""}
+                  </p>
+                </Card>
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -444,14 +468,12 @@ function EditExpenseForm({
   }
 
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div className="bg-surface border border-border rounded-lg p-5 space-y-6">
       <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-          Edit expense
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="text-sm font-medium text-foreground mb-4">Edit expense</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Supplier / payee</label>
+            <label className={fieldLabel}>Supplier / payee</label>
             <input
               type="text"
               value={draft.supplier_name}
@@ -460,7 +482,7 @@ function EditExpenseForm({
             />
           </div>
           <div>
-            <label className={labelClass}>Category</label>
+            <label className={fieldLabel}>Category</label>
             <select
               value={draft.category}
               onChange={(e) => update("category", e.target.value as ExpenseCategory)}
@@ -474,7 +496,7 @@ function EditExpenseForm({
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className={labelClass}>Description</label>
+            <label className={fieldLabel}>Description</label>
             <input
               type="text"
               value={draft.description || ""}
@@ -485,13 +507,11 @@ function EditExpenseForm({
         </div>
       </section>
 
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-          Amount & VAT
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="pt-6 border-t border-dashed border-border">
+        <h3 className="text-sm font-medium text-foreground mb-4">Amount &amp; VAT</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Amount (gross, £)</label>
+            <label className={fieldLabel}>Amount (gross, £)</label>
             <input
               type="number"
               min={0}
@@ -502,20 +522,20 @@ function EditExpenseForm({
             />
           </div>
           <div>
-            <label className={labelClass}>VAT included?</label>
-            <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface border border-border rounded-lg cursor-pointer">
+            <label className={fieldLabel}>VAT included?</label>
+            <label className="inline-flex w-full items-center gap-2 px-3 py-2.5 bg-surface-raised border border-border rounded-lg cursor-pointer">
               <input
                 type="checkbox"
                 checked={draft.vat_included}
                 onChange={(e) => update("vat_included", e.target.checked)}
                 className="rounded border-border"
               />
-              <span className="text-sm">Amount includes UK VAT (20%)</span>
+              <span className="text-sm text-muted">Amount includes UK VAT (20%)</span>
             </label>
           </div>
           {draft.vat_included && (
             <div>
-              <label className={labelClass}>VAT amount (£)</label>
+              <label className={fieldLabel}>VAT amount (£)</label>
               <input
                 type="number"
                 min={0}
@@ -532,13 +552,11 @@ function EditExpenseForm({
         </div>
       </section>
 
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-          Dates & Recurring
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="pt-6 border-t border-dashed border-border">
+        <h3 className="text-sm font-medium text-foreground mb-4">Dates &amp; recurring</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className={labelClass}>Date due</label>
+            <label className={fieldLabel}>Date due</label>
             <input
               type="date"
               value={draft.date_due}
@@ -547,7 +565,7 @@ function EditExpenseForm({
             />
           </div>
           <div>
-            <label className={labelClass}>Date paid</label>
+            <label className={fieldLabel}>Date paid</label>
             <input
               type="date"
               value={draft.date_paid || ""}
@@ -556,7 +574,7 @@ function EditExpenseForm({
             />
           </div>
           <div>
-            <label className={labelClass}>Recurring</label>
+            <label className={fieldLabel}>Recurring</label>
             <select
               value={draft.recurring || ""}
               onChange={(e) =>
@@ -573,10 +591,8 @@ function EditExpenseForm({
         </div>
       </section>
 
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-          Notes
-        </h3>
+      <section className="pt-6 border-t border-dashed border-border">
+        <h3 className="text-sm font-medium text-foreground mb-4">Notes</h3>
         <textarea
           value={draft.notes || ""}
           onChange={(e) => update("notes", e.target.value)}
@@ -585,17 +601,17 @@ function EditExpenseForm({
         />
       </section>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-border">
+      <div className="flex justify-end gap-3 pt-6 border-t border-dashed border-border">
         <button
           onClick={onCancel}
-          className="px-5 py-3 text-sm text-subtle hover:text-foreground"
+          className="px-4 py-2 text-xs text-subtle hover:text-foreground"
         >
           Cancel
         </button>
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -614,20 +630,18 @@ function nextOccurrence(date: string, freq: RecurringFrequency): string {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-subtle mb-3">
-        {title}
-      </h3>
-      <div className="space-y-2">{children}</div>
+    <div className="bg-surface border border-border rounded-lg p-5">
+      <h3 className="text-sm font-medium text-foreground mb-3">{title}</h3>
+      <div className="space-y-2.5">{children}</div>
     </div>
   );
 }
 
 function KV({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wider text-subtle mb-0.5">{label}</div>
-      <div className="text-sm text-foreground">{value}</div>
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-xs text-muted">{label}</span>
+      <span className="text-sm font-medium tabular-nums text-foreground">{value}</span>
     </div>
   );
 }
