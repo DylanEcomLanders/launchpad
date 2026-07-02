@@ -143,7 +143,7 @@ export function StrategyView() {
     <div className="mt-6">
       <p className="mb-4 text-[12px] text-subtle">
         {totalActive} in flight ·{" "}
-        <span className="font-semibold text-rose-700">{actCount} need attention</span>
+        <span className="font-semibold text-danger">{actCount} need attention</span>
       </p>
 
       <div className="space-y-4">
@@ -151,7 +151,7 @@ export function StrategyView() {
         <section className="overflow-hidden rounded-lg border border-border bg-surface">
           <div className="flex items-baseline justify-between border-b border-border px-4 py-2.5">
             <div className="flex items-baseline gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">Briefs</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">Briefs</span>
               <span className="text-[10px] tabular-nums text-subtle">{activeBriefs.length}</span>
               <span className="text-[11px] text-subtle">· Auto-added when onboarding lands on a pod · one row per client</span>
             </div>
@@ -208,7 +208,7 @@ export function StrategyView() {
         <section className="overflow-hidden rounded-lg border border-border bg-surface">
           <div className="flex items-baseline justify-between border-b border-border px-4 py-2.5">
             <div className="flex items-baseline gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700">Results</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">Results</span>
               <span className="text-[10px] tabular-nums text-subtle">{activeResults.length}</span>
               <span className="text-[11px] text-subtle">· Live tests · how long they have been running</span>
             </div>
@@ -289,20 +289,20 @@ export function StrategyView() {
 
 function briefStatusPill(b: BriefRow) {
   if (b.status === "needs_brief")
-    return <span className="inline-flex items-center rounded border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">Needs brief</span>;
+    return <span className="inline-flex items-center rounded border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger">Needs brief</span>;
   if (b.status === "drafting" && b.is_overdue)
-    return <span className="inline-flex items-center rounded border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">Drafting, overdue</span>;
+    return <span className="inline-flex items-center rounded border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger">Drafting, overdue</span>;
   if (b.status === "in_review")
-    return <span className="inline-flex items-center rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300">In review</span>;
-  return <span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-border">{BRIEF_STATUS_LABEL[b.status]}</span>;
+    return <span className="inline-flex items-center rounded border border-warning/20 bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning">In review</span>;
+  return <span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted">{BRIEF_STATUS_LABEL[b.status]}</span>;
 }
 
 function resultStatusPill(r: ResultRow) {
   if (r.status === "overdue")
-    return <span className="inline-flex items-center rounded border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">Read overdue</span>;
+    return <span className="inline-flex items-center rounded border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger">Read overdue</span>;
   if (r.status === "ready")
-    return <span className="inline-flex items-center rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">Ready to read</span>;
-  return <span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-border">{RESULT_STATUS_LABEL[r.status]}</span>;
+    return <span className="inline-flex items-center rounded border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">Ready to read</span>;
+  return <span className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted">{RESULT_STATUS_LABEL[r.status]}</span>;
 }
 
 // ─── Rows ────────────────────────────────────────────────────────────
@@ -319,15 +319,15 @@ function BriefTableRow({
     <tr className="group hover:bg-background">
       <td className="px-2 py-2"><TickButton onClick={onTick} /></td>
       <td className="px-3 py-2 text-[12px] font-semibold text-foreground whitespace-nowrap">
-        <a href="#" className="hover:text-violet-700 hover:underline">{b.client_name}</a>
+        <a href="#" className="hover:text-foreground hover:underline">{b.client_name}</a>
       </td>
       <td className="px-3 py-2 text-[11px] text-subtle whitespace-nowrap">{b.pod_id}</td>
       <td className="px-3 py-2">{briefStatusPill(b)}</td>
-      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${b.is_overdue ? "font-semibold text-rose-700" : "text-subtle"}`}>{b.onboarding_received}</td>
+      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${b.is_overdue ? "font-semibold text-danger" : "text-subtle"}`}>{b.onboarding_received}</td>
       <td className="px-3 py-2">
         <button
           onClick={onViewOnboarding}
-          className="inline-flex items-center gap-1 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium text-border hover:border-white hover:text-foreground"
+          className="inline-flex items-center gap-1 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium text-muted hover:border-border hover:text-foreground"
         >
           <EyeIcon className="h-3 w-3" />
           View ({b.deliverables.length})
@@ -344,13 +344,13 @@ function ResultTableRow({ r, onTick, onRemove }: { r: ResultRow; onTick: () => v
     <tr className="group hover:bg-background">
       <td className="px-2 py-2"><TickButton onClick={onTick} /></td>
       <td className="px-3 py-2 text-[12px] font-semibold text-foreground whitespace-nowrap">
-        <a href="#" className="hover:text-emerald-700 hover:underline">{r.client_name}</a>
+        <a href="#" className="hover:text-foreground hover:underline">{r.client_name}</a>
       </td>
       <td className="px-3 py-2 text-[11px] text-subtle whitespace-nowrap">{r.pod_id}</td>
       <td className="px-3 py-2 text-[12px] text-foreground">{r.project}</td>
       <td className="px-3 py-2">{resultStatusPill(r)}</td>
       <td className="px-3 py-2 text-[11px] text-subtle tabular-nums whitespace-nowrap">{r.live_since}</td>
-      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${isLong ? "font-semibold text-rose-700" : "text-border"}`}>Day {r.live_days}</td>
+      <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${isLong ? "font-semibold text-danger" : "text-subtle"}`}>Day {r.live_days}</td>
       <td className="px-2 py-2"><RowMenu onRemove={onRemove} /></td>
     </tr>
   );
@@ -392,7 +392,7 @@ function TickButton({ onClick }: { onClick: () => void }) {
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       title="Mark done"
-      className="grid h-4 w-4 place-items-center rounded border border-muted bg-surface text-transparent transition-colors hover:border-emerald-500 hover:text-emerald-600"
+      className="grid h-4 w-4 place-items-center rounded border border-muted bg-surface text-transparent transition-colors hover:border-success hover:text-success"
     >
       <CheckIcon className="h-3 w-3" />
     </button>
@@ -404,7 +404,7 @@ function DoneTickButton({ onClick }: { onClick: () => void }) {
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       title="Reopen"
-      className="grid h-4 w-4 place-items-center rounded border border-emerald-500 bg-emerald-500 text-white transition-colors hover:border-subtle hover:bg-surface hover:text-subtle"
+      className="grid h-4 w-4 place-items-center rounded border border-success bg-success text-white transition-colors hover:border-subtle hover:bg-surface hover:text-subtle"
     >
       <CheckIcon className="h-3 w-3" />
     </button>
@@ -435,7 +435,7 @@ function RowMenu({ onRemove }: { onRemove: () => void }) {
         <div className="absolute right-0 top-7 z-10 min-w-[140px] overflow-hidden rounded-md border border-border bg-surface shadow-lg">
           <button
             onClick={(e) => { e.stopPropagation(); onRemove(); setOpen(false); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] text-rose-700 hover:bg-rose-500/10"
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] text-danger hover:bg-danger/10"
           >
             <TrashIcon className="h-3 w-3" />
             Remove
@@ -478,7 +478,7 @@ function OnboardingPopup({ brief, onClose }: { brief: BriefRow; onClose: () => v
       <div className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between border-b border-border px-5 py-4">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">Onboarding · {brief.client_name}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">Onboarding · {brief.client_name}</div>
             <div className="mt-0.5 text-[16px] font-semibold text-foreground">{brief.deliverables.length} deliverables</div>
             <div className="mt-0.5 text-[11px] text-subtle">{brief.pod_id} · {brief.retainer ?? "—"} · Received {brief.onboarding_received}</div>
           </div>
@@ -499,7 +499,7 @@ function OnboardingPopup({ brief, onClose }: { brief: BriefRow; onClose: () => v
         </div>
         <div className="flex items-center justify-between border-t border-border bg-background px-5 py-3">
           <a href="#" className="text-[11px] font-medium text-foreground hover:underline">Open {brief.client_name} engagement →</a>
-          <button onClick={onClose} className="rounded-md border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-foreground hover:border-white">Close</button>
+          <button onClick={onClose} className="rounded-md border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-surface-hover">Close</button>
         </div>
       </div>
     </div>
@@ -520,8 +520,8 @@ function ModalShell({ title, onClose, children, onSave }: { title: string; onClo
         </div>
         <div className="space-y-3 px-5 py-4">{children}</div>
         <div className="flex items-center justify-end gap-2 border-t border-border bg-background px-5 py-2.5">
-          <button onClick={onClose} className="rounded-md border border-border bg-surface px-3 py-1.5 text-[11px] font-medium text-border hover:border-white hover:text-foreground">Cancel</button>
-          <button onClick={onSave} className="rounded-md bg-surface px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-foreground">Save</button>
+          <button onClick={onClose} className="rounded-md border border-border bg-surface px-3 py-1.5 text-[11px] font-medium text-muted hover:bg-surface-hover hover:text-foreground">Cancel</button>
+          <button onClick={onSave} className="rounded-md bg-foreground px-3 py-1.5 text-[11px] font-semibold text-background hover:opacity-90">Save</button>
         </div>
       </div>
     </div>
@@ -537,7 +537,7 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-const inputClass = "w-full rounded border border-border bg-surface px-2.5 py-1.5 text-[12px] text-foreground focus:border-white focus:outline-none";
+const inputClass = "w-full rounded border border-border bg-surface px-2.5 py-1.5 text-[12px] text-foreground focus:border-ring focus:outline-none";
 
 function AddBriefModal({ onClose, onSave }: { onClose: () => void; onSave: (b: Omit<BriefRow, "id" | "created_at" | "updated_at" | "done">) => void }) {
   const [client, setClient] = useState("");

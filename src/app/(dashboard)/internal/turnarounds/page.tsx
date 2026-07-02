@@ -92,7 +92,7 @@ export default function TurnaroundsPage() {
         </div>
 
         {/* Commitment banner */}
-        <div className="mb-10 p-5 border border-border bg-surface rounded-xl text-white">
+        <div className="mb-10 p-5 border border-border bg-surface rounded-xl text-foreground">
           <p className="text-sm leading-relaxed">
             <span className="font-semibold">These are commitments.</span>{" "}
             If we can&apos;t hit the internal target, flag in{" "}
@@ -132,7 +132,7 @@ export default function TurnaroundsPage() {
               </button>
               <button
                 onClick={handleSave}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-surface bg-foreground rounded-md hover:bg-white transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-surface bg-foreground rounded-md hover:bg-foreground transition-colors"
               >
                 {savedAt ? (
                   <>
@@ -192,7 +192,7 @@ export default function TurnaroundsPage() {
                                   internalDays: Math.max(0, parseInt(e.target.value, 10) || 0),
                                 })
                               }
-                              className="w-16 px-2 py-1 bg-surface border border-border rounded text-sm text-right tabular-nums focus:outline-none focus:border-white focus:ring-1 focus:ring-surface/10"
+                              className="w-16 px-2 py-1 bg-surface border border-border rounded text-sm text-right tabular-nums focus:outline-none focus:border-border focus:ring-1 focus:ring-surface/10"
                             />
                             <span className="text-xs text-subtle w-9">
                               {d.internalDays === 1 ? "day" : "days"}
@@ -209,7 +209,7 @@ export default function TurnaroundsPage() {
                             value={d.notes ?? ""}
                             onChange={(e) => updateDeliverable(d.id, { notes: e.target.value })}
                             placeholder="Caveats / preconditions"
-                            className="w-full px-2 py-1 bg-transparent border border-transparent hover:border-border focus:border-white focus:bg-surface rounded text-xs text-subtle focus:text-foreground focus:outline-none focus:ring-1 focus:ring-surface/10 transition-colors"
+                            className="w-full px-2 py-1 bg-transparent border border-transparent hover:border-border focus:border-border focus:bg-surface rounded text-xs text-subtle focus:text-foreground focus:outline-none focus:ring-1 focus:ring-surface/10 transition-colors"
                           />
                         </div>
 
@@ -246,7 +246,7 @@ export default function TurnaroundsPage() {
                             value={d.notes ?? ""}
                             onChange={(e) => updateDeliverable(d.id, { notes: e.target.value })}
                             placeholder="Caveats / preconditions"
-                            className="w-full px-2 py-1.5 bg-background border border-border rounded text-xs text-subtle focus:text-foreground focus:bg-surface focus:outline-none focus:border-white"
+                            className="w-full px-2 py-1.5 bg-background border border-border rounded text-xs text-subtle focus:text-foreground focus:bg-surface focus:outline-none focus:border-border"
                           />
                         </div>
                       </div>

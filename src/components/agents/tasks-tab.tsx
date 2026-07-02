@@ -41,7 +41,7 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
                 key={s.key}
                 onClick={() => setFilter(s.key)}
                 className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
-                  active ? "bg-white text-background" : "text-subtle hover:text-foreground"
+                  active ? "bg-accent text-accent-foreground" : "text-subtle hover:text-foreground"
                 }`}
               >
                 {label}
@@ -54,7 +54,7 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] focus:outline-none focus:border-white"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] focus:outline-none focus:border-subtle"
           >
             <option value="date-desc">Newest first</option>
             <option value="date-asc">Oldest first</option>

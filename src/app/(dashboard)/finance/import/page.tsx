@@ -155,7 +155,7 @@ function ImportSection<R extends { errors: string[] }>({
             setFile(e.target.files?.[0] || null);
             setResult(null);
           }}
-          className="block w-full text-sm text-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-surface file:text-white hover:file:opacity-90"
+          className="block w-full text-sm text-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-surface file:text-foreground hover:file:opacity-90"
         />
         {file && (
           <p className="text-xs text-subtle">
@@ -166,7 +166,7 @@ function ImportSection<R extends { errors: string[] }>({
         <button
           onClick={handleImport}
           disabled={!file || importing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {importing ? (
             <ArrowPathIcon className="size-4 animate-spin" />
@@ -177,7 +177,7 @@ function ImportSection<R extends { errors: string[] }>({
         </button>
 
         {error && (
-          <div className="px-3 py-2 bg-[#7F1D1D]/20 border border-danger rounded-md text-xs text-[#FCA5A5]">
+          <div className="px-3 py-2 bg-danger/10 border border-danger rounded-md text-xs text-danger">
             {error}
           </div>
         )}
@@ -196,7 +196,7 @@ function ImportSection<R extends { errors: string[] }>({
 
 function ClientResult({ result }: { result: ClientImportResult }) {
   return (
-    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900">
+    <div className="px-3 py-2 bg-success/10 border border-success/20 rounded-md text-xs text-success">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -212,7 +212,7 @@ function ClientResult({ result }: { result: ClientImportResult }) {
 
 function InvoiceResult({ result }: { result: InvoiceImportResult }) {
   return (
-    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900">
+    <div className="px-3 py-2 bg-success/10 border border-success/20 rounded-md text-xs text-success">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -229,7 +229,7 @@ function InvoiceResult({ result }: { result: InvoiceImportResult }) {
 
 function SupplierResult({ result }: { result: SupplierImportResult }) {
   return (
-    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900">
+    <div className="px-3 py-2 bg-success/10 border border-success/20 rounded-md text-xs text-success">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -245,7 +245,7 @@ function SupplierResult({ result }: { result: SupplierImportResult }) {
 
 function ExpenseResult({ result }: { result: ExpenseImportResult }) {
   return (
-    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900">
+    <div className="px-3 py-2 bg-success/10 border border-success/20 rounded-md text-xs text-success">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -263,10 +263,10 @@ function ExpenseResult({ result }: { result: ExpenseImportResult }) {
 function ErrorDetails({ errors }: { errors: string[] }) {
   return (
     <details className="mt-2">
-      <summary className="cursor-pointer text-amber-800 font-medium">
+      <summary className="cursor-pointer text-warning font-medium">
         {errors.length} row error{errors.length === 1 ? "" : "s"}
       </summary>
-      <ul className="mt-1 text-[11px] text-amber-900 space-y-0.5 max-h-56 overflow-y-auto ml-4 list-disc">
+      <ul className="mt-1 text-[11px] text-warning space-y-0.5 max-h-56 overflow-y-auto ml-4 list-disc">
         {errors.map((e, i) => (
           <li key={i}>{e}</li>
         ))}

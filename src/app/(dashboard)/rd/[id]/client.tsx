@@ -327,7 +327,7 @@ function InlineText({
     return (
       <input
         ref={inputRef as React.RefObject<HTMLInputElement>}
-        className={`block w-full bg-surface border border-border rounded px-1 -mx-1 focus:outline-none focus:border-white ${className || ""}`}
+        className={`block w-full bg-surface border border-border rounded px-1 -mx-1 focus:outline-none focus:border-ring ${className || ""}`}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
@@ -345,7 +345,7 @@ function InlineText({
   return (
     <textarea
       ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-      className={`block w-full bg-surface border border-border rounded px-1 -mx-1 resize-none focus:outline-none focus:border-white ${className || ""}`}
+      className={`block w-full bg-surface border border-border rounded px-1 -mx-1 resize-none focus:outline-none focus:border-ring ${className || ""}`}
       rows={2}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
@@ -510,7 +510,7 @@ function SubpointRow({
         const fromId = e.dataTransfer.getData("text/plain");
         if (fromId && fromId !== subpoint.id) onReorderTo(subpoint.id);
       }}
-      className={`group rounded-lg border transition-colors ${dragOver ? "border-white bg-background" : "border-transparent hover:bg-background"}`}
+      className={`group rounded-lg border transition-colors ${dragOver ? "border-ring bg-background" : "border-transparent hover:bg-background"}`}
     >
       <div className="flex items-center gap-2 px-2 py-1.5">
         <span
@@ -524,13 +524,13 @@ function SubpointRow({
           className={`size-4 rounded border-2 flex items-center justify-center transition-colors shrink-0 ${
             subpoint.done
               ? "bg-foreground border-surface"
-              : "border-muted hover:border-white"
+              : "border-muted hover:border-foreground"
           }`}
           aria-label={subpoint.done ? "Mark not done" : "Mark done"}
         >
           {subpoint.done && (
             <svg
-              className="size-2.5 text-white"
+              className="size-2.5 text-surface"
               viewBox="0 0 12 12"
               fill="none"
               stroke="currentColor"

@@ -71,7 +71,7 @@ export default function SalesEngineDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" />
       </div>
     );
   }
@@ -174,7 +174,7 @@ export default function SalesEngineDashboard() {
           </Link>
           <Link
             href="/tools/proposals"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-surface text-white rounded-lg hover:bg-border"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-surface-raised text-foreground rounded-lg hover:bg-surface-hover"
           >
             <PaperAirplaneIcon className="size-3.5" />
             Send Proposal
@@ -210,7 +210,7 @@ export default function SalesEngineDashboard() {
                       <p className="text-[10px] text-subtle">Leads</p>
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-emerald-600">{f.cvr}%</p>
+                      <p className="text-lg font-bold text-success">{f.cvr}%</p>
                       <p className="text-[10px] text-subtle">CVR</p>
                     </div>
                   </div>
@@ -276,11 +276,11 @@ export default function SalesEngineDashboard() {
                   <p className="text-[10px] text-subtle">Active</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-emerald-600">{wonLeads.length}</p>
+                  <p className="text-2xl font-bold text-success">{wonLeads.length}</p>
                   <p className="text-[10px] text-subtle">Won</p>
                 </div>
                 <div>
-                  <p className={`text-2xl font-bold ${overdue.length > 0 ? "text-amber-600" : "text-surface"}`}>
+                  <p className={`text-2xl font-bold ${overdue.length > 0 ? "text-warning" : "text-foreground"}`}>
                     {overdue.length}
                   </p>
                   <p className="text-[10px] text-subtle">Overdue</p>
@@ -382,7 +382,7 @@ export default function SalesEngineDashboard() {
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-surface truncate">{lead.brand_name || "Unnamed"}</p>
                           {lead.funnel && (
-                            <span className="text-[9px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full shrink-0">
+                            <span className="text-[9px] font-medium text-info bg-info/10 px-1.5 py-0.5 rounded-full shrink-0">
                               {lead.funnel}
                             </span>
                           )}
@@ -423,15 +423,15 @@ export default function SalesEngineDashboard() {
               <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">Upcoming Follow-ups</h2>
             </div>
             {overdue.length > 0 && (
-              <div className="border border-amber-200 bg-amber-50 rounded-xl p-3 mb-3">
-                <p className="text-xs font-semibold text-amber-700">
+              <div className="border border-warning/20 bg-warning/10 rounded-xl p-3 mb-3">
+                <p className="text-xs font-semibold text-warning">
                   {overdue.length} overdue follow-up{overdue.length > 1 ? "s" : ""}
                 </p>
                 <div className="mt-2 space-y-1.5">
                   {overdue.slice(0, 3).map((lead) => (
                     <div key={lead.id} className="flex items-center justify-between">
-                      <span className="text-[11px] text-amber-800 font-medium">{lead.brand_name}</span>
-                      <span className="text-[9px] text-amber-600">
+                      <span className="text-[11px] text-warning font-medium">{lead.brand_name}</span>
+                      <span className="text-[9px] text-warning">
                         due {new Date(lead.follow_up_date!).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                       </span>
                     </div>

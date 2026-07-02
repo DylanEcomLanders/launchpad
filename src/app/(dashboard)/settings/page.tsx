@@ -84,7 +84,7 @@ export default function SettingsPage() {
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 bg-foreground text-surface text-xs font-medium rounded-lg hover:bg-white transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground text-xs font-medium rounded-lg hover:bg-accent/90 transition-colors"
           >
             {saved ? (
               <>
@@ -141,7 +141,7 @@ export default function SettingsPage() {
               />
               <button
                 onClick={() => removeEstimate(i)}
-                className="p-1 text-subtle hover:text-red-400 transition-colors"
+                className="p-1 text-subtle hover:text-danger transition-colors"
               >
                 <TrashIcon className="size-3.5" />
               </button>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
               }}
               className={`flex-1 py-3 text-sm font-medium rounded-lg border transition-colors ${
                 (settings.touchpointDays || { mon: true, tue: false, wed: true, thu: false, fri: true, sat: false, sun: false })[key]
-                  ? "bg-emerald-600 text-white border-emerald-600"
+                  ? "bg-accent text-accent-foreground border-accent"
                   : "bg-surface text-muted border-border hover:border-subtle"
               }`}
             >
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                   <input type="text" value={member.clickup_id} onChange={(e) => updateMember("clickup_id", e.target.value)} className="text-xs text-muted font-mono bg-transparent border-0 border-b border-transparent hover:border-border focus:border-subtle focus:outline-none w-full px-0 py-0 truncate" placeholder="ClickUp ID" />
                   <button
                     onClick={() => setSettings({ ...settings, team: (settings.team || []).filter((_, idx) => idx !== i) })}
-                    className="p-1 text-subtle hover:text-red-400 transition-colors"
+                    className="p-1 text-subtle hover:text-danger transition-colors"
                   >
                     <TrashIcon className="size-3.5" />
                   </button>
@@ -407,10 +407,10 @@ export default function SettingsPage() {
                   </div>
                   <span className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold w-fit ${
                     member.nda_signed
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-red-500/10 text-red-300"
+                      ? "bg-success/10 text-success"
+                      : "bg-danger/10 text-danger"
                   }`}>
-                    <span className={`size-1.5 rounded-full ${member.nda_signed ? "bg-emerald-500" : "bg-red-400"}`} />
+                    <span className={`size-1.5 rounded-full ${member.nda_signed ? "bg-success" : "bg-danger"}`} />
                     {member.nda_signed ? "Signed" : "Pending"}
                   </span>
                   <div>
@@ -570,7 +570,7 @@ export default function SettingsPage() {
                 </div>
                 <button
                   onClick={() => setSettings({ ...settings, notifications: { ...notifications, [key]: !enabled } })}
-                  className={`relative w-10 h-5 rounded-full transition-colors ${enabled ? "bg-emerald-500" : "bg-[#D1D1D6]"}`}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${enabled ? "bg-success" : "bg-surface-raised"}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 size-4 rounded-full bg-surface shadow transition-transform ${enabled ? "translate-x-5" : ""}`} />
                 </button>

@@ -88,7 +88,7 @@ function IntakeBody({ intake }: { intake: OnboardingSubmission }) {
               const checked = (intake.pm_checklist as Record<string, boolean>)[key];
               return (
                 <li key={key} className="text-[12px] flex items-center gap-2">
-                  <span className={`inline-block size-3 rounded-full border ${checked ? "bg-success border-success" : "bg-surface border-[#D4D4D8]"}`} />
+                  <span className={`inline-block size-3 rounded-full border ${checked ? "bg-success border-success" : "bg-surface border-border"}`} />
                   <span className={checked ? "text-foreground" : "text-subtle"}>{label}</span>
                 </li>
               );
@@ -164,7 +164,7 @@ function IntakeBody({ intake }: { intake: OnboardingSubmission }) {
                   href={f.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded text-[12px] text-muted hover:border-white transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded text-[12px] text-muted hover:border-border transition-colors"
                 >
                   <DocumentArrowUpIcon className="size-3.5 text-subtle shrink-0" />
                   <span className="truncate flex-1">{f.originalName}</span>
@@ -265,7 +265,7 @@ function IntakeField({
           href={value}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[12px] text-[#1976D2] hover:underline break-all"
+          className="text-[12px] text-info hover:underline break-all"
         >
           {value}
         </a>

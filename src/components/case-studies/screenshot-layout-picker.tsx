@@ -21,7 +21,7 @@ export function ScreenshotLayoutPicker({ value, onChange }: Props) {
             onClick={() => onChange(opt.id)}
             className={`p-2.5 border rounded-md text-left transition-colors ${
               active
-                ? "border-white bg-background"
+                ? "border-foreground bg-background"
                 : "border-border bg-surface hover:border-muted"
             }`}
           >
@@ -41,7 +41,7 @@ export function ScreenshotLayoutPicker({ value, onChange }: Props) {
 /* Tiny SVG diagram preview — same gap/proportions the public render
  * uses, just shrunk. Solid grey rectangles, no fluff. */
 function LayoutDiagram({ layout }: { layout: ScreenshotLayout }) {
-  const fill = "#C5C5C5";
+  const fill = "var(--muted)";
   const props = { width: 60, height: 40, viewBox: "0 0 60 40" } as const;
   switch (layout) {
     case "single":

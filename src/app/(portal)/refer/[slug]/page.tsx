@@ -17,7 +17,7 @@ export default function ReferralPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-md w-full py-16">
         {/* Logo */}
         <div className="mb-12 text-center">
@@ -26,8 +26,8 @@ export default function ReferralPage() {
 
         {submitted ? (
           <div className="text-center">
-            <div className="size-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="size-8 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
+            <div className="size-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="size-8 text-success" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
               </svg>
             </div>
@@ -84,7 +84,7 @@ export default function ReferralPage() {
               </div>
               <button
                 type="submit"
-                className="w-full py-3 bg-surface text-white text-sm font-medium rounded-lg hover:bg-border transition-colors"
+                className="w-full py-3 bg-surface text-white text-sm font-medium rounded-lg hover:bg-background transition-colors"
               >
                 Get in Touch
               </button>

@@ -145,13 +145,13 @@ export default function ProposalDetailPage({
   }
 
   if (!isAdmin) {
-    return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+    return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
   }
   if (!hydrated) {
-    return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => (<div key={i} className="h-32 bg-background rounded-xl animate-pulse" />))}</div>);
+    return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => (<div key={i} className="h-32 bg-surface rounded-xl animate-pulse" />))}</div>);
   }
   if (notFound || !proposal) {
-    return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle mb-3">Proposal not found.</p><Link href="/tools/proposals" className="text-[12px] uppercase tracking-wider text-emerald-300 hover:text-emerald-200">← Back</Link></div></div>);
+    return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle mb-3">Proposal not found.</p><Link href="/tools/proposals" className="text-[12px] uppercase tracking-wider text-success hover:text-success">← Back</Link></div></div>);
   }
 
   const sharePath = `/proposal-output/${proposal.output_slug}`;
@@ -166,8 +166,8 @@ export default function ProposalDetailPage({
             All proposals
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
-              <DocumentTextIcon className="size-4 text-white" />
+            <div className="size-8 rounded-xl bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <DocumentTextIcon className="size-4 text-foreground" />
             </div>
             <h1 className="text-2xl font-semibold text-foreground truncate">
               {proposal.brand_name || "Untitled proposal"}
@@ -184,7 +184,7 @@ export default function ProposalDetailPage({
               {copied ? "Copied" : "Copy link"}
             </button>
             <span>·</span>
-            <Link href={sharePath} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-emerald-300">
+            <Link href={sharePath} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-success">
               Open proposal
               <ArrowTopRightOnSquareIcon className="size-3" />
             </Link>
@@ -192,26 +192,26 @@ export default function ProposalDetailPage({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {nextStatus && (
-            <button onClick={() => transition(nextStatus)} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700">
+            <button onClick={() => transition(nextStatus)} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success">
               {STATUS_ACTION_LABEL[proposal.status]}
             </button>
           )}
           {proposal.status !== "declined" && proposal.status !== "kicked_off" && (
-            <button onClick={() => transition("declined")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-rose-300">
+            <button onClick={() => transition("declined")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-danger">
               Declined
             </button>
           )}
-          <button onClick={deleteProposal} className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]" title="Delete">
+          <button onClick={deleteProposal} className="p-1.5 rounded-md text-subtle hover:text-danger hover:bg-danger/10" title="Delete">
             <TrashIcon className="size-4" />
           </button>
         </div>
       </div>
 
       {/* Quoted total summary */}
-      <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 ring-1 ring-emerald-500/20 rounded-2xl p-5 flex items-center justify-between gap-4">
+      <div className="bg-surface border border-border rounded-2xl p-5 flex items-center justify-between gap-4">
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-emerald-300 font-semibold mb-1">Quoted total</div>
-          <div className="text-3xl font-semibold bg-gradient-to-br from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+          <div className="text-[10px] uppercase tracking-wider text-success font-semibold mb-1">Quoted total</div>
+          <div className="text-3xl font-semibold text-foreground">
             {formatMoney(quotedTotal(proposal), proposal.fee_currency)}
           </div>
           <div className="text-[11px] text-subtle mt-1">
@@ -220,7 +220,7 @@ export default function ProposalDetailPage({
           </div>
         </div>
         {proposal.declined_at && (
-          <div className="text-[11px] text-rose-300">Declined {new Date(proposal.declined_at).toLocaleDateString()}</div>
+          <div className="text-[11px] text-danger">Declined {new Date(proposal.declined_at).toLocaleDateString()}</div>
         )}
       </div>
 
@@ -286,7 +286,7 @@ export default function ProposalDetailPage({
                 className={`${inputClass} flex-1`}
                 placeholder="Line item"
               />
-              <button onClick={() => patch({ scope_items: proposal.scope_items.filter((_, j) => j !== i) })} className="p-1 text-subtle hover:text-rose-400">
+              <button onClick={() => patch({ scope_items: proposal.scope_items.filter((_, j) => j !== i) })} className="p-1 text-subtle hover:text-danger">
                 <TrashIcon className="size-3.5" />
               </button>
             </div>
@@ -333,7 +333,7 @@ export default function ProposalDetailPage({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
+    <div className="bg-surface rounded-2xl border border-border p-5">
       <h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>

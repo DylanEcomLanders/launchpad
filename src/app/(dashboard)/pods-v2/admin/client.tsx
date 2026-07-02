@@ -318,8 +318,8 @@ export default function AdminClient() {
 
       {/* MID-WEEK DETAIL */}
       {allMidWeek.length > 0 && (
-        <div className="mt-6 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-rose-900">
+        <div className="mt-6 rounded-xl border border-danger/20 bg-danger/10 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-danger">
             <ExclamationTriangleIcon className="size-4" />
             Mid-week kickoff violations
           </div>
@@ -329,7 +329,7 @@ export default function AdminClient() {
               return (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-surface px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-danger/20 bg-surface px-3 py-2"
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium">
@@ -341,7 +341,7 @@ export default function AdminClient() {
                   </div>
                   <div className="flex items-center gap-2 text-[11px]">
                     <BucketBadge bucket={project.bucket} />
-                    <span className="text-rose-700">
+                    <span className="text-danger">
                       Started {formatDayMonth(project.kickoff_date)}
                     </span>
                   </div>
@@ -397,10 +397,10 @@ export default function AdminClient() {
                       <span
                         className={
                           s.utilisation > 100
-                            ? "text-rose-700"
+                            ? "text-danger"
                             : s.utilisation >= 80
-                              ? "text-amber-700"
-                              : "text-emerald-700"
+                              ? "text-warning"
+                              : "text-success"
                         }
                       >
                         {s.utilisation}%
@@ -497,7 +497,7 @@ export default function AdminClient() {
               <Link
                 key={c.id}
                 href={`/engagements/${c.id}`}
-                className="group rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-white/30"
+                className="group rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-border"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
@@ -524,7 +524,7 @@ export default function AdminClient() {
                       : `£${c.retainer_tier} retainer`}
                   </span>
                   {c.brand_warm && (
-                    <span className="rounded-md border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-medium text-orange-700">
+                    <span className="rounded-md border border-info/20 bg-info/10 px-1.5 py-0.5 text-[10px] font-medium text-info">
                       Brand-warm
                     </span>
                   )}
@@ -653,7 +653,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
         {selected && (
           <button
             onClick={() => setSelected(null)}
-            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-subtle hover:border-white hover:text-foreground"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-subtle hover:border-subtle hover:text-foreground"
           >
             Cancel selection
           </button>
@@ -683,7 +683,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                     key={m.id}
                     className={`rounded-lg border px-2.5 py-2 transition-colors ${
                       isSelected
-                        ? "border-white bg-surface/[0.03]"
+                        ? "border-ring bg-surface-hover"
                         : "border-border bg-surface hover:border-muted"
                     }`}
                   >
@@ -712,7 +712,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                               setRenamingId(null);
                             }}
                             onBlur={() => setRenamingId(null)}
-                            className="w-full rounded-md border border-white bg-surface px-1.5 py-0.5 text-xs"
+                            className="w-full rounded-md border border-border bg-surface px-1.5 py-0.5 text-xs"
                           >
                             <option value="__keep__">
                               {m.person_id
@@ -744,7 +744,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                           >
                             {m.name}
                             {m.is_placeholder ? (
-                              <span className="ml-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300">
+                              <span className="ml-1.5 rounded-md border border-warning/20 bg-warning/10 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-warning">
                                 Placeholder
                               </span>
                             ) : !m.person_id ? (
@@ -759,7 +759,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                           onChange={(e) =>
                             changeRole(m.id, e.target.value as PodMemberRole)
                           }
-                          className="mt-0.5 w-full rounded-md border border-transparent bg-transparent px-0 py-0 text-[11px] text-subtle hover:border-border focus:border-white focus:outline-none"
+                          className="mt-0.5 w-full rounded-md border border-transparent bg-transparent px-0 py-0 text-[11px] text-subtle hover:border-border focus:border-ring focus:outline-none"
                         >
                           {(
                             [
@@ -784,7 +784,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                             key={other.id}
                             type="button"
                             onClick={() => moveTo(m.id, other.id)}
-                            className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium text-subtle hover:border-white hover:text-foreground"
+                            className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium text-subtle hover:border-subtle hover:text-foreground"
                           >
                             → {other.name}
                           </button>
@@ -823,9 +823,9 @@ function Stat({
 }) {
   const cls =
     tone === "alert"
-      ? "bg-rose-50 text-rose-800"
+      ? "bg-danger/10 text-danger"
       : tone === "thursday"
-        ? "bg-surface/[0.05] text-foreground"
+        ? "bg-surface-hover text-foreground"
         : "bg-background text-foreground";
   return (
     <div className={`rounded-lg px-2 py-2 ${cls}`}>
@@ -850,9 +850,9 @@ function AlertCard({
 }) {
   const cls =
     tone === "red"
-      ? "border-rose-200 bg-rose-50 text-rose-900"
+      ? "border-danger/20 bg-danger/10 text-danger"
       : tone === "amber"
-        ? "border-amber-200 bg-amber-50 text-amber-900"
+        ? "border-warning/20 bg-warning/10 text-warning"
         : "border-border bg-surface text-foreground";
   return (
     <div className={`rounded-xl border p-4 ${cls} shadow-[var(--shadow-soft)]`}>

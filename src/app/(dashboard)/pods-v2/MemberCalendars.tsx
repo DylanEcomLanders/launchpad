@@ -177,7 +177,7 @@ function MemberCalendar({
           <span className="tabular-nums">{tasks.length}</span>
           <span>open</span>
           {earlier.length > 0 && (
-            <span className="rounded bg-rose-500/10 px-1.5 py-0.5 text-rose-300">
+            <span className="rounded bg-danger/10 px-1.5 py-0.5 text-danger">
               {earlier.length} overdue
             </span>
           )}
@@ -205,7 +205,7 @@ function MemberCalendar({
                 <div
                   key={dayYMD}
                   className={`min-h-[80px] border-r border-border p-1.5 last:border-r-0 ${
-                    isToday ? "bg-[#FFFCEF]" : "bg-surface"
+                    isToday ? "bg-surface-raised" : "bg-surface"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -252,7 +252,7 @@ function MemberCalendar({
       {(earlier.length > 0 || later.length > 0) && (
         <div className="border-t border-border bg-background px-3 py-2 text-[10px] text-subtle">
           {earlier.length > 0 && (
-            <span className="mr-3 text-rose-700">
+            <span className="mr-3 text-danger">
               {earlier.length} earlier overdue
             </span>
           )}

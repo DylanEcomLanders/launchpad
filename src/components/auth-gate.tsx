@@ -453,8 +453,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             {mode === "credentials" ? (
               resetSent ? (
                 <div className="text-center py-4">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-400/20 border border-emerald-300/30 mb-4">
-                    <svg className="w-6 h-6 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 7 9 6 9-6M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9-4 9 4" /></svg>
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/20 border border-success/30 mb-4">
+                    <svg className="w-6 h-6 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 7 9 6 9-6M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9-4 9 4" /></svg>
                   </div>
                   <p className="text-sm text-white font-medium">Check your email</p>
                   <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
@@ -491,15 +491,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                       className="w-full px-4 py-3 bg-surface/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
                     />
                     {notAllowed && (
-                      <p className="text-xs text-amber-300 mt-2 leading-relaxed">
+                      <p className="text-xs text-warning mt-2 leading-relaxed">
                         That email isn&apos;t on the team list. Ask an admin to invite you.
                       </p>
                     )}
                     {credentialsError && (
-                      <p className="text-xs text-red-300 mt-2">{credentialsError}</p>
+                      <p className="text-xs text-danger mt-2">{credentialsError}</p>
                     )}
                     {resetError && (
-                      <p className="text-xs text-amber-300 mt-2">{resetError}</p>
+                      <p className="text-xs text-warning mt-2">{resetError}</p>
                     )}
                   </div>
                   <button
@@ -531,8 +531,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             ) : mode === "magic" ? (
               linkSent ? (
                 <div className="text-center py-4">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-400/20 border border-emerald-300/30 mb-4">
-                    <svg className="w-6 h-6 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 7 9 6 9-6M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9-4 9 4" /></svg>
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/20 border border-success/30 mb-4">
+                    <svg className="w-6 h-6 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 7 9 6 9-6M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9-4 9 4" /></svg>
                   </div>
                   <p className="text-sm text-white font-medium">Check your email</p>
                   <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
@@ -559,12 +559,12 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                       className="w-full px-4 py-3 bg-surface/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
                     />
                     {notAllowed && (
-                      <p className="text-xs text-amber-300 mt-2 leading-relaxed">
+                      <p className="text-xs text-warning mt-2 leading-relaxed">
                         That email isn&apos;t on the team list yet. Ask an admin to invite you.
                       </p>
                     )}
                     {error && (
-                      <p className="text-xs text-red-300 mt-2">Couldn&apos;t send the link. Try again.</p>
+                      <p className="text-xs text-danger mt-2">Couldn&apos;t send the link. Try again.</p>
                     )}
                   </div>
                   <button
@@ -609,7 +609,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                       autoFocus
                       className={`w-full px-4 py-3 bg-surface/10 border rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm ${
                         error
-                          ? "border-red-400/50 focus:border-red-400/70"
+                          ? "border-danger/50 focus:border-danger/70"
                           : "border-white/15 focus:border-white/40"
                       }`}
                     />
@@ -622,7 +622,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                     )}
                   </div>
                   {error && (
-                    <p className="text-xs text-red-300 mt-2 flex items-center gap-1.5">
+                    <p className="text-xs text-danger mt-2 flex items-center gap-1.5">
                       <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" /></svg>
                       Incorrect code
                     </p>

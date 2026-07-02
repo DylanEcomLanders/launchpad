@@ -14,6 +14,10 @@
  */
 
 import { NextResponse } from "next/server";
+import {
+  isBeeperLive,
+  fetchBeeperAsset,
+} from "@/lib/sales-dashboard/beeper-adapter";
 
 type Channel = "whatsapp" | "linkedin" | "email";
 
@@ -22,10 +26,31 @@ export async function GET(req: Request) {
   const channel = url.searchParams.get("channel") as Channel | null;
   const messageId = url.searchParams.get("messageId");
   const attachmentId = url.searchParams.get("attachmentId");
+  /* Beeper attachments are addressed by srcURL (mxc:// or
+   * localmxc://) instead of message+attachment IDs. */
+  const beeperSrc = url.searchParams.get("src");
+
+  /* Beeper path - serve via /v1/assets/serve. */
+  if (isBeeperLive() && beeperSrc) {
+    const asset = await fetchBeeperAsset(beeperSrc);
+    if (!asset.ok || !asset.bytes) {
+      return NextResponse.json(
+        { error: asset.error ?? "Beeper asset fetch failed" },
+        { status: 502 },
+      );
+    }
+    return new NextResponse(asset.bytes, {
+      status: 200,
+      headers: {
+        "Content-Type": asset.contentType ?? "application/octet-stream",
+        "Cache-Control": "public, max-age=3600, immutable",
+      },
+    });
+  }
 
   if (!channel || !messageId || !attachmentId) {
     return NextResponse.json(
-      { error: "Required: ?channel=...&messageId=...&attachmentId=..." },
+      { error: "Required: ?channel=...&messageId=...&attachmentId=... OR ?src=... for Beeper" },
       { status: 400 },
     );
   }

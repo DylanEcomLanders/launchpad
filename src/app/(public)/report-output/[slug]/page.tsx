@@ -32,7 +32,7 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
     <div className="min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-10 opacity-40" style={{ backgroundImage: "radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12) 0%, transparent 50%)" }} />
       <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-end print:hidden">
-        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white/10 text-white hover:bg-white/15 ring-1 ring-white/20">
+        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface-raised text-foreground hover:bg-surface-hover ring-1 ring-border">
           <ArrowDownTrayIcon className="size-3.5" />
           Download PDF
         </button>
@@ -82,7 +82,7 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
         {report.narrative && (
           <section>
             <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground mb-4">What we learned</h2>
-            <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] prose prose-invert max-w-none prose-p:text-muted prose-li:text-muted prose-strong:text-foreground">
+            <div className="bg-background rounded-2xl p-5 ring-1 ring-border prose prose-invert max-w-none prose-p:text-muted prose-li:text-muted prose-strong:text-foreground">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{report.narrative}</ReactMarkdown>
             </div>
           </section>
@@ -93,7 +93,7 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
             <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground mb-4">Tests</h2>
             <ul className="space-y-2">
               {report.tests.map((t) => (
-                <li key={t.test_id} className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04]">
+                <li key={t.test_id} className="bg-background rounded-xl p-4 ring-1 ring-border">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface text-muted">{t.status}</span>
                     {t.outcome && (
@@ -115,7 +115,7 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
             <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground mb-4">Pages shipped</h2>
             <ul className="space-y-1.5">
               {report.pages.map((p, i) => (
-                <li key={i} className="flex items-center gap-2 bg-background rounded-lg p-3 ring-1 ring-white/[0.04]">
+                <li key={i} className="flex items-center gap-2 bg-background rounded-lg p-3 ring-1 ring-border">
                   <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-200">D{p.horizon}</span>
                   <span className="text-[13px] text-foreground">{p.title}</span>
                 </li>
@@ -124,7 +124,7 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
           </section>
         )}
 
-        <footer className="pt-8 pb-4 text-center border-t border-white/[0.04]">
+        <footer className="pt-8 pb-4 text-center border-t border-border">
           {report.prepared_by && (<p className="text-[11px] text-subtle">Prepared by {report.prepared_by}</p>)}
           <Link href="/" className="text-[11px] text-subtle hover:text-sky-300">ecomlanders.app</Link>
         </footer>
@@ -135,7 +135,7 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
 
 function Stat({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-xl p-3 ring-1 ${highlight ? "bg-emerald-500/15 ring-emerald-500/30" : "bg-background ring-white/[0.04]"}`}>
+    <div className={`rounded-xl p-3 ring-1 ${highlight ? "bg-emerald-500/15 ring-emerald-500/30" : "bg-background ring-border"}`}>
       <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle">{label}</div>
       <div className={`text-2xl font-semibold ${highlight ? "text-emerald-300" : "text-foreground"}`}>{value}</div>
     </div>

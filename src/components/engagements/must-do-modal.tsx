@@ -183,8 +183,8 @@ export function MustDoModal({
         onClick={() => toggleItem(label)}
         className={`w-full flex items-start gap-3 px-3 py-2 rounded-lg border text-left transition-colors ${
           ticked
-            ? "border-success bg-emerald-500/15"
-            : "border-border bg-surface hover:border-white"
+            ? "border-success bg-success/10"
+            : "border-border bg-surface hover:border-border"
         }`}
       >
         <span
@@ -254,7 +254,7 @@ export function MustDoModal({
               <div className="space-y-1.5">
                 {previewUrls.map((p, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="flex-1 text-[12px] text-[#1976D2] hover:underline truncate">
+                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="flex-1 text-[12px] text-info hover:underline truncate">
                       {p.url}
                     </a>
                     <button
@@ -273,12 +273,12 @@ export function MustDoModal({
                     onChange={(e) => setUrlDraft(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addPreviewUrl(); } }}
                     placeholder="https://staging-..."
-                    className="flex-1 text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
+                    className="flex-1 text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-ring bg-surface"
                   />
                   <button
                     onClick={addPreviewUrl}
                     disabled={!urlDraft.trim()}
-                    className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground border border-border hover:border-white px-2 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed bg-surface"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground border border-border hover:border-border px-2 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed bg-surface"
                   >
                     <PlusIcon className="size-3" />
                     Add URL
@@ -346,7 +346,7 @@ export function MustDoModal({
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 placeholder={config.linkPlaceholder}
-                className="w-full text-[13px] px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-white"
+                className="w-full text-[13px] px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-ring"
               />
             </div>
           )}
@@ -360,7 +360,7 @@ export function MustDoModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What did you check, what to revisit, anything the next gate needs to know."
               rows={3}
-              className="w-full text-[13px] px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-white resize-y"
+              className="w-full text-[13px] px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-ring resize-y"
             />
           </div>
 
@@ -380,14 +380,14 @@ export function MustDoModal({
           </button>
           <button
             onClick={handleSaveProgress}
-            className="text-[12px] font-medium text-foreground border border-border hover:border-white px-3 py-2 rounded-lg"
+            className="text-[12px] font-medium text-foreground border border-border hover:border-border px-3 py-2 rounded-lg"
           >
             Save progress
           </button>
           <button
             onClick={handleComplete}
             disabled={!allTicked}
-            className="text-[12px] font-semibold text-white bg-success hover:bg-[#0E3D11] disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg"
+            className="text-[12px] font-semibold text-white bg-success hover:bg-success/90 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg"
           >
             {wasComplete ? "Update completion" : "Mark complete"}
           </button>

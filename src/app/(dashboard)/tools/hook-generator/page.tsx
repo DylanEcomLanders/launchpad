@@ -189,7 +189,7 @@ export default function HookGeneratorPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>
-                    Topic <span className="text-red-400">*</span>
+                    Topic <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
@@ -295,7 +295,7 @@ export default function HookGeneratorPage() {
                   onClick={() => togglePlatform(p.id)}
                   className={`px-4 py-2 text-sm font-medium rounded-md border transition-colors ${
                     selectedPlatforms.has(p.id)
-                      ? "bg-white text-background border-white"
+                      ? "bg-foreground text-background border-foreground"
                       : "bg-surface text-subtle border-border hover:bg-surface-raised"
                   }`}
                 >
@@ -328,7 +328,7 @@ export default function HookGeneratorPage() {
                   onClick={() => toggleFormula(f.id)}
                   className={`text-left p-3 rounded-lg border transition-colors ${
                     selectedFormulas.has(f.id)
-                      ? "border-white bg-background"
+                      ? "border-foreground bg-background"
                       : "border-border bg-surface hover:bg-surface-raised"
                   }`}
                 >
@@ -358,7 +358,7 @@ export default function HookGeneratorPage() {
             <button
               onClick={handleGenerate}
               disabled={!isValid}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <SparklesIcon className="size-4" />
               Generate Hooks
@@ -420,7 +420,7 @@ export default function HookGeneratorPage() {
                           >
                             {copiedId === hook.id ? (
                               <>
-                                <CheckIcon className="size-3.5 text-emerald-500" />
+                                <CheckIcon className="size-3.5 text-success" />
                                 Copied
                               </>
                             ) : (
@@ -434,7 +434,7 @@ export default function HookGeneratorPage() {
                             onClick={() => toggleSaveHook(hook)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                               hook.saved
-                                ? "border-amber-300 bg-amber-50 text-amber-700"
+                                ? "border-warning/20 bg-warning/10 text-warning"
                                 : "border-border bg-surface text-subtle hover:bg-surface-raised"
                             }`}
                           >
@@ -503,7 +503,7 @@ export default function HookGeneratorPage() {
                         >
                           {copiedId === hook.id ? (
                             <>
-                              <CheckIcon className="size-3.5 text-emerald-500" />
+                              <CheckIcon className="size-3.5 text-success" />
                               Copied
                             </>
                           ) : (
@@ -515,7 +515,7 @@ export default function HookGeneratorPage() {
                         </button>
                         <button
                           onClick={() => removeSavedHook(hook.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-surface text-red-400 hover:bg-red-50 hover:border-red-200 transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-surface text-danger hover:bg-danger/10 hover:border-danger/20 transition-colors"
                         >
                           <TrashIcon className="size-3.5" />
                           Remove

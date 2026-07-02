@@ -174,14 +174,14 @@ export default function PersonProfilePage() {
         </Link>
         <button
           onClick={handleDelete}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-red-500/15 rounded-md"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/15 rounded-md"
         >
           <TrashIcon className="size-3.5" />
           Delete
         </button>
       </div>
 
-      <div className="bg-background border border-white/[0.04] rounded-xl p-6 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <div className="bg-background border border-border rounded-xl p-6 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         <div className="flex items-start gap-4">
           <AvatarWithUpload person={person} onUpdate={patch} />
           <div className="flex-1 min-w-0">
@@ -215,7 +215,7 @@ export default function PersonProfilePage() {
         </div>
       </div>
 
-      <div className="border-b border-white/[0.04] mb-6">
+      <div className="border-b border-border mb-6">
         <div className="flex gap-1">
           {tabs
             .filter((t) => t.visible)
@@ -225,7 +225,7 @@ export default function PersonProfilePage() {
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-2.5 text-sm border-b-2 transition-colors ${
                   tab === t.id
-                    ? "border-white text-foreground font-medium"
+                    ? "border-border text-foreground font-medium"
                     : "border-transparent text-subtle hover:text-foreground"
                 }`}
               >
@@ -614,7 +614,7 @@ function FinancialTab({
         />
 
         {person.engagement_type === "core_retainer" && (
-          <div className="mt-4 pt-4 border-t border-white/[0.04]">
+          <div className="mt-4 pt-4 border-t border-border">
             <div className="text-[11px] uppercase tracking-wider text-subtle mb-3">
               Revenue-tier bonuses ({person.compensation_currency || "GBP"})
             </div>
@@ -647,7 +647,7 @@ function FinancialTab({
 
         {(person.engagement_type === "contractor_retainer" ||
           person.engagement_type === "contractor_per_page") && (
-          <div className="mt-4 pt-4 border-t border-white/[0.04]">
+          <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-subtle">
               Bonuses + deductions for this contractor are auto-computed
               from kanban delivery data under the{" "}
@@ -689,7 +689,7 @@ function FinancialTab({
             </thead>
             <tbody>
               {history.map((h) => (
-                <tr key={h.id} className="border-t border-white/[0.04]">
+                <tr key={h.id} className="border-t border-border">
                   <td className="py-2 text-subtle">{fmtDateUK(h.changed_at)}</td>
                   <td className="py-2 text-subtle">
                     {h.old_amount != null
@@ -795,7 +795,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (
-              <div key={r.id} className="p-3 border border-white/[0.04] rounded-lg">
+              <div key={r.id} className="p-3 border border-border rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                   <input
                     type="date"
@@ -853,7 +853,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {goals.map((g) => (
-              <div key={g.id} className="p-3 border border-white/[0.04] rounded-lg">
+              <div key={g.id} className="p-3 border border-border rounded-lg">
                 <input
                   placeholder="Title"
                   value={g.title}
@@ -909,7 +909,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {notes.map((n) => (
-              <div key={n.id} className="p-3 border border-white/[0.04] rounded-lg">
+              <div key={n.id} className="p-3 border border-border rounded-lg">
                 <div className="text-[11px] text-subtle mb-2">{fmtDateUK(n.created_at)}</div>
                 <input
                   placeholder="Author"
@@ -992,7 +992,7 @@ function InvoicesTab({ person }: { person: Person }) {
 
   if (invoices.length === 0) {
     return (
-      <div className="bg-background border border-white/[0.04] rounded-xl p-8 text-center">
+      <div className="bg-background border border-border rounded-xl p-8 text-center">
         <p className="text-sm text-subtle mb-2">
           No invoices linked to {person.preferred_name || person.full_name} yet.
         </p>
@@ -1022,7 +1022,7 @@ function InvoicesTab({ person }: { person: Person }) {
       {/* Invoice table - same shape as /company/invoices but scoped to
           this person + cleaner (no supplier name column since theyre
           all this person). Each row links out to the invoice detail. */}
-      <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
+      <div className="bg-background border border-border rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
             <tr>
@@ -1040,7 +1040,7 @@ function InvoicesTab({ person }: { person: Person }) {
               return (
                 <tr
                   key={i.id}
-                  className="border-t border-white/[0.04] hover:bg-background"
+                  className="border-t border-border hover:bg-background"
                 >
                   <td className="px-4 py-3">
                     <Link
@@ -1087,7 +1087,7 @@ function InvoicesTab({ person }: { person: Person }) {
       <div className="text-right">
         <Link
           href="/company/invoices"
-          className="text-[11px] uppercase tracking-wider text-subtle hover:text-white"
+          className="text-[11px] uppercase tracking-wider text-subtle hover:text-foreground"
         >
           Manage all invoices →
         </Link>
@@ -1107,14 +1107,14 @@ function SummaryCard({
 }) {
   const valueColor =
     tone === "positive"
-      ? "text-emerald-300"
+      ? "text-success"
       : tone === "warn"
-      ? "text-amber-300"
+      ? "text-warning"
       : tone === "muted"
       ? "text-subtle"
       : "text-foreground";
   return (
-    <div className="bg-background border border-white/[0.04] rounded-xl p-4">
+    <div className="bg-background border border-border rounded-xl p-4">
       <div className="text-[10px] uppercase tracking-wider text-subtle mb-1">
         {label}
       </div>
@@ -1205,7 +1205,7 @@ function OnboardingTab({
   return (
     <div className="space-y-4">
       {/* Clock + progress */}
-      <div className="bg-background border border-white/[0.04] rounded-xl p-5">
+      <div className="bg-background border border-border rounded-xl p-5">
         <div className="flex items-baseline justify-between mb-3">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-subtle">
@@ -1213,9 +1213,9 @@ function OnboardingTab({
             </div>
             <div className="text-2xl font-semibold text-foreground mt-1">
               {allDone ? (
-                <span className="text-emerald-300">Onboarding complete</span>
+                <span className="text-success">Onboarding complete</span>
               ) : daysRemaining === 0 ? (
-                <span className="text-amber-300">Day 30 reached</span>
+                <span className="text-warning">Day 30 reached</span>
               ) : (
                 <>
                   Day {Math.min(daysIn, totalDays)} of {totalDays}{" "}
@@ -1242,7 +1242,7 @@ function OnboardingTab({
         </div>
         <div className="h-2 bg-background rounded-full overflow-hidden">
           <div
-            className="h-full bg-emerald-400/70 transition-all"
+            className="h-full bg-success/70 transition-all"
             style={{ width: `${pctElapsed}%` }}
           />
         </div>
@@ -1250,7 +1250,7 @@ function OnboardingTab({
 
       {/* Status flip prompt - only show when all done + still in onboarding */}
       {allDone && person.status === "onboarding" && (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-success/10 border border-success/30 rounded-xl p-4 flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold text-foreground">
               All tasks complete. Ready to flip to active?
@@ -1262,7 +1262,7 @@ function OnboardingTab({
           </div>
           <button
             onClick={() => onPatch({ status: "active" })}
-            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400"
+            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success"
           >
             Mark active
           </button>
@@ -1270,7 +1270,7 @@ function OnboardingTab({
       )}
 
       {/* Checklist */}
-      <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
+      <div className="bg-background border border-border rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
             <tr>
@@ -1287,18 +1287,18 @@ function OnboardingTab({
               .map((t) => (
                 <tr
                   key={t.id}
-                  className={`border-t border-white/[0.04] hover:bg-background ${
+                  className={`border-t border-border hover:bg-background ${
                     t.done_at ? "opacity-60" : ""
                   }`}
                 >
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggleTask(t.id)}
-                      className="size-5 rounded border border-white/[0.04] hover:border-border flex items-center justify-center"
+                      className="size-5 rounded border border-border hover:border-border flex items-center justify-center"
                       title={t.done_at ? "Mark not done" : "Mark done"}
                     >
                       {t.done_at && (
-                        <CheckCircleIcon className="size-4 text-emerald-400" />
+                        <CheckCircleIcon className="size-4 text-success" />
                       )}
                     </button>
                   </td>
@@ -1319,13 +1319,13 @@ function OnboardingTab({
                   <td className="px-4 py-3">
                     <span
                       className={
-                        isOverdue(t) ? "text-red-400" : "text-subtle"
+                        isOverdue(t) ? "text-danger" : "text-subtle"
                       }
                     >
                       {fmtDateUK(dueDateFor(t.due_offset_days))}
                     </span>
                     {isOverdue(t) && (
-                      <div className="text-[10px] uppercase tracking-wider text-red-400 mt-0.5">
+                      <div className="text-[10px] uppercase tracking-wider text-danger mt-0.5">
                         Overdue
                       </div>
                     )}
@@ -1489,7 +1489,7 @@ function ScoringTab({
 
   return (
     <div className="space-y-4">
-      <div className="bg-background border border-white/[0.04] rounded-xl p-4 flex items-center justify-between gap-4">
+      <div className="bg-background border border-border rounded-xl p-4 flex items-center justify-between gap-4">
         <div>
           <div className="text-sm font-semibold text-foreground">
             {isPerPage
@@ -1509,7 +1509,7 @@ function ScoringTab({
               if (e.target.value) addPeriod(e.target.value);
               e.target.value = "";
             }}
-            className="text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2 hover:border-border"
+            className="text-sm bg-background text-foreground border border-border rounded-md px-3 py-2 hover:border-border"
           >
             <option value="">+ Score new {isPerPage ? "build" : "month"}</option>
             {candidatePeriods.map((c) => (
@@ -1522,7 +1522,7 @@ function ScoringTab({
       </div>
 
       {periods.length === 0 ? (
-        <div className="bg-background border border-white/[0.04] rounded-xl p-8 text-center">
+        <div className="bg-background border border-border rounded-xl p-8 text-center">
           <p className="text-sm text-subtle mb-2">
             No scoring periods yet.
           </p>
@@ -1574,9 +1574,9 @@ function ScoringPeriodCard({
   const displayDelta = isLocked ? (period.final_delta_pct ?? 0) : projected;
 
   return (
-    <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
+    <div className="bg-background border border-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
         <div>
           <div className="text-[11px] uppercase tracking-wider text-subtle">
             {scheme === "per_page" ? "Build" : "Month"}
@@ -1592,9 +1592,9 @@ function ScoringPeriodCard({
           <div
             className={`text-3xl font-semibold tabular-nums ${
               displayDelta > 0
-                ? "text-emerald-300"
+                ? "text-success"
                 : displayDelta < 0
-                ? "text-red-300"
+                ? "text-danger"
                 : "text-foreground"
             }`}
           >
@@ -1602,7 +1602,7 @@ function ScoringPeriodCard({
             {displayDelta}%
           </div>
           {capped && !isLocked && (
-            <div className="text-[10px] uppercase tracking-wider text-amber-300 mt-0.5">
+            <div className="text-[10px] uppercase tracking-wider text-warning mt-0.5">
               Capped (raw {sub.net > 0 ? "+" : ""}
               {sub.net}%)
             </div>
@@ -1632,7 +1632,7 @@ function ScoringPeriodCard({
               {period.entries.map((e) => (
                 <tr
                   key={e.id}
-                  className="border-t border-white/[0.04] hover:bg-background"
+                  className="border-t border-border hover:bg-background"
                 >
                   <td className="px-5 py-2.5 text-subtle capitalize">
                     {e.lever}
@@ -1655,8 +1655,8 @@ function ScoringPeriodCard({
                   <td
                     className={`px-5 py-2.5 text-right tabular-nums font-medium ${
                       e.delta_pct > 0
-                        ? "text-emerald-300"
-                        : "text-red-300"
+                        ? "text-success"
+                        : "text-danger"
                     }`}
                   >
                     {e.delta_pct > 0 ? "+" : ""}
@@ -1666,7 +1666,7 @@ function ScoringPeriodCard({
                     {!isLocked && (
                       <button
                         onClick={() => onRemoveEntry(e.id)}
-                        className="text-subtle hover:text-red-400"
+                        className="text-subtle hover:text-danger"
                         title="Remove entry"
                       >
                         <XCircleIcon className="size-4" />
@@ -1682,13 +1682,13 @@ function ScoringPeriodCard({
 
       {/* Add manual + lock */}
       {!isLocked && (
-        <div className="px-5 py-4 border-t border-white/[0.04] bg-background/50">
+        <div className="px-5 py-4 border-t border-border bg-background/50">
           <ManualEntryForm onAdd={onAddManual} />
         </div>
       )}
 
       {/* Footer actions */}
-      <div className="px-5 py-3 border-t border-white/[0.04] flex items-center justify-between">
+      <div className="px-5 py-3 border-t border-border flex items-center justify-between">
         <div className="text-xs text-subtle">
           {isLocked
             ? `Locked ${period.locked_at ? fmtDateUK(period.locked_at.slice(0, 10)) : ""}. 5-day dispute window from lock date.`
@@ -1697,14 +1697,14 @@ function ScoringPeriodCard({
         {isLocked ? (
           <button
             onClick={onReopen}
-            className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-white"
+            className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-foreground"
           >
             Reopen
           </button>
         ) : (
           <button
             onClick={onLock}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground"
           >
             <LockClosedIcon className="size-3.5" />
             Lock at invoice
@@ -1750,7 +1750,7 @@ function ManualEntryForm({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="e.g. Client renewed, contractor went dark, complaint received"
-          className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+          className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
         />
       </div>
       <div className="w-32">
@@ -1762,7 +1762,7 @@ function ManualEntryForm({
           onChange={(e) =>
             setLever(e.target.value as "speed" | "quality" | "retention")
           }
-          className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+          className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
         >
           <option value="speed">Speed</option>
           <option value="quality">Quality</option>
@@ -1778,7 +1778,7 @@ function ManualEntryForm({
           value={delta}
           onChange={(e) => setDelta(e.target.value)}
           placeholder="+10"
-          className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
+          className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2 tabular-nums"
         />
       </div>
       <button
@@ -1936,7 +1936,7 @@ function KpisTab({ person }: { person: Person }) {
       </div>
 
       {scoringRollup && (
-        <div className="bg-background border border-white/[0.04] rounded-xl p-5">
+        <div className="bg-background border border-border rounded-xl p-5">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-subtle mb-2">
             <SparklesIcon className="size-4" />
             Contractor scheme rollup
@@ -1953,9 +1953,9 @@ function KpisTab({ person }: { person: Person }) {
               <div
                 className={`text-2xl font-semibold tabular-nums ${
                   scoringRollup.total > 0
-                    ? "text-emerald-300"
+                    ? "text-success"
                     : scoringRollup.total < 0
-                    ? "text-red-300"
+                    ? "text-danger"
                     : "text-foreground"
                 }`}
               >
@@ -1968,9 +1968,9 @@ function KpisTab({ person }: { person: Person }) {
               <div
                 className={`text-2xl font-semibold tabular-nums ${
                   scoringRollup.avg > 0
-                    ? "text-emerald-300"
+                    ? "text-success"
                     : scoringRollup.avg < 0
-                    ? "text-red-300"
+                    ? "text-danger"
                     : "text-foreground"
                 }`}
               >
@@ -2034,7 +2034,7 @@ function BonusesTab({
     <div className="space-y-4">
       {/* Totals header */}
       {totals.length === 0 ? (
-        <div className="bg-background border border-white/[0.04] rounded-xl p-4 text-xs text-subtle">
+        <div className="bg-background border border-border rounded-xl p-4 text-xs text-subtle">
           No bonuses logged for {person.preferred_name || person.full_name} yet.
         </div>
       ) : (
@@ -2059,8 +2059,8 @@ function BonusesTab({
 
       {/* History */}
       {sorted.length > 0 && (
-        <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/[0.04]">
+        <div className="bg-background border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
             <h3 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
               History
             </h3>
@@ -2083,7 +2083,7 @@ function BonusesTab({
                 return (
                 <tr
                   key={b.id}
-                  className="border-t border-white/[0.04] hover:bg-background"
+                  className="border-t border-border hover:bg-background"
                 >
                   <td className="px-4 py-2.5 text-subtle tabular-nums whitespace-nowrap">
                     <div className="flex items-center gap-2">
@@ -2091,8 +2091,8 @@ function BonusesTab({
                       <span
                         className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
                           scheduled
-                            ? "bg-amber-500/15 text-amber-300"
-                            : "bg-emerald-500/15 text-emerald-300"
+                            ? "bg-warning/15 text-warning"
+                            : "bg-success/15 text-success"
                         }`}
                       >
                         {scheduled ? "Scheduled" : "Paid"}
@@ -2120,7 +2120,7 @@ function BonusesTab({
                       b.reason
                     )}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-medium text-emerald-300 tabular-nums whitespace-nowrap">
+                  <td className="px-4 py-2.5 text-right font-medium text-success tabular-nums whitespace-nowrap">
                     {fmtMoney(b.amount, b.currency)}
                   </td>
                   <td className="px-4 py-2.5 text-subtle text-xs">
@@ -2129,7 +2129,7 @@ function BonusesTab({
                   <td className="px-4 py-2.5 text-right">
                     <button
                       onClick={() => removeBonus(b.id)}
-                      className="text-subtle hover:text-red-400"
+                      className="text-subtle hover:text-danger"
                       title="Remove entry"
                     >
                       <XCircleIcon className="size-4" />
@@ -2177,7 +2177,7 @@ function LogBonusForm({
   }
 
   return (
-    <div className="bg-background border border-white/[0.04] rounded-xl p-5">
+    <div className="bg-background border border-border rounded-xl p-5">
       <h3 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-4">
         Log a bonus payment
       </h3>
@@ -2190,7 +2190,7 @@ function LogBonusForm({
             type="date"
             value={paidAt}
             onChange={(e) => setPaidAt(e.target.value)}
-            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
           />
         </div>
         <div className="md:col-span-1">
@@ -2200,7 +2200,7 @@ function LogBonusForm({
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as BonusKind)}
-            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
           >
             <option value="adhoc">Ad-hoc</option>
             <option value="revenue_tier">Revenue tier</option>
@@ -2215,7 +2215,7 @@ function LogBonusForm({
             <select
               value={tier}
               onChange={(e) => setTier(parseInt(e.target.value) as 100 | 150 | 200)}
-              className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+              className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
             >
               <option value={100}>100k</option>
               <option value={150}>150k</option>
@@ -2232,7 +2232,7 @@ function LogBonusForm({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="What's it for?"
-            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
           />
         </div>
         <div className="md:col-span-1">
@@ -2244,7 +2244,7 @@ function LogBonusForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
+            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2 tabular-nums"
           />
         </div>
       </div>
@@ -2254,12 +2254,12 @@ function LogBonusForm({
           value={paidBy}
           onChange={(e) => setPaidBy(e.target.value)}
           placeholder="Logged by"
-          className="text-xs bg-background text-subtle border border-white/[0.04] rounded-md px-2 py-1.5 w-32"
+          className="text-xs bg-background text-subtle border border-border rounded-md px-2 py-1.5 w-32"
         />
         <button
           onClick={submit}
           disabled={!amount || !reason.trim()}
-          className="px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Log payment
         </button>
@@ -2401,7 +2401,7 @@ function AccessLevelControl({ person }: { person: Person }) {
   const bucket = user.role === "team" ? "team" : "admin";
 
   return (
-    <div className="pt-3 mt-3 border-t border-white/[0.06]">
+    <div className="pt-3 mt-3 border-t border-border">
       <div className="text-[10px] uppercase tracking-wider text-subtle mb-1.5">
         Access level
       </div>
@@ -2412,7 +2412,7 @@ function AccessLevelControl({ person }: { person: Person }) {
           disabled={busy}
           className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
             bucket === "team"
-              ? "bg-white text-background"
+              ? "bg-foreground text-background"
               : "bg-border text-muted hover:text-foreground"
           }`}
         >
@@ -2424,7 +2424,7 @@ function AccessLevelControl({ person }: { person: Person }) {
           disabled={busy}
           className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
             bucket === "admin"
-              ? "bg-white text-background"
+              ? "bg-foreground text-background"
               : "bg-border text-muted hover:text-foreground"
           }`}
         >
@@ -2436,7 +2436,7 @@ function AccessLevelControl({ person }: { person: Person }) {
           ? "Member: My Tasks, Delivery, Hero Offer, Training, tools. No finance/admin."
           : "Admin: full access to every surface (finance + admin still need their own passcode)."}
       </p>
-      {note && <p className="text-[11px] text-emerald-300 mt-1">{note}</p>}
+      {note && <p className="text-[11px] text-success mt-1">{note}</p>}
     </div>
   );
 }
@@ -2519,7 +2519,7 @@ function SetCredentialsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <form
         onSubmit={submit}
-        className="bg-background rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+        className="bg-background rounded-2xl ring-1 ring-border shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
       >
         <h2 className="text-lg font-semibold text-foreground mb-1">
           Set login credentials
@@ -2534,7 +2534,7 @@ function SetCredentialsModal({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring"
               required
             />
           </div>
@@ -2545,14 +2545,14 @@ function SetCredentialsModal({
                 type="text"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="flex-1 h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground font-mono placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                className="flex-1 h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground font-mono placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring"
                 required
                 minLength={8}
               />
               <button
                 type="button"
                 onClick={() => setPassword(generatePassword())}
-                className="px-2 h-9 text-[11px] text-subtle hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
+                className="px-2 h-9 text-[11px] text-subtle hover:text-foreground hover:bg-surface-hover rounded-md transition-colors"
                 title="Generate new password"
               >
                 ↻
@@ -2565,8 +2565,8 @@ function SetCredentialsModal({
           <div
             className={`mt-4 p-3 rounded-lg text-[12px] ${
               result.ok
-                ? "bg-emerald-500/[0.08] ring-1 ring-emerald-500/30 text-emerald-200"
-                : "bg-rose-500/[0.08] ring-1 ring-rose-500/30 text-rose-200"
+                ? "bg-success/[0.08] ring-1 ring-success/30 text-success"
+                : "bg-danger/[0.08] ring-1 ring-danger/30 text-danger"
             }`}
           >
             {result.msg}
@@ -2575,21 +2575,21 @@ function SetCredentialsModal({
                 <button
                   type="button"
                   onClick={() => copy("email")}
-                  className="px-2 py-1 text-[11px] bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2] rounded transition-colors"
+                  className="px-2 py-1 text-[11px] bg-success/[0.12] hover:bg-success/[0.2] rounded transition-colors"
                 >
                   {copiedField === "email" ? "Copied" : "Copy email"}
                 </button>
                 <button
                   type="button"
                   onClick={() => copy("password")}
-                  className="px-2 py-1 text-[11px] bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2] rounded transition-colors"
+                  className="px-2 py-1 text-[11px] bg-success/[0.12] hover:bg-success/[0.2] rounded transition-colors"
                 >
                   {copiedField === "password" ? "Copied" : "Copy password"}
                 </button>
                 <button
                   type="button"
                   onClick={() => copy("both")}
-                  className="px-2 py-1 text-[11px] bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2] rounded transition-colors"
+                  className="px-2 py-1 text-[11px] bg-success/[0.12] hover:bg-success/[0.2] rounded transition-colors"
                 >
                   {copiedField === "both" ? "Copied" : "Copy both + link"}
                 </button>
@@ -2609,7 +2609,7 @@ function SetCredentialsModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-3 py-2 bg-white text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-50"
+              className="px-3 py-2 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-50"
             >
               {submitting ? "Setting..." : "Set credentials"}
             </button>
@@ -2650,7 +2650,7 @@ function Section({
   action?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] ${className}`}>
+    <div className={`bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">{title}</h3>
         {action}
@@ -2796,14 +2796,14 @@ function AgreementsTab({ person }: { person: Person }) {
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-background text-[12px] font-semibold rounded-md hover:bg-foreground"
+          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background text-[12px] font-semibold rounded-md hover:bg-foreground"
         >
           + New agreement
         </button>
       </div>
 
       {agreements.length === 0 ? (
-        <div className="bg-background ring-1 ring-white/[0.04] rounded-2xl p-10 text-center">
+        <div className="bg-background ring-1 ring-border rounded-2xl p-10 text-center">
           <p className="text-sm text-foreground font-medium mb-1">
             No agreements yet for {person.full_name}.
           </p>
@@ -2818,7 +2818,7 @@ function AgreementsTab({ person }: { person: Person }) {
             return (
               <div
                 key={a.id}
-                className="flex items-center justify-between gap-3 bg-background ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] transition-all group"
+                className="flex items-center justify-between gap-3 bg-background ring-1 ring-border rounded-xl p-4 hover:ring-border transition-all group"
               >
                 <Link
                   href={`/company/contracts/${a.id}`}
@@ -2852,7 +2852,7 @@ function AgreementsTab({ person }: { person: Person }) {
                       <button
                         onClick={() => archiveAgreement(a)}
                         title="Archive (flips to terminated, kept for audit)"
-                        className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-foreground hover:bg-white/[0.04] rounded"
+                        className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-foreground hover:bg-surface-hover rounded"
                       >
                         Archive
                       </button>
@@ -2860,7 +2860,7 @@ function AgreementsTab({ person }: { person: Person }) {
                     <button
                       onClick={() => deleteAgreement(a)}
                       title="Delete permanently"
-                      className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-rose-300 hover:bg-rose-500/[0.06] rounded"
+                      className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-danger hover:bg-danger/[0.06] rounded"
                     >
                       Delete
                     </button>

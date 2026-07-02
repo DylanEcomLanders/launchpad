@@ -111,14 +111,14 @@ export default function ContractsPanel() {
         <div className="flex items-center gap-2">
           <Link
             href="/company/contracts/templates"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-background border border-white/[0.04] text-foreground text-[13px] font-medium rounded-lg hover:border-white/[0.12] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-background border border-border text-foreground text-[13px] font-medium rounded-lg hover:border-border transition-colors"
           >
             <DocumentTextIcon className="size-4" />
             Templates
           </Link>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-4" />
             New agreement
@@ -127,7 +127,7 @@ export default function ContractsPanel() {
       </div>
 
       {total === 0 ? (
-        <div className="bg-background border border-dashed border-white/[0.04] rounded-2xl p-10 text-center">
+        <div className="bg-background border border-dashed border-border rounded-2xl p-10 text-center">
           <ShieldCheckIcon className="size-7 text-subtle mx-auto mb-3" />
           <div className="text-[15px] font-medium text-foreground mb-1">
             No agreements yet
@@ -140,7 +140,7 @@ export default function ContractsPanel() {
           </div>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-4" />
             New agreement
@@ -169,7 +169,7 @@ export default function ContractsPanel() {
                     <Link
                       key={a.id}
                       href={`/company/contracts/${a.id}`}
-                      className="block bg-background ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
+                      className="block bg-background ring-1 ring-border rounded-xl p-4 hover:ring-border hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
                     >
                       {/* Lead with the contract title (what THIS is), then
                        * the person (who it's for). Was the other way round

@@ -95,12 +95,12 @@ export default function PaymentLinkPage() {
             <label className={labelClass}>Quick Preset</label>
             <button
               onClick={applyConversionEnginePreset}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-white text-background rounded-lg hover:bg-foreground transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
             >
-              <BoltIcon className="size-4 text-amber-300" />
+              <BoltIcon className="size-4 text-warning" />
               <div className="text-left flex-1">
                 <p className="text-sm font-semibold">Conversion Engine</p>
-                <p className="text-[10px] text-white/60">£8,000/mo recurring retainer</p>
+                <p className="text-[10px] text-background/60">£8,000/mo recurring retainer</p>
               </div>
             </button>
           </div>
@@ -115,7 +115,7 @@ export default function PaymentLinkPage() {
                   onClick={() => setPlanType(type)}
                   className={`py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${
                     planType === type
-                      ? "border-white bg-white text-background"
+                      ? "border-foreground bg-foreground text-background"
                       : "border-border text-subtle hover:border-border"
                   }`}
                 >
@@ -185,14 +185,14 @@ export default function PaymentLinkPage() {
           </div>
 
           {error && (
-            <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            <div className="px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
               {error}
             </div>
           )}
 
           {paymentUrl ? (
             <div className="space-y-4">
-              <div className="px-4 py-3 bg-success border border-[#BBF7D0] rounded-lg">
+              <div className="px-4 py-3 bg-success/10 border border-success/20 rounded-lg">
                 <p className="text-sm font-medium text-success mb-2">
                   {planType === "recurring" ? "Recurring subscription link created" : "Payment link created"}
                 </p>
@@ -205,7 +205,7 @@ export default function PaymentLinkPage() {
                   />
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm font-medium rounded-md hover:bg-surface transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors shrink-0"
                   >
                     {copied ? (
                       <>
@@ -233,7 +233,7 @@ export default function PaymentLinkPage() {
             <button
               onClick={handleGenerate}
               disabled={!canSubmit || loading}
-              className="w-full py-2.5 bg-white text-background text-sm font-medium rounded-md hover:bg-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Creating…" : planType === "recurring" ? "Generate Subscription Link" : "Generate Payment Link"}
             </button>

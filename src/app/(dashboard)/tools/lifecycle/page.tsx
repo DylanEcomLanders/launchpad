@@ -95,16 +95,16 @@ export default function LifecyclePage() {
       .sort((a, b) => a.due_at.localeCompare(b.due_at));
   }, [milestones]);
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <header>
         <div className="flex items-center gap-3 mb-2">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-[0_8px_24px_rgba(14,165,233,0.3)]">
-            <CalendarDaysIcon className="size-5 text-white" />
+          <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+            <CalendarDaysIcon className="size-5 text-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-semibold text-foreground">
             Lifecycle
           </h1>
         </div>
@@ -124,10 +124,10 @@ export default function LifecyclePage() {
               const status = resolvedStatus(m);
               return (
                 <li key={m.id}>
-                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
+                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-surface rounded-xl p-4 border border-border hover:bg-surface-hover transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex flex-col items-center justify-center text-center shadow-[0_8px_24px_rgba(14,165,233,0.3)] shrink-0">
-                        <div className="text-sm font-bold text-white leading-none">{m.day}</div>
+                      <div className="size-10 rounded-lg bg-surface-raised border border-border flex flex-col items-center justify-center text-center shrink-0">
+                        <div className="text-sm font-bold text-foreground leading-none">{m.day}</div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -164,12 +164,12 @@ export default function LifecyclePage() {
         {!hydrated ? (
           <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-background rounded-xl animate-pulse" />)}</div>
         ) : matrix.length === 0 ? (
-          <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <div className="bg-surface rounded-2xl p-12 text-center border border-border">
             <p className="text-sm text-subtle">No engagements yet. Create an onboarding first.</p>
           </div>
         ) : (
-          <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
-            <div className="grid grid-cols-[1fr_repeat(4,minmax(0,1fr))] gap-2 px-4 py-3 border-b border-white/[0.04] text-[10px] uppercase tracking-wider text-subtle font-semibold">
+          <div className="bg-surface rounded-2xl border border-border overflow-hidden">
+            <div className="grid grid-cols-[1fr_repeat(4,minmax(0,1fr))] gap-2 px-4 py-3 border-b border-border text-[10px] uppercase tracking-wider text-subtle font-semibold">
               <div>Client</div>
               <div>Day 30</div>
               <div>Day 90</div>
@@ -177,7 +177,7 @@ export default function LifecyclePage() {
               <div>Day 365</div>
             </div>
             {matrix.map(({ engagement, cells }) => (
-              <div key={engagement.client_name} className="grid grid-cols-[1fr_repeat(4,minmax(0,1fr))] gap-2 px-4 py-3 border-b border-white/[0.04] items-center text-[13px] hover:bg-white/[0.02] transition-colors">
+              <div key={engagement.client_name} className="grid grid-cols-[1fr_repeat(4,minmax(0,1fr))] gap-2 px-4 py-3 border-b border-border items-center text-[13px] hover:bg-surface-hover transition-colors">
                 <div className="text-foreground truncate font-medium">{engagement.client_name}</div>
                 {cells.map(({ day, milestone }) => {
                   if (milestone) {

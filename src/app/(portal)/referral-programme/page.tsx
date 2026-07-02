@@ -106,14 +106,14 @@ function ReferralProgrammeInner() {
       {canEdit && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
           {editing && (
-            <button onClick={handleReset} className="px-3 py-1.5 text-[11px] font-medium text-subtle bg-white border border-foreground rounded-lg shadow-sm hover:bg-surface-raised">
+            <button onClick={handleReset} className="px-3 py-1.5 text-[11px] font-medium text-subtle bg-surface border border-border rounded-lg shadow-sm hover:bg-surface-raised">
               Reset
             </button>
           )}
           <button
             onClick={handleSave}
             className={`px-4 py-1.5 text-[11px] font-medium rounded-lg shadow-sm transition-colors ${
-              saved ? "bg-success text-white" : editing ? "bg-background text-white hover:bg-surface" : "bg-white text-muted border border-foreground"
+              saved ? "bg-success text-white" : editing ? "bg-background text-white hover:bg-surface" : "bg-surface text-muted border border-border"
             }`}
           >
             {saved ? "Saved ✓" : editing ? "Save Changes" : "Edit Mode"}
@@ -134,7 +134,7 @@ function ReferralProgrammeInner() {
       </section>
 
       {/* ── Commission (White) ── */}
-      <section className="bg-white px-6 py-16 md:py-20">
+      <section className="bg-surface px-6 py-16 md:py-20">
         <div className="max-w-2xl mx-auto">
           <E k="commLabel" content={content} onChange={update} editable={canEdit} tag="p" className="text-xs font-semibold uppercase tracking-[0.2em] text-muted mb-8 text-center" />
           <div className="grid grid-cols-2 gap-0 border border-foreground rounded-2xl overflow-hidden">
@@ -182,7 +182,7 @@ function ReferralProgrammeInner() {
       </section>
 
       {/* ── Example (White) ── */}
-      <section className="bg-white px-6 py-16 md:py-20">
+      <section className="bg-surface px-6 py-16 md:py-20">
         <div className="max-w-2xl mx-auto">
           <E k="numbersLabel" content={content} onChange={update} editable={canEdit} tag="p" className="text-xs font-semibold uppercase tracking-[0.2em] text-muted mb-8 text-center" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,7 +211,7 @@ function ReferralProgrammeInner() {
               { t: "build3Title" as ContentKey, d: "build3Desc" as ContentKey },
               { t: "build4Title" as ContentKey, d: "build4Desc" as ContentKey },
             ].map(({ t, d }) => (
-              <div key={t} className="border border-[#222] rounded-xl p-5">
+              <div key={t} className="border border-border rounded-xl p-5">
                 <E k={t} content={content} onChange={update} editable={canEdit} tag="p" className="text-sm font-bold mb-1" />
                 <E k={d} content={content} onChange={update} editable={canEdit} tag="p" className="text-xs text-subtle leading-relaxed" />
               </div>
@@ -221,7 +221,7 @@ function ReferralProgrammeInner() {
       </section>
 
       {/* ── CTA (White) ── */}
-      <section className="bg-white px-6 py-20 md:py-28">
+      <section className="bg-surface px-6 py-20 md:py-28">
         <div className="max-w-2xl mx-auto text-center">
           <E k="ctaTitle" content={content} onChange={update} editable={canEdit} tag="h2" className="text-3xl md:text-4xl font-bold tracking-tight text-surface mb-3" />
           <E k="ctaSubtitle" content={content} onChange={update} editable={canEdit} tag="p" className="text-sm text-subtle mb-8 max-w-md mx-auto" />

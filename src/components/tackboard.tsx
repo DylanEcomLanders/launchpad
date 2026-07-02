@@ -299,7 +299,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
                 if (e.key === "Escape") setAuthorPrompt(false);
               }}
               placeholder="e.g. Dylan"
-              className="w-full px-3 py-2 text-sm border border-border rounded-lg text-foreground focus:border-white outline-none"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg text-foreground focus:border-subtle outline-none"
             />
             <div className="flex items-center justify-end gap-2 mt-4">
               <button

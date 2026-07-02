@@ -22,21 +22,21 @@ export default function ConversionEngineClient() {
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* ── Nav ── */}
-      <nav className="w-full border-b border-foreground bg-white sticky top-0 z-50">
+      <nav className="w-full border-b border-foreground bg-surface sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
           <Logo height={18} className="text-foreground" />
           <a
             href={CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors"
+            className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground/90 transition-colors"
           >
             Book a Conversion Audit
           </a>
         </div>
       </nav>
 
-      <div className="flex-1 bg-white">
+      <div className="flex-1 bg-surface">
         {/* ── Hero ── */}
         <section className="w-full">
           <div className="max-w-5xl mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-16 text-center">
@@ -62,7 +62,7 @@ export default function ConversionEngineClient() {
                 href={CALL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground/90 transition-colors"
               >
                 Book a Conversion Audit
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -71,7 +71,7 @@ export default function ConversionEngineClient() {
               </a>
               <a
                 href="#pricing"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-foreground text-foreground text-sm font-semibold rounded-lg hover:border-surface transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-surface border border-foreground text-foreground text-sm font-semibold rounded-lg hover:border-surface transition-colors"
               >
                 See pricing
               </a>
@@ -84,7 +84,7 @@ export default function ConversionEngineClient() {
         </section>
 
         {/* ── Problem ── */}
-        <section className="w-full bg-surface-raised border-y border-[#EEE]">
+        <section className="w-full bg-surface-raised border-y border-border">
           <div className="max-w-4xl mx-auto px-6 md:px-10 py-20">
             <h2 className="text-xs uppercase tracking-[0.18em] text-subtle mb-6" style={{ fontFamily: "var(--font-body)" }}>
               The problem
@@ -130,7 +130,7 @@ export default function ConversionEngineClient() {
               ].map((item) => (
                 <div
                   key={item.num}
-                  className="border border-border rounded-2xl p-7 bg-white hover:border-surface transition-colors"
+                  className="border border-border rounded-2xl p-7 bg-surface hover:border-surface transition-colors"
                 >
                   <div className="text-xs font-mono text-subtle mb-4">{item.num}</div>
                   <h3 className="text-lg font-semibold text-foreground tracking-tight leading-tight mb-3" style={{ fontFamily: "var(--font-heading)" }}>
@@ -146,7 +146,7 @@ export default function ConversionEngineClient() {
         </section>
 
         {/* ── The Offer ── */}
-        <section className="w-full bg-surface text-white">
+        <section className="w-full bg-foreground text-background">
           <div className="max-w-5xl mx-auto px-6 md:px-10 py-24">
             <h2 className="text-xs uppercase tracking-[0.18em] text-[#D1FF4C] mb-6" style={{ fontFamily: "var(--font-body)" }}>
               The offer
@@ -154,12 +154,12 @@ export default function ConversionEngineClient() {
             <h3 className="text-4xl md:text-6xl font-bold leading-[1.05] tracking-tight uppercase mb-10" style={{ fontFamily: "var(--font-heading)" }}>
               Conversion Engine is the operating system that runs your funnel.
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg leading-[1.7] text-white/80" style={{ fontFamily: "var(--font-body)" }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg leading-[1.7] text-background/80" style={{ fontFamily: "var(--font-body)" }}>
               <p>
-                One pod owns ads, landing pages, PDPs, cart, checkout adjacencies, and post-purchase. <span className="text-white">Weekly test cycle:</span> hypothesis Monday, ship Friday. <span className="text-white">Fortnightly strategic review</span> with the CRO Lead.
+                One pod owns ads, landing pages, PDPs, cart, checkout adjacencies, and post-purchase. <span className="text-background">Weekly test cycle:</span> hypothesis Monday, ship Friday. <span className="text-background">Fortnightly strategic review</span> with the CRO Lead.
               </p>
               <p>
-                <span className="text-white">Full funnel ownership</span>, accountable to revenue and not deliverables. This is what £300k+/month brands need and almost nobody sells.
+                <span className="text-background">Full funnel ownership</span>, accountable to revenue and not deliverables. This is what £300k+/month brands need and almost nobody sells.
               </p>
             </div>
           </div>
@@ -204,7 +204,7 @@ export default function ConversionEngineClient() {
                   body: "Every two weeks the CRO Lead walks the data with you. Winning variants roll into the production funnel. Losing tests inform the next hypothesis. The roadmap reprices.",
                 },
               ].map((p) => (
-                <div key={p.num} className="bg-white p-7 md:p-8 flex flex-col">
+                <div key={p.num} className="bg-surface p-7 md:p-8 flex flex-col">
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-8 h-8 rounded-full bg-[#D1FF4C] flex items-center justify-center text-sm font-bold text-foreground">
                       {p.num}
@@ -226,7 +226,7 @@ export default function ConversionEngineClient() {
         </section>
 
         {/* ── What You Get ── */}
-        <section className="w-full bg-surface-raised border-y border-[#EEE]">
+        <section className="w-full bg-surface-raised border-y border-border">
           <div className="max-w-5xl mx-auto px-6 md:px-10 py-24">
             <div className="text-center mb-14">
               <h2 className="text-xs uppercase tracking-[0.18em] text-subtle mb-4" style={{ fontFamily: "var(--font-body)" }}>
@@ -248,7 +248,7 @@ export default function ConversionEngineClient() {
                 "Monthly funnel health report, every step benchmarked",
                 "Direct line to the CRO Lead for in-flight calls",
               ].map((item) => (
-                <div key={item} className="flex items-start gap-3 bg-white border border-border rounded-xl p-5">
+                <div key={item} className="flex items-start gap-3 bg-surface border border-border rounded-xl p-5">
                   <svg className="w-5 h-5 text-foreground shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
@@ -301,7 +301,7 @@ export default function ConversionEngineClient() {
         </section>
 
         {/* ── For / Not For ── */}
-        <section className="w-full bg-surface text-white">
+        <section className="w-full bg-foreground text-background">
           <div className="max-w-6xl mx-auto px-6 md:px-10 py-24">
             <div className="text-center mb-14">
               <h2 className="text-xs uppercase tracking-[0.18em] text-[#D1FF4C] mb-4" style={{ fontFamily: "var(--font-body)" }}>
@@ -313,14 +313,14 @@ export default function ConversionEngineClient() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+              <div className="bg-background/5 border border-background/10 rounded-2xl p-8">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-2 h-2 rounded-full bg-[#D1FF4C]" />
                   <span className="text-xs uppercase tracking-[0.12em] text-[#D1FF4C]" style={{ fontFamily: "var(--font-body)" }}>
                     For
                   </span>
                 </div>
-                <ul className="space-y-3 text-[15px] text-white/85" style={{ fontFamily: "var(--font-body)" }}>
+                <ul className="space-y-3 text-[15px] text-background/85" style={{ fontFamily: "var(--font-body)" }}>
                   {[
                     "Shopify brands doing £300k+/month",
                     "Spending £80k+/month on paid acquisition",
@@ -337,14 +337,14 @@ export default function ConversionEngineClient() {
                 </ul>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+              <div className="bg-background/5 border border-background/10 rounded-2xl p-8">
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="w-2 h-2 rounded-full bg-white/40" />
-                  <span className="text-xs uppercase tracking-[0.12em] text-white/60" style={{ fontFamily: "var(--font-body)" }}>
+                  <div className="w-2 h-2 rounded-full bg-background/40" />
+                  <span className="text-xs uppercase tracking-[0.12em] text-background/60" style={{ fontFamily: "var(--font-body)" }}>
                     Not for
                   </span>
                 </div>
-                <ul className="space-y-3 text-[15px] text-white/70" style={{ fontFamily: "var(--font-body)" }}>
+                <ul className="space-y-3 text-[15px] text-background/70" style={{ fontFamily: "var(--font-body)" }}>
                   {[
                     "Brands under £300k/month — the test volume doesn't compound yet",
                     "Brands looking for one-off page builds — that's a different agency",
@@ -352,7 +352,7 @@ export default function ConversionEngineClient() {
                     "Anyone wanting a strategy deck without ship velocity",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <svg className="w-4 h-4 text-white/40 shrink-0 mt-1" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                      <svg className="w-4 h-4 text-background/40 shrink-0 mt-1" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       {item}
@@ -365,7 +365,7 @@ export default function ConversionEngineClient() {
         </section>
 
         {/* ── Pricing ── */}
-        <section id="pricing" className="w-full bg-white scroll-mt-20">
+        <section id="pricing" className="w-full bg-surface scroll-mt-20">
           <div className="max-w-5xl mx-auto px-6 md:px-10 py-24">
             <div className="text-center mb-14">
               <h2 className="text-xs uppercase tracking-[0.18em] text-subtle mb-4" style={{ fontFamily: "var(--font-body)" }}>
@@ -413,14 +413,14 @@ export default function ConversionEngineClient() {
                   href={CALL_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-center w-full py-3 bg-white border border-surface text-foreground text-sm font-semibold rounded-lg hover:bg-surface hover:text-white transition-colors"
+                  className="block text-center w-full py-3 bg-surface border border-surface text-foreground text-sm font-semibold rounded-lg hover:bg-foreground hover:text-background transition-colors"
                 >
                   Book audit
                 </a>
               </div>
 
               {/* £12k Anchor */}
-              <div className="border-2 border-surface rounded-2xl p-8 flex flex-col bg-surface text-white relative">
+              <div className="border-2 border-surface rounded-2xl p-8 flex flex-col bg-foreground text-background relative">
                 <div className="absolute -top-3 right-6 bg-[#D1FF4C] text-foreground text-xs font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full" style={{ fontFamily: "var(--font-body)" }}>
                   Anchor
                 </div>
@@ -431,14 +431,14 @@ export default function ConversionEngineClient() {
                   <span className="text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
                     £12k
                   </span>
-                  <span className="text-white/60" style={{ fontFamily: "var(--font-body)" }}>
+                  <span className="text-background/60" style={{ fontFamily: "var(--font-body)" }}>
                     /month
                   </span>
                 </div>
-                <p className="text-[15px] text-white/75 mb-7" style={{ fontFamily: "var(--font-body)" }}>
+                <p className="text-[15px] text-background/75 mb-7" style={{ fontFamily: "var(--font-body)" }}>
                   Everything in Conversion Engine, plus more cycles per sprint and a dedicated CRO Lead.
                 </p>
-                <ul className="space-y-2.5 text-[14px] text-white mb-8 flex-1" style={{ fontFamily: "var(--font-body)" }}>
+                <ul className="space-y-2.5 text-[14px] text-background mb-8 flex-1" style={{ fontFamily: "var(--font-body)" }}>
                   {[
                     "2 variants shipped per week",
                     "Dedicated CRO Lead allocation",
@@ -458,7 +458,7 @@ export default function ConversionEngineClient() {
                   href={CALL_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-center w-full py-3 bg-[#D1FF4C] text-foreground text-sm font-semibold rounded-lg hover:bg-white transition-colors"
+                  className="block text-center w-full py-3 bg-[#D1FF4C] text-foreground text-sm font-semibold rounded-lg hover:bg-surface transition-colors"
                 >
                   Book audit
                 </a>
@@ -472,7 +472,7 @@ export default function ConversionEngineClient() {
         </section>
 
         {/* ── FAQ ── */}
-        <section className="w-full bg-surface-raised border-t border-[#EEE]">
+        <section className="w-full bg-surface-raised border-t border-border">
           <div className="max-w-3xl mx-auto px-6 md:px-10 py-24">
             <div className="text-center mb-14">
               <h2 className="text-xs uppercase tracking-[0.18em] text-subtle mb-4" style={{ fontFamily: "var(--font-body)" }}>
@@ -508,7 +508,7 @@ export default function ConversionEngineClient() {
               ].map((item) => (
                 <details
                   key={item.q}
-                  className="group bg-white border border-border rounded-xl overflow-hidden"
+                  className="group bg-surface border border-border rounded-xl overflow-hidden"
                 >
                   <summary className="flex items-center justify-between gap-4 p-6 cursor-pointer list-none">
                     <span className="text-[16px] md:text-[17px] font-semibold text-foreground tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
@@ -534,7 +534,7 @@ export default function ConversionEngineClient() {
         </section>
 
         {/* ── Final CTA ── */}
-        <section className="w-full bg-white">
+        <section className="w-full bg-surface">
           <div className="max-w-4xl mx-auto px-6 md:px-10 py-24 text-center">
             <h2 className="text-4xl md:text-6xl font-bold text-foreground leading-[1.05] tracking-tight uppercase mb-8" style={{ fontFamily: "var(--font-heading)" }}>
               Stop running tests.
@@ -548,7 +548,7 @@ export default function ConversionEngineClient() {
               href={CALL_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-surface text-white text-base font-semibold rounded-lg hover:bg-border transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-foreground text-background text-base font-semibold rounded-lg hover:bg-foreground/90 transition-colors"
             >
               Book a Conversion Audit
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -560,9 +560,9 @@ export default function ConversionEngineClient() {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="w-full bg-surface">
+      <footer className="w-full bg-foreground">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 flex items-center justify-between gap-4">
-          <p className="text-sm md:text-base font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
+          <p className="text-sm md:text-base font-medium text-background tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
             The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
           </p>
           <img src="/shopify-select-partner.svg" alt="Shopify Select Partner" className="h-10 w-auto shrink-0" />

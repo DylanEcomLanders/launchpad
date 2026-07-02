@@ -26,7 +26,7 @@ import { SignaturePad } from "@/components/signature-pad";
  * inputClass in /lib/form-styles is dark-mode (white-on-black for
  * the dashboard); on a white signing page it'd look broken. */
 const lightInputClass =
-  "w-full px-3.5 py-2.5 bg-white border border-[#D5D5D5] rounded-lg text-[14px] text-[#111] placeholder:text-subtle focus:outline-none focus:border-surface focus:ring-1 focus:ring-surface/20 transition-all";
+  "w-full px-3.5 py-2.5 bg-surface border border-border rounded-lg text-[14px] text-foreground placeholder:text-subtle focus:outline-none focus:border-surface focus:ring-1 focus:ring-surface/20 transition-all";
 
 export default function PublicAgreementPage() {
   const params = useParams();
@@ -107,16 +107,16 @@ export default function PublicAgreementPage() {
 
   if (submitted || alreadySigned) {
     return (
-      <div className="min-h-screen bg-[#EAEAEA] text-[#111]">
+      <div className="min-h-screen bg-background text-foreground">
         <Header kind={agreement.kind} />
         <div className="max-w-[940px] mx-auto px-4 md:px-8 py-10 pb-20">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mb-8 flex items-start gap-3 max-w-[820px] mx-auto">
-            <CheckCircleIcon className="size-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="bg-success/10 border border-success/20 rounded-xl p-5 mb-8 flex items-start gap-3 max-w-[820px] mx-auto">
+            <CheckCircleIcon className="size-5 text-success shrink-0 mt-0.5" />
             <div>
-              <div className="text-[14px] font-medium text-emerald-900">
+              <div className="text-[14px] font-medium text-success">
                 Signed and submitted.
               </div>
-              <div className="text-[13px] text-emerald-800 mt-0.5 leading-relaxed">
+              <div className="text-[13px] text-success mt-0.5 leading-relaxed">
                 Thanks {agreement.team_signed_name || agreement.person_full_name}.
                 Ecom Landers will counter-sign shortly and you&apos;ll have a
                 final reference copy.
@@ -130,7 +130,7 @@ export default function PublicAgreementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EAEAEA] text-[#111]">
+    <div className="min-h-screen bg-background text-foreground">
       <Header kind={agreement.kind} />
       <div className="max-w-[940px] mx-auto px-4 md:px-8 py-10 pb-32">
         {/* Pre-amble - kept tight so the document is the hero. */}
@@ -150,9 +150,9 @@ export default function PublicAgreementPage() {
         <RenderedDocument agreement={agreement} />
 
         {/* Sign block - matches the doc width so it sits cleanly under it */}
-        <div className="mt-8 bg-white border border-[#D5D5D5] rounded-lg p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] mx-auto" style={{ maxWidth: "820px" }}>
+        <div className="mt-8 bg-surface border border-border rounded-lg p-8 mx-auto" style={{ maxWidth: "820px" }}>
           <h2
-            className="text-[16px] font-semibold text-[#111] mb-5"
+            className="text-[16px] font-semibold text-foreground mb-5"
             style={{ fontFamily: '"Inter Tight", "Helvetica Neue", sans-serif' }}
           >
             Sign below to accept
@@ -165,7 +165,7 @@ export default function PublicAgreementPage() {
               onChange={(e) => setAgreed(e.target.checked)}
               className="mt-0.5 accent-surface size-4"
             />
-            <span className="text-[13px] text-border leading-relaxed">
+            <span className="text-[13px] text-muted leading-relaxed">
               I have read and agree to be bound by the terms of this{" "}
               {AGREEMENT_KIND_LABEL[agreement.kind]}.
             </span>
@@ -198,7 +198,7 @@ export default function PublicAgreementPage() {
           </div>
 
           {error && (
-            <div className="mb-4 px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-danger">
+            <div className="mb-4 px-3 py-2 bg-danger/10 border border-danger/20 rounded-lg text-[13px] text-danger">
               {error}
             </div>
           )}
@@ -228,10 +228,10 @@ export default function PublicAgreementPage() {
  * disappears. */
 function Header({ kind }: { kind: Agreement["kind"] }) {
   return (
-    <div className="bg-white border-b border-[#D5D5D5]">
+    <div className="bg-surface border-b border-border">
       <div className="max-w-[940px] mx-auto px-4 md:px-8 py-5 flex items-center justify-between">
         <Logo height={22} className="text-foreground" />
-        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-full bg-surface-raised text-foreground border border-foreground">
+        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-full bg-surface-raised text-foreground border border-border">
           {AGREEMENT_KIND_LABEL[kind]}
         </span>
       </div>

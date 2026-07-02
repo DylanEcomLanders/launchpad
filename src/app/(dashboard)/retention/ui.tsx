@@ -8,9 +8,9 @@ import type { UpsellMove } from "@/lib/retention/upsell";
 // match form-styles.ts / the rest of the app.
 
 export const BAND_META: Record<HealthBand, { label: string; text: string; dot: string; chip: string }> = {
-  green: { label: "Healthy", text: "text-emerald-400", dot: "#10B981", chip: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" },
-  amber: { label: "At risk", text: "text-amber-400", dot: "#F59E0B", chip: "bg-amber-500/10 border-amber-500/30 text-amber-400" },
-  red: { label: "Critical", text: "text-red-400", dot: "#EF4444", chip: "bg-red-500/10 border-red-500/30 text-red-400" },
+  green: { label: "Healthy", text: "text-success", dot: "var(--success)", chip: "bg-success/10 border-success/20 text-success" },
+  amber: { label: "At risk", text: "text-warning", dot: "var(--warning)", chip: "bg-warning/10 border-warning/20 text-warning" },
+  red: { label: "Critical", text: "text-danger", dot: "var(--danger)", chip: "bg-danger/10 border-danger/20 text-danger" },
 };
 
 export function HealthPill({ band, overridden, title }: { band: HealthBand; overridden?: boolean; title?: string }) {
@@ -38,10 +38,10 @@ export function StatCard({ label, value, sub, accent }: { label: string; value: 
 }
 
 export function renewalLabel(days: number): { text: string; tone: string } {
-  if (days < 0) return { text: `${Math.abs(days)}d overdue`, tone: "text-red-400" };
-  if (days === 0) return { text: "Today", tone: "text-red-400" };
-  if (days <= 14) return { text: `${days}d`, tone: "text-red-400" };
-  if (days <= 30) return { text: `${days}d`, tone: "text-amber-400" };
+  if (days < 0) return { text: `${Math.abs(days)}d overdue`, tone: "text-danger" };
+  if (days === 0) return { text: "Today", tone: "text-danger" };
+  if (days <= 14) return { text: `${days}d`, tone: "text-danger" };
+  if (days <= 30) return { text: `${days}d`, tone: "text-warning" };
   return { text: `${days}d`, tone: "text-subtle" };
 }
 
@@ -63,10 +63,10 @@ export function fmtMoney(n: number): string {
 
 // ── Pillars ──────────────────────────────────────────────────────────────
 const PILLAR_DOT: Record<PillarStatus, string> = {
-  good: "#10B981",
-  warn: "#F59E0B",
-  bad: "#EF4444",
-  na: "#4B4D52",
+  good: "var(--success)",
+  warn: "var(--warning)",
+  bad: "var(--danger)",
+  na: "var(--subtle)",
 };
 
 /** Inline row of the five health pillars: dot + label. The dot encodes the
@@ -78,7 +78,7 @@ export function PillarDots({ pillars, showDetail }: { pillars: Pillar[]; showDet
         <span key={p.key} title={p.detail} className="inline-flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: PILLAR_DOT[p.status] }} />
           {p.label}
-          {showDetail && <span className="text-border">· {p.detail}</span>}
+          {showDetail && <span className="text-muted">· {p.detail}</span>}
         </span>
       ))}
     </div>
@@ -87,10 +87,10 @@ export function PillarDots({ pillars, showDetail }: { pillars: Pillar[]; showDet
 
 // ── Upsell move badge ──────────────────────────────────────────────────────
 export const UPSELL_META: Record<UpsellMove, { chip: string }> = {
-  upsell: { chip: "bg-blue-500/10 border-blue-500/30 text-blue-400" },
+  upsell: { chip: "bg-info/10 border-info/20 text-info" },
   expand: { chip: "bg-violet-500/10 border-violet-500/30 text-violet-400" },
-  steady: { chip: "bg-[#222] border-border text-[#9A9DA3]" },
-  hold: { chip: "bg-amber-500/10 border-amber-500/30 text-amber-400" },
+  steady: { chip: "bg-surface-raised border-border text-muted" },
+  hold: { chip: "bg-warning/10 border-warning/20 text-warning" },
 };
 
 export function UpsellBadge({ move, label }: { move: UpsellMove; label: string }) {

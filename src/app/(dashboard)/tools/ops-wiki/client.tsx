@@ -120,7 +120,7 @@ function AssemblyLine({ text }: { text: string }) {
             <span
               className={
                 isGate
-                  ? "inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-amber-900"
+                  ? "inline-flex items-center gap-1.5 rounded-md border border-warning/20 bg-warning/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-warning"
                   : "inline-flex items-center rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground"
               }
             >
@@ -297,7 +297,7 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
                   <button
                     key={i}
                     onClick={() => { setActiveSlug(r.slug); setSearchQuery(""); }}
-                    className="block w-full text-left px-3 py-2 text-xs hover:bg-background border-b border-[#F8F8F8] last:border-0"
+                    className="block w-full text-left px-3 py-2 text-xs hover:bg-background border-b border-border-faint last:border-0"
                   >
                     <span className="font-medium text-foreground">{r.module}</span>
                     <span className="mx-1 text-muted">/</span>
@@ -354,7 +354,7 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
               )
             )}
 
-            <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-a:text-blue-600 prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-blue-400 prose-blockquote:bg-blue-900/20 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-blue-300 prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground prose-li:text-muted">
+            <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-a:text-info prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-info prose-blockquote:bg-info/10 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-info prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground prose-li:text-muted">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{

@@ -32,10 +32,10 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
     <div
       className={`
         min-w-[180px] max-w-[240px] rounded-xl border bg-surface transition-shadow
-        ${selected ? "border-white shadow-lg" : "border-border shadow-sm hover:shadow-md"}
+        ${selected ? "border-foreground shadow-lg" : "border-border shadow-sm hover:shadow-md"}
       `}
     >
-      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-surface !border-2 !border-white" />
+      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-surface !border-2 !border-surface-raised" />
 
       {/* Header bar */}
       <div className="flex items-center justify-between px-3.5 py-2 border-b border-border">
@@ -93,7 +93,7 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
             {m.cvr != null && (
               <div>
                 <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">CVR</p>
-                <p className={`text-xs font-semibold ${m.cvr >= 3 ? "text-emerald-600" : m.cvr < 1 ? "text-red-500" : "text-foreground"}`}>
+                <p className={`text-xs font-semibold ${m.cvr >= 3 ? "text-success" : m.cvr < 1 ? "text-danger" : "text-foreground"}`}>
                   {m.cvr}%
                 </p>
               </div>
@@ -107,7 +107,7 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
             {m.dropOff != null && (
               <div>
                 <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">Drop-off</p>
-                <p className={`text-xs font-semibold ${m.dropOff > 50 ? "text-red-500" : "text-foreground"}`}>
+                <p className={`text-xs font-semibold ${m.dropOff > 50 ? "text-danger" : "text-foreground"}`}>
                   {m.dropOff}%
                 </p>
               </div>
@@ -122,7 +122,7 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 mt-2.5 px-2 py-1 text-[10px] font-medium text-[#2563EB] bg-blue-500/15 rounded-md hover:bg-blue-500/15 transition-colors"
+            className="inline-flex items-center gap-1 mt-2.5 px-2 py-1 text-[10px] font-medium text-info bg-info/10 rounded-md hover:bg-info/20 transition-colors"
           >
             <svg className="size-2.5" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2A2.5 2.5 0 002 4.5v7A2.5 2.5 0 004.5 14h7a2.5 2.5 0 002.5-2.5v-3a.5.5 0 00-1 0v3A1.5 1.5 0 0111.5 13h-7A1.5 1.5 0 013 11.5v-7A1.5 1.5 0 014.5 3h3a.5.5 0 000-1h-3zM9 2.5a.5.5 0 01.5-.5h4a.5.5 0 01.5.5v4a.5.5 0 01-1 0V3.707L8.354 8.354a.5.5 0 11-.708-.708L12.293 3H9.5a.5.5 0 01-.5-.5z" /></svg>
             View Page
@@ -130,7 +130,7 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
         )}
       </div>
 
-      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-surface !border-2 !border-white" />
+      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-surface !border-2 !border-surface-raised" />
     </div>
   );
 }

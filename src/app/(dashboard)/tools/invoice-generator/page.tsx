@@ -348,7 +348,7 @@ export default function InvoiceGeneratorPage() {
               <button
                 onClick={addDeliverable}
                 disabled={!selectedDeliverable}
-                className="px-4 py-2.5 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-30"
+                className="px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-30"
               >
                 <PlusIcon className="size-4" />
               </button>
@@ -424,7 +424,7 @@ export default function InvoiceGeneratorPage() {
                     {/* Remove */}
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="p-1 text-subtle hover:text-red-500 transition-colors justify-self-center"
+                      className="p-1 text-subtle hover:text-danger transition-colors justify-self-center"
                     >
                       <XMarkIcon className="size-3.5" />
                     </button>
@@ -535,7 +535,7 @@ export default function InvoiceGeneratorPage() {
           <button
             onClick={handleGenerate}
             disabled={!canGenerate || generating}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-30"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-30"
           >
             {generating ? (
               <>

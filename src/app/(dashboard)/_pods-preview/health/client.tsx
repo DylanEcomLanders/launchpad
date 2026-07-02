@@ -22,9 +22,9 @@ import {
 import { AnnotationStrip, SectionHeader, Card } from "../components";
 
 const BAND_META = {
-  green: { ring: "border-emerald-200 bg-emerald-50", dot: "bg-emerald-500", text: "text-emerald-700", label: "Healthy" },
-  amber: { ring: "border-amber-200 bg-amber-50", dot: "bg-amber-500", text: "text-amber-700", label: "Watch" },
-  red: { ring: "border-rose-200 bg-rose-50", dot: "bg-rose-500", text: "text-rose-700", label: "At risk" },
+  green: { ring: "border-success/20 bg-success/10", dot: "bg-success", text: "text-success", label: "Healthy" },
+  amber: { ring: "border-warning/20 bg-warning/10", dot: "bg-warning", text: "text-warning", label: "Watch" },
+  red: { ring: "border-danger/20 bg-danger/10", dot: "bg-danger", text: "text-danger", label: "At risk" },
 };
 
 export default function HealthClient() {
@@ -103,12 +103,12 @@ function ClientHealthCard({ client, onOpen }: { client: Client; onOpen: () => vo
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]">
-        <span className={`inline-flex items-center gap-1 ${checkInDue ? "text-rose-700" : "text-subtle"}`}>
+        <span className={`inline-flex items-center gap-1 ${checkInDue ? "text-danger" : "text-subtle"}`}>
           <CalendarDaysIcon className="size-3.5" />
           Check-in {checkInDue ? "due" : fmtDayMonth(client.nextCheckIn)}
         </span>
         {client.cvrCurrent != null && (
-          <span className={`inline-flex items-center gap-1 ${cvrUp ? "text-emerald-700" : "text-subtle"}`}>
+          <span className={`inline-flex items-center gap-1 ${cvrUp ? "text-success" : "text-subtle"}`}>
             <ArrowTrendingUpIcon className="size-3.5" />
             CVR {client.cvrBaseline}% → {client.cvrCurrent}%
           </span>
@@ -118,7 +118,7 @@ function ClientHealthCard({ client, onOpen }: { client: Client; onOpen: () => vo
       {client.riskFlags.length > 0 && (
         <div className="mt-2.5 space-y-1">
           {client.riskFlags.map((r, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px] text-rose-700">
+            <div key={i} className="flex items-start gap-1.5 text-[11px] text-danger">
               <ExclamationTriangleIcon className="mt-0.5 size-3.5 shrink-0" />
               <span>{r}</span>
             </div>
@@ -143,8 +143,8 @@ function SignalBar({
   max: number;
 }) {
   const pct = Math.min(100, (value / max) * 100);
-  const tone = value >= bad ? "bg-rose-500" : value >= bad * 0.5 ? "bg-amber-500" : "bg-emerald-500";
-  const txt = value >= bad ? "text-rose-700" : value >= bad * 0.5 ? "text-amber-700" : "text-emerald-700";
+  const tone = value >= bad ? "bg-danger" : value >= bad * 0.5 ? "bg-warning" : "bg-success";
+  const txt = value >= bad ? "text-danger" : value >= bad * 0.5 ? "text-warning" : "text-success";
   return (
     <div>
       <div className="flex items-baseline justify-between">
@@ -185,7 +185,7 @@ function HealthPanel({ client, onClose }: { client: Client; onClose: () => void 
         </div>
 
         <div className="mt-3 rounded-lg border border-border bg-background px-3 py-2 text-[12px]">
-          <span className={checkIn <= 0 ? "font-medium text-rose-700" : "text-subtle"}>
+          <span className={checkIn <= 0 ? "font-medium text-danger" : "text-subtle"}>
             <CalendarDaysIcon className="mr-1 inline size-3.5" />
             Next check-in: {checkIn <= 0 ? `overdue (${fmtDayMonth(client.nextCheckIn)})` : fmtDayMonth(client.nextCheckIn)}
           </span>

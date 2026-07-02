@@ -333,7 +333,7 @@ export default function IntakeClient() {
                 {pods.find((p) => p.id === existingClient.pod_id)?.name ?? ","}
               </span>
               {existingClient.brand_warm && (
-                <span className="ml-2 font-medium text-orange-700">Brand-warm</span>
+                <span className="ml-2 font-medium text-info">Brand-warm</span>
               )}
             </div>
           )}
@@ -398,7 +398,7 @@ export default function IntakeClient() {
                 <button
                   type="button"
                   onClick={() => removePage(idx)}
-                  className="rounded p-1.5 text-subtle hover:bg-rose-500/10 hover:text-rose-300"
+                  className="rounded p-1.5 text-subtle hover:bg-danger/10 hover:text-danger"
                 >
                   <TrashIcon className="size-3.5" />
                 </button>
@@ -437,16 +437,16 @@ export default function IntakeClient() {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm">
+        <label className="flex items-center gap-2 rounded-lg border border-danger/20 bg-danger/10 px-3 py-2 text-sm">
           <input
             type="checkbox"
             checked={isRush}
             onChange={(e) => setIsRush(e.target.checked)}
-            className="h-4 w-4 rounded border-rose-300"
+            className="h-4 w-4 rounded border-danger/40"
           />
           <div>
-            <div className="text-rose-900">Rush, kicks off off-cycle</div>
-            <div className="text-[10px] text-rose-700">
+            <div className="text-danger">Rush, kicks off off-cycle</div>
+            <div className="text-[10px] text-danger">
               Skips the Monday-only rule. Logged but allowed.
             </div>
           </div>
@@ -508,10 +508,10 @@ export default function IntakeClient() {
           <div
             className={`mt-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-[12px] ${
               overCapacity
-                ? "border-rose-200 bg-rose-50 text-rose-800"
+                ? "border-danger/20 bg-danger/10 text-danger"
                 : nearCapacity
-                  ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  ? "border-warning/20 bg-warning/10 text-warning"
+                  : "border-success/20 bg-success/10 text-success"
             }`}
           >
             <span className="font-semibold tabular-nums">{projectedUsed}/{podCap} pts</span>
@@ -534,7 +534,7 @@ export default function IntakeClient() {
           </Link>
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-surface px-4 py-2 text-sm font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-foreground"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-foreground px-4 py-2 text-sm font-medium text-background shadow-[var(--shadow-soft)] transition-colors hover:opacity-90"
           >
             Create project
           </button>

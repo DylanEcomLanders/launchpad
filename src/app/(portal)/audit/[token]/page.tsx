@@ -4,14 +4,14 @@ import { Logo } from "@/components/logo";
 
 const severityLabel: Record<string, string> = { critical: "CRITICAL", high: "HIGH", "quick-win": "QUICK WIN" };
 const severityStyle: Record<string, string> = {
-  critical: "bg-red-50 text-red-600 border border-red-200",
-  high: "bg-amber-50 text-amber-600 border border-amber-200",
-  "quick-win": "bg-emerald-50 text-emerald-600 border border-emerald-200",
+  critical: "bg-danger/10 text-danger border border-danger/20",
+  high: "bg-warning/10 text-warning border border-warning/20",
+  "quick-win": "bg-success/10 text-success border border-success/20",
 };
 const ratingStyle: Record<string, string> = {
-  strong: "text-emerald-600 bg-emerald-50",
-  average: "text-amber-600 bg-amber-50",
-  weak: "text-red-500 bg-red-50",
+  strong: "text-success bg-success/10",
+  average: "text-warning bg-warning/10",
+  weak: "text-danger bg-danger/10",
 };
 
 export default async function PublicAuditPage({ params }: { params: Promise<{ token: string }> }) {
@@ -31,7 +31,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
   const issueCount = audit.issues?.length || 0;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12 md:py-20">
         {/* Header */}
         <div className="mb-12">
@@ -73,8 +73,8 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
                     <div key={m.label} className="border border-foreground rounded-xl px-4 py-3">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{m.label}</p>
                       <div className="flex items-end gap-2">
-                        <p className={`text-lg font-bold tabular-nums ${m.pass ? "text-emerald-600" : m.warn ? "text-amber-600" : "text-red-500"}`}>{m.value}</p>
-                        <p className={`text-[10px] mb-0.5 ${m.pass ? "text-emerald-500" : "text-muted"}`}>
+                        <p className={`text-lg font-bold tabular-nums ${m.pass ? "text-success" : m.warn ? "text-warning" : "text-danger"}`}>{m.value}</p>
+                        <p className={`text-[10px] mb-0.5 ${m.pass ? "text-success" : "text-muted"}`}>
                           {m.pass ? "✓" : `Goal: ${m.benchmark}`}
                         </p>
                       </div>
@@ -91,7 +91,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
           <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-surface mb-4 pb-2 border-b border-foreground">
             Executive Summary
           </h2>
-          <div className="text-sm text-border leading-[1.8] whitespace-pre-wrap">
+          <div className="text-sm text-foreground leading-[1.8] whitespace-pre-wrap">
             {audit.executive_summary}
           </div>
         </section>
@@ -133,11 +133,11 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
               <p className="text-sm text-subtle italic mb-4">{issue.subtitle}</p>
               <div className="mb-4">
                 <p className="text-xs font-semibold text-surface mb-2">The problem:</p>
-                <p className="text-sm text-border leading-[1.8]">{issue.problem}</p>
+                <p className="text-sm text-foreground leading-[1.8]">{issue.problem}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-surface mb-2">The fix:</p>
-                <p className="text-sm text-border leading-[1.8]">{issue.fix}</p>
+                <p className="text-sm text-foreground leading-[1.8]">{issue.fix}</p>
               </div>
             </div>
           ))}
@@ -154,7 +154,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
               {audit.priority_order.map((p, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <span className="text-sm font-bold text-surface shrink-0 w-6">{i + 1}.</span>
-                  <p className="text-sm text-border leading-relaxed">{p}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{p}</p>
                 </div>
               ))}
             </div>
@@ -167,7 +167,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
             <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-surface mb-4 pb-2 border-b border-foreground">
               What This Audit Is Not Saying
             </h2>
-            <p className="text-sm text-border leading-[1.8]">{audit.not_saying}</p>
+            <p className="text-sm text-foreground leading-[1.8]">{audit.not_saying}</p>
           </section>
         )}
 
@@ -190,7 +190,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
               href={audit.booking_link || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-3 bg-surface text-white text-sm font-medium rounded-xl hover:bg-border transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-surface text-white text-sm font-medium rounded-xl hover:bg-background transition-colors"
             >
               Book a Call
             </a>

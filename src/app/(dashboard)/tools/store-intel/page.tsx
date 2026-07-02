@@ -231,8 +231,8 @@ export default function StoreIntelPage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="bg-danger/10 border border-danger/20 rounded-lg p-4 mb-8">
+            <p className="text-sm text-danger">{error}</p>
           </div>
         )}
 
@@ -272,10 +272,10 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
             color={
               result.effectivenessScore
                 ? result.effectivenessScore >= 7
-                  ? "text-emerald-700"
+                  ? "text-success"
                   : result.effectivenessScore >= 4
-                  ? "text-amber-700"
-                  : "text-red-700"
+                  ? "text-warning"
+                  : "text-danger"
                 : undefined
             }
           />
@@ -294,13 +294,13 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
           <div className="space-y-1.5">
             {presentElements.map((el) => (
               <div key={el} className="flex items-center gap-2 text-sm">
-                <HandThumbUpIcon className="size-3.5 text-emerald-500 shrink-0" />
+                <HandThumbUpIcon className="size-3.5 text-success shrink-0" />
                 <span className="capitalize text-subtle">{el.replace(/([A-Z])/g, " $1").trim()}</span>
               </div>
             ))}
             {missingElements.map((el) => (
               <div key={el} className="flex items-center gap-2 text-sm">
-                <HandThumbDownIcon className="size-3.5 text-red-400 shrink-0" />
+                <HandThumbDownIcon className="size-3.5 text-danger shrink-0" />
                 <span className="capitalize text-subtle">{el.replace(/([A-Z])/g, " $1").trim()}</span>
               </div>
             ))}
@@ -379,10 +379,10 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
             color={
               result.funnelMaturity
                 ? result.funnelMaturity >= 7
-                  ? "text-emerald-700"
+                  ? "text-success"
                   : result.funnelMaturity >= 4
-                  ? "text-amber-700"
-                  : "text-red-700"
+                  ? "text-warning"
+                  : "text-danger"
                 : undefined
             }
           />
@@ -483,7 +483,7 @@ function FindingsSummaryStrip({ findings }: { findings: Finding[] }) {
       <div className="ml-auto flex items-center gap-1.5">
         <span className="text-xs text-subtle">{findings.length} total</span>
         {highCount > 0 && (
-          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">
+          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-danger/10 text-danger">
             {highCount} critical
           </span>
         )}

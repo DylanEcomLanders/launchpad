@@ -20,7 +20,7 @@ export default function ResourcesPage() {
       </div>
 
       {/* Referral Programme */}
-      <div className="border border-foreground rounded-xl bg-white overflow-hidden">
+      <div className="border border-border rounded-xl bg-surface overflow-hidden">
         <div className="p-6">
           <div className="flex items-start justify-between">
             <div>
@@ -29,7 +29,7 @@ export default function ResourcesPage() {
                 Branded page explaining our referral offer. Share with existing clients to incentivise referrals. 7.5% commission (10% for 3+ referrals).
               </p>
             </div>
-            <span className="px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-600 rounded-full">Live</span>
+            <span className="px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider bg-success/10 text-success rounded-full">Live</span>
           </div>
 
           <div className="mt-4 flex items-center gap-2">
@@ -38,7 +38,7 @@ export default function ResourcesPage() {
             </div>
             <button
               onClick={copyLink}
-              className="px-4 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border whitespace-nowrap"
+              className="px-4 py-2 bg-surface-raised text-foreground text-xs font-medium rounded-lg hover:bg-surface-hover whitespace-nowrap"
             >
               {copied ? "Copied!" : "Copy Link"}
             </button>
@@ -46,7 +46,7 @@ export default function ResourcesPage() {
               href="/referral-programme?edit=true"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 border border-foreground text-xs font-medium rounded-lg hover:bg-surface-raised whitespace-nowrap"
+              className="px-4 py-2 border border-border text-xs font-medium rounded-lg hover:bg-surface-raised whitespace-nowrap"
             >
               Preview
             </a>

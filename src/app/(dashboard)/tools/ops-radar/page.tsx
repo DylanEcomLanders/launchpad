@@ -39,20 +39,20 @@ function sameDay(a: Date, b: Date): boolean {
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function severityColor(days: number): string {
-  if (days > 7) return "bg-red-500";
-  if (days >= 3) return "bg-amber-400";
+  if (days > 7) return "bg-danger";
+  if (days >= 3) return "bg-warning";
   return "bg-muted";
 }
 
 function severityText(days: number): string {
-  if (days > 7) return "text-red-600";
-  if (days >= 3) return "text-amber-600";
+  if (days > 7) return "text-danger";
+  if (days >= 3) return "text-warning";
   return "text-subtle";
 }
 
 function barColor(count: number): string {
-  if (count > 12) return "bg-red-500";
-  if (count > 8) return "bg-amber-400";
+  if (count > 12) return "bg-danger";
+  if (count > 8) return "bg-warning";
   return "bg-surface";
 }
 
@@ -153,7 +153,7 @@ export default function OpsRadarPage() {
           <p className="text-sm text-subtle mb-4">{error}</p>
           <button
             onClick={() => { setLoading(true); fetchData(); }}
-            className="px-4 py-2 bg-white text-background text-sm rounded-lg hover:bg-foreground"
+            className="px-4 py-2 bg-foreground text-background text-sm rounded-lg hover:bg-foreground/90"
           >
             Retry
           </button>
@@ -203,13 +203,13 @@ export default function OpsRadarPage() {
               <div
                 key={i}
                 className={`flex-1 text-center py-2 rounded-md ${
-                  isToday ? "bg-white text-background" : isPast ? "bg-background opacity-50" : "bg-background"
+                  isToday ? "bg-foreground text-background" : isPast ? "bg-background opacity-50" : "bg-background"
                 }`}
               >
-                <div className={`text-[10px] uppercase tracking-wider ${isToday ? "text-white/70" : "text-subtle"}`}>
+                <div className={`text-[10px] uppercase tracking-wider ${isToday ? "text-background/70" : "text-subtle"}`}>
                   {DAY_NAMES[i]}
                 </div>
-                <div className={`text-sm font-semibold tabular-nums mt-0.5 ${isToday ? "text-white" : count > 0 ? "text-foreground" : "text-muted"}`}>
+                <div className={`text-sm font-semibold tabular-nums mt-0.5 ${isToday ? "text-background" : count > 0 ? "text-foreground" : "text-muted"}`}>
                   {count}
                 </div>
               </div>
@@ -278,7 +278,7 @@ function Stat({ label, value, warn }: { label: string; value: number; warn?: boo
     <div className="flex items-baseline gap-1.5">
       <span className="text-lg font-semibold tabular-nums">{value}</span>
       <span className="text-xs text-subtle">{label}</span>
-      {warn && <span className="w-1.5 h-1.5 rounded-full bg-red-500 ml-0.5" />}
+      {warn && <span className="w-1.5 h-1.5 rounded-full bg-danger ml-0.5" />}
     </div>
   );
 }
@@ -318,11 +318,11 @@ function TeamGroup({
                 />
               </div>
             )}
-            <span className={`text-[11px] w-10 text-right tabular-nums ${count > 12 ? "text-red-600 font-semibold" : count > 8 ? "text-amber-600 font-medium" : "text-subtle"}`}>
+            <span className={`text-[11px] w-10 text-right tabular-nums ${count > 12 ? "text-danger font-semibold" : count > 8 ? "text-warning font-medium" : "text-subtle"}`}>
               {count}
             </span>
             {overdue > 0 ? (
-              <span className="text-[11px] font-medium w-14 text-right tabular-nums text-red-600">{overdue} late</span>
+              <span className="text-[11px] font-medium w-14 text-right tabular-nums text-danger">{overdue} late</span>
             ) : (
               <span className="w-14" />
             )}

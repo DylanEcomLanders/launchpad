@@ -81,7 +81,7 @@ export function DeckBuilderInline() {
     Number(aov);
 
   const inputClass =
-    "w-full px-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:border-white bg-surface";
+    "w-full px-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:border-subtle bg-surface";
   const labelClass = "block text-[10px] text-subtle uppercase tracking-wider mb-1";
 
   return (
@@ -91,8 +91,8 @@ export function DeckBuilderInline() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-background transition-colors"
       >
-        <div className="size-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
-          <svg className="size-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+        <div className="size-8 rounded-lg bg-surface-raised border border-border flex items-center justify-center shrink-0">
+          <svg className="size-4 text-foreground" viewBox="0 0 20 20" fill="currentColor">
             <path
               fillRule="evenodd"
               d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
@@ -181,8 +181,8 @@ export function DeckBuilderInline() {
 
           {/* Revenue gap preview */}
           {traffic && cvr && aov && gap > 0 && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2.5">
-              <p className="text-xs text-emerald-700">
+            <div className="bg-success/10 border border-success/20 rounded-lg px-4 py-2.5">
+              <p className="text-xs text-success">
                 Revenue gap:{" "}
                 <span className="font-bold">
                   £{gap.toLocaleString("en-GB", { maximumFractionDigits: 0 })}/mo
@@ -210,10 +210,10 @@ export function DeckBuilderInline() {
                   <span
                     className={`text-xs font-bold w-4 text-right ${
                       scores[key] >= 7
-                        ? "text-emerald-600"
+                        ? "text-success"
                         : scores[key] >= 5
-                        ? "text-amber-500"
-                        : "text-red-500"
+                        ? "text-warning"
+                        : "text-danger"
                     }`}
                   >
                     {scores[key]}
@@ -274,7 +274,7 @@ export function DeckBuilderInline() {
             <button
               onClick={generate}
               disabled={generating || !brandName.trim()}
-              className="px-5 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors"
+              className="px-5 py-2 bg-accent text-accent-foreground text-xs font-semibold rounded-lg hover:opacity-90 disabled:opacity-40 transition-colors"
             >
               {generating ? "Generating..." : "Generate Deck"}
             </button>
@@ -285,7 +285,7 @@ export function DeckBuilderInline() {
                   href={deckUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:underline truncate flex-1"
+                  className="text-xs text-info hover:underline truncate flex-1"
                 >
                   {deckUrl}
                 </a>
@@ -299,7 +299,7 @@ export function DeckBuilderInline() {
                   title="Copy link"
                 >
                   {copied ? (
-                    <span className="text-[10px] text-emerald-600 font-medium">Copied</span>
+                    <span className="text-[10px] text-success font-medium">Copied</span>
                   ) : (
                     <ClipboardDocumentIcon className="size-3.5" />
                   )}

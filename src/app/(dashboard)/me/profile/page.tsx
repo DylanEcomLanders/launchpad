@@ -40,7 +40,7 @@ export default function MyProfilePage() {
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-border border-t-muted rounded-full animate-spin" />
       </div>
     );
   }

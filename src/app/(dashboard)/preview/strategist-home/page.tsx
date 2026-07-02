@@ -323,9 +323,9 @@ const STATE_LABEL: Record<SliceState, string> = {
 
 const STATE_HEADER_CLASS: Record<SliceState, string> = {
   drafting: "border-violet-200 bg-violet-50 text-violet-800",
-  in_review: "border-amber-200 bg-amber-50 text-amber-800",
-  approved: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  handed_off: "border-blue-200 bg-blue-50 text-blue-800",
+  in_review: "border-warning/20 bg-warning/10 text-warning",
+  approved: "border-success/20 bg-success/10 text-success",
+  handed_off: "border-info/20 bg-info/10 text-info",
 };
 
 const STATE_NEXT_LABEL: Record<SliceState, string | null> = {
@@ -336,29 +336,29 @@ const STATE_NEXT_LABEL: Record<SliceState, string | null> = {
 };
 
 const HEALTH_COLOR: Record<EngagementRow["health"], string> = {
-  good: "bg-emerald-500",
-  watch: "bg-amber-500",
-  risk: "bg-rose-500",
+  good: "bg-success",
+  watch: "bg-warning",
+  risk: "bg-danger",
 };
 
 const HEALTH_RING: Record<EngagementRow["health"], string> = {
-  good: "border-emerald-200 bg-emerald-50",
-  watch: "border-amber-200 bg-amber-50",
-  risk: "border-rose-200 bg-rose-50",
+  good: "border-success/20 bg-success/10",
+  watch: "border-warning/20 bg-warning/10",
+  risk: "border-danger/20 bg-danger/10",
 };
 
 const ATTENTION_ICON: Record<Attention["kind"], React.ReactNode> = {
-  signoff_received: <CheckCircleIcon className="h-5 w-5 text-emerald-700" />,
-  handoff_complete: <PaperAirplaneIcon className="h-5 w-5 text-blue-700" />,
-  review_due: <ClipboardDocumentCheckIcon className="h-5 w-5 text-amber-700" />,
-  blocked: <ExclamationTriangleIcon className="h-5 w-5 text-rose-700" />,
+  signoff_received: <CheckCircleIcon className="h-5 w-5 text-success" />,
+  handoff_complete: <PaperAirplaneIcon className="h-5 w-5 text-info" />,
+  review_due: <ClipboardDocumentCheckIcon className="h-5 w-5 text-warning" />,
+  blocked: <ExclamationTriangleIcon className="h-5 w-5 text-danger" />,
 };
 
 const ATTENTION_RING: Record<Attention["kind"], string> = {
-  signoff_received: "border-emerald-200 bg-emerald-50/50",
-  handoff_complete: "border-blue-200 bg-blue-50/50",
-  review_due: "border-amber-200 bg-amber-50/50",
-  blocked: "border-rose-200 bg-rose-50/50",
+  signoff_received: "border-success/20 bg-success/10",
+  handoff_complete: "border-info/20 bg-info/10",
+  review_due: "border-warning/20 bg-warning/10",
+  blocked: "border-danger/20 bg-danger/10",
 };
 
 function initials(name: string) {
@@ -393,7 +393,7 @@ export default function StrategistHomePreview() {
             </p>
           </div>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800">
+        <div className="inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1.5 text-[11px] font-medium text-warning">
           <SparklesIcon className="h-3.5 w-3.5" />
           Preview, mock data, not wired up
         </div>
@@ -492,7 +492,7 @@ export default function StrategistHomePreview() {
           {DECISIONS.map((d) => (
             <DecisionCard key={d.id} decision={d} />
           ))}
-          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-muted bg-surface px-4 py-3 text-sm font-medium text-border hover:border-white hover:text-foreground">
+          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-muted bg-surface px-4 py-3 text-sm font-medium text-muted hover:border-white hover:text-foreground">
             <SparklesIcon className="h-4 w-4" />
             Capture a decision
           </button>
@@ -560,7 +560,7 @@ function AttentionCard({ attention }: { attention: Attention }) {
         <div className="shrink-0">{ATTENTION_ICON[attention.kind]}</div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-border">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">
               {attention.client}
             </span>
             <span className="text-[10px] text-subtle">{attention.age}</span>
@@ -568,7 +568,7 @@ function AttentionCard({ attention }: { attention: Attention }) {
           <div className="mt-1 text-[13px] font-semibold leading-snug text-foreground">
             {attention.title}
           </div>
-          <p className="mt-1 text-[11px] leading-snug text-border">
+          <p className="mt-1 text-[11px] leading-snug text-muted">
             {attention.detail}
           </p>
         </div>
@@ -606,7 +606,7 @@ function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }
             className="rounded-md border border-border bg-surface p-2.5 shadow-[var(--shadow-soft)]"
           >
             <div className="flex items-baseline justify-between gap-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-border">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">
                 {it.client}
               </span>
               <span className="text-[10px] text-subtle">{it.age_days}d</span>
@@ -615,7 +615,7 @@ function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }
               {it.deliverable}
             </div>
             {it.waiting_on && (
-              <div className="mt-1 inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+              <div className="mt-1 inline-flex items-center gap-1 rounded border border-warning/20 bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning">
                 <HandRaisedIcon className="h-3 w-3" />
                 Waiting on {it.waiting_on}
               </div>
@@ -651,7 +651,7 @@ function EngagementRowItem({ engagement }: { engagement: EngagementRow }) {
       <td className="px-4 py-2.5 text-[12px] text-subtle">
         {engagement.last_reviewed}
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-border">
+      <td className="px-4 py-2.5 text-[12px] text-muted">
         {engagement.next_deliverable}
       </td>
       <td className="px-4 py-2.5">
@@ -697,7 +697,7 @@ function WeekColumn({ day }: { day: (typeof WEEK)[number] }) {
         {day.items.map((item, i) => (
           <li
             key={i}
-            className="rounded-md border border-border bg-surface p-2 text-[11px] leading-snug text-border"
+            className="rounded-md border border-border bg-surface p-2 text-[11px] leading-snug text-muted"
           >
             {item}
           </li>
@@ -723,7 +723,7 @@ function DecisionCard({ decision }: { decision: Decision }) {
           <div className="mt-1 text-sm font-semibold text-foreground">
             {decision.title}
           </div>
-          <p className="mt-1 text-[12px] leading-snug text-border">
+          <p className="mt-1 text-[12px] leading-snug text-muted">
             {decision.context}
           </p>
         </div>
@@ -735,7 +735,7 @@ function DecisionCard({ decision }: { decision: Decision }) {
           {decision.shared_with.map((s) => (
             <span
               key={s}
-              className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-border"
+              className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted"
             >
               {s}
             </span>

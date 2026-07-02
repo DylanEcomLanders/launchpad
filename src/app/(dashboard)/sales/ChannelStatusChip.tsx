@@ -94,7 +94,7 @@ export function ChannelStatusChip() {
           </span>
         );
       })}
-      <span className="text-[10px] text-border ml-1">
+      <span className="text-[10px] text-muted ml-1">
         {allStubbed ? "all stubbed" : `${liveCount}/${CHANNEL_ORDER.length} live`}
       </span>
     </div>

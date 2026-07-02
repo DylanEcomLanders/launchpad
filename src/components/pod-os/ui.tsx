@@ -50,11 +50,11 @@ export function StatTile({
 }) {
   const toneCls =
     tone === "amber"
-      ? "text-amber-700"
+      ? "text-warning"
       : tone === "rose"
-        ? "text-rose-700"
+        ? "text-danger"
         : tone === "emerald"
-          ? "text-emerald-700"
+          ? "text-success"
           : "text-foreground";
   return (
     <div className="rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
@@ -69,11 +69,11 @@ export function StatTile({
 
 const PILL_TONES: Record<string, string> = {
   default: "bg-surface-raised text-subtle border-border",
-  blue: "bg-blue-50 text-blue-700 border-blue-200",
+  blue: "bg-info/10 text-info border-info/20",
   purple: "bg-purple-50 text-purple-700 border-purple-200",
-  emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  rose: "bg-rose-50 text-rose-700 border-rose-200",
-  amber: "bg-amber-50 text-amber-800 border-amber-200",
+  emerald: "bg-success/10 text-success border-success/20",
+  rose: "bg-danger/10 text-danger border-danger/20",
+  amber: "bg-warning/10 text-warning border-warning/20",
   muted: "bg-surface-raised text-subtle border-border",
 };
 
@@ -107,13 +107,13 @@ export function Meter({
 }) {
   const fill =
     tone === "emerald"
-      ? "bg-emerald-500"
+      ? "bg-success"
       : tone === "amber"
-        ? "bg-amber-400"
+        ? "bg-warning"
         : tone === "rose"
-          ? "bg-rose-400"
+          ? "bg-danger"
           : tone === "blue"
-            ? "bg-blue-500"
+            ? "bg-info"
             : "bg-surface";
   return (
     <div className={`h-1.5 w-full overflow-hidden rounded-full bg-surface-raised ${className}`}>

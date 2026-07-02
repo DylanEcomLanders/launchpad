@@ -270,7 +270,7 @@ export default function ExpenseDetailPage() {
           {!editing && status !== "paid" && status !== "disputed" && (
             <button
               onClick={markPaid}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#047857] text-white text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-success text-white text-sm rounded-lg hover:opacity-90"
             >
               <CheckIcon className="size-4" /> Mark paid
             </button>
@@ -286,7 +286,7 @@ export default function ExpenseDetailPage() {
           {!editing && status !== "disputed" && status !== "paid" && (
             <button
               onClick={() => changeStatus("disputed")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-[#92400E] text-sm rounded-lg hover:bg-surface-raised"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-warning text-sm rounded-lg hover:bg-surface-raised"
             >
               Mark disputed
             </button>
@@ -302,7 +302,7 @@ export default function ExpenseDetailPage() {
           {!editing && (
             <button
               onClick={handleDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-red-600 text-sm rounded-lg hover:bg-surface-raised"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-danger text-sm rounded-lg hover:bg-surface-raised"
             >
               <TrashIcon className="size-4" />
             </button>
@@ -311,7 +311,7 @@ export default function ExpenseDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger rounded-lg text-sm text-[#FCA5A5]">
+        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
@@ -595,7 +595,7 @@ function EditExpenseForm({
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>

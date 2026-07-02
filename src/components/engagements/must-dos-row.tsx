@@ -58,10 +58,10 @@ export function MustDosRow({
                 onClick={() => onOpen(key)}
                 className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-full border transition-colors ${
                   isComplete
-                    ? "border-success bg-emerald-500/15 text-success"
+                    ? "border-success bg-success/10 text-success"
                     : checked > 0
-                      ? "border-[#FFB300] bg-[#FFF8E1] text-warning"
-                      : "border-border bg-surface text-muted hover:border-white hover:text-foreground"
+                      ? "border-warning/20 bg-warning/10 text-warning"
+                      : "border-border bg-surface text-muted hover:border-border hover:text-foreground"
                 }`}
               >
                 <span className="text-[10px]">

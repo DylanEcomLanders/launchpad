@@ -47,25 +47,24 @@ export function ProgressBar({ pct }: { pct: number }) {
 
 /* ── Status pill ────────────────────────────────────────────────── */
 
-const INITIATIVE_STATUS_STYLE: Record<InitiativeStatus, { bg: string; fg: string; label: string }> = {
-  active:  { bg: "#E8F5E9", fg: "#1F6B2B", label: "Active" },
-  parked:  { bg: "#F0F0F0", fg: "#7A7A7A", label: "Parked" },
-  shipped: { bg: "#E0EBFF", fg: "#1E40AF", label: "Shipped" },
-  killed:  { bg: "#FCE4E4", fg: "#B22B2B", label: "Killed" },
+const INITIATIVE_STATUS_STYLE: Record<InitiativeStatus, { cls: string; label: string }> = {
+  active:  { cls: "bg-success/10 text-success", label: "Active" },
+  parked:  { cls: "bg-surface-raised text-subtle", label: "Parked" },
+  shipped: { cls: "bg-info/10 text-info", label: "Shipped" },
+  killed:  { cls: "bg-danger/10 text-danger", label: "Killed" },
 };
-const IDEA_STATUS_STYLE: Record<IdeaStatus, { bg: string; fg: string; label: string }> = {
-  inbox:    { bg: "#FFF7E0", fg: "#92591A", label: "Inbox" },
-  promoted: { bg: "#E0EBFF", fg: "#1E40AF", label: "Promoted" },
-  parked:   { bg: "#F0F0F0", fg: "#7A7A7A", label: "Parked" },
-  killed:   { bg: "#FCE4E4", fg: "#B22B2B", label: "Killed" },
+const IDEA_STATUS_STYLE: Record<IdeaStatus, { cls: string; label: string }> = {
+  inbox:    { cls: "bg-warning/10 text-warning", label: "Inbox" },
+  promoted: { cls: "bg-info/10 text-info", label: "Promoted" },
+  parked:   { cls: "bg-surface-raised text-subtle", label: "Parked" },
+  killed:   { cls: "bg-danger/10 text-danger", label: "Killed" },
 };
 
 export function InitiativeStatusPill({ status }: { status: InitiativeStatus }) {
   const s = INITIATIVE_STATUS_STYLE[status];
   return (
     <span
-      className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded"
-      style={{ background: s.bg, color: s.fg }}
+      className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded ${s.cls}`}
     >
       {s.label}
     </span>
@@ -75,8 +74,7 @@ export function IdeaStatusPill({ status }: { status: IdeaStatus }) {
   const s = IDEA_STATUS_STYLE[status];
   return (
     <span
-      className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded"
-      style={{ background: s.bg, color: s.fg }}
+      className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded ${s.cls}`}
     >
       {s.label}
     </span>
@@ -241,7 +239,7 @@ export function NewInitiativeModal({
           <button
             type="submit"
             disabled={busy || !name.trim()}
-            className="px-4 py-2 bg-foreground text-surface text-sm font-medium rounded-lg hover:bg-white transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-foreground text-surface text-sm font-medium rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-40"
           >
             {busy ? "Creating..." : "Create"}
           </button>
@@ -357,7 +355,7 @@ export function AddIdeaModal({
           <button
             type="submit"
             disabled={busy || !title.trim()}
-            className="px-4 py-2 bg-foreground text-surface text-sm font-medium rounded-lg hover:bg-white transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-foreground text-surface text-sm font-medium rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-40"
           >
             {busy ? "Adding..." : "Add idea"}
           </button>
@@ -478,7 +476,7 @@ export function PromoteIdeaModal({
           <button
             type="submit"
             disabled={busy || !name.trim()}
-            className="px-4 py-2 bg-foreground text-surface text-sm font-medium rounded-lg hover:bg-white transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-foreground text-surface text-sm font-medium rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-40"
           >
             {busy ? "Promoting..." : "Promote"}
           </button>

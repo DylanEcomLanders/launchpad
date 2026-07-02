@@ -1392,8 +1392,8 @@ export function SalesDeckPresentation({
 
   if (slides.length === 0) {
     return (
-      <div className="min-h-screen bg-background text-white flex items-center justify-center">
-        <p className="text-sm text-white/60">Deck content not found.</p>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="text-sm text-muted">Deck content not found.</p>
       </div>
     );
   }
@@ -1457,7 +1457,7 @@ export function SalesDeckPresentation({
         <button
           onClick={goPrev}
           disabled={index === 0 || entering}
-          className="size-9 rounded-full border border-foreground bg-white hover:bg-surface-raised flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="size-9 rounded-full border border-foreground bg-surface hover:bg-surface-raised flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Previous slide"
         >
           <svg className="size-4 text-subtle" viewBox="0 0 20 20" fill="currentColor">
@@ -1467,7 +1467,7 @@ export function SalesDeckPresentation({
         <button
           onClick={goNext}
           disabled={index === slides.length - 1 || entering}
-          className="size-9 rounded-full border border-foreground bg-white hover:bg-surface-raised flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="size-9 rounded-full border border-foreground bg-surface hover:bg-surface-raised flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Next slide"
         >
           <svg className="size-4 text-subtle" viewBox="0 0 20 20" fill="currentColor">

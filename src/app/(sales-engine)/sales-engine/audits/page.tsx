@@ -124,11 +124,11 @@ export default function AuditsPage() {
           <button
             onClick={handleGenerate}
             disabled={!url.trim() || generating}
-            className="flex items-center gap-2 px-5 py-2.5 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-5 py-2.5 bg-surface text-foreground text-xs font-medium rounded-lg hover:bg-surface-hover transition-colors disabled:opacity-40"
           >
             {generating ? (
               <>
-                <div className="animate-spin size-3 border border-white/30 border-t-white rounded-full" />
+                <div className="animate-spin size-3 border border-border border-t-foreground rounded-full" />
                 Generating...
               </>
             ) : (
@@ -136,7 +136,7 @@ export default function AuditsPage() {
             )}
           </button>
         </div>
-        {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+        {error && <p className="text-xs text-danger mt-2">{error}</p>}
         {generating && <p className="text-xs text-muted mt-2">Scraping page and analysing... this takes 30-60 seconds</p>}
       </div>
 
@@ -144,14 +144,14 @@ export default function AuditsPage() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2].map(i => (
-            <div key={i} className="border border-foreground rounded-xl p-4 animate-pulse">
-              <div className="h-4 bg-border rounded w-1/3 mb-2" />
-              <div className="h-3 bg-border rounded w-1/2" />
+            <div key={i} className="border border-border rounded-xl p-4 animate-pulse">
+              <div className="h-4 bg-surface-raised rounded w-1/3 mb-2" />
+              <div className="h-3 bg-surface-raised rounded w-1/2" />
             </div>
           ))}
         </div>
       ) : audits.length === 0 ? (
-        <div className="border border-dashed border-foreground rounded-xl p-12 text-center">
+        <div className="border border-dashed border-border rounded-xl p-12 text-center">
           <p className="text-sm text-muted">No audits yet</p>
           <p className="text-xs text-muted mt-1">Enter a URL above to generate your first CRO audit</p>
         </div>
@@ -166,9 +166,9 @@ export default function AuditsPage() {
               <div key={audit.id} className="flex items-center justify-between py-4 px-2 hover:bg-surface-raised rounded-lg transition-colors">
                 <Link href={`/sales-engine/audits/${audit.id}`} className="flex-1 min-w-0">
                   <div className="flex items-center gap-3">
-                    <p className="text-sm font-semibold text-surface capitalize">{audit.brand_name}</p>
+                    <p className="text-sm font-semibold text-foreground capitalize">{audit.brand_name}</p>
                     <span className={`text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full ${
-                      audit.status === "published" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                      audit.status === "published" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
                     }`}>
                       {audit.status}
                     </span>
@@ -181,7 +181,7 @@ export default function AuditsPage() {
                   {audit.status === "draft" && (
                     <button
                       onClick={() => handlePublish(audit)}
-                      className="px-2.5 py-1 text-[10px] font-medium text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
+                      className="px-2.5 py-1 text-[10px] font-medium text-success border border-success/20 rounded-lg hover:bg-success/10 transition-colors"
                     >
                       Publish
                     </button>
@@ -190,15 +190,15 @@ export default function AuditsPage() {
                     <>
                       <button
                         onClick={() => copyLink(audit.token)}
-                        className="p-1.5 text-muted hover:text-surface transition-colors"
+                        className="p-1.5 text-muted hover:text-foreground transition-colors"
                       >
-                        {copiedId === audit.token ? <CheckIcon className="size-3.5 text-emerald-500" /> : <ClipboardDocumentIcon className="size-3.5" />}
+                        {copiedId === audit.token ? <CheckIcon className="size-3.5 text-success" /> : <ClipboardDocumentIcon className="size-3.5" />}
                       </button>
                       <a
                         href={`/audit/${audit.token}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1.5 text-muted hover:text-surface transition-colors"
+                        className="p-1.5 text-muted hover:text-foreground transition-colors"
                       >
                         <ArrowTopRightOnSquareIcon className="size-3.5" />
                       </a>
@@ -206,7 +206,7 @@ export default function AuditsPage() {
                   )}
                   <button
                     onClick={() => handleDelete(audit.id)}
-                    className={`p-1.5 transition-colors ${confirmDeleteId === audit.id ? "text-red-500" : "text-muted hover:text-red-400"}`}
+                    className={`p-1.5 transition-colors ${confirmDeleteId === audit.id ? "text-danger" : "text-muted hover:text-danger"}`}
                   >
                     <TrashIcon className="size-3.5" />
                   </button>

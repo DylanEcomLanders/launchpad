@@ -572,7 +572,7 @@ export default function PortalDetailPage() {
                         }`}
                       >
                         <div className="flex items-center gap-2 pr-6">
-                          <span className={`size-1.5 rounded-full shrink-0 ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-muted"}`} />
+                          <span className={`size-1.5 rounded-full shrink-0 ${proj.status === "active" ? "bg-success" : proj.status === "paused" ? "bg-warning" : "bg-muted"}`} />
                           <span className="truncate">{proj.name}</span>
                         </div>
                       </button>
@@ -582,8 +582,8 @@ export default function PortalDetailPage() {
                         title={isPendingDelete ? "Click again to confirm" : "Archive project"}
                         className={`absolute right-1.5 top-1.5 p-1 rounded transition-all ${
                           isPendingDelete
-                            ? "opacity-100 text-red-500 bg-red-50"
-                            : `opacity-0 group-hover:opacity-100 ${isSelected ? "text-white/50 hover:text-white hover:bg-surface/10" : "text-muted hover:text-red-500 hover:bg-red-50"}`
+                            ? "opacity-100 text-danger bg-danger/10"
+                            : `opacity-0 group-hover:opacity-100 ${isSelected ? "text-white/50 hover:text-white hover:bg-surface/10" : "text-muted hover:text-danger hover:bg-danger/10"}`
                         }`}
                       >
                         <TrashIcon className="size-3" />
@@ -610,7 +610,7 @@ export default function PortalDetailPage() {
                             const qaKey = qaKeyMap[tab.key] as keyof typeof proj.qa_gates;
                             const gateData = proj.qa_gates?.[qaKey] as { status?: string } | undefined;
                             const gateStatus = gateData?.status === "submitted" ? "passed" : gateData ? "in-progress" : "not-started";
-                            const dotColor = gateStatus === "passed" ? "bg-emerald-500" : gateStatus === "in-progress" ? "bg-amber-400" : "bg-muted";
+                            const dotColor = gateStatus === "passed" ? "bg-success" : gateStatus === "in-progress" ? "bg-warning" : "bg-muted";
                             return (
                               <button
                                 key={tab.key}
@@ -665,7 +665,7 @@ export default function PortalDetailPage() {
                 {portal.blocker ? (
                   <button
                     onClick={() => setShowResolveBlocker(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors"
                   >
                     <span className="size-1.5 rounded-full bg-surface animate-pulse" />
                     Blocked{(() => {
@@ -676,7 +676,7 @@ export default function PortalDetailPage() {
                 ) : (
                   <button
                     onClick={() => setShowBlockerModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-danger/10 text-danger rounded-lg hover:bg-danger/20 transition-colors"
                   >
                     <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 11.75V3.885a.75.75 0 00-.962-.72l-2.367.728a6.449 6.449 0 01-4.846-.425 7.948 7.948 0 00-5.262-.703L3.5 2.98V2.75z" /></svg>
                     Flag
@@ -706,7 +706,7 @@ export default function PortalDetailPage() {
                 </a>
                 <button
                   onClick={() => { load(); }}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-600 transition-colors"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-success text-white text-[11px] font-semibold rounded-lg hover:bg-success transition-colors"
                 >
                   <CheckIcon className="size-3.5" />
                   Save
@@ -755,7 +755,7 @@ export default function PortalDetailPage() {
                   </div>
                   {attention.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-border">
-                      <p className="text-[10px] font-semibold text-amber-600 mb-1">⚠ {attention.length} test{attention.length !== 1 ? "s" : ""} need attention</p>
+                      <p className="text-[10px] font-semibold text-warning mb-1">⚠ {attention.length} test{attention.length !== 1 ? "s" : ""} need attention</p>
                       {attention.map(t => (
                         <p key={t.id} className="text-[10px] text-muted">• {t.name} — scheduled, not live</p>
                       ))}
@@ -779,7 +779,7 @@ export default function PortalDetailPage() {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-semibold text-foreground">{proj.name}</p>
-                    <span className={`size-2 rounded-full ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-muted"}`} />
+                    <span className={`size-2 rounded-full ${proj.status === "active" ? "bg-success" : proj.status === "paused" ? "bg-warning" : "bg-muted"}`} />
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="text-[10px] text-muted">
@@ -797,7 +797,7 @@ export default function PortalDetailPage() {
                 {onboardingBrief ? (
                   <>
                     <div className="size-12 rounded-xl bg-white flex items-center justify-center mx-auto mb-4">
-                      <svg className="size-6 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
+                      <svg className="size-6 text-background" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
                     </div>
                     <p className="text-sm font-medium text-foreground mb-1">Onboarding brief ready</p>
                     <p className="text-xs text-subtle mb-4">Set up deliverables, dates, and team to get this project moving</p>
@@ -834,8 +834,8 @@ export default function PortalDetailPage() {
                   <div key={proj.id} className="flex items-center justify-between px-3 py-2 bg-surface rounded border border-border">
                     <p className="text-xs text-muted">{proj.name}</p>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => handleRestoreProject(proj.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
-                      <button onClick={() => handlePermanentDeleteProject(proj.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
+                      <button onClick={() => handleRestoreProject(proj.id)} className="text-[10px] text-success hover:text-success">Restore</button>
+                      <button onClick={() => handlePermanentDeleteProject(proj.id)} className="text-[10px] text-danger hover:text-danger">Delete Forever</button>
                     </div>
                   </div>
                 ))}
@@ -938,7 +938,7 @@ export default function PortalDetailPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-8 rounded-lg bg-white flex items-center justify-center">
-                      <svg className="size-4 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
+                      <svg className="size-4 text-background" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
                     </div>
                     <div className="text-left">
                       <p className="text-sm font-medium text-foreground">Onboarding Brief</p>
@@ -1011,8 +1011,8 @@ export default function PortalDetailPage() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 px-5 py-3 hover:bg-background transition-colors"
                       >
-                        <div className="size-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-                          <span className="text-[9px] font-bold text-red-500">PDF</span>
+                        <div className="size-8 rounded-lg bg-danger/10 flex items-center justify-center shrink-0">
+                          <span className="text-[9px] font-bold text-danger">PDF</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-foreground truncate">{doc.name}</p>
@@ -1410,18 +1410,18 @@ function OverviewSection({
     <div className="space-y-6">
       {/* Blocker banner */}
       {blocker && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+        <div className="bg-danger/10 border border-danger/20 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-red-500 animate-pulse shrink-0" />
-              <span className="text-xs font-semibold text-red-600">
+              <span className="size-2 rounded-full bg-danger animate-pulse shrink-0" />
+              <span className="text-xs font-semibold text-danger">
                 Blocked — {blocker.type}
               </span>
-              {daysBlocked > 0 && <span className="text-[10px] font-medium text-red-500 bg-red-100 px-2 py-0.5 rounded-full">{daysBlocked}d</span>}
+              {daysBlocked > 0 && <span className="text-[10px] font-medium text-danger bg-danger/10 px-2 py-0.5 rounded-full">{daysBlocked}d</span>}
             </div>
-            <button onClick={() => onSetBlocker(null)} className="text-[11px] font-medium text-red-400 hover:text-red-600 transition-colors">Clear</button>
+            <button onClick={() => onSetBlocker(null)} className="text-[11px] font-medium text-danger hover:text-danger transition-colors">Clear</button>
           </div>
-          <p className="text-sm text-red-600 mt-1.5">{blocker.reason}</p>
+          <p className="text-sm text-danger mt-1.5">{blocker.reason}</p>
         </div>
       )}
 
@@ -1482,7 +1482,7 @@ function OverviewSection({
               <p className="text-[11px] text-muted">Show Results</p>
               <button
                 onClick={() => onUpdateField("show_results", !portal.show_results)}
-                className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${portal.show_results ? "bg-emerald-400" : "bg-muted"}`}
+                className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${portal.show_results ? "bg-success" : "bg-muted"}`}
               >
                 <span className={`absolute top-[2px] left-[2px] size-[14px] bg-surface rounded-full shadow transition-transform duration-200 ${portal.show_results ? "translate-x-[14px]" : ""}`} />
               </button>
@@ -1498,7 +1498,7 @@ function OverviewSection({
             <div className="flex items-center gap-3">
               <h3 className="text-xs font-semibold text-foreground">Timeline</h3>
               {totalShiftedDays > 0 && (
-                <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-medium text-warning bg-warning/10 px-2 py-0.5 rounded-full">
                   +{totalShiftedDays}d adjusted
                 </span>
               )}
@@ -1535,7 +1535,7 @@ function OverviewSection({
                             disabled={!canAdvance}
                             className={`size-[15px] rounded-full border-2 transition-colors ${
                               phase.status === "complete"
-                                ? "bg-emerald-400 border-emerald-400"
+                                ? "bg-success border-success"
                                 : phase.status === "in-progress"
                                 ? "bg-white border-background"
                                 : canAdvance
@@ -1586,7 +1586,7 @@ function OverviewSection({
                           className="text-[11px] text-muted bg-transparent border border-border rounded px-1.5 py-0.5 w-[110px] hover:border-border focus:border-subtle"
                         />
                         {phase.status === "complete" && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) && (
-                          <span className="text-[10px] text-green-600 font-medium">Early</span>
+                          <span className="text-[10px] text-success font-medium">Early</span>
                         )}
                       </div>
                       {/* Show original dates if shifted */}
@@ -1605,7 +1605,7 @@ function OverviewSection({
                     </div>
                     <button
                       onClick={() => onRemovePhase(phase.id)}
-                      className="p-1 text-muted hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-1 text-muted hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
                     >
                       <TrashIcon className="size-3.5" />
                     </button>
@@ -1681,7 +1681,7 @@ function OverviewSection({
                       </label>
                     </>
                   )}
-                  <button onClick={() => onRemoveScope(i)} className="p-0.5 text-muted hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                  <button onClick={() => onRemoveScope(i)} className="p-0.5 text-muted hover:text-danger transition-colors opacity-0 group-hover:opacity-100">
                     <TrashIcon className="size-3" />
                   </button>
                 </div>
@@ -1727,7 +1727,7 @@ function OverviewSection({
                 <p className="text-sm font-medium flex-1 min-w-0 truncate">{doc.name}</p>
                 <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-muted bg-surface border border-border rounded-full">{doc.type}</span>
                 {doc.url ? (
-                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-emerald-600 bg-emerald-50 rounded-full hover:bg-emerald-100">View</a>
+                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-success bg-success/10 rounded-full hover:bg-success/10">View</a>
                 ) : (
                   <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-muted bg-surface-raised rounded-full">Pending</span>
                 )}
@@ -1817,7 +1817,7 @@ function UpdatesSection({
                 className={inputClass}
               />
               {loomUrl && !isLoomUrl(loomUrl) && (
-                <p className="text-[11px] text-red-400 mt-1">
+                <p className="text-[11px] text-danger mt-1">
                   Please paste a valid Loom URL
                 </p>
               )}
@@ -2045,11 +2045,11 @@ function WinsSection({
             </div>
             <div className="flex items-center gap-2">
               {win.lift && (
-                <span className="px-2 py-0.5 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full">
+                <span className="px-2 py-0.5 text-xs font-bold text-success bg-success/10 rounded-full">
                   {win.lift}
                 </span>
               )}
-              <button onClick={() => handleDelete(win.id)} className="p-1 text-subtle hover:text-red-400 transition-colors">
+              <button onClick={() => handleDelete(win.id)} className="p-1 text-subtle hover:text-danger transition-colors">
                 <TrashIcon className="size-3.5" />
               </button>
             </div>
@@ -2058,7 +2058,7 @@ function WinsSection({
             <div className="flex items-center gap-2 mt-3 text-xs">
               <span className="text-subtle">{win.before}</span>
               <span className="text-muted">→</span>
-              <span className="font-semibold text-emerald-600">{win.after}</span>
+              <span className="font-semibold text-success">{win.after}</span>
             </div>
           )}
           {win.description && (
@@ -2114,9 +2114,9 @@ function RequestsSection({
   };
 
   const statusColors: Record<string, string> = {
-    open: "text-amber-600 bg-amber-50",
-    "in-progress": "text-blue-600 bg-blue-50",
-    done: "text-emerald-600 bg-emerald-50",
+    open: "text-warning bg-warning/10",
+    "in-progress": "text-info bg-info/10",
+    done: "text-success bg-success/10",
   };
 
   return (
@@ -2213,7 +2213,7 @@ function RequestsSection({
                 </div>
                 <button
                   onClick={() => handleDelete(req.id)}
-                  className="p-1 text-subtle hover:text-red-400 transition-colors shrink-0"
+                  className="p-1 text-subtle hover:text-danger transition-colors shrink-0"
                 >
                   <TrashIcon className="size-3.5" />
                 </button>
@@ -2258,8 +2258,8 @@ function ApprovalsSection({
                 )?.name;
           return (
             <div key={approval.id} className="flex items-center gap-3 p-4">
-              <span className="size-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                <CheckIcon className="size-3 text-emerald-600" />
+              <span className="size-5 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+                <CheckIcon className="size-3 text-success" />
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
@@ -2457,8 +2457,8 @@ function DesignsSection({
                 >
                   <h4 className="text-sm font-semibold flex-1 min-w-0 truncate">{review.title}</h4>
                   <span className={`px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full shrink-0 ${
-                    review.status === "approved" ? "bg-emerald-50 text-emerald-600" :
-                    review.status === "changes_requested" ? "bg-amber-50 text-amber-600" :
+                    review.status === "approved" ? "bg-success/10 text-success" :
+                    review.status === "changes_requested" ? "bg-warning/10 text-warning" :
                     "bg-surface-raised text-subtle"
                   }`}>
                     {review.status === "approved" ? "Approved" : review.status === "changes_requested" ? "Amends" : "Pending"}
@@ -2480,7 +2480,7 @@ function DesignsSection({
                             onClick={() => handleSetStatus(review.id, s)}
                             className={`px-2 py-1 text-[10px] font-medium rounded transition-colors ${
                               review.status === s
-                                ? s === "approved" ? "bg-emerald-500 text-white" : s === "changes_requested" ? "bg-amber-500 text-white" : "bg-white text-background"
+                                ? s === "approved" ? "bg-success text-white" : s === "changes_requested" ? "bg-warning text-white" : "bg-white text-background"
                                 : "text-subtle hover:text-foreground hover:bg-surface-raised"
                             }`}
                           >
@@ -2492,7 +2492,7 @@ function DesignsSection({
                       <button onClick={() => copyReviewLink(review.id)} className="text-[10px] text-subtle hover:text-foreground">
                         {copiedId === review.id ? "Copied!" : "Copy Link"}
                       </button>
-                      <button onClick={() => handleDelete(review.id)} className="text-[10px] text-subtle hover:text-red-400">Delete</button>
+                      <button onClick={() => handleDelete(review.id)} className="text-[10px] text-subtle hover:text-danger">Delete</button>
                     </div>
 
                     {/* Version list */}
@@ -2509,7 +2509,7 @@ function DesignsSection({
                               <span className="text-[11px] text-subtle">
                                 {new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                               </span>
-                              {isCurrent && <span className="text-[9px] font-semibold text-emerald-600 uppercase tracking-wider">Latest</span>}
+                              {isCurrent && <span className="text-[9px] font-semibold text-success uppercase tracking-wider">Latest</span>}
                               <div className="flex-1" />
                               {/* Links */}
                               <a href={v.figma_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-foreground bg-surface-raised rounded hover:bg-border transition-colors">
@@ -2528,8 +2528,8 @@ function DesignsSection({
                                 {vFeedback.map((entry) => {
                                   const isApproval = entry.action === "approved";
                                   return (
-                                    <div key={entry.id} className={`flex items-start gap-2 text-xs px-2.5 py-1.5 rounded-md ${isApproval ? "bg-emerald-50" : entry.action === "changes_requested" ? "bg-amber-50" : "bg-background"}`}>
-                                      <span className={`size-1.5 rounded-full shrink-0 mt-1 ${isApproval ? "bg-emerald-500" : entry.action === "changes_requested" ? "bg-amber-500" : "bg-muted"}`} />
+                                    <div key={entry.id} className={`flex items-start gap-2 text-xs px-2.5 py-1.5 rounded-md ${isApproval ? "bg-success/10" : entry.action === "changes_requested" ? "bg-warning/10" : "bg-background"}`}>
+                                      <span className={`size-1.5 rounded-full shrink-0 mt-1 ${isApproval ? "bg-success" : entry.action === "changes_requested" ? "bg-warning" : "bg-muted"}`} />
                                       <div className="min-w-0">
                                         <span className="font-medium">{entry.submitted_by}</span>
                                         <span className="text-subtle ml-1">{isApproval ? "approved" : entry.action === "changes_requested" ? "requested changes" : "commented"}</span>
@@ -2614,7 +2614,7 @@ function EditableField({
               if (e.key === "Escape") setEditing(false);
             }}
           />
-          <button onClick={() => { onSave(draft); setEditing(false); }} className={`p-1 ${dark ? "text-emerald-300 hover:text-emerald-200" : "text-emerald-500 hover:text-emerald-600"}`}>
+          <button onClick={() => { onSave(draft); setEditing(false); }} className={`p-1 ${dark ? "text-success/70 hover:text-success" : "text-success hover:text-success"}`}>
             <CheckIcon className="size-3.5" />
           </button>
         </div>
@@ -2708,9 +2708,9 @@ function IntelligemsKeyInput({ currentKey, onSave }: { currentKey: string; onSav
             Save
           </button>
         ) : saved ? (
-          <span className="text-[10px] text-emerald-600 font-medium whitespace-nowrap">Saved ✓</span>
+          <span className="text-[10px] text-success font-medium whitespace-nowrap">Saved ✓</span>
         ) : currentKey ? (
-          <span className="text-[10px] text-emerald-600 font-medium whitespace-nowrap">Connected</span>
+          <span className="text-[10px] text-success font-medium whitespace-nowrap">Connected</span>
         ) : null}
       </div>
       <p className="text-[10px] text-muted mt-1.5">Paste the client&apos;s Intelligems API key to auto-pull A/B test results</p>
@@ -3061,7 +3061,7 @@ function TestingSection({
                 <label className={labelClass}>Result</label>
                 <div className="flex items-center gap-1.5 mt-1">
                   {(["winner", "loser", "inconclusive"] as const).map((r) => (
-                    <button key={r} onClick={() => setResult(r)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${result === r ? r === "winner" ? "bg-emerald-500 text-white" : r === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-white" : "bg-surface text-subtle border border-border"}`}>
+                    <button key={r} onClick={() => setResult(r)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${result === r ? r === "winner" ? "bg-success text-white" : r === "loser" ? "bg-danger text-white" : "bg-warning text-white" : "bg-surface text-subtle border border-border"}`}>
                       {r.charAt(0).toUpperCase() + r.slice(1)}
                     </button>
                   ))}
@@ -3120,7 +3120,7 @@ function TestingSection({
               {screenshotUrl ? (
                 <div className="relative inline-block">
                   <img src={screenshotUrl} alt="Test screenshot" className="max-h-48 rounded-lg border border-border" />
-                  <button onClick={() => setScreenshotUrl("")} className="absolute top-1 right-1 p-1 bg-surface/90 hover:bg-surface rounded-md shadow-sm" title="Remove">
+                  <button onClick={() => setScreenshotUrl("")} className="absolute top-1 right-1 p-1 bg-surface/90 hover:bg-surface rounded-md border border-border" title="Remove">
                     <XMarkIcon className="size-3.5 text-muted" />
                   </button>
                 </div>
@@ -3162,18 +3162,18 @@ function TestingSection({
                     <p className="text-[13px] font-semibold text-foreground truncate">{test.name}</p>
                     {test.status === "complete" && test.result && (
                       <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shrink-0 ${
-                        test.result === "winner" ? "bg-emerald-50 text-emerald-600" : test.result === "loser" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
+                        test.result === "winner" ? "bg-success/10 text-success" : test.result === "loser" ? "bg-danger/10 text-danger" : "bg-warning/10 text-warning"
                       }`}>{test.result}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button onClick={handleStatusCycle} className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full border transition-colors ${statusStyles[test.status] || ""}`}>
-                      {test.status === "live" && <span className="inline-block size-1.5 rounded-full bg-emerald-500 mr-1 align-middle" />}
+                      {test.status === "live" && <span className="inline-block size-1.5 rounded-full bg-success mr-1 align-middle" />}
                       {test.status}
                     </button>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
                       <button onClick={() => handleEdit(test)} className="p-1 text-[#B0B0B0] hover:text-foreground"><svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" /></svg></button>
-                      <button onClick={() => handleDeleteTest(test.id)} className={`p-1 transition-colors ${confirmDeleteId === test.id ? "text-red-500" : "text-[#B0B0B0] hover:text-red-400"}`}><TrashIcon className="size-3.5" /></button>
+                      <button onClick={() => handleDeleteTest(test.id)} className={`p-1 transition-colors ${confirmDeleteId === test.id ? "text-danger" : "text-[#B0B0B0] hover:text-danger"}`}><TrashIcon className="size-3.5" /></button>
                     </div>
                   </div>
                 </div>
@@ -3192,7 +3192,7 @@ function TestingSection({
                               <span className="text-[11px] text-subtle">{data.a}</span>
                               <span className="text-[10px] text-muted">→</span>
                               <span className="text-[12px] font-semibold text-foreground">{data.b}</span>
-                              {lift && <span className={`text-[10px] font-semibold ${lift.positive ? "text-emerald-500" : "text-red-400"}`}>{lift.value}</span>}
+                              {lift && <span className={`text-[10px] font-semibold ${lift.positive ? "text-success" : "text-danger"}`}>{lift.value}</span>}
                             </div>
                           ) : <span className="text-[11px] text-muted">—</span>}
                         </div>
@@ -3240,8 +3240,8 @@ function TestingSection({
                 <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-surface rounded border border-border">
                   <p className="text-xs text-muted">{t.name}</p>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => handleRestore(t.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
-                    <button onClick={() => handlePermanentDelete(t.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
+                    <button onClick={() => handleRestore(t.id)} className="text-[10px] text-success hover:text-success">Restore</button>
+                    <button onClick={() => handlePermanentDelete(t.id)} className="text-[10px] text-danger hover:text-danger">Delete Forever</button>
                   </div>
                 </div>
               ))}
@@ -3307,7 +3307,7 @@ function TestingSection({
                     onClick={() => setResult(r)}
                     className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
                       result === r
-                        ? r === "winner" ? "bg-emerald-500 text-white" : r === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-white"
+                        ? r === "winner" ? "bg-success text-white" : r === "loser" ? "bg-danger text-white" : "bg-warning text-white"
                         : "bg-surface text-subtle border border-border hover:bg-background"
                     }`}
                   >
@@ -3417,13 +3417,13 @@ function TestingSection({
 
       {/* Needs Attention */}
       {needsAttention.length > 0 && (
-        <div className="bg-amber-50/50 border border-amber-200 rounded-lg px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 mb-1.5">
+        <div className="bg-warning/50 border border-warning/20 rounded-lg px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-warning mb-1.5">
             {needsAttention.length} item{needsAttention.length !== 1 ? "s" : ""} need attention
           </p>
           <div className="space-y-1">
             {needsAttention.map((item, i) => (
-              <p key={i} className="text-xs text-amber-700">• {item.message}</p>
+              <p key={i} className="text-xs text-warning">• {item.message}</p>
             ))}
           </div>
         </div>
@@ -3458,15 +3458,15 @@ function TestingSection({
                         <p className="text-[13px] font-semibold text-foreground truncate">{test.name}</p>
                         {test.status === "complete" && test.result && (
                           <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shrink-0 ${
-                            test.result === "winner" ? "bg-emerald-50 text-emerald-600" :
-                            test.result === "loser" ? "bg-red-50 text-red-500" :
-                            "bg-amber-50 text-amber-600"
+                            test.result === "winner" ? "bg-success/10 text-success" :
+                            test.result === "loser" ? "bg-danger/10 text-danger" :
+                            "bg-warning/10 text-warning"
                           }`}>{test.result}</span>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button onClick={handleStatusCycle} className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full border transition-colors ${statusStyles[test.status]}`}>
-                          {test.status === "live" && <span className="inline-block size-1.5 rounded-full bg-emerald-500 mr-1 align-middle" />}
+                          {test.status === "live" && <span className="inline-block size-1.5 rounded-full bg-success mr-1 align-middle" />}
                           {test.status}
                         </button>
                         <div className="flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
@@ -3475,7 +3475,7 @@ function TestingSection({
                           </button>
                           <button
                             onClick={() => handleDeleteTest(test.id)}
-                            className={`p-1 transition-colors ${confirmDeleteId === test.id ? "text-red-500" : "text-[#B0B0B0] hover:text-red-400"}`}
+                            className={`p-1 transition-colors ${confirmDeleteId === test.id ? "text-danger" : "text-[#B0B0B0] hover:text-danger"}`}
                             title={confirmDeleteId === test.id ? "Click again to confirm" : "Delete"}
                           >
                             <TrashIcon className="size-3.5" />
@@ -3506,7 +3506,7 @@ function TestingSection({
                                   <span className="text-[11px] text-subtle">{data.a}</span>
                                   <svg className="size-2.5 text-muted shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" /></svg>
                                   <span className="text-[12px] font-semibold text-foreground">{data.b}</span>
-                                  {lift && <span className={`text-[10px] font-semibold ${lift.positive ? "text-emerald-500" : "text-red-400"}`}>{lift.value}</span>}
+                                  {lift && <span className={`text-[10px] font-semibold ${lift.positive ? "text-success" : "text-danger"}`}>{lift.value}</span>}
                                 </div>
                               ) : <span className="text-[11px] text-muted">—</span>}
                             </div>
@@ -3549,8 +3549,8 @@ function TestingSection({
               <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-surface rounded border border-border">
                 <p className="text-xs text-muted">{t.name}</p>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handleRestore(t.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
-                  <button onClick={() => handlePermanentDelete(t.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
+                  <button onClick={() => handleRestore(t.id)} className="text-[10px] text-success hover:text-success">Restore</button>
+                  <button onClick={() => handlePermanentDelete(t.id)} className="text-[10px] text-danger hover:text-danger">Delete Forever</button>
                 </div>
               </div>
             ))}
@@ -3762,8 +3762,8 @@ function DevelopmentSection({
                   onClick={() => handleDeletePageReview(activeReview.id)}
                   className={`px-2.5 py-1 text-[10px] font-medium rounded-lg transition-colors ${
                     confirmDelete === activeReview.id
-                      ? "bg-red-500 text-white"
-                      : "text-muted hover:text-red-500"
+                      ? "bg-danger text-white"
+                      : "text-muted hover:text-danger"
                   }`}
                 >
                   {confirmDelete === activeReview.id ? "Confirm" : "Delete"}
@@ -3787,7 +3787,7 @@ function DevelopmentSection({
                           <div>
                             <p className="text-xs font-medium text-foreground">
                               Version {v.version_number}
-                              {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
+                              {isLatest && <span className="ml-2 text-[10px] text-success font-semibold">Latest</span>}
                             </p>
                             <p className="text-[10px] text-muted">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
                           </div>
@@ -3824,7 +3824,7 @@ function DevelopmentSection({
                 <div className="space-y-2">
                   {feedback.map((item) => (
                     <div key={item.id} className="flex items-start gap-2">
-                      <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-emerald-400" : "bg-amber-400"}`} />
+                      <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-success" : "bg-warning"}`} />
                       <div className="flex-1">
                         <p className="text-xs text-foreground">{item.comment}</p>
                         <p className="text-[10px] text-muted">
@@ -3837,7 +3837,7 @@ function DevelopmentSection({
                           onReload();
                         }}
                         className={`text-[10px] font-medium px-2 py-0.5 rounded transition-colors ${
-                          item.resolved ? "text-emerald-600 hover:text-muted" : "text-muted hover:text-emerald-600"
+                          item.resolved ? "text-success hover:text-muted" : "text-muted hover:text-success"
                         }`}
                       >
                         {item.resolved ? "Resolved" : "Resolve"}
@@ -3947,13 +3947,13 @@ function TeamAssignment({ portal, onUpdateField }: { portal: PortalData; onUpdat
             const m = team.find(t => t.id === id);
             if (!m) return null;
             return (
-              <div key={m.id} className="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
-                <div className="size-1.5 rounded-full bg-emerald-500" />
-                <span className="text-[11px] font-medium text-emerald-700">{m.name}</span>
-                <span className="text-[9px] text-emerald-500 ml-auto">{m.role}</span>
+              <div key={m.id} className="flex items-center gap-2 px-2.5 py-1.5 bg-success/10 border border-success/20 rounded-lg">
+                <div className="size-1.5 rounded-full bg-success" />
+                <span className="text-[11px] font-medium text-success">{m.name}</span>
+                <span className="text-[9px] text-success ml-auto">{m.role}</span>
                 <button
                   onClick={() => removeMember(m.id)}
-                  className="text-emerald-300 hover:text-red-400 transition-colors ml-1"
+                  className="text-success/70 hover:text-danger transition-colors ml-1"
                 >
                   <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
                 </button>
@@ -4014,9 +4014,9 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         <p className={LABEL}>Designers</p>
         <div className="flex flex-wrap gap-1.5 items-center justify-end">
           {designers.map(m => (
-            <span key={m.id} className="inline-flex items-center gap-1.5 text-xs font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg">
+            <span key={m.id} className="inline-flex items-center gap-1.5 text-xs font-medium bg-cat-design/10 text-cat-design px-2.5 py-1 rounded-lg">
               {m.name}
-              <button onClick={() => removeMember(m.id)} className="text-emerald-300 hover:text-red-400 transition-colors">
+              <button onClick={() => removeMember(m.id)} className="text-cat-design/60 hover:text-danger transition-colors">
                 <XMarkIcon className="size-3" />
               </button>
             </span>
@@ -4042,9 +4042,9 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         <p className={LABEL}>Developers</p>
         <div className="flex flex-wrap gap-1.5 items-center justify-end">
           {devs.map(m => (
-            <span key={m.id} className="inline-flex items-center gap-1.5 text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg">
+            <span key={m.id} className="inline-flex items-center gap-1.5 text-xs font-medium bg-cat-dev/10 text-cat-dev px-2.5 py-1 rounded-lg">
               {m.name}
-              <button onClick={() => removeMember(m.id)} className="text-blue-300 hover:text-red-400 transition-colors">
+              <button onClick={() => removeMember(m.id)} className="text-cat-dev/60 hover:text-danger transition-colors">
                 <XMarkIcon className="size-3" />
               </button>
             </span>
@@ -4079,7 +4079,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
               autoFocus
               onKeyDown={(e) => { if (e.key === "Enter") { onUpdateField("slack_channel_url", slackVal); setEditingSlack(false); } if (e.key === "Escape") { setSlackVal(portal.slack_channel_url || ""); setEditingSlack(false); } }}
             />
-            <button onClick={() => { onUpdateField("slack_channel_url", slackVal); setEditingSlack(false); }} className="text-xs font-medium text-emerald-600 hover:text-emerald-700">Save</button>
+            <button onClick={() => { onUpdateField("slack_channel_url", slackVal); setEditingSlack(false); }} className="text-xs font-medium text-success hover:text-success">Save</button>
             <button onClick={() => { setSlackVal(portal.slack_channel_url || ""); setEditingSlack(false); }} className="text-xs text-subtle hover:text-muted">Cancel</button>
           </div>
         ) : (
@@ -4103,7 +4103,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
               autoFocus
               onKeyDown={(e) => { if (e.key === "Enter") { onUpdateField("slack_internal_channel_id", internalSlackVal); setEditingInternalSlack(false); } if (e.key === "Escape") { setInternalSlackVal(portal.slack_internal_channel_id || ""); setEditingInternalSlack(false); } }}
             />
-            <button onClick={() => { onUpdateField("slack_internal_channel_id", internalSlackVal); setEditingInternalSlack(false); }} className="text-xs font-medium text-emerald-600 hover:text-emerald-700">Save</button>
+            <button onClick={() => { onUpdateField("slack_internal_channel_id", internalSlackVal); setEditingInternalSlack(false); }} className="text-xs font-medium text-success hover:text-success">Save</button>
             <button onClick={() => { setInternalSlackVal(portal.slack_internal_channel_id || ""); setEditingInternalSlack(false); }} className="text-xs text-subtle hover:text-muted">Cancel</button>
           </div>
         ) : (
@@ -4122,7 +4122,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
           const days = Math.ceil((new Date(nextDate + "T00:00:00").getTime() - Date.now()) / 86400000);
           const dayName = new Date(nextDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
           return (
-            <p className={`text-[13px] font-semibold ${days === 0 ? "text-emerald-600" : days === 1 ? "text-amber-600" : "text-foreground"}`}>
+            <p className={`text-[13px] font-semibold ${days === 0 ? "text-success" : days === 1 ? "text-warning" : "text-foreground"}`}>
               {dayName}
               <span className="ml-2 text-xs font-normal text-subtle">{days === 0 ? "Today" : days === 1 ? "Tomorrow" : `in ${days}d`}</span>
             </p>
@@ -4172,23 +4172,23 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
         <p className="text-[11px] font-semibold text-foreground mb-2">Client Settings</p>
         <div className="space-y-1">
           {designers.map(m => (
-            <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-emerald-50 group">
+            <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-cat-design/10 group">
               <div className="min-w-0">
-                <span className="text-xs font-medium text-emerald-700 truncate block">{m.name}</span>
-                <span className="text-[10px] text-emerald-500">Designer</span>
+                <span className="text-xs font-medium text-cat-design truncate block">{m.name}</span>
+                <span className="text-[10px] text-cat-design/70">Designer</span>
               </div>
-              <button onClick={() => removeMember(m.id)} className="text-emerald-300 hover:text-red-400 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => removeMember(m.id)} className="text-cat-design/60 hover:text-danger p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
               </button>
             </div>
           ))}
           {devs.map(m => (
-            <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-blue-50 group">
+            <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-cat-dev/10 group">
               <div className="min-w-0">
-                <span className="text-xs font-medium text-blue-700 truncate block">{m.name}</span>
-                <span className="text-[10px] text-blue-500">Developer</span>
+                <span className="text-xs font-medium text-cat-dev truncate block">{m.name}</span>
+                <span className="text-[10px] text-cat-dev/70">Developer</span>
               </div>
-              <button onClick={() => removeMember(m.id)} className="text-blue-300 hover:text-red-400 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => removeMember(m.id)} className="text-cat-dev/60 hover:text-danger p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
               </button>
             </div>
@@ -4229,10 +4229,10 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") saveSlack(); if (e.key === "Escape") setEditingSlack(null); }}
                 />
-                <button onClick={saveSlack} className="text-[10px] font-medium text-emerald-600 shrink-0">Save</button>
+                <button onClick={saveSlack} className="text-[10px] font-medium text-success shrink-0">Save</button>
               </div>
             ) : (
-              <button onClick={() => startEditSlack("client")} className="text-xs font-mono text-foreground hover:text-blue-600 transition-colors truncate block w-full text-left">
+              <button onClick={() => startEditSlack("client")} className="text-xs font-mono text-foreground hover:text-info transition-colors truncate block w-full text-left">
                 {portal.slack_channel_url || <span className="text-muted">Click to set</span>}
               </button>
             )}
@@ -4251,10 +4251,10 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") saveSlack(); if (e.key === "Escape") setEditingSlack(null); }}
                 />
-                <button onClick={saveSlack} className="text-[10px] font-medium text-emerald-600 shrink-0">Save</button>
+                <button onClick={saveSlack} className="text-[10px] font-medium text-success shrink-0">Save</button>
               </div>
             ) : (
-              <button onClick={() => startEditSlack("internal")} className="text-xs font-mono text-foreground hover:text-blue-600 transition-colors truncate block w-full text-left">
+              <button onClick={() => startEditSlack("internal")} className="text-xs font-mono text-foreground hover:text-info transition-colors truncate block w-full text-left">
                 {portal.slack_internal_channel_id || <span className="text-muted">Click to set</span>}
               </button>
             )}
@@ -4271,7 +4271,7 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
           const days = Math.ceil((new Date(nextDate + "T00:00:00").getTime() - Date.now()) / 86400000);
           const dayName = new Date(nextDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
           return (
-            <p className={`text-xs font-medium ${days === 0 ? "text-emerald-600" : days === 1 ? "text-amber-600" : "text-foreground"}`}>
+            <p className={`text-xs font-medium ${days === 0 ? "text-success" : days === 1 ? "text-warning" : "text-foreground"}`}>
               {dayName}
               <span className="ml-1 text-[11px] font-normal text-muted">{days === 0 ? "Today" : days === 1 ? "Tomorrow" : `${days}d`}</span>
             </p>
@@ -4422,7 +4422,7 @@ function FunnelsTab({
                 </a>
                 <button
                   onClick={() => handleDocDelete(doc.id)}
-                  className="ml-3 p-1.5 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="ml-3 p-1.5 text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Delete"
                 >
                   <TrashIcon className="size-3.5" />
@@ -4609,7 +4609,7 @@ function ReportsSection({
 
           <div>
             <label className={labelClass}>Upload .docx</label>
-            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-white transition-colors">
+            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-foreground transition-colors">
               <input
                 type="file"
                 accept=".docx"
@@ -4712,8 +4712,8 @@ function ReportsSection({
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                       report.published
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-amber-50 text-amber-700"
+                        ? "bg-success/10 text-success"
+                        : "bg-warning/10 text-warning"
                     }`}
                   >
                     {report.published ? "Published" : "Draft"}
@@ -4729,7 +4729,7 @@ function ReportsSection({
                 </button>
                 <button
                   onClick={() => deleteReport(report.id)}
-                  className="p-1 text-muted hover:text-red-500 transition-colors"
+                  className="p-1 text-muted hover:text-danger transition-colors"
                 >
                   <TrashIcon className="size-3.5" />
                 </button>
@@ -4772,7 +4772,7 @@ function BlockerFlagModal({
                 onClick={() => setBlockerType(t)}
                 className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
                   blockerType === t
-                    ? "bg-red-500 text-white"
+                    ? "bg-danger text-white"
                     : "bg-background text-muted hover:bg-surface-raised"
                 }`}
               >
@@ -4809,7 +4809,7 @@ function BlockerFlagModal({
             onFlag({ type: blockerType, reason: reason.trim(), since: new Date().toISOString() });
           }}
           disabled={!reason.trim()}
-          className="w-full py-2.5 text-sm font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-40"
+          className="w-full py-2.5 text-sm font-semibold bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-40"
         >
           Flag Blocker
         </button>
@@ -4880,13 +4880,13 @@ function ResolveBlockerModal({
         </div>
 
         {/* Blocker summary */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="bg-danger/10 border border-danger/20 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-1">
-            <span className="size-1.5 rounded-full bg-red-500" />
-            <span className="text-xs font-semibold text-red-600 capitalize">{blocker.type}</span>
-            <span className="text-[10px] text-red-500 bg-red-100 px-2 py-0.5 rounded-full">{daysSince}d ({businessDays} business days)</span>
+            <span className="size-1.5 rounded-full bg-danger" />
+            <span className="text-xs font-semibold text-danger capitalize">{blocker.type}</span>
+            <span className="text-[10px] text-danger bg-danger/10 px-2 py-0.5 rounded-full">{daysSince}d ({businessDays} business days)</span>
           </div>
-          <p className="text-xs text-red-700">{blocker.reason}</p>
+          <p className="text-xs text-danger">{blocker.reason}</p>
         </div>
 
         {/* Shift controls */}
@@ -4915,7 +4915,7 @@ function ResolveBlockerModal({
             </div>
             <span className="text-xs text-subtle">business days</span>
             {shiftDays !== businessDays && (
-              <button onClick={() => setShiftDays(businessDays)} className="text-[10px] text-blue-600 hover:underline">
+              <button onClick={() => setShiftDays(businessDays)} className="text-[10px] text-info hover:underline">
                 Reset to {businessDays}d
               </button>
             )}
@@ -4930,7 +4930,7 @@ function ResolveBlockerModal({
               {previewPhases.map(phase => (
                 <div key={phase.id} className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className={`size-1.5 rounded-full shrink-0 ${phase.status === "complete" ? "bg-emerald-400" : "bg-muted"}`} />
+                    <span className={`size-1.5 rounded-full shrink-0 ${phase.status === "complete" ? "bg-success" : "bg-muted"}`} />
                     <span className={`text-xs font-medium truncate ${phase.status === "complete" ? "text-muted" : "text-foreground"}`}>{phase.name}</span>
                   </div>
                   {phase.status === "complete" ? (
@@ -4956,7 +4956,7 @@ function ResolveBlockerModal({
         <div className="flex items-center gap-3">
           <button
             onClick={() => onResolve(shiftDays)}
-            className="flex-1 py-2.5 text-sm font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+            className="flex-1 py-2.5 text-sm font-semibold bg-success text-white rounded-lg hover:bg-success transition-colors"
           >
             {shiftDays > 0 ? `Resolve & Shift +${shiftDays}d` : "Resolve (No Shift)"}
           </button>
@@ -5169,7 +5169,7 @@ function ClientContextTab({
               </div>
               <button
                 onClick={() => handleDelete(entry.id, entry._projectId)}
-                className="text-muted hover:text-red-400 transition-colors"
+                className="text-muted hover:text-danger transition-colors"
               >
                 <TrashIcon className="size-3.5" />
               </button>

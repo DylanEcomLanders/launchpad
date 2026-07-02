@@ -26,11 +26,11 @@ const statusConfig: Record<
   CroTestStatus,
   { bg: string; text: string; dot: string; label: string; pulse?: boolean }
 > = {
-  live: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", label: "Live", pulse: true },
-  paused: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400", label: "Paused" },
-  winner: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500", label: "Winner" },
-  loser: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-400", label: "Loser" },
-  inconclusive: { bg: "bg-surface-raised", text: "text-muted", dot: "bg-gray-400", label: "Inconclusive" },
+  live: { bg: "bg-success/10", text: "text-success", dot: "bg-success", label: "Live", pulse: true },
+  paused: { bg: "bg-warning/10", text: "text-warning", dot: "bg-warning", label: "Paused" },
+  winner: { bg: "bg-success/10", text: "text-success", dot: "bg-success", label: "Winner" },
+  loser: { bg: "bg-danger/10", text: "text-danger", dot: "bg-danger", label: "Loser" },
+  inconclusive: { bg: "bg-surface-raised", text: "text-muted", dot: "bg-muted", label: "Inconclusive" },
 };
 
 const ALL_STATUSES: CroTestStatus[] = ["live", "paused", "winner", "loser", "inconclusive"];
@@ -47,25 +47,25 @@ interface SwimlaneConfig {
 const swimlaneConfig: Record<string, SwimlaneConfig> = {
   attention: {
     title: "Needs Attention",
-    dot: "bg-red-500",
+    dot: "bg-danger",
     pulse: true,
     emptyText: "Nothing needs attention right now",
   },
   running: {
     title: "Live & Running",
-    dot: "bg-green-500",
+    dot: "bg-success",
     pulse: true,
     emptyText: "No live tests running",
   },
   winners: {
     title: "Winners",
-    dot: "bg-emerald-500",
+    dot: "bg-success",
     pulse: false,
     emptyText: "No winners yet",
   },
   losers: {
     title: "Losers & Inconclusive",
-    dot: "bg-gray-400",
+    dot: "bg-muted",
     pulse: false,
     emptyText: "No losers or inconclusive tests",
   },
@@ -346,7 +346,7 @@ function StatusBadge({ status }: { status: CroTestStatus }) {
 
 function StatSigBar({ value }: { value: number }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
-  const color = pct >= 95 ? "bg-emerald-500" : pct >= 80 ? "bg-amber-400" : "bg-muted";
+  const color = pct >= 95 ? "bg-success" : pct >= 80 ? "bg-warning" : "bg-muted";
   return (
     <div className="flex items-center gap-3">
       <div className="flex-1 h-2 bg-surface-raised rounded-full overflow-hidden">
@@ -375,7 +375,7 @@ function MetricRow({
 }) {
   const delta = calcDelta(control, variant);
   const prefix = delta.positive ? "+" : "-";
-  const color = delta.positive ? "text-emerald-600" : "text-red-500";
+  const color = delta.positive ? "text-success" : "text-danger";
 
   const fmtVal = (v: number) =>
     format === "currency" ? penceToPounds(v) : `${Number(v).toFixed(2)}%`;
@@ -391,7 +391,7 @@ function MetricRow({
         <span className="text-sm text-foreground font-semibold tabular-nums">{fmtVal(variant)}</span>
         {control > 0 && (
           <span className={`text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded ${
-            delta.positive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"
+            delta.positive ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
           }`}>
             {prefix}{delta.value.toFixed(1)}%
           </span>
@@ -414,11 +414,11 @@ const eventConfig: Record<
   TimelineEvent["type"],
   { dot: string; label: string; bg: string; text: string }
 > = {
-  started: { dot: "bg-blue-500", label: "Started", bg: "bg-blue-50", text: "text-blue-700" },
-  winner: { dot: "bg-emerald-500", label: "Winner", bg: "bg-emerald-50", text: "text-emerald-700" },
-  loser: { dot: "bg-red-500", label: "Loser", bg: "bg-red-50", text: "text-red-700" },
-  paused: { dot: "bg-amber-400", label: "Paused", bg: "bg-amber-50", text: "text-amber-700" },
-  approaching: { dot: "bg-amber-400", label: "Near Sig", bg: "bg-amber-50", text: "text-amber-700" },
+  started: { dot: "bg-info", label: "Started", bg: "bg-info/10", text: "text-info" },
+  winner: { dot: "bg-success", label: "Winner", bg: "bg-success/10", text: "text-success" },
+  loser: { dot: "bg-danger", label: "Loser", bg: "bg-danger/10", text: "text-danger" },
+  paused: { dot: "bg-warning", label: "Paused", bg: "bg-warning/10", text: "text-warning" },
+  approaching: { dot: "bg-warning", label: "Near Sig", bg: "bg-warning/10", text: "text-warning" },
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -805,7 +805,7 @@ export default function CroMonitorPage() {
               </button>
               <button
                 onClick={() => handleDelete(test.id)}
-                className="ml-auto flex items-center gap-1.5 px-4 py-2.5 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="ml-auto flex items-center gap-1.5 px-4 py-2.5 text-xs text-danger hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
               >
                 <TrashIcon className="size-3.5" /> Delete
               </button>
@@ -860,16 +860,16 @@ export default function CroMonitorPage() {
 
         {/* Demo banner */}
         {isDemo && (
-          <div className="mb-8 px-5 py-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+          <div className="mb-8 px-5 py-4 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning">
             Showing demo data — run the SQL migration in Supabase to start tracking real tests.
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="mb-8 px-5 py-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between">
+          <div className="mb-8 px-5 py-4 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger flex items-center justify-between">
             {error}
-            <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 text-xs font-medium">Dismiss</button>
+            <button onClick={() => setError(null)} className="text-danger hover:text-foreground text-xs font-medium">Dismiss</button>
           </div>
         )}
 
@@ -878,10 +878,10 @@ export default function CroMonitorPage() {
           <section>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { value: summary.totalLive, label: "Live Tests", color: "text-foreground", dot: "bg-green-500", pulse: true },
-                { value: summary.needsAttention, label: "Needs Attention", color: "text-amber-600", dot: "bg-red-500", pulse: true },
-                { value: summary.winnersThisMonth, label: "Winners This Month", color: "text-emerald-600", dot: "bg-emerald-500", pulse: false },
-                { value: summary.completed, label: "Tests Completed", color: "text-foreground", dot: "bg-gray-400", pulse: false },
+                { value: summary.totalLive, label: "Live Tests", color: "text-foreground", dot: "bg-success", pulse: true },
+                { value: summary.needsAttention, label: "Needs Attention", color: "text-warning", dot: "bg-danger", pulse: true },
+                { value: summary.winnersThisMonth, label: "Winners This Month", color: "text-success", dot: "bg-success", pulse: false },
+                { value: summary.completed, label: "Tests Completed", color: "text-foreground", dot: "bg-muted", pulse: false },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -1060,7 +1060,7 @@ export default function CroMonitorPage() {
                           : "border-muted bg-surface group-hover:border-subtle"
                       }`}
                     >
-                      {isChecked && <CheckIcon className="size-3 text-white" />}
+                      {isChecked && <CheckIcon className="size-3 text-background" />}
                     </button>
                     <span className={`text-sm transition-colors ${isChecked ? "line-through text-muted" : "text-foreground"}`}>
                       {item}

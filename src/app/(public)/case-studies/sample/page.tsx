@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function CaseStudySamplePage() {
   return (
-    <div className="min-h-screen bg-white text-foreground font-body">
+    <div className="min-h-screen bg-surface text-foreground font-body">
       {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
@@ -23,7 +23,7 @@ export default function CaseStudySamplePage() {
           </nav>
           <Link
             href="/audit"
-            className="text-xs md:text-sm font-semibold px-4 py-2 bg-surface text-white rounded-full hover:bg-border transition-colors inline-flex items-center gap-1.5"
+            className="text-xs md:text-sm font-semibold px-4 py-2 bg-foreground text-background rounded-full hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
           >
             Get In Touch
             <span className="text-[#D1FF4C]">↗</span>
@@ -77,7 +77,7 @@ export default function CaseStudySamplePage() {
               { value: "−52%", label: "Page load time" },
               { value: "14", label: "Winning A/B tests" },
             ].map((m) => (
-              <div key={m.label} className="bg-white p-6 md:p-8">
+              <div key={m.label} className="bg-surface p-6 md:p-8">
                 <div className="text-3xl md:text-5xl font-semibold tracking-tight">{m.value}</div>
                 <div className="text-xs md:text-sm text-subtle mt-2 leading-snug">
                   {m.label}
@@ -158,7 +158,7 @@ export default function CaseStudySamplePage() {
           ].map((step) => (
             <div
               key={step.n}
-              className="rounded-2xl border border-border bg-white p-6 md:p-8"
+              className="rounded-2xl border border-border bg-surface p-6 md:p-8"
             >
               <div className="text-xs font-semibold tracking-wider text-muted">
                 {step.n}
@@ -189,7 +189,7 @@ export default function CaseStudySamplePage() {
           </div>
           <div>
             <div className="text-xs uppercase tracking-wider text-muted mb-3">After</div>
-            <div className="aspect-[4/5] rounded-2xl bg-surface border border-surface flex items-center justify-center text-white/40 text-sm">
+            <div className="aspect-[4/5] rounded-2xl bg-foreground border border-foreground flex items-center justify-center text-background/40 text-sm">
               [ After screenshot ]
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function CaseStudySamplePage() {
           ].map((r) => (
             <div
               key={r.kpi}
-              className="rounded-2xl border border-border bg-white p-6 md:p-8"
+              className="rounded-2xl border border-border bg-surface p-6 md:p-8"
             >
               <div className="text-xs uppercase tracking-wider text-muted mb-3">
                 {r.kpi}
@@ -296,7 +296,7 @@ export default function CaseStudySamplePage() {
         </p>
         <Link
           href="/audit"
-          className="inline-flex items-center gap-2 mt-10 px-8 py-4 bg-surface text-white font-semibold rounded-full hover:bg-border transition-colors"
+          className="inline-flex items-center gap-2 mt-10 px-8 py-4 bg-foreground text-background font-semibold rounded-full hover:bg-foreground/90 transition-colors"
         >
           Get a free audit
           <span className="text-[#D1FF4C]">↗</span>

@@ -57,14 +57,14 @@ export default function PipelinePage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-foreground shrink-0">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
         <div>
           <h1 className="text-lg font-bold">Pipeline</h1>
           <p className="text-xs text-muted">{leads.length} lead{leads.length !== 1 ? "s" : ""}</p>
         </div>
         <button
           onClick={() => { setEditLead(createNewLead({})); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-surface text-white text-[11px] font-medium rounded-lg hover:bg-border"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-raised text-foreground text-[11px] font-medium rounded-lg hover:bg-surface-hover"
         >
           <PlusIcon className="size-3.5" />
           Add Lead
@@ -73,7 +73,7 @@ export default function PipelinePage() {
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
+          <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" />
         </div>
       ) : (
         <div className="flex-1 overflow-x-auto">
@@ -108,19 +108,19 @@ export default function PipelinePage() {
                           draggedId === lead.id ? "opacity-40" : ""
                         }`}
                       >
-                        <p className="text-xs font-semibold text-surface mb-1">{lead.brand_name || "Untitled"}</p>
+                        <p className="text-xs font-semibold text-foreground mb-1">{lead.brand_name || "Untitled"}</p>
                         {lead.contact_name && <p className="text-[10px] text-subtle">{lead.contact_name}</p>}
                         {lead.notes && <p className="text-[10px] text-muted mt-1 line-clamp-2">{lead.notes}</p>}
                         {(lead.funnel || (lead.source && lead.source !== "direct")) && (
                           <div className="flex flex-wrap items-center gap-1 mt-1.5">
                             {lead.funnel && (
-                              <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-info/10 text-info text-[10px] font-medium px-2 py-0.5 rounded-full">
                                 <svg className="size-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>
                                 {lead.funnel}
                               </span>
                             )}
                             {lead.source && lead.source !== "direct" && (
-                              <span className="inline-flex items-center bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center bg-surface-raised text-subtle text-[10px] font-medium px-2 py-0.5 rounded-full">
                                 {lead.source.startsWith("x-") ? "X" : lead.source.startsWith("li-") ? "LinkedIn" : lead.source.startsWith("tiktok-") ? "TikTok" : lead.source.length > 14 ? lead.source.slice(0, 14) + "..." : lead.source}
                               </span>
                             )}
@@ -131,14 +131,14 @@ export default function PipelinePage() {
                             <a
                               href={lead.audit_token ? `/audit/${lead.audit_token}` : `/sales-engine/audits?url=${encodeURIComponent(lead.store_url)}&brand=${encodeURIComponent(lead.brand_name)}`}
                               onClick={(e) => e.stopPropagation()}
-                              className={`text-[9px] font-medium ${lead.audit_token ? "text-blue-500" : "text-muted hover:text-surface"}`}
+                              className={`text-[9px] font-medium ${lead.audit_token ? "text-info" : "text-muted hover:text-foreground"}`}
                             >
                               {lead.audit_token ? "View Audit" : "Run Audit"}
                             </a>
                           )}
                           {lead.follow_up_date && (
                             <span className={`text-[9px] ml-auto ${
-                              new Date(lead.follow_up_date) < new Date() ? "text-red-400 font-semibold" : "text-muted"
+                              new Date(lead.follow_up_date) < new Date() ? "text-danger font-semibold" : "text-muted"
                             }`}>
                               {new Date(lead.follow_up_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                             </span>
@@ -162,7 +162,7 @@ export default function PipelinePage() {
 
       {/* Lost leads count */}
       {lostLeads.length > 0 && (
-        <div className="px-6 py-2 border-t border-foreground text-[10px] text-muted">
+        <div className="px-6 py-2 border-t border-border text-[10px] text-muted">
           {lostLeads.length} lost lead{lostLeads.length !== 1 ? "s" : ""}
         </div>
       )}
@@ -174,7 +174,7 @@ export default function PipelinePage() {
             <div className="bg-surface rounded-xl shadow-xl w-full max-w-md mx-4 p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold">{editLead.created_at ? "Edit Lead" : "New Lead"}</h3>
-                <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-muted hover:text-surface">
+                <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-muted hover:text-foreground">
                   <XMarkIcon className="size-4" />
                 </button>
               </div>
@@ -235,14 +235,14 @@ function LeadForm({ lead, onSave, onDelete }: { lead: Lead; onSave: (l: Lead) =>
         <button
           onClick={() => onSave(form)}
           disabled={!form.brand_name.trim()}
-          className="flex-1 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border disabled:opacity-30"
+          className="flex-1 py-2 bg-surface-raised text-foreground text-xs font-medium rounded-lg hover:bg-surface-hover disabled:opacity-30"
         >
           Save
         </button>
         {lead.created_at && (
           <button
             onClick={() => onDelete(lead.id)}
-            className="px-3 py-2 text-xs text-red-400 hover:text-red-600"
+            className="px-3 py-2 text-xs text-danger hover:text-danger"
           >
             Delete
           </button>

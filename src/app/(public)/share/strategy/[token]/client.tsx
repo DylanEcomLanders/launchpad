@@ -55,7 +55,7 @@ export default function StrategyShareClient({ token }: { token: string }) {
   return (
     <div className="min-h-screen bg-surface-raised text-foreground">
       {/* Brand header */}
-      <header className="border-b border-foreground bg-white">
+      <header className="border-b border-foreground bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <div className="flex items-baseline gap-3">
             <span className="text-[14px] font-semibold tracking-tight">
@@ -73,13 +73,13 @@ export default function StrategyShareClient({ token }: { token: string }) {
 
       <main className="mx-auto max-w-3xl px-6 py-10">
         {state.kind === "loading" && (
-          <div className="rounded-xl border border-foreground bg-white p-8 text-center text-sm text-subtle">
+          <div className="rounded-xl border border-foreground bg-surface p-8 text-center text-sm text-subtle">
             Loading…
           </div>
         )}
 
         {state.kind === "missing" && (
-          <div className="rounded-xl border border-foreground bg-white p-8 text-center">
+          <div className="rounded-xl border border-foreground bg-surface p-8 text-center">
             <h1 className="text-xl font-medium">Not found</h1>
             <p className="mt-2 text-sm text-subtle">
               This link may have expired or been removed. Ask the strategist
@@ -108,7 +108,7 @@ function ResourceShow({
   signedUrl?: string;
 }) {
   return (
-    <article className="overflow-hidden rounded-xl border border-foreground bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+    <article className="overflow-hidden rounded-xl border border-foreground bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       <div className="bg-gradient-to-br from-[#0F1115] to-[#1F2430] px-6 py-8 text-white">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
           {resource.kind === "file"
@@ -152,7 +152,7 @@ function ResourceShow({
 function FileShow({ signedUrl, title }: { signedUrl?: string; title: string }) {
   if (!signedUrl) {
     return (
-      <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+      <div className="rounded-md border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
         Unable to generate download link. Please ask the strategist for a fresh share.
       </div>
     );
@@ -165,7 +165,7 @@ function FileShow({ signedUrl, title }: { signedUrl?: string; title: string }) {
         target="_blank"
         rel="noreferrer"
         download
-        className="inline-flex items-center gap-2 rounded-md bg-surface px-4 py-2 text-sm font-medium text-white hover:bg-black"
+        className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90"
       >
         <PaperClipIcon className="h-4 w-4" />
         Download {title}
@@ -189,7 +189,7 @@ function LinkOut({ url, label }: { url: string; label: string }) {
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center gap-2 rounded-md bg-surface px-4 py-2 text-sm font-medium text-white hover:bg-black"
+      className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90"
     >
       <ArrowTopRightOnSquareIcon className="h-4 w-4" />
       {label}

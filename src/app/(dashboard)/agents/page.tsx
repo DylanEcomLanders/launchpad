@@ -52,7 +52,7 @@ export default function AgentMissionControlPage() {
         <header className="mb-8">
           <div className="flex items-baseline gap-3 mb-2">
             <h1 className="text-2xl font-semibold text-foreground">Mission Control</h1>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-600">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-warning/10 text-warning">
               v0.5
             </span>
           </div>

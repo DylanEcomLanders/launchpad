@@ -163,7 +163,7 @@ export default function ContentRepurposerPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>
-                    Title <span className="text-red-400">*</span>
+                    Title <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
@@ -175,7 +175,7 @@ export default function ContentRepurposerPage() {
                 </div>
                 <div>
                   <label className={labelClass}>
-                    Topic <span className="text-red-400">*</span>
+                    Topic <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
@@ -244,7 +244,7 @@ export default function ContentRepurposerPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className={labelClass}>
-                    Key Points <span className="text-red-400">*</span>
+                    Key Points <span className="text-danger">*</span>
                   </label>
                   <button
                     onClick={addKeyPoint}
@@ -376,7 +376,7 @@ export default function ContentRepurposerPage() {
                     >
                       {copiedIdx === idx ? (
                         <>
-                          <CheckIcon className="size-3.5 text-emerald-500" />
+                          <CheckIcon className="size-3.5 text-success" />
                           Copied
                         </>
                       ) : (

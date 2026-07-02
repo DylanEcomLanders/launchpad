@@ -127,7 +127,7 @@ export function ClientDetail({
       kind: "result",
       node: (
         <div>
-          <span className="text-emerald-400 font-medium">{r.metric || "Result"}</span>
+          <span className="text-success font-medium">{r.metric || "Result"}</span>
           <span className="text-subtle"> — {r.title}</span>
         </div>
       ),
@@ -176,7 +176,7 @@ export function ClientDetail({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-background/70" />
       <div
         className="relative w-full max-w-xl h-full overflow-y-auto bg-background border-l border-border p-6"
         onClick={(e) => e.stopPropagation()}

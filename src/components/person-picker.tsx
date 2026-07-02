@@ -121,7 +121,7 @@ export function PersonPicker({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className={`w-full inline-flex items-center gap-2 ${compact ? "h-8 px-2 text-[12px]" : "h-9 px-3 text-[13px]"} rounded-md bg-background ring-1 ring-white/[0.04] hover:ring-white/[0.12] text-foreground transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+        className={`w-full inline-flex items-center gap-2 ${compact ? "h-8 px-2 text-[12px]" : "h-9 px-3 text-[13px]"} rounded-md bg-background ring-1 ring-border hover:ring-border text-foreground transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         {selected ? (
           <>
@@ -149,15 +149,15 @@ export function PersonPicker({
       </button>
 
       {open && !disabled && (
-        <div className="absolute z-50 mt-1 w-full min-w-[240px] bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="p-2 border-b border-white/[0.04] relative">
+        <div className="absolute z-50 mt-1 w-full min-w-[240px] bg-surface-raised rounded-lg border border-border overflow-hidden">
+          <div className="p-2 border-b border-border relative">
             <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-3.5 text-subtle" />
             <input
               autoFocus
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full h-7 pl-7 pr-2 bg-black/40 rounded text-[12px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.1]"
+              className="w-full h-7 pl-7 pr-2 bg-background rounded text-[12px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
           <ul className="max-h-64 overflow-y-auto py-1">
@@ -170,7 +170,7 @@ export function PersonPicker({
                     setOpen(false);
                     setSearch("");
                   }}
-                  className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-[12px] text-subtle hover:text-rose-300 hover:bg-rose-500/[0.06]"
+                  className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-[12px] text-subtle hover:text-danger hover:bg-danger/10"
                 >
                   <XMarkIcon className="size-4" />
                   Clear
@@ -191,7 +191,7 @@ export function PersonPicker({
                         setOpen(false);
                         setSearch("");
                       }}
-                      className={`w-full text-left flex items-center gap-2.5 px-3 py-1.5 text-[12px] hover:bg-white/[0.04] ${isActive ? "bg-white/[0.04]" : ""}`}
+                      className={`w-full text-left flex items-center gap-2.5 px-3 py-1.5 text-[12px] hover:bg-surface-hover `}
                     >
                       <div
                         className="size-6 rounded-md flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
@@ -211,7 +211,7 @@ export function PersonPicker({
                           </div>
                         )}
                       </div>
-                      {isActive && <CheckIcon className="size-3.5 text-emerald-400 shrink-0" />}
+                      {isActive && <CheckIcon className="size-3.5 text-success shrink-0" />}
                     </button>
                   </li>
                 );

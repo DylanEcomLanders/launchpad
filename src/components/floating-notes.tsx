@@ -290,14 +290,14 @@ export function FloatingNotes() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed top-4 right-4 z-[60] p-2 rounded-lg bg-surface shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all duration-200 group"
+        className="fixed top-4 right-4 z-[60] p-2 rounded-lg bg-surface border border-border hover:bg-surface-raised transition-all duration-200 group"
         title="Notes (Cmd+Shift+N)"
       >
         <svg className="size-4 text-subtle group-hover:text-foreground transition-colors" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5zm12 2a1 1 0 01.894.553l3 6A1 1 0 0117 15h-6a1 1 0 01-.894-1.447l3-6A1 1 0 0114 7z" clipRule="evenodd" />
         </svg>
         {remaining > 0 && (
-          <span className="absolute -top-1 -right-1 size-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 size-4 bg-danger text-white text-[9px] font-bold rounded-full flex items-center justify-center">
             {remaining}
           </span>
         )}
@@ -307,7 +307,7 @@ export function FloatingNotes() {
       {open && (
         <div
           ref={panelRef}
-          className="fixed top-14 right-4 z-[60] w-[380px] max-h-[calc(100vh-80px)] bg-surface rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-border flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          className="fixed top-14 right-4 z-[60] w-[380px] max-h-[calc(100vh-80px)] bg-surface-raised rounded-xl border border-border flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -329,7 +329,7 @@ export function FloatingNotes() {
                 >
                   {formatDateShort(currentDate)}
                   {isToday && (
-                    <span className="ml-1 text-[9px] text-emerald-600 font-semibold">
+                    <span className="ml-1 text-[9px] text-success font-semibold">
                       TODAY
                     </span>
                   )}
@@ -357,17 +357,17 @@ export function FloatingNotes() {
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 scrollbar-thin">
             {/* Record */}
             {recording ? (
-              <div className="border border-red-200 bg-red-50/30 rounded-lg p-3">
+              <div className="border border-danger/20 bg-danger/5 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-[10px] font-semibold text-red-600">
+                    <span className="size-1.5 rounded-full bg-danger animate-pulse" />
+                    <span className="text-[10px] font-semibold text-danger">
                       Recording...
                     </span>
                   </div>
                   <button
                     onClick={stopRecording}
-                    className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white text-[10px] font-medium rounded-md hover:bg-red-600"
+                    className="flex items-center gap-1 px-2 py-1 bg-danger text-white text-[10px] font-medium rounded-md hover:opacity-90"
                   >
                     <StopIcon className="size-2.5" /> Stop
                   </button>
@@ -419,7 +419,7 @@ export function FloatingNotes() {
                     </p>
                     <button
                       onClick={() => deleteAction(action.id)}
-                      className="p-0.5 text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-0.5 text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <TrashIcon className="size-2.5" />
                     </button>

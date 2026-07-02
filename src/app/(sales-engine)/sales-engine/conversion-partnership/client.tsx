@@ -168,7 +168,7 @@ export default function ConversionPartnershipClient({ modules }: { modules: Wiki
               </Link>
             )}
 
-            <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-border prose-strong:text-foreground prose-a:text-blue-600 prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground">
+            <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-a:text-blue-600 prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{active.content}</ReactMarkdown>
             </article>
           </div>

@@ -132,7 +132,7 @@ export default function EngagementWithStrategyPreview() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-6">
-      <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-800">
+      <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning">
         <SparklesIcon className="h-3.5 w-3.5" />
         Preview, mock data
       </div>
@@ -151,7 +151,7 @@ export default function EngagementWithStrategyPreview() {
               {ENGAGEMENT.name}
             </h1>
             <div className="flex items-baseline gap-3 mt-1">
-              <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded text-background bg-white">
+              <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded text-background bg-foreground">
                 CE retainer
               </span>
             </div>
@@ -181,10 +181,10 @@ export default function EngagementWithStrategyPreview() {
             <button
               key={c}
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[12px] ${
-                c === 2 ? "border-white bg-white text-background" : "border-border bg-surface text-foreground"
+                c === 2 ? "border-ring bg-foreground text-background" : "border-border bg-surface text-foreground"
               }`}
             >
-              <span className={`size-1.5 rounded-full ${c === 1 ? "bg-[#9E9E9E]" : c === 2 ? "bg-success" : "bg-border"}`} />
+              <span className={`size-1.5 rounded-full ${c === 1 ? "bg-muted" : c === 2 ? "bg-success" : "bg-border"}`} />
               Cycle {c}
             </button>
           ))}
@@ -243,7 +243,7 @@ export default function EngagementWithStrategyPreview() {
                 <span className="text-[12px] text-muted">
                   Paste a Google Doc / Loom / link, or drop a file
                 </span>
-                <button className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-1 text-[11px] font-medium text-white hover:bg-foreground">
+                <button className="inline-flex items-center gap-1 rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background hover:opacity-90">
                   <PlusIcon className="h-3.5 w-3.5" />
                   Add
                 </button>
@@ -270,7 +270,7 @@ export default function EngagementWithStrategyPreview() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={NOTES_PLACEHOLDER}
-              className="h-[260px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12px] leading-relaxed text-foreground focus:border-white focus:outline-none"
+              className="h-[260px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12px] leading-relaxed text-foreground focus:border-ring focus:outline-none"
             />
           </div>
         </div>
@@ -314,7 +314,7 @@ function MetricRow({
       <span className="text-muted">{label}</span>
       <span className="tabular-nums text-muted">Baseline {fmt(baseline)}</span>
       <span className="tabular-nums font-semibold text-foreground">Now {fmt(current)}</span>
-      <span className="text-right tabular-nums font-semibold text-emerald-700">+{delta.toFixed(1)}%</span>
+      <span className="text-right tabular-nums font-semibold text-success">+{delta.toFixed(1)}%</span>
     </div>
   );
 }
@@ -330,7 +330,7 @@ function DeliverableList({
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-[10px] font-semibold uppercase tracking-wider ${
-              tone === "strategy" ? "text-violet-700" : "text-subtle"
+              tone === "strategy" ? "text-muted" : "text-subtle"
             }`}
           >
             {label}
@@ -353,7 +353,7 @@ function DeliverableList({
               <span
                 className={`shrink-0 inline-flex items-center gap-1 text-[10px] tabular-nums ${
                   t.status === "done"
-                    ? "text-emerald-700"
+                    ? "text-success"
                     : t.status === "in_progress"
                       ? "text-foreground font-semibold"
                       : "text-subtle"
@@ -380,7 +380,7 @@ function ResourceRow({ resource }: { resource: Resource }) {
     resource.kind === "doc" ? "text-blue-700 bg-blue-50 border-blue-200" :
     resource.kind === "loom" ? "text-fuchsia-700 bg-fuchsia-50 border-fuchsia-200" :
     resource.kind === "link" ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
-    "text-border bg-surface-raised border-border";
+    "text-subtle bg-surface-raised border-border";
 
   return (
     <div className="flex items-center gap-2.5 rounded-md border border-border bg-surface px-2.5 py-2">
@@ -396,7 +396,7 @@ function ResourceRow({ resource }: { resource: Resource }) {
         </div>
       </div>
       {resource.has_branded && (
-        <button className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-medium text-foreground hover:border-white">
+        <button className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-medium text-foreground hover:border-subtle">
           <SparklesIcon className="h-3 w-3" />
           Generate branded version
         </button>

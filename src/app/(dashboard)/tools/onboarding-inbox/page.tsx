@@ -23,11 +23,11 @@ import { PAGE_LABEL, type PageType } from "@/lib/pods-v2/types";
 // Dark-mode chip palette — translucent accent bg so the badge reads as a hint,
 // not a flood-coloured pill. Text is the saturated accent for legibility.
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: "Pending", color: "#FBBF24", bg: "rgba(245, 158, 11, 0.15)" },
-  "in-progress": { label: "In Progress", color: "#60A5FA", bg: "rgba(59, 130, 246, 0.15)" },
-  approved: { label: "Approved", color: "#34D399", bg: "rgba(16, 185, 129, 0.15)" },
-  rejected: { label: "Rejected", color: "#F87171", bg: "rgba(239, 68, 68, 0.15)" },
-  archived: { label: "Archived", color: "#9CA3AF", bg: "rgba(156, 163, 175, 0.12)" },
+  pending: { label: "Pending", color: "var(--warning)", bg: "color-mix(in srgb, var(--warning) 15%, transparent)" },
+  "in-progress": { label: "In Progress", color: "var(--color-info)", bg: "color-mix(in srgb, var(--color-info) 15%, transparent)" },
+  approved: { label: "Approved", color: "var(--success)", bg: "color-mix(in srgb, var(--success) 15%, transparent)" },
+  rejected: { label: "Rejected", color: "var(--danger)", bg: "color-mix(in srgb, var(--danger) 15%, transparent)" },
+  archived: { label: "Archived", color: "var(--muted)", bg: "color-mix(in srgb, var(--muted) 12%, transparent)" },
 };
 
 /* Build portal-shaped scope items from a submission's PM-captured
@@ -168,13 +168,13 @@ export default function OnboardingInboxPage() {
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-10">
-              <div className="size-5 border-2 border-border border-t-[#1B1B1B] rounded-full animate-spin" />
+              <div className="size-5 border-2 border-border border-t-foreground rounded-full animate-spin" />
             </div>
           ) : activeSubmissions.length === 0 ? (
             <div className="text-center py-10 px-4">
               <p className="text-sm text-subtle">No submissions yet</p>
               <p className="text-xs text-muted mt-1">Share the onboarding form with new clients</p>
-              <Link href="/onboard" target="_blank" className="inline-flex items-center gap-1.5 mt-3 text-xs text-blue-600 hover:underline">
+              <Link href="/onboard" target="_blank" className="inline-flex items-center gap-1.5 mt-3 text-xs text-info hover:underline">
                 View form <ArrowTopRightOnSquareIcon className="size-3" />
               </Link>
             </div>
@@ -253,7 +253,7 @@ export default function OnboardingInboxPage() {
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-foreground">{selected.company_name}</h2>
-                <a href={selected.website_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                <a href={selected.website_url} target="_blank" rel="noopener noreferrer" className="text-xs text-info hover:underline">
                   {selected.website_url}
                 </a>
                 <p className="text-[10px] text-muted mt-1">
@@ -272,14 +272,14 @@ export default function OnboardingInboxPage() {
                 {selected.status === "archived" && (
                   <button
                     onClick={() => handleUnarchive(selected.id)}
-                    className="px-2.5 py-1.5 text-[10px] font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="px-2.5 py-1.5 text-[10px] font-medium text-info hover:bg-info/10 rounded-lg transition-colors"
                   >
                     Unarchive
                   </button>
                 )}
                 {confirmDelete === selected.id ? (
                   <div className="flex items-center gap-1">
-                    <button onClick={() => handleDelete(selected.id)} className="px-2.5 py-1.5 text-[10px] font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                    <button onClick={() => handleDelete(selected.id)} className="px-2.5 py-1.5 text-[10px] font-medium text-danger bg-danger/10 rounded-lg hover:bg-danger/20 transition-colors">
                       Confirm
                     </button>
                     <button onClick={() => setConfirmDelete(null)} className="px-2.5 py-1.5 text-[10px] text-subtle hover:text-foreground transition-colors">
@@ -289,7 +289,7 @@ export default function OnboardingInboxPage() {
                 ) : (
                   <button
                     onClick={() => setConfirmDelete(selected.id)}
-                    className="px-2.5 py-1.5 text-[10px] font-medium text-muted hover:text-red-500 rounded-lg transition-colors"
+                    className="px-2.5 py-1.5 text-[10px] font-medium text-muted hover:text-danger rounded-lg transition-colors"
                   >
                     Delete
                   </button>
@@ -308,16 +308,16 @@ export default function OnboardingInboxPage() {
                   const checked = selected.pm_checklist?.[item.key] || false;
                   return (
                     <div key={item.key} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      checked ? "border-emerald-200 bg-emerald-50/50" : "border-border bg-surface hover:border-border"
+                      checked ? "border-success/20 bg-success/10" : "border-border bg-surface hover:border-border"
                     }`}>
                       <label className="flex items-center gap-3 flex-1 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleChecklist(selected.id, item.key)}
-                          className="size-4 rounded border-border text-emerald-600 focus:ring-0"
+                          className="size-4 rounded border-border text-success focus:ring-0"
                         />
-                        <span className={`text-sm ${checked ? "text-emerald-700" : "text-muted"}`}>{item.label}</span>
+                        <span className={`text-sm ${checked ? "text-success" : "text-muted"}`}>{item.label}</span>
                       </label>
                       {item.hasInfo && (
                         <button
@@ -334,26 +334,26 @@ export default function OnboardingInboxPage() {
 
                 {/* Access info popup */}
                 {showAccessInfo && (
-                  <div className="mt-2 p-4 bg-blue-50 border border-blue-200 rounded-xl relative">
-                    <button onClick={() => setShowAccessInfo(false)} className="absolute top-2 right-2 text-blue-400 hover:text-blue-600">
+                  <div className="mt-2 p-4 bg-info/10 border border-info/20 rounded-xl relative">
+                    <button onClick={() => setShowAccessInfo(false)} className="absolute top-2 right-2 text-info hover:text-info">
                       <XMarkIcon className="size-4" />
                     </button>
-                    <p className="text-xs font-semibold text-blue-800 mb-2">Access We Need to Request</p>
-                    <div className="space-y-1.5 text-xs text-blue-700">
+                    <p className="text-xs font-semibold text-info mb-2">Access We Need to Request</p>
+                    <div className="space-y-1.5 text-xs text-info">
                       <p className="font-medium">Shopify</p>
-                      <ul className="ml-3 space-y-1 list-disc text-blue-600">
+                      <ul className="ml-3 space-y-1 list-disc text-info">
                         <li>Collaborator request sent to their myshopify.com URL</li>
                         <li>Staff account with <strong>Themes</strong>, <strong>Products</strong>, <strong>Analytics</strong>, and <strong>Online Store</strong> permissions</li>
                         <li>Confirm which theme is live and whether it's customised</li>
                       </ul>
                       <p className="font-medium mt-3">Analytics</p>
-                      <ul className="ml-3 space-y-1 list-disc text-blue-600">
+                      <ul className="ml-3 space-y-1 list-disc text-info">
                         <li>GA4 — Viewer access to team@ecomlanders.com</li>
                         <li>Microsoft Clarity / Hotjar — invite to team@ecomlanders.com</li>
                         <li>Intelligems — if they have it, request access</li>
                       </ul>
                       <p className="font-medium mt-3">Other</p>
-                      <ul className="ml-3 space-y-1 list-disc text-blue-600">
+                      <ul className="ml-3 space-y-1 list-disc text-info">
                         <li>Meta Business Suite — if running paid social</li>
                         <li>Google Search Console — if SEO is in scope</li>
                         <li>Review app access (Judge.me, Loox, etc.) — if reviews are part of the build</li>
@@ -437,7 +437,7 @@ export default function OnboardingInboxPage() {
                             return { ...prev, deliverables: next };
                           });
                         }}
-                        className="p-1 text-muted hover:text-rose-600"
+                        className="p-1 text-muted hover:text-danger"
                         title="Remove"
                       >
                         <TrashIcon className="size-3.5" />
@@ -590,13 +590,13 @@ export default function OnboardingInboxPage() {
                 return (
                   <div className="mt-5 space-y-3">
                     {!allChecked && (
-                      <p className="text-[10px] text-amber-600 text-center font-medium">Complete all checklist items to approve</p>
+                      <p className="text-[10px] text-warning text-center font-medium">Complete all checklist items to approve</p>
                     )}
 
                     {allChecked && (
                       <div className="space-y-2">
                         {!hasDeliverables && (
-                          <p className="text-[10px] text-amber-600 text-center font-medium">
+                          <p className="text-[10px] text-warning text-center font-medium">
                             Scope at least one deliverable above before spinning up an engagement
                           </p>
                         )}
@@ -617,13 +617,13 @@ export default function OnboardingInboxPage() {
                             setSaving(false);
                           }}
                           disabled={saving || !hasDeliverables}
-                          className="w-full flex items-center gap-3 px-4 py-3 bg-white text-background rounded-lg hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-full flex items-center gap-3 px-4 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           title={hasDeliverables ? "" : "Add at least one deliverable to the scope panel above"}
                         >
                           <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                           <div className="text-left">
                             <p className="text-sm font-semibold">{saving ? "Creating..." : "Create Client Engagement"}</p>
-                            <p className="text-[10px] text-white/50">Creates a parked client (sits in purgatory). Assign to a pod from /pods-v2 to seed the build.</p>
+                            <p className="text-[10px] text-background/50">Creates a parked client (sits in purgatory). Assign to a pod from /pods-v2 to seed the build.</p>
                           </div>
                         </button>
 
@@ -659,7 +659,7 @@ export default function OnboardingInboxPage() {
                           <button
                             onClick={handleAssignExisting}
                             disabled={saving || !selectedPortalId}
-                            className="px-4 py-2.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                            className="px-4 py-2.5 text-xs font-semibold bg-success text-white rounded-lg hover:bg-success/90 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
                           >
                             Assign
                           </button>
@@ -672,7 +672,7 @@ export default function OnboardingInboxPage() {
               {selected.status === "approved" && (
                 <div className="mt-4">
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2 text-emerald-600">
+                    <div className="flex items-center gap-2 text-success">
                       <CheckCircleIcon className="size-5" />
                       <span className="text-sm font-medium">Approved {selected.assigned_at ? new Date(selected.assigned_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}</span>
                     </div>
@@ -696,7 +696,7 @@ export default function OnboardingInboxPage() {
                     <div className="flex flex-wrap items-center gap-3">
                       <Link
                         href={`/tools/client-portal/${selected.assigned_portal_id}`}
-                        className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline"
+                        className="inline-flex items-center gap-1.5 text-xs text-info hover:underline"
                       >
                         View Portal <ArrowTopRightOnSquareIcon className="size-3" />
                       </Link>
@@ -726,7 +726,7 @@ export default function OnboardingInboxPage() {
                             getPortals().then(setPortals).catch(() => {});
                             alert(`Pushed ${newOnes.length} deliverable${newOnes.length === 1 ? "" : "s"} to the portal.`);
                           }}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:border-white"
+                          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:border-muted"
                           title="Push current deliverables to the linked portal's scope"
                         >
                           ↻ Sync deliverables to portal
@@ -797,7 +797,7 @@ export default function OnboardingInboxPage() {
                 <DetailSection title="Uploaded Files">
                   <div className="space-y-1.5">
                     {selected.uploaded_files?.map((f, i) => (
-                      <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-lg text-xs text-muted hover:border-white transition-colors">
+                      <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-lg text-xs text-muted hover:border-muted transition-colors">
                         <span className="truncate flex-1">{f.originalName}</span>
                         <ArrowTopRightOnSquareIcon className="size-3.5 text-subtle shrink-0" />
                       </a>
@@ -834,7 +834,7 @@ function DetailField({ label, value, link }: { label: string; value: string; lin
     <div>
       {label && <p className="text-[11px] font-medium text-subtle mb-0.5">{label}</p>}
       {link ? (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline break-all">{value}</a>
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-info hover:underline break-all">{value}</a>
       ) : (
         <p className="text-sm text-muted whitespace-pre-wrap">{value}</p>
       )}
@@ -861,7 +861,7 @@ function ApprovedLinkRow({ submissionId }: { submissionId: string }) {
     <div className="mb-2">
       <Link
         href={`/workspace/clients/${clientId}`}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:underline"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-success hover:underline"
       >
         Open client in Workspace <ArrowTopRightOnSquareIcon className="size-3" />
       </Link>

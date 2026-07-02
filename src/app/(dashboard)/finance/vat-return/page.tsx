@@ -155,7 +155,7 @@ export default function VatReturnPage() {
         </div>
         <button
           onClick={downloadPack}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-background text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
         >
           <ArrowDownTrayIcon className="size-4" /> Download VAT pack (.zip)
         </button>
@@ -184,14 +184,14 @@ export default function VatReturnPage() {
       </div>
 
       {ret.reverseChargeTotal > 0 && (
-        <div className="mb-6 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
+        <div className="mb-6 px-4 py-3 bg-info/10 border border-info/20 rounded-lg text-sm text-info">
           <strong>Reverse charge:</strong> {fmtMoney(ret.reverseChargeTotal)} of non-UK B2B sales in
           this period are zero-VAT under reverse charge. The net value is included in Box 6; output
           VAT on those supplies is zero.
         </div>
       )}
 
-      <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-4 text-xs text-amber-200 mb-8">
+      <div className="bg-warning/15 border border-warning/30 rounded-xl p-4 text-xs text-warning mb-8">
         <strong>Estimate only - confirm with accountant before filing.</strong> {ret.noteForAccountant}
       </div>
 
@@ -297,7 +297,7 @@ function BoxRow({
 }) {
   const color =
     accent === "green"
-      ? "text-[#047857]"
+      ? "text-success"
       : accent === "amber"
         ? "text-warning"
         : "text-foreground";

@@ -35,7 +35,7 @@ export default async function CaseStudiesIndexPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white text-foreground">
+    <div className="min-h-screen bg-surface text-foreground">
       {/* Header — matches portfolio-v2 */}
       <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
@@ -44,7 +44,7 @@ export default async function CaseStudiesIndexPage() {
           </Link>
           <Link
             href={settings.headerCtaHref}
-            className="text-xs md:text-sm font-semibold px-4 py-2 bg-surface text-white rounded-full hover:bg-border transition-colors"
+            className="text-xs md:text-sm font-semibold px-4 py-2 bg-foreground text-background rounded-full hover:bg-foreground/90 transition-colors"
           >
             {settings.headerCtaLabel}
           </Link>
@@ -82,16 +82,16 @@ export default async function CaseStudiesIndexPage() {
       {/* Closing CTA */}
       <section className="border-t border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-16">
-          <div className="bg-surface text-white rounded-2xl p-8 md:p-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-10">
+          <div className="bg-foreground text-background rounded-2xl p-8 md:p-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-10">
             <div className="md:flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60 mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-background/60 mb-3">
                 Ready to start?
               </p>
               <h2 className="text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
                 {settings.closingHeadline}
               </h2>
               {settings.closingSubhead && (
-                <p className="text-white/70 text-sm md:text-base mt-3 max-w-xl leading-relaxed whitespace-pre-line">
+                <p className="text-background/70 text-sm md:text-base mt-3 max-w-xl leading-relaxed whitespace-pre-line">
                   {settings.closingSubhead}
                 </p>
               )}
@@ -99,7 +99,7 @@ export default async function CaseStudiesIndexPage() {
             <div className="flex flex-col gap-2 md:flex-shrink-0 md:min-w-[260px]">
               <Link
                 href={settings.primaryCtaHref}
-                className="flex items-center justify-center px-5 py-3 bg-white text-foreground text-sm font-semibold rounded-lg hover:bg-surface-raised transition-colors whitespace-nowrap"
+                className="flex items-center justify-center px-5 py-3 bg-background text-foreground text-sm font-semibold rounded-lg hover:bg-surface-raised transition-colors whitespace-nowrap"
               >
                 {settings.primaryCtaLabel}
                 <span className="ml-2">↗</span>
@@ -109,7 +109,7 @@ export default async function CaseStudiesIndexPage() {
                   href={settings.secondaryCtaHref}
                   target={settings.secondaryCtaHref.startsWith("http") ? "_blank" : undefined}
                   rel={settings.secondaryCtaHref.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="flex items-center justify-center px-5 py-3 border border-white/20 text-white text-sm font-semibold rounded-lg hover:bg-white/5 transition-colors whitespace-nowrap"
+                  className="flex items-center justify-center px-5 py-3 border border-background/20 text-background text-sm font-semibold rounded-lg hover:bg-background/5 transition-colors whitespace-nowrap"
                 >
                   {settings.secondaryCtaLabel}
                 </Link>
@@ -139,7 +139,7 @@ function CaseStudyCard({ study }: { study: CaseStudy }) {
   return (
     <Link
       href={`/case-studies/${study.slug}`}
-      className="group block bg-white border border-border rounded-2xl overflow-hidden hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] hover:border-muted transition-all"
+      className="group block bg-surface border border-border rounded-2xl overflow-hidden hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] hover:border-muted transition-all"
     >
       {/* Thumbnail */}
       <div

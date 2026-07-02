@@ -118,7 +118,7 @@ export default function CroAuditPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className={labelClass}>
-            Client Name <span className="text-red-400">*</span>
+            Client Name <span className="text-danger">*</span>
           </label>
           <input
             type="text"
@@ -258,9 +258,9 @@ export default function CroAuditPage() {
 
       {/* Error State */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-8">
-          <p className="text-sm text-red-700 font-medium">Audit failed</p>
-          <p className="text-xs text-red-600 mt-1">{error}</p>
+        <div className="p-4 bg-danger/10 border border-danger/20 rounded-lg mb-8">
+          <p className="text-sm text-danger font-medium">Audit failed</p>
+          <p className="text-xs text-danger mt-1">{error}</p>
         </div>
       )}
 
@@ -314,7 +314,7 @@ export default function CroAuditPage() {
           {result.quickWins.length > 0 && (
             <div className="bg-surface-raised border border-border rounded-lg p-6">
               <div className="flex items-center gap-2 mb-4">
-                <LightBulbIcon className="size-4 text-amber-500" />
+                <LightBulbIcon className="size-4 text-muted" />
                 <p className="text-xs font-semibold uppercase tracking-wider text-subtle">
                   Quick Wins
                 </p>
@@ -423,7 +423,7 @@ function ImageUpload({
         transition-colors duration-150
         ${
           dragOver
-            ? "border-white bg-surface-raised"
+            ? "border-foreground bg-surface-raised"
             : "border-border bg-background hover:border-muted hover:bg-surface-raised"
         }
       `}
@@ -458,25 +458,25 @@ function VerdictBanner({
 }) {
   const config = {
     variant: {
-      bg: "bg-emerald-50",
-      border: "border-emerald-200",
-      icon: "text-emerald-500",
+      bg: "bg-success/10",
+      border: "border-success/20",
+      icon: "text-success",
       title: "Your design is stronger",
-      titleColor: "text-emerald-700",
+      titleColor: "text-success",
     },
     control: {
-      bg: "bg-red-50",
-      border: "border-red-200",
-      icon: "text-red-500",
+      bg: "bg-danger/10",
+      border: "border-danger/20",
+      icon: "text-danger",
       title: "Control is stronger",
-      titleColor: "text-red-700",
+      titleColor: "text-danger",
     },
     mixed: {
-      bg: "bg-amber-50",
-      border: "border-amber-200",
-      icon: "text-amber-500",
+      bg: "bg-warning/10",
+      border: "border-warning/20",
+      icon: "text-warning",
       title: "Mixed results",
-      titleColor: "text-amber-700",
+      titleColor: "text-warning",
     },
   };
 
@@ -505,21 +505,21 @@ function AnalysisSection({ section }: { section: AuditSection }) {
   const ratingConfig = {
     strong: {
       label: "Strong",
-      bg: "bg-emerald-100",
-      text: "text-emerald-700",
-      dot: "bg-emerald-500",
+      bg: "bg-success/10",
+      text: "text-success",
+      dot: "bg-success",
     },
     moderate: {
       label: "Moderate",
-      bg: "bg-amber-100",
-      text: "text-amber-700",
-      dot: "bg-amber-500",
+      bg: "bg-warning/10",
+      text: "text-warning",
+      dot: "bg-warning",
     },
     weak: {
       label: "Weak",
-      bg: "bg-red-100",
-      text: "text-red-700",
-      dot: "bg-red-500",
+      bg: "bg-danger/10",
+      text: "text-danger",
+      dot: "bg-danger",
     },
   };
 

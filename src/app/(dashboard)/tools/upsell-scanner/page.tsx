@@ -136,9 +136,9 @@ export default function UpsellScannerPage() {
 
       {/* Error State */}
       {error && (
-        <div className="p-4 bg-red-900/20 border border-red-200 rounded-lg mb-8">
-          <p className="text-sm text-red-700 font-medium">Scan failed</p>
-          <p className="text-xs text-red-600 mt-1">{error}</p>
+        <div className="p-4 bg-danger/10 border border-danger/20 rounded-lg mb-8">
+          <p className="text-sm text-danger font-medium">Scan failed</p>
+          <p className="text-xs text-danger mt-1">{error}</p>
         </div>
       )}
 
@@ -154,20 +154,20 @@ export default function UpsellScannerPage() {
               </span>
               <span className="text-foreground">|</span>
               {actNow > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-900/20 text-red-700 text-xs font-semibold rounded-full">
-                  <span className="size-1.5 rounded-full bg-red-500" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-danger/10 text-danger text-xs font-semibold rounded-full">
+                  <span className="size-1.5 rounded-full bg-danger" />
                   {actNow} act now
                 </span>
               )}
               {thisWeek > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-900/20 text-amber-700 text-xs font-semibold rounded-full">
-                  <span className="size-1.5 rounded-full bg-amber-500" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-warning/10 text-warning text-xs font-semibold rounded-full">
+                  <span className="size-1.5 rounded-full bg-warning" />
                   {thisWeek} this week
                 </span>
               )}
               {monitor > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-900/20 text-blue-700 text-xs font-semibold rounded-full">
-                  <span className="size-1.5 rounded-full bg-blue-500" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-info/10 text-info text-xs font-semibold rounded-full">
+                  <span className="size-1.5 rounded-full bg-info" />
                   {monitor} monitor
                 </span>
               )}
@@ -229,28 +229,28 @@ function OpportunityCard({
   const urgencyConfig = {
     act_now: {
       label: "Act Now",
-      bg: "bg-red-900/20",
-      text: "text-red-700",
-      dot: "bg-red-500",
+      bg: "bg-danger/10",
+      text: "text-danger",
+      dot: "bg-danger",
     },
     this_week: {
       label: "This Week",
-      bg: "bg-amber-900/20",
-      text: "text-amber-700",
-      dot: "bg-amber-500",
+      bg: "bg-warning/10",
+      text: "text-warning",
+      dot: "bg-warning",
     },
     monitor: {
       label: "Monitor",
-      bg: "bg-blue-900/20",
-      text: "text-blue-700",
-      dot: "bg-blue-500",
+      bg: "bg-info/10",
+      text: "text-info",
+      dot: "bg-info",
     },
   };
 
   const strengthConfig = {
-    strong: { label: "Strong", dot: "bg-emerald-500" },
-    moderate: { label: "Moderate", dot: "bg-amber-500" },
-    weak: { label: "Weak", dot: "bg-gray-400" },
+    strong: { label: "Strong", dot: "bg-success" },
+    moderate: { label: "Moderate", dot: "bg-warning" },
+    weak: { label: "Weak", dot: "bg-subtle" },
   };
 
   const u = urgencyConfig[opp.urgency] || urgencyConfig.monitor;
@@ -288,7 +288,7 @@ function OpportunityCard({
           <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-2">
             Ready-to-send message
           </p>
-          <div className="relative bg-surface border-l-2 border-white rounded-r-md p-4">
+          <div className="relative bg-surface border-l-2 border-border rounded-r-md p-4">
             <p className="text-sm text-subtle leading-relaxed pr-8">
               {opp.draft_message}
             </p>
@@ -298,7 +298,7 @@ function OpportunityCard({
               title="Copy to clipboard"
             >
               {copiedId === `${index}` ? (
-                <CheckIcon className="size-3.5 text-emerald-500" />
+                <CheckIcon className="size-3.5 text-success" />
               ) : (
                 <ClipboardDocumentIcon className="size-3.5 text-subtle" />
               )}

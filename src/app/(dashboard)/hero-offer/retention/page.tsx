@@ -137,7 +137,7 @@ export default function RetentionPage() {
     <div className="space-y-10">
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
+          <span className="size-2 rounded-full bg-info" />
           Tools
         </h2>
         <ToolCardGrid cards={RETENTION_TOOLS} accent="sky" />
@@ -145,7 +145,7 @@ export default function RetentionPage() {
 
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
+          <span className="size-2 rounded-full bg-info" />
           Playbook notes
         </h2>
         <p className="text-[12px] text-subtle mb-4 max-w-2xl">
@@ -153,7 +153,7 @@ export default function RetentionPage() {
         </p>
         <div className="space-y-3">
           {sections.length === 0 ? (
-            <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+            <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-border">
               <p className="text-sm text-subtle">
                 {isAdmin
                   ? "Add overarching retention principles, comms cadence, expansion levers."
@@ -181,7 +181,7 @@ export default function RetentionPage() {
           {isAdmin && (
             <button
               onClick={addSection}
-              className="w-full py-3 rounded-2xl text-[13px] text-subtle ring-1 ring-dashed ring-white/[0.08] hover:ring-sky-500/40 hover:text-foreground hover:bg-sky-500/[0.04] transition-all"
+              className="w-full py-3 rounded-2xl text-[13px] text-subtle ring-1 ring-dashed ring-border hover:ring-info/40 hover:text-foreground hover:bg-info/[0.04] transition-all"
             >
               + Add section
             </button>

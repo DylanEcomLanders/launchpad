@@ -279,13 +279,13 @@ function Lane({
 }) {
   const dot =
     tone === "red"
-      ? "bg-rose-500"
+      ? "bg-danger"
       : tone === "amber"
-        ? "bg-amber-500"
+        ? "bg-warning"
         : tone === "blue"
-          ? "bg-blue-500"
+          ? "bg-info"
           : tone === "green"
-            ? "bg-emerald-500"
+            ? "bg-success"
             : "bg-muted";
   return (
     <div className="mb-5">

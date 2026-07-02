@@ -93,7 +93,7 @@ const sorted = [...STRATEGY_DELIVERABLES].sort(
 export default function StrategyTablePreview() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8">
-      <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-800">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning">
         <SparklesIcon className="h-3.5 w-3.5" />
         Preview, mock data
       </div>
@@ -150,14 +150,14 @@ export default function StrategyTablePreview() {
 
 function DeliverableRow({ deliverable: d }: { deliverable: StrategyDeliverable }) {
   const tone =
-    d.status === "blocked" ? "text-rose-700"
+    d.status === "blocked" ? "text-danger"
       : d.status === "in_progress" ? "text-foreground font-semibold"
-      : d.status === "done" ? "text-emerald-700"
+      : d.status === "done" ? "text-success"
       : "text-subtle";
   const dot =
-    d.status === "blocked" ? "bg-rose-500 ring-2 ring-rose-200"
+    d.status === "blocked" ? "bg-danger ring-2 ring-danger/20"
       : d.status === "in_progress" ? "bg-surface ring-2 ring-surface/20"
-      : d.status === "done" ? "bg-emerald-500"
+      : d.status === "done" ? "bg-success"
       : "bg-muted";
 
   return (

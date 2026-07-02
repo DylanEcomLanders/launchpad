@@ -22,7 +22,7 @@ export default function ProposalLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Minimal branded header */}
       <header className="border-b border-border px-6 md:px-12 py-5">
         <Logo height={16} className="text-foreground" />

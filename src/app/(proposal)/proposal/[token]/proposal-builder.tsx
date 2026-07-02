@@ -226,7 +226,7 @@ export function ProposalBuilder({
 
               {/* Retainer discount banner — show above builds when retainer is active */}
               {cat === "builds" && activeRetainerDiscount > 0 && (
-                <div className="flex items-center gap-2 px-4 py-3 mb-4 bg-success border border-[#BBF7D0] rounded-lg">
+                <div className="flex items-center gap-2 px-4 py-3 mb-4 bg-success/10 border border-success/20 rounded-lg">
                   <TagIcon className="size-4 text-success shrink-0" />
                   <span className="text-sm text-success">
                     <strong>
@@ -235,7 +235,7 @@ export function ProposalBuilder({
                     </strong>{" "}
                     applied to all page builds
                     {activeRetainerName && (
-                      <span className="text-[#6B9F6B]">
+                      <span className="text-success">
                         {" "}
                         — with {activeRetainerName}
                       </span>
@@ -379,7 +379,7 @@ export function ProposalBuilder({
             className="absolute inset-0 bg-black/30"
             onClick={() => setDrawerOpen(false)}
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-y-auto animate-slideUp">
+          <div className="absolute bottom-0 left-0 right-0 bg-surface rounded-t-2xl max-h-[80vh] overflow-y-auto animate-slideUp">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold">Order Summary</h3>
               <button
@@ -576,7 +576,7 @@ function ServiceCard({
                 <span className="text-xs font-medium text-subtle">
                   Qty:
                 </span>
-                <div className="inline-flex items-center gap-0 rounded-md border border-foreground bg-white">
+                <div className="inline-flex items-center gap-0 rounded-md border border-foreground bg-surface">
                   <button
                     onClick={() => onSetQuantity(Math.max(minQty, qty - 1))}
                     disabled={qty <= minQty}
@@ -716,7 +716,7 @@ function OrderSummary({
                   </div>
                   <button
                     onClick={() => onRemove(service.id)}
-                    className="p-1 text-muted hover:text-red-500 transition-colors"
+                    className="p-1 text-muted hover:text-danger transition-colors"
                   >
                     <XMarkIcon className="size-3.5" />
                   </button>
@@ -727,7 +727,7 @@ function OrderSummary({
 
           {/* Savings banner */}
           {totalSaved > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-success border border-[#BBF7D0] rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-success/10 border border-success/20 rounded-lg">
               <TagIcon className="size-3.5 text-success shrink-0" />
               <span className="text-xs text-success font-medium">
                 Saving {formatGBP(totalSaved)} with retainer discount
@@ -772,14 +772,14 @@ function OrderSummary({
             placeholder="you@company.com"
             value={clientEmail}
             onChange={(e) => onEmailChange(e.target.value)}
-            className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg bg-white text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-colors"
+            className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg bg-surface text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-colors"
           />
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">
+        <p className="text-xs text-danger bg-danger/10 border border-danger/20 rounded-lg px-3 py-2 mb-3">
           {error}
         </p>
       )}

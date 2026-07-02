@@ -182,8 +182,8 @@ export default function FinanceDashboardPage() {
         <div
           className={`mb-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] border w-fit ${
             vatThreshold.status === "exceeded"
-              ? "bg-red-50 border-red-200 text-red-800"
-              : "bg-amber-50 border-amber-200 text-amber-900"
+              ? "bg-danger/10 border-danger/20 text-danger"
+              : "bg-warning/10 border-warning/20 text-warning"
           }`}
         >
           <span className="size-1.5 rounded-full bg-current shrink-0" />
@@ -547,7 +547,7 @@ function Tile({
 }) {
   const color =
     accent === "green"
-      ? "text-[#047857]"
+      ? "text-success"
       : accent === "red"
         ? "text-danger"
         : accent === "amber"

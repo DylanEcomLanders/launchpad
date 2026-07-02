@@ -83,7 +83,7 @@ export function EngagementDeliveryPlan({
     const laterCount = (m: CycleNumber) => customDeliverables.filter((d) => d.cycle === m).length;
 
     return (
-      <section className="mb-5 rounded-xl border border-white/15 bg-gradient-to-b from-surface-raised to-white p-4 shadow-[var(--shadow-card)]">
+      <section className="mb-5 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-card)]">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-foreground">Month 1 — Conversion plan</h2>
@@ -99,7 +99,7 @@ export function EngagementDeliveryPlan({
             return (
               <div
                 key={w}
-                className={`rounded-lg border p-2 ${isCurrent ? "border-white bg-surface" : "border-border bg-background"}`}
+                className={`rounded-lg border p-2 ${isCurrent ? "border-foreground bg-surface" : "border-border bg-background"}`}
               >
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">

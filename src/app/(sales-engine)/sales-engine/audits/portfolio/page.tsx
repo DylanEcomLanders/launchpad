@@ -178,7 +178,7 @@ export default function AuditPortfolioPage() {
           ${
             dragOver
               ? "border-surface bg-surface-raised"
-              : "border-foreground hover:border-muted bg-white"
+              : "border-foreground hover:border-muted bg-surface"
           }
         `}
         onClick={() => fileInputRef.current?.click()}
@@ -208,7 +208,7 @@ export default function AuditPortfolioPage() {
           }}
         />
         {uploading && (
-          <div className="absolute inset-0 bg-white/60 rounded-xl flex items-center justify-center">
+          <div className="absolute inset-0 bg-surface/60 rounded-xl flex items-center justify-center">
             <div className="size-6 border-2 border-surface border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -216,21 +216,21 @@ export default function AuditPortfolioPage() {
 
       {/* Error */}
       {error && (
-        <div className="mt-4 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+        <div className="mt-4 px-4 py-2.5 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
 
       {/* Save bar */}
       {dirty && (
-        <div className="mt-4 flex items-center justify-between bg-[#FFFBE6] border border-[#F5E6A3] rounded-lg px-4 py-3">
-          <p className="text-sm text-[#8B7500]">
+        <div className="mt-4 flex items-center justify-between bg-warning/10 border border-warning/20 rounded-lg px-4 py-3">
+          <p className="text-sm text-warning">
             You have unsaved order changes.
           </p>
           <button
             onClick={saveOrder}
             disabled={saving}
-            className="px-4 py-1.5 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
+            className="px-4 py-1.5 bg-surface text-foreground text-sm font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Order"}
           </button>
@@ -259,7 +259,7 @@ export default function AuditPortfolioPage() {
             {images.map((img, idx) => (
               <div
                 key={img.filename}
-                className="group relative bg-white border border-border rounded-xl overflow-hidden shadow-[var(--shadow-soft)]"
+                className="group relative bg-surface border border-border rounded-xl overflow-hidden shadow-[var(--shadow-soft)]"
               >
                 {/* Image */}
                 <div className="aspect-[9/16] relative">
@@ -296,7 +296,7 @@ export default function AuditPortfolioPage() {
                         }
                         className={`p-1.5 rounded-lg shadow-md ${
                           confirmDeleteIdx === idx
-                            ? "bg-red-500 hover:bg-red-600"
+                            ? "bg-danger hover:bg-danger/90"
                             : "bg-white hover:bg-gray-50"
                         }`}
                         title={
@@ -309,7 +309,7 @@ export default function AuditPortfolioPage() {
                           className={`size-4 ${
                             confirmDeleteIdx === idx
                               ? "text-white"
-                              : "text-red-500"
+                              : "text-danger"
                           }`}
                         />
                       </button>

@@ -82,7 +82,7 @@ export default function WorkspaceClientsList() {
                 onClick={() => setFilter(key)}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                   filter === key
-                    ? "bg-white text-background"
+                    ? "bg-accent text-accent-foreground"
                     : "text-muted hover:text-foreground"
                 }`}
               >
@@ -92,7 +92,7 @@ export default function WorkspaceClientsList() {
           </div>
           <Link
             href="/tools/onboarding-inbox"
-            className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-accent/90"
           >
             + New client
           </Link>
@@ -188,7 +188,7 @@ function ClientCard({ c }: { c: ClientVM }) {
               <span className="text-sm text-subtle">/ 90</span>
             </div>
           ) : (
-            <div className="mt-3 text-sm text-border">Not started</div>
+            <div className="mt-3 text-sm text-muted">Not started</div>
           )
         ) : (
           <div className="mt-3 text-sm text-muted">
@@ -198,7 +198,7 @@ function ClientCard({ c }: { c: ClientVM }) {
                 <span className="font-medium">{startLabel(c)}</span>
               </>
             ) : (
-              <span className="text-border">Not started</span>
+              <span className="text-muted">Not started</span>
             )}
           </div>
         )}
@@ -208,7 +208,7 @@ function ClientCard({ c }: { c: ClientVM }) {
           <span
             className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
               c.kind === "retainer"
-                ? "bg-slate-700 text-white"
+                ? "bg-surface-raised text-foreground"
                 : "bg-border text-muted"
             }`}
           >

@@ -40,7 +40,7 @@ export default function OnboardingListPage() {
     router.push(`/tools/onboarding/${o.id}`);
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   const active = rows.filter((r) => r.status === "in_progress");
   const done = rows.filter((r) => r.status !== "in_progress");
@@ -50,10 +50,10 @@ export default function OnboardingListPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-[0_8px_24px_rgba(14,165,233,0.3)]">
-              <SparklesIcon className="size-5 text-white" />
+            <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+              <SparklesIcon className="size-5 text-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold text-foreground">
               Onboarding
             </h1>
           </div>
@@ -61,7 +61,7 @@ export default function OnboardingListPage() {
             First-week wow per client. Bulletproof checklist - pack sent, call done, deep-dive complete, roadmap delivered, first test live.
           </p>
         </div>
-        <button onClick={createNew} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground">
+        <button onClick={createNew} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground/90">
           <PlusIcon className="size-4" /> New onboarding
         </button>
       </header>
@@ -83,7 +83,7 @@ function Section({ title, rows }: { title: string; rows: ClientOnboarding[] }) {
     <section>
       <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">{title}</h2>
       {rows.length === 0 ? (
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle">Nothing here.</p>
         </div>
       ) : (
@@ -93,7 +93,7 @@ function Section({ title, rows }: { title: string; rows: ClientOnboarding[] }) {
             const overdue = overdueItems(r);
             return (
               <li key={r.id}>
-                <Link href={`/tools/onboarding/${r.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
+                <Link href={`/tools/onboarding/${r.id}`} className="block bg-surface rounded-xl p-4 border border-border hover:bg-surface-hover transition-all">
                   <div className="flex items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -104,7 +104,7 @@ function Section({ title, rows }: { title: string; rows: ClientOnboarding[] }) {
                           {STATUS_LABEL[r.status]}
                         </span>
                         {overdue.length > 0 && r.status === "in_progress" && (
-                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30 flex items-center gap-1">
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold bg-danger/10 text-danger ring-1 ring-danger/20 flex items-center gap-1">
                             <ExclamationTriangleIcon className="size-3" />
                             {overdue.length} overdue
                           </span>
@@ -114,10 +114,10 @@ function Section({ title, rows }: { title: string; rows: ClientOnboarding[] }) {
                         <span>Day {dayNumber(r)}</span>
                         {r.csm_name && <span>· CSM {r.csm_name}</span>}
                         {r.strategist_name && <span>· {r.strategist_name}</span>}
-                        <span className="text-emerald-300/80">· {pct}% done</span>
+                        <span className="text-success">· {pct}% done</span>
                       </div>
-                      <div className="mt-2 h-1.5 bg-surface rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      <div className="mt-2 h-1.5 bg-surface-raised rounded-full overflow-hidden">
+                        <div className="h-full bg-success rounded-full transition-all" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   </div>

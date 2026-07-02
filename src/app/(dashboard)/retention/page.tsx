@@ -238,7 +238,7 @@ function RenewalsTab({ rows, onOpen }: { rows: ClientRow[]; onOpen: (id: string)
   return (
     <div className="mt-6">
       <div className="text-xs font-semibold uppercase tracking-wider text-subtle mb-3">
-        Renewal pipeline <span className="text-border normal-case tracking-normal font-normal">· every renewal has a named owner</span>
+        Renewal pipeline <span className="text-muted normal-case tracking-normal font-normal">· every renewal has a named owner</span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {rows.map((r) => {
@@ -263,7 +263,7 @@ function RenewalsTab({ rows, onOpen }: { rows: ClientRow[]; onOpen: (id: string)
 
       <div className="mt-8 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-subtle mb-3">
         What to sell next
-        <span className="text-border normal-case tracking-normal font-normal">· Project → Core → Pro → Custom</span>
+        <span className="text-muted normal-case tracking-normal font-normal">· Project → Core → Pro → Custom</span>
       </div>
       <div className="flex flex-col gap-3">
         {rows.map((r) => (

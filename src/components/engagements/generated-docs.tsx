@@ -19,13 +19,13 @@ export function GeneratedDocs({ engagementId }: { engagementId: string }) {
           href={`/share/roadmap/${engagementId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg border border-border bg-surface p-4 hover:border-white transition-colors flex flex-col"
+          className="rounded-lg border border-border bg-surface p-4 hover:border-border transition-colors flex flex-col"
         >
           <div className="flex items-baseline justify-between mb-1">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
               Project roadmap
             </p>
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-success bg-emerald-500/15 px-1.5 py-0.5 rounded">
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-success bg-success/10 px-1.5 py-0.5 rounded">
               Client safe
             </span>
           </div>

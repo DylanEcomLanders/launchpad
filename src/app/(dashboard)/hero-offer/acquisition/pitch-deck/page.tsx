@@ -87,17 +87,17 @@ const SLIDES = [
           <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
             <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-1">Entry</div>
             <div className="text-3xl font-bold text-background">£5k<span className="text-sm text-subtle">/mo</span></div>
-            <p className="text-[12px] text-border mt-2">2 pages + 2 tests / mo</p>
+            <p className="text-[12px] text-muted mt-2">2 pages + 2 tests / mo</p>
           </div>
           <div className="bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-xl p-5 ring-1 ring-emerald-500/40">
             <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-1">Core · most chosen</div>
             <div className="text-3xl font-bold text-background">£10k<span className="text-sm text-subtle">/mo</span></div>
-            <p className="text-[12px] text-border mt-2">4 pages + 4 tests / mo</p>
+            <p className="text-[12px] text-muted mt-2">4 pages + 4 tests / mo</p>
           </div>
           <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
             <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-1">VIP</div>
             <div className="text-3xl font-bold text-background">£15k<span className="text-sm text-subtle">/mo</span></div>
-            <p className="text-[12px] text-border mt-2">6 pages + 12 tests / mo + priority</p>
+            <p className="text-[12px] text-muted mt-2">6 pages + 12 tests / mo + priority</p>
           </div>
         </div>
         <p className="text-[12px] text-subtle mt-4 text-center">90-day initial commitment · 10% off paid up front</p>
@@ -111,7 +111,7 @@ const SLIDES = [
         <p className="text-lg">
           We measure ourselves on the only number that matters: <strong className="text-background">your site&apos;s conversion rate</strong>.
         </p>
-        <p className="text-base text-border">
+        <p className="text-base text-muted">
           Not impressions, not sessions, not bounce rate. CR up = revenue up at the same ad spend. Everything we ship traces back to that line going up.
         </p>
       </SlideBody>
@@ -203,7 +203,7 @@ const SLIDES = [
         <p className="text-lg">
           We&apos;ll tear your funnel down to the studs and tell you exactly where the conversion is leaking. You&apos;ll leave with a 30/60/90 roadmap whether or not we work together.
         </p>
-        <p className="text-base text-border">
+        <p className="text-base text-muted">
           One week. £1k. Refunded against your first month if you sign.
         </p>
       </SlideBody>

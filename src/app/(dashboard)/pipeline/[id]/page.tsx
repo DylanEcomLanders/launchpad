@@ -262,7 +262,7 @@ export default function LeadDetailPage({
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle">Pipeline access is admin / CRO only.</p>
         </div>
       </div>
@@ -273,7 +273,7 @@ export default function LeadDetailPage({
     return (
       <div className="p-6 space-y-3 max-w-5xl mx-auto">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-surface rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -282,9 +282,9 @@ export default function LeadDetailPage({
   if (notFound || !lead) {
     return (
       <div className="p-6">
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle mb-3">Lead not found.</p>
-          <Link href="/pipeline" className="text-[12px] uppercase tracking-wider text-emerald-300 hover:text-emerald-200">
+          <Link href="/pipeline" className="text-[12px] uppercase tracking-wider text-info hover:text-foreground">
             ← Back to pipeline
           </Link>
         </div>
@@ -302,8 +302,8 @@ export default function LeadDetailPage({
             All leads
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
-              <SignalIcon className="size-4 text-white" />
+            <div className="size-8 rounded-xl bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <SignalIcon className="size-4 text-foreground" />
             </div>
             <h1 className="text-2xl font-semibold text-foreground truncate">
               {lead.brand_name || lead.full_name || "Untitled lead"}
@@ -329,7 +329,7 @@ export default function LeadDetailPage({
           </select>
           <button
             onClick={deleteLead}
-            className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]"
+            className="p-1.5 rounded-md text-subtle hover:text-danger hover:bg-danger/10"
             title="Delete lead"
           >
             <TrashIcon className="size-4" />
@@ -345,8 +345,8 @@ export default function LeadDetailPage({
               key={i}
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-[12px] ring-1 ${
                 r.severity === "danger"
-                  ? "bg-rose-500/10 text-rose-200 ring-rose-500/30"
-                  : "bg-amber-500/10 text-amber-200 ring-amber-500/30"
+                  ? "bg-danger/10 text-danger ring-danger/30"
+                  : "bg-warning/10 text-warning ring-warning/30"
               }`}
             >
               <ExclamationTriangleIcon className="size-4 shrink-0" />
@@ -383,7 +383,7 @@ export default function LeadDetailPage({
                 placeholder="£300k/mo"
               />
               {tierHint && (
-                <div className="text-[10px] text-emerald-300/80 mt-1">
+                <div className="text-[10px] text-success/80 mt-1">
                   Suggested tier: <span className="font-semibold">{tierHint}</span>
                 </div>
               )}
@@ -453,9 +453,9 @@ export default function LeadDetailPage({
       {/* Linked Discovery Audit */}
       <Section title="Discovery Audit">
         {linkedAudit ? (
-          <div className="bg-black/40 rounded-xl p-4 ring-1 ring-emerald-500/30 flex items-center gap-3">
-            <div className="size-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
-              <DocumentMagnifyingGlassIcon className="size-4 text-white" />
+          <div className="bg-surface-raised rounded-xl p-4 ring-1 ring-success/30 flex items-center gap-3">
+            <div className="size-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <DocumentMagnifyingGlassIcon className="size-4 text-foreground" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-foreground truncate">
@@ -467,14 +467,14 @@ export default function LeadDetailPage({
             </div>
             <Link
               href={`/tools/discovery-audit/${linkedAudit.id}`}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
             >
               Open
               <ArrowTopRightOnSquareIcon className="size-3" />
             </Link>
             <button
               onClick={() => patch({ discovery_audit_id: undefined })}
-              className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400"
+              className="text-[10px] uppercase tracking-wider text-subtle hover:text-danger"
               title="Unlink audit"
             >
               Unlink
@@ -488,7 +488,7 @@ export default function LeadDetailPage({
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={createNewAudit}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success/90"
               >
                 <PlusIcon className="size-3.5" />
                 New audit for this lead
@@ -519,9 +519,9 @@ export default function LeadDetailPage({
       {/* Linked Proposal */}
       <Section title="Proposal">
         {linkedProposal ? (
-          <div className="bg-black/40 rounded-xl p-4 ring-1 ring-emerald-500/30 flex items-center gap-3">
-            <div className="size-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
-              <DocumentMagnifyingGlassIcon className="size-4 text-white" />
+          <div className="bg-surface-raised rounded-xl p-4 ring-1 ring-success/30 flex items-center gap-3">
+            <div className="size-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <DocumentMagnifyingGlassIcon className="size-4 text-foreground" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-foreground truncate">
@@ -533,14 +533,14 @@ export default function LeadDetailPage({
             </div>
             <Link
               href={`/tools/proposals/${linkedProposal.id}`}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
             >
               Open
               <ArrowTopRightOnSquareIcon className="size-3" />
             </Link>
             <button
               onClick={() => patch({ proposal_id: undefined })}
-              className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400"
+              className="text-[10px] uppercase tracking-wider text-subtle hover:text-danger"
               title="Unlink proposal"
             >
               Unlink
@@ -553,7 +553,7 @@ export default function LeadDetailPage({
             </p>
             <button
               onClick={createNewProposal}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success/90"
             >
               <PlusIcon className="size-3.5" />
               New proposal for this lead
@@ -570,7 +570,7 @@ export default function LeadDetailPage({
           </p>
           <button
             onClick={addCall}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success/90 shrink-0"
           >
             <PhoneIcon className="size-3.5" />
             Log new call
@@ -605,9 +605,9 @@ export default function LeadDetailPage({
         ) : (
           <ul className="space-y-2 mt-3">
             {lead.touches.map((t) => (
-              <li key={t.id} className="bg-black/40 rounded-lg p-3 ring-1 ring-white/[0.04]">
+              <li key={t.id} className="bg-surface-raised rounded-lg p-3 ring-1 ring-border">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-success">
                     {TOUCH_LABEL[t.kind]}
                   </span>
                   <span className="text-[10px] text-subtle">
@@ -660,7 +660,7 @@ export default function LeadDetailPage({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
+    <div className="bg-background rounded-2xl ring-1 ring-border p-5">
       <h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>
@@ -698,13 +698,13 @@ function SalesCallCard({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-black/40 rounded-xl ring-1 ring-white/[0.06]">
+    <div className="bg-surface-raised rounded-xl ring-1 ring-border">
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => setOpen((v) => !v)}
           className="flex-1 min-w-0 text-left flex items-center gap-3"
         >
-          <PhoneIcon className="size-3.5 text-cyan-300 shrink-0" />
+          <PhoneIcon className="size-3.5 text-info shrink-0" />
           <span className="text-sm text-foreground">
             {new Date(call.called_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
           </span>
@@ -719,7 +719,7 @@ function SalesCallCard({
         </button>
         <button
           onClick={onDelete}
-          className="p-1 text-subtle hover:text-rose-400"
+          className="p-1 text-subtle hover:text-danger"
           title="Delete call"
         >
           <TrashIcon className="size-3.5" />
@@ -730,7 +730,7 @@ function SalesCallCard({
         />
       </div>
       {open && (
-        <div className="border-t border-white/[0.04] p-4 space-y-4">
+        <div className="border-t border-border p-4 space-y-4">
           {/* Meta row */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_200px] gap-3">
             <Field label="Ran by">
@@ -782,7 +782,7 @@ function SalesCallCard({
 
           {/* Phase 2: Discovery (structured fields + free notes) */}
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-2">
+            <div className="text-[11px] uppercase tracking-wider text-success font-semibold mb-2">
               2 · Discovery
             </div>
             <p className="text-[11px] text-subtle mb-3">
@@ -918,7 +918,7 @@ function PhaseBlock({
 }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-1">
+      <div className="text-[11px] uppercase tracking-wider text-success font-semibold mb-1">
         {title}
       </div>
       <p className="text-[11px] text-subtle mb-2">{blurb}</p>
@@ -937,7 +937,7 @@ function TouchLogger({ onLog }: { onLog: (kind: LeadTouchKind, summary: string) 
   const [summary, setSummary] = useState("");
 
   return (
-    <div className="bg-black/40 rounded-xl p-3 ring-1 ring-white/[0.04] space-y-2">
+    <div className="bg-surface-raised rounded-xl p-3 ring-1 ring-border space-y-2">
       <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr_auto] gap-2">
         <select
           value={kind}
@@ -967,7 +967,7 @@ function TouchLogger({ onLog }: { onLog: (kind: LeadTouchKind, summary: string) 
             setSummary("");
           }}
           disabled={!summary.trim()}
-          className="inline-flex items-center gap-1 px-3 h-9 rounded text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 px-3 h-9 rounded text-[11px] font-semibold uppercase tracking-wider bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <CheckCircleIcon className="size-4" />
           Log

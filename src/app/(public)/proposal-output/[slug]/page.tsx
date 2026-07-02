@@ -38,7 +38,7 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
       <div className="pointer-events-none fixed inset-0 -z-10 opacity-50" style={{ backgroundImage: "radial-gradient(circle at 20% 0%, rgba(16,185,129,0.12) 0%, transparent 50%), radial-gradient(circle at 80% 100%, rgba(14,165,233,0.10) 0%, transparent 50%)" }} />
 
       <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-end print:hidden">
-        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white/10 text-white hover:bg-white/15 ring-1 ring-white/20">
+        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface-raised text-foreground hover:bg-surface-hover ring-1 ring-border">
           <ArrowDownTrayIcon className="size-3.5" />
           Download PDF
         </button>
@@ -98,7 +98,7 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
           </h2>
           <ul className="space-y-2">
             {proposal.scope_items.filter((s) => s.label.trim()).map((s) => (
-              <li key={s.id} className="flex items-start gap-3 bg-background rounded-xl p-3 ring-1 ring-white/[0.04]">
+              <li key={s.id} className="flex items-start gap-3 bg-background rounded-xl p-3 ring-1 ring-border">
                 <CheckCircleIcon className="size-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <div className="text-sm text-foreground">{s.label}</div>
@@ -142,7 +142,7 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
           </ul>
         </section>
 
-        <footer className="pt-8 pb-4 text-center border-t border-white/[0.04]">
+        <footer className="pt-8 pb-4 text-center border-t border-border">
           <p className="text-[11px] text-subtle">
             Built by Ecom Landers · Conversion engine for Shopify brands
           </p>

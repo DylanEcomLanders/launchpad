@@ -143,7 +143,7 @@ export default function TicketsPage() {
                   </div>
                   <button
                     onClick={async () => { await deleteChannelMapping(m.channel_id); load(); }}
-                    className="text-[10px] text-muted hover:text-red-400"
+                    className="text-[10px] text-muted hover:text-danger"
                   >
                     Remove
                   </button>
@@ -202,7 +202,7 @@ export default function TicketsPage() {
       {/* Tickets list */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+          <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" />
         </div>
       ) : filtered.length > 0 ? (
         <div className="border border-border rounded-xl overflow-hidden">
@@ -214,7 +214,7 @@ export default function TicketsPage() {
             return (
               <div
                 key={ticket.id}
-                className={`flex items-start gap-3 px-4 py-3 border-b border-border last:border-0 hover:bg-background cursor-pointer ${isOld ? "bg-red-900/20" : ""}`}
+                className={`flex items-start gap-3 px-4 py-3 border-b border-border last:border-0 hover:bg-background cursor-pointer ${isOld ? "bg-danger/10" : ""}`}
                 onClick={() => setSelectedTicket(ticket)}
               >
                 {/* Priority dot */}
@@ -240,9 +240,9 @@ export default function TicketsPage() {
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-[9px] font-medium text-muted">{ticket.client_name}</span>
                     <span className="text-[9px] text-muted">{ticket.submitted_by}</span>
-                    <span className={`text-[9px] ${isOld ? "text-red-500 font-semibold" : "text-muted"}`}>{age}</span>
+                    <span className={`text-[9px] ${isOld ? "text-danger font-semibold" : "text-muted"}`}>{age}</span>
                     {ticket.attachment_url && (
-                      <a href={ticket.attachment_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[9px] text-blue-500 hover:underline">
+                      <a href={ticket.attachment_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[9px] text-info hover:underline">
                         Attachment
                       </a>
                     )}
@@ -266,7 +266,7 @@ export default function TicketsPage() {
                 {showTrash ? (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleRestore(ticket); }}
-                    className="text-[10px] font-medium text-emerald-600 hover:text-emerald-700 px-2 py-1 shrink-0"
+                    className="text-[10px] font-medium text-success hover:text-success px-2 py-1 shrink-0"
                   >
                     Restore
                   </button>
@@ -274,7 +274,7 @@ export default function TicketsPage() {
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(ticket); }}
                     className={`text-[10px] font-medium px-2 py-1 shrink-0 transition-colors ${
-                      confirmDeleteId === ticket.id ? "text-red-500" : "text-muted hover:text-red-400"
+                      confirmDeleteId === ticket.id ? "text-danger" : "text-muted hover:text-danger"
                     }`}
                   >
                     {confirmDeleteId === ticket.id ? "Confirm" : "Delete"}
@@ -376,7 +376,7 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
           {ticket.attachment_url && (
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">Attachment</p>
-              <a href={ticket.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline break-all">
+              <a href={ticket.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-info hover:underline break-all">
                 {ticket.attachment_url}
               </a>
             </div>

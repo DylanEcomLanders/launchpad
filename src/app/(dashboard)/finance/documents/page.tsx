@@ -148,7 +148,7 @@ export default function DocumentsPage() {
         ref={dropRef}
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
-        className="bg-surface border-2 border-dashed border-border rounded-xl p-8 text-center mb-6 hover:border-white transition-colors"
+        className="bg-surface border-2 border-dashed border-border rounded-xl p-8 text-center mb-6 hover:border-border transition-colors"
       >
         <DocumentArrowUpIcon className="size-8 text-subtle mx-auto mb-2" />
         <p className="text-sm text-foreground font-medium mb-1">
@@ -169,7 +169,7 @@ export default function DocumentsPage() {
         {uploading && (
           <p className="text-xs text-subtle mt-2">Uploading...</p>
         )}
-        {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+        {error && <p className="text-xs text-danger mt-2">{error}</p>}
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
@@ -247,7 +247,7 @@ export default function DocumentsPage() {
               </div>
               <button
                 onClick={() => handleDelete(doc)}
-                className="p-1.5 text-subtle hover:text-red-500 transition-colors"
+                className="p-1.5 text-subtle hover:text-danger transition-colors"
               >
                 <TrashIcon className="size-4" />
               </button>
@@ -326,7 +326,7 @@ export default function DocumentsPage() {
               </button>
               <button
                 onClick={saveDocument}
-                className="px-4 py-2 bg-white text-background text-sm font-medium rounded-lg hover:opacity-90"
+                className="px-4 py-2 bg-foreground text-background text-sm font-medium rounded-lg hover:opacity-90"
               >
                 Save document
               </button>

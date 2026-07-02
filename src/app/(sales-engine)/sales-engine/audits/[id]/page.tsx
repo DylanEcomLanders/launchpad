@@ -8,15 +8,15 @@ import Link from "next/link";
 import { ArrowLeftIcon, CheckIcon, ClipboardDocumentIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 const severityColor: Record<string, string> = {
-  critical: "bg-red-50 text-red-600 border-red-200",
-  high: "bg-amber-50 text-amber-600 border-amber-200",
-  "quick-win": "bg-emerald-50 text-emerald-600 border-emerald-200",
+  critical: "bg-danger/10 text-danger border-danger/20",
+  high: "bg-warning/10 text-warning border-warning/20",
+  "quick-win": "bg-success/10 text-success border-success/20",
 };
 
 const ratingColor: Record<string, string> = {
-  strong: "text-emerald-600",
-  average: "text-amber-600",
-  weak: "text-red-500",
+  strong: "text-success",
+  average: "text-warning",
+  weak: "text-danger",
 };
 
 export default function AuditDetailPage() {
@@ -135,26 +135,26 @@ export default function AuditDetailPage() {
                 className="text-2xl font-bold capitalize bg-transparent border-0 border-b border-transparent hover:border-foreground focus:border-subtle focus:outline-none px-0 py-0"
               />
               <span className={`text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full shrink-0 ${
-                audit.status === "published" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                audit.status === "published" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
               }`}>{audit.status}</span>
             </div>
             <p className="text-xs text-muted mt-1">{audit.url} · {audit.issues.length} issues · {audit.view_count} views</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {dirty && (
-              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-1.5 bg-surface text-white text-[11px] font-medium rounded-lg hover:bg-border transition-colors disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-1.5 bg-surface text-foreground text-[11px] font-medium rounded-lg hover:bg-border transition-colors disabled:opacity-50">
                 <CheckIcon className="size-3.5" />
                 {saving ? "Saving..." : "Save"}
               </button>
             )}
             {audit.status === "published" && (
               <button onClick={copyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-foreground rounded-lg text-subtle hover:text-surface hover:border-subtle transition-colors">
-                {copied ? <CheckIcon className="size-3.5 text-emerald-500" /> : <ClipboardDocumentIcon className="size-3.5" />}
+                {copied ? <CheckIcon className="size-3.5 text-success" /> : <ClipboardDocumentIcon className="size-3.5" />}
                 {copied ? "Copied!" : "Copy Link"}
               </button>
             )}
             {audit.status === "draft" && (
-              <button onClick={handlePublish} disabled={saving} className="px-4 py-1.5 bg-emerald-600 text-white text-[11px] font-medium rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50">
+              <button onClick={handlePublish} disabled={saving} className="px-4 py-1.5 bg-success text-white text-[11px] font-medium rounded-lg hover:bg-success/90 transition-colors disabled:opacity-50">
                 Publish
               </button>
             )}
@@ -172,14 +172,14 @@ export default function AuditDetailPage() {
           <textarea
             value={audit.executive_summary}
             onChange={(e) => update({ executive_summary: e.target.value })}
-            className="w-full text-sm text-border leading-relaxed bg-transparent border border-transparent hover:border-foreground focus:border-subtle focus:outline-none rounded-lg px-3 py-2 min-h-[120px] resize-y"
+            className="w-full text-sm text-muted leading-relaxed bg-transparent border border-transparent hover:border-foreground focus:border-subtle focus:outline-none rounded-lg px-3 py-2 min-h-[120px] resize-y"
           />
         </div>
 
         {/* Scorecard */}
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">Scorecard</h2>
-          <div className="border border-foreground rounded-xl bg-white divide-y divide-border overflow-hidden">
+          <div className="border border-foreground rounded-xl bg-surface divide-y divide-border overflow-hidden">
             {audit.scorecard.map((s, i) => (
               <div key={i} className="flex items-center justify-between px-4 py-2.5">
                 <input
@@ -212,7 +212,7 @@ export default function AuditDetailPage() {
           </div>
           <div className="space-y-4">
             {audit.issues.map((issue, i) => (
-              <div key={issue.id || i} className="border border-foreground rounded-xl bg-white overflow-hidden">
+              <div key={issue.id || i} className="border border-foreground rounded-xl bg-surface overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-foreground">
                   <div className="flex items-center gap-2 flex-1">
                     <span className="text-xs text-muted shrink-0">Issue {i + 1} —</span>
@@ -233,7 +233,7 @@ export default function AuditDetailPage() {
                       <option value="high">High</option>
                       <option value="quick-win">Quick Win</option>
                     </select>
-                    <button onClick={() => removeIssue(i)} className="text-muted hover:text-red-500 transition-colors">
+                    <button onClick={() => removeIssue(i)} className="text-muted hover:text-danger transition-colors">
                       <TrashIcon className="size-3.5" />
                     </button>
                   </div>
@@ -247,7 +247,7 @@ export default function AuditDetailPage() {
                     placeholder="One-line subtitle..."
                   />
                   <div>
-                    <p className="text-[10px] font-semibold uppercase text-red-400 mb-1">The problem</p>
+                    <p className="text-[10px] font-semibold uppercase text-danger mb-1">The problem</p>
                     <textarea
                       value={issue.problem}
                       onChange={(e) => updateIssue(i, { problem: e.target.value })}
@@ -255,7 +255,7 @@ export default function AuditDetailPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase text-emerald-600 mb-1">The fix</p>
+                    <p className="text-[10px] font-semibold uppercase text-success mb-1">The fix</p>
                     <textarea
                       value={issue.fix}
                       onChange={(e) => updateIssue(i, { fix: e.target.value })}
@@ -286,7 +286,7 @@ export default function AuditDetailPage() {
                   onChange={(e) => updatePriority(i, e.target.value)}
                   className="flex-1 text-xs text-subtle bg-transparent border-0 border-b border-transparent hover:border-foreground focus:border-subtle focus:outline-none px-0 py-0"
                 />
-                <button onClick={() => removePriority(i)} className="text-muted hover:text-red-500 transition-colors">
+                <button onClick={() => removePriority(i)} className="text-muted hover:text-danger transition-colors">
                   <TrashIcon className="size-3" />
                 </button>
               </div>
@@ -308,9 +308,9 @@ export default function AuditDetailPage() {
 
       {/* Sticky save bar */}
       {dirty && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-foreground px-6 py-3 flex items-center justify-end gap-3 z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-foreground px-6 py-3 flex items-center justify-end gap-3 z-50">
           <p className="text-xs text-muted mr-auto">Unsaved changes</p>
-          <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-surface text-foreground text-xs font-medium rounded-lg hover:bg-border disabled:opacity-50">
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>

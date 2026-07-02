@@ -148,7 +148,7 @@ export default function WorkspacePodDetail() {
         {/* Team */}
         <aside>
           <SectionTitle>Team</SectionTitle>
-          <Card className="divide-y divide-slate-100">
+          <Card className="divide-y divide-border">
             {pod.members.length === 0 ? (
               <div className="px-4 py-5 text-center text-sm text-subtle">No members.</div>
             ) : (
@@ -195,7 +195,7 @@ function WeekCalendar({
         return (
           <Card
             key={d}
-            className={`flex flex-col p-3 ${isToday ? "ring-1 ring-slate-900/10" : ""}`}
+            className={`flex flex-col p-3 ${isToday ? "ring-1 ring-border" : ""}`}
           >
             <div className="mb-2 flex items-baseline justify-between">
               <span
@@ -211,7 +211,7 @@ function WeekCalendar({
             </div>
             <div className="space-y-1.5">
               {list.length === 0 ? (
-                <span className="text-[11px] text-border">—</span>
+                <span className="text-[11px] text-muted">—</span>
               ) : (
                 list.map((it) => (
                   <Link
@@ -219,9 +219,9 @@ function WeekCalendar({
                     href={`/workspace/clients/${it.clientId}`}
                     className={`block rounded-md px-2 py-1.5 text-[11px] leading-tight transition-colors hover:bg-surface-raised ${
                       it.state === "overdue"
-                        ? "bg-rose-50/60"
+                        ? "bg-danger/10"
                         : it.state === "soon"
-                          ? "bg-amber-50/60"
+                          ? "bg-warning/10"
                           : "bg-surface-raised/60"
                     }`}
                   >
@@ -289,7 +289,7 @@ function PodClientCard({ c }: { c: ClientVM }) {
             </span>
           </div>
         ) : (
-          <div className="mt-3 border-t border-border pt-2.5 text-xs text-border">
+          <div className="mt-3 border-t border-border pt-2.5 text-xs text-muted">
             Nothing scheduled.
           </div>
         )}
@@ -316,7 +316,7 @@ function Cap({
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
         <span className="font-medium text-muted">{label}</span>
-        <span className={`tabular-nums ${over ? "font-semibold text-rose-600" : "text-muted"}`}>
+        <span className={`tabular-nums ${over ? "font-semibold text-danger" : "text-muted"}`}>
           {used % 1 === 0 ? used : used.toFixed(1)} / {total % 1 === 0 ? total : total.toFixed(0)}
           {showPct && total > 0 ? ` · ${Math.round((used / total) * 100)}%` : ""}
         </span>

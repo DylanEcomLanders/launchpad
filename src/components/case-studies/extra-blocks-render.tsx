@@ -108,7 +108,7 @@ function ProseBlockRender({ block }: { block: ProseBlock }) {
             {block.headline}
           </h3>
         )}
-        <p className="text-base md:text-lg text-[#3A3A3D] leading-relaxed whitespace-pre-line">
+        <p className="text-base md:text-lg text-muted leading-relaxed whitespace-pre-line">
           {block.body}
         </p>
       </div>

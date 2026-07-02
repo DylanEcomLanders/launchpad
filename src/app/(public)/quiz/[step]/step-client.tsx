@@ -155,8 +155,8 @@ export default function QuizStepClient({ step }: { step: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <nav className="w-full border-b border-foreground bg-white">
+    <div className="min-h-screen bg-surface flex flex-col">
+      <nav className="w-full border-b border-foreground bg-surface">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
           <Logo height={18} className="text-foreground" />
         </div>
@@ -230,7 +230,7 @@ export default function QuizStepClient({ step }: { step: string }) {
 
 function NotFound() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-surface flex items-center justify-center px-6">
       <div className="max-w-md text-center">
         <h1 className="text-2xl font-bold text-foreground">That step doesn&apos;t exist</h1>
         <p className="mt-2 text-sm text-subtle">

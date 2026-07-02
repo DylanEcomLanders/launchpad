@@ -112,10 +112,10 @@ export default function DeliveryClient() {
                   key={p.key}
                   onClick={() => setPages((prev) => (on ? prev.filter((k) => k !== p.key) : [...prev, p.key]))}
                   className={`rounded-md border px-2 py-1 text-[12px] transition-all ${
-                    on ? "border-white bg-white text-background" : "border-border bg-surface text-subtle hover:text-foreground"
+                    on ? "border-border bg-foreground text-background" : "border-border bg-surface text-subtle hover:text-foreground"
                   }`}
                 >
-                  {p.label} <span className={on ? "text-white/60" : "text-muted"}>{WEIGHT_POINTS[p.weight]}</span>
+                  {p.label} <span className={on ? "text-surface/60" : "text-muted"}>{WEIGHT_POINTS[p.weight]}</span>
                 </button>
               );
             })}
@@ -148,15 +148,15 @@ export default function DeliveryClient() {
               const pct = Math.round((used / POD_WEEKLY_CAPACITY) * 100);
               const blocked = used >= POD_WEEKLY_CAPACITY;
               const alert = pct >= 85;
-              const tone = blocked ? "bg-rose-500" : alert ? "bg-amber-500" : "bg-emerald-500";
+              const tone = blocked ? "bg-danger" : alert ? "bg-warning" : "bg-success";
               return (
                 <div key={p.id}>
                   <div className="flex items-baseline justify-between text-[12px]">
                     <span className="text-foreground">{p.tagline}</span>
                     <span className="tabular-nums text-subtle">
                       {used}/{POD_WEEKLY_CAPACITY} pts
-                      {blocked && <span className="ml-1 font-semibold text-rose-700">· blocked</span>}
-                      {!blocked && alert && <span className="ml-1 font-semibold text-amber-700">· 85% alert</span>}
+                      {blocked && <span className="ml-1 font-semibold text-danger">· blocked</span>}
+                      {!blocked && alert && <span className="ml-1 font-semibold text-warning">· 85% alert</span>}
                     </span>
                   </div>
                   <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-surface-raised">
@@ -204,7 +204,7 @@ function DeliverableRow({ d }: { d: Deliverable }) {
             {points} pts · {bucket}
           </span>
           {d.slot && (
-            <span className="rounded-md border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+            <span className="rounded-md border border-info/20 bg-info/10 px-1.5 py-0.5 text-[10px] font-medium text-info">
               {d.slot} slot
             </span>
           )}
@@ -219,7 +219,7 @@ function DeliverableRow({ d }: { d: Deliverable }) {
           return (
             <div key={ph} className="flex flex-1 items-center gap-1">
               <div className="min-w-0 flex-1">
-                <div className={`h-1.5 rounded-full ${done ? "bg-surface" : active ? "bg-blue-500" : "bg-border"}`} />
+                <div className={`h-1.5 rounded-full ${done ? "bg-surface" : active ? "bg-info" : "bg-border"}`} />
                 <div className={`mt-1 truncate text-[10px] ${active ? "font-semibold text-foreground" : done ? "text-subtle" : "text-muted"}`}>
                   {ph} · {PHASE_META[ph].label}
                 </div>
@@ -252,7 +252,7 @@ function DeliverableRow({ d }: { d: Deliverable }) {
               <span>
                 {d.review.revisionsUsed}/{d.review.revisionsAllowed} revisions
                 {d.review.revisionsUsed >= d.review.revisionsAllowed && (
-                  <span className="ml-1 font-semibold text-amber-700">— next = scope change</span>
+                  <span className="ml-1 font-semibold text-warning">— next = scope change</span>
                 )}
               </span>
             </div>
@@ -265,7 +265,7 @@ function DeliverableRow({ d }: { d: Deliverable }) {
 
 function GateCheck({ label, done }: { label: string; done: boolean }) {
   return (
-    <span className={`inline-flex items-center gap-1 ${done ? "text-emerald-700" : "text-subtle"}`}>
+    <span className={`inline-flex items-center gap-1 ${done ? "text-success" : "text-subtle"}`}>
       {done ? <CheckSolid className="size-3.5" /> : <CheckCircleIcon className="size-3.5" />}
       {label}
     </span>

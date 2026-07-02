@@ -121,7 +121,7 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
               <StatusDot status={agent.status} size={8} />
               <span className="text-xs font-medium text-foreground">{statusMeta.label}</span>
             </div>
-            <p className="text-[13px] leading-relaxed text-border">{agent.description}</p>
+            <p className="text-[13px] leading-relaxed text-muted">{agent.description}</p>
           </div>
 
           <div className="rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] space-y-3">
@@ -141,8 +141,8 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
                       }}
                       className={`flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium transition-all ${
                         agent.status === s
-                          ? "bg-white text-background"
-                          : "border border-border text-subtle hover:text-foreground hover:border-white"
+                          ? "bg-foreground text-background"
+                          : "border border-border text-subtle hover:text-foreground hover:border-border"
                       }`}
                     >
                       <StatusDot status={s} size={6} withRing={false} />
@@ -164,7 +164,7 @@ export default function AgentDetailPage({ params }: { params: Promise<{ agentId:
                 onClick={() => setTab(t.key)}
                 className={`px-3 py-2 text-sm font-medium transition-colors ${
                   tab === t.key
-                    ? "border-b-2 border-white text-foreground"
+                    ? "border-b-2 border-border text-foreground"
                     : "text-subtle hover:text-foreground"
                 }`}
               >

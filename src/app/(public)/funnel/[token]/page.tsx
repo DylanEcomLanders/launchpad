@@ -59,7 +59,7 @@ export default async function ClientRoadmapView({
   return (
     <div className="min-h-screen bg-surface-raised">
       {/* ── Header ────────────────────────────── */}
-      <header className="bg-white border-b border-foreground">
+      <header className="bg-surface border-b border-foreground">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Link
@@ -117,7 +117,7 @@ export default async function ClientRoadmapView({
         )}
 
         {/* ── Roadmap SVG ──────────────────────────────── */}
-        <div className="bg-white border border-foreground rounded-xl p-6 mb-8">
+        <div className="bg-surface border border-foreground rounded-xl p-6 mb-8">
           <RoadmapSVG roadmap={roadmap} />
         </div>
 
@@ -164,7 +164,7 @@ function StepDetailRow({ step, index }: { step: RoadmapStep; index: number }) {
       : "Email sequence";
 
   return (
-    <li className="bg-white border border-foreground rounded-lg p-4 flex items-start gap-4">
+    <li className="bg-surface border border-foreground rounded-lg p-4 flex items-start gap-4">
       <div
         className="size-8 rounded-full flex items-center justify-center text-[11px] font-semibold tabular-nums shrink-0"
         style={{ background: status.bg, color: status.text }}

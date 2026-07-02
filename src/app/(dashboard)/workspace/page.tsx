@@ -298,15 +298,15 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
               type="button"
               onClick={() => setOpenDay(isOpen ? null : d.count > 0 ? d.ymd : null)}
               disabled={d.count === 0}
-              className={`rounded-2xl border bg-surface px-3 py-3 text-left shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all ${
-                d.count === 0 ? "cursor-default" : "hover:shadow-md"
+              className={`rounded-2xl border bg-surface px-3 py-3 text-left transition-all ${
+                d.count === 0 ? "cursor-default" : "hover:bg-surface-hover"
               } ${
                 isOpen
-                  ? "border-slate-900/30 ring-1 ring-slate-900/10"
+                  ? "border-border ring-1 ring-ring/20"
                   : d.isToday
-                    ? "border-border/80 ring-1 ring-slate-900/10"
-                    : "border-border/80"
-              } ${hasOverdue ? "bg-red-950/20" : ""}`}
+                    ? "border-border ring-1 ring-border"
+                    : "border-border"
+              } ${hasOverdue ? "bg-danger/10" : ""}`}
             >
               <div
                 className={`text-[11px] font-semibold uppercase tracking-wide ${
@@ -318,13 +318,13 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
               <div className="mt-1.5 flex items-baseline gap-1.5">
                 <span
                   className={`font-heading text-2xl font-semibold tabular-nums ${
-                    d.count === 0 ? "text-border" : "text-foreground"
+                    d.count === 0 ? "text-muted" : "text-foreground"
                   }`}
                 >
                   {d.count}
                 </span>
                 {hasOverdue && (
-                  <span className="text-[11px] font-medium text-rose-600">
+                  <span className="text-[11px] font-medium text-danger">
                     {d.overdue} over
                   </span>
                 )}
@@ -360,7 +360,7 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
                 <div className="truncate text-xs text-muted">{it.clientName}</div>
               </div>
               {it.state === "overdue" && (
-                <span className="shrink-0 text-[11px] font-medium text-rose-600">
+                <span className="shrink-0 text-[11px] font-medium text-danger">
                   {Math.abs(it.daysToDue)}d over
                 </span>
               )}

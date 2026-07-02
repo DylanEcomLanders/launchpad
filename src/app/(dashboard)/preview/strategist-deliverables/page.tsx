@@ -219,9 +219,9 @@ const STATUS_LABEL: Record<SliceStatus, string> = {
 const STATUS_CLASS: Record<SliceStatus, string> = {
   not_started: "bg-surface-raised text-subtle border-border",
   queued: "bg-surface-raised text-subtle border-border",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
-  in_review: "bg-amber-50 text-amber-800 border-amber-200",
-  done: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  in_progress: "bg-info/10 text-info border-info/20",
+  in_review: "bg-warning/10 text-warning border-warning/20",
+  done: "bg-success/10 text-success border-success/20",
 };
 
 function initials(name: string) {
@@ -235,7 +235,7 @@ function MemberAvatar({ name, isStrategist }: { name: string; isStrategist?: boo
       className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${
         isStrategist
           ? "bg-violet-100 text-violet-700 ring-2 ring-violet-300"
-          : "bg-surface-raised text-border"
+          : "bg-surface-raised text-muted"
       }`}
       title={name}
     >
@@ -263,7 +263,7 @@ export default function StrategistDeliverablesPreview() {
           grouping strategy/design/dev, and per-client strategic docs with a
           branded client share.
         </p>
-        <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-800">
+        <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning">
           <SparklesIcon className="h-3.5 w-3.5" />
           Preview only, mock data, not wired to Supabase.
         </div>
@@ -375,7 +375,7 @@ export default function StrategistDeliverablesPreview() {
                 {CLIENT.retainer} · {CLIENT.pod} · {DELIVERABLES.length} deliverables in flight
               </p>
             </div>
-            <button className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-border hover:border-muted">
+            <button className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-muted hover:border-muted">
               <PlusIcon className="h-3.5 w-3.5" />
               New deliverable
             </button>
@@ -516,14 +516,14 @@ function DeliverableCard({ deliverable }: { deliverable: MockDeliverable }) {
   return (
     <div
       className={`rounded-lg border p-3 ${
-        allDone ? "border-emerald-200 bg-emerald-50/30" : "border-border bg-surface"
+        allDone ? "border-success/20 bg-success/10" : "border-border bg-surface"
       }`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-border">
+            <span className="inline-flex items-center rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted">
               {deliverable.type}
             </span>
             <h3 className="truncate text-sm font-semibold text-foreground">
@@ -566,7 +566,7 @@ function SliceCell({ slice }: { slice: DisciplineSlice }) {
           {STATUS_LABEL[slice.status]}
         </span>
       </div>
-      <div className="mt-2 text-[11px] text-border">
+      <div className="mt-2 text-[11px] text-muted">
         {slice.owner ? (
           <div className="flex items-center gap-1">
             <UserCircleIcon className="h-3.5 w-3.5 text-subtle" />
@@ -620,7 +620,7 @@ function DocTypePill({ type }: { type: MockDoc["type"] }) {
     Audit: "border-blue-200 bg-blue-50 text-blue-700",
     Roadmap: "border-emerald-200 bg-emerald-50 text-emerald-700",
     "Monthly review": "border-amber-200 bg-amber-50 text-amber-800",
-    Kickoff: "border-border bg-surface-raised text-border",
+    Kickoff: "border-border bg-surface-raised text-muted",
   };
   return (
     <span
@@ -636,11 +636,11 @@ function InternalDocsView() {
     <div className="p-4">
       {/* Upload affordance */}
       <div className="mb-4 flex items-center justify-between rounded-lg border border-dashed border-muted bg-background px-3 py-3">
-        <div className="flex items-center gap-2 text-sm text-border">
+        <div className="flex items-center gap-2 text-sm text-muted">
           <DocumentArrowUpIcon className="h-4 w-4 text-subtle" />
           Drop a PDF, doc, or paste a Notion link
         </div>
-        <button className="inline-flex items-center gap-1.5 rounded-md bg-surface px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-foreground">
+        <button className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-2.5 py-1.5 text-[11px] font-medium text-background hover:opacity-90">
           <PlusIcon className="h-3.5 w-3.5" />
           Upload doc
         </button>
@@ -665,7 +665,7 @@ function InternalDocsView() {
                     Internal
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
                     <EyeIcon className="h-3 w-3" />
                     Client-shared
                   </span>
@@ -737,7 +737,7 @@ function ClientShareView() {
                 key={doc.id}
                 className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3 hover:border-muted"
               >
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-surface-raised text-border">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-surface-raised text-muted">
                   <DocumentTextIcon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">

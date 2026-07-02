@@ -30,7 +30,7 @@ export default function PortfolioPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="animate-pulse text-sm text-muted">Loading...</div>
       </div>
     );
@@ -39,7 +39,7 @@ export default function PortfolioPage() {
   const active = tabs[activeTab];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
       <header className="px-6 md:px-12 py-5">
         <Logo height={16} className="text-foreground" />
@@ -91,7 +91,7 @@ export default function PortfolioPage() {
               {!loadedIframes.has(tab.id) && i === activeTab && (
                 <div className="absolute inset-0 flex items-center justify-center bg-surface-raised">
                   <div className="text-center">
-                    <div className="inline-block size-5 border-2 border-foreground border-t-[#1B1B1B] rounded-full animate-spin mb-3" />
+                    <div className="inline-block size-5 border-2 border-border border-t-foreground rounded-full animate-spin mb-3" />
                     <p className="text-xs text-muted">Loading design…</p>
                   </div>
                 </div>

@@ -82,16 +82,16 @@ export function LiveOpsTab() {
   return (
     <div className="mt-6 space-y-6">
       {isEmpty && (
-        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-8 text-center">
+        <div className="bg-background rounded-2xl ring-1 ring-border p-8 text-center">
           <p className="text-sm text-subtle max-w-md mx-auto">
             Nothing flowing through the new retention tools yet. Start an{" "}
-            <Link href="/tools/onboarding" className="text-sky-300 hover:text-sky-200">onboarding</Link>,
+            <Link href="/tools/onboarding" className="text-info hover:text-info">onboarding</Link>,
             log a{" "}
-            <Link href="/tools/cadence" className="text-sky-300 hover:text-sky-200">touch</Link>,
+            <Link href="/tools/cadence" className="text-info hover:text-info">touch</Link>,
             spawn a{" "}
-            <Link href="/tools/lifecycle" className="text-sky-300 hover:text-sky-200">milestone</Link>,
+            <Link href="/tools/lifecycle" className="text-info hover:text-info">milestone</Link>,
             or capture a{" "}
-            <Link href="/tools/test-wins" className="text-sky-300 hover:text-sky-200">test win</Link>
+            <Link href="/tools/test-wins" className="text-info hover:text-info">test win</Link>
             {" "}- and this surface fills up.
           </p>
         </div>
@@ -102,14 +102,14 @@ export function LiveOpsTab() {
         <Section
           title="Active onboardings"
           subtitle={`${activeOnboardings.length} client${activeOnboardings.length === 1 ? "" : "s"} in week one`}
-          icon={<SparklesIcon className="size-5 text-white" />}
+          icon={<SparklesIcon className="size-5 text-foreground" />}
           accent="sky"
           link={{ href: "/tools/onboarding", label: "Manage" }}
         >
           <ul className="space-y-2">
             {activeOnboardings.map((o) => (
               <li key={o.id}>
-                <Link href={`/tools/onboarding/${o.id}`} className="block bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
+                <Link href={`/tools/onboarding/${o.id}`} className="block bg-background rounded-xl p-3 ring-1 ring-border hover:ring-ring/30 transition-all">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -122,7 +122,7 @@ export function LiveOpsTab() {
                         Day {dayNumber(o)} · {completionPct(o)}% done · {o.csm_name || "no CSM"}
                       </div>
                       <div className="mt-2 h-1 bg-surface rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${completionPct(o)}%` }} />
+                        <div className="h-full bg-success rounded-full transition-all" style={{ width: `${completionPct(o)}%` }} />
                       </div>
                     </div>
                   </div>
@@ -138,7 +138,7 @@ export function LiveOpsTab() {
         <Section
           title="Due / upcoming milestones"
           subtitle="Day 30 / 90 / 180 / 365 touchpoints across active clients"
-          icon={<CalendarDaysIcon className="size-5 text-white" />}
+          icon={<CalendarDaysIcon className="size-5 text-foreground" />}
           accent="cyan"
           link={{ href: "/tools/lifecycle", label: "All milestones" }}
         >
@@ -148,10 +148,10 @@ export function LiveOpsTab() {
               const d = daysUntilDue(m);
               return (
                 <li key={m.id}>
-                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
+                  <Link href={`/tools/lifecycle/${m.id}`} className="block bg-background rounded-xl p-3 ring-1 ring-border hover:ring-ring/30 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-600 flex flex-col items-center justify-center shrink-0">
-                        <div className="text-sm font-bold text-white leading-none">{m.day}</div>
+                      <div className="size-9 rounded-lg bg-surface-raised border border-border flex flex-col items-center justify-center shrink-0">
+                        <div className="text-sm font-bold text-foreground leading-none">{m.day}</div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -178,13 +178,13 @@ export function LiveOpsTab() {
         <Section
           title="Recent touches"
           subtitle="Last 10 client comms logged"
-          icon={<ChatBubbleOvalLeftEllipsisIcon className="size-5 text-white" />}
+          icon={<ChatBubbleOvalLeftEllipsisIcon className="size-5 text-foreground" />}
           accent="sky"
           link={{ href: "/tools/cadence", label: "All cadence" }}
         >
           <ul className="space-y-1.5">
             {touches.map((t) => (
-              <li key={t.id} className="bg-background rounded-lg p-3 ring-1 ring-white/[0.04]">
+              <li key={t.id} className="bg-background rounded-lg p-3 ring-1 ring-border">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="text-sm font-semibold text-foreground">{t.client_name}</span>
                   <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface text-muted">{TOUCH_LABEL[t.kind]}</span>
@@ -202,17 +202,17 @@ export function LiveOpsTab() {
         <Section
           title="Recent test wins"
           subtitle="Latest winners captured for the proof deck"
-          icon={<TrophyIcon className="size-5 text-white" />}
+          icon={<TrophyIcon className="size-5 text-foreground" />}
           accent="emerald"
           link={{ href: "/tools/test-wins", label: "Inbox" }}
         >
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {wins.map((w) => (
-              <li key={w.id} className="bg-background rounded-xl p-3 ring-1 ring-white/[0.04]">
+              <li key={w.id} className="bg-background rounded-xl p-3 ring-1 ring-border">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-semibold text-foreground truncate">{w.client_anonymised || w.client_name}</span>
                   {w.uplift_pct !== undefined && (
-                    <span className="text-[11px] font-mono text-emerald-300">+{w.uplift_pct}%</span>
+                    <span className="text-[11px] font-mono text-success">+{w.uplift_pct}%</span>
                   )}
                 </div>
                 <p className="text-[11px] text-subtle line-clamp-2">{w.hypothesis || "(no hypothesis)"}</p>
@@ -240,16 +240,12 @@ function Section({
   link?: { href: string; label: string };
   children: React.ReactNode;
 }) {
-  const gradient: Record<"emerald" | "cyan" | "sky", string> = {
-    emerald: "from-emerald-500 to-teal-600 shadow-[0_8px_24px_rgba(16,185,129,0.3)]",
-    cyan: "from-cyan-500 to-teal-600 shadow-[0_8px_24px_rgba(6,182,212,0.3)]",
-    sky: "from-sky-500 to-blue-600 shadow-[0_8px_24px_rgba(14,165,233,0.3)]",
-  };
+  void accent;
   return (
     <section>
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-3">
-          <div className={`size-9 rounded-xl bg-gradient-to-br ${gradient[accent]} flex items-center justify-center shrink-0`}>
+          <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center shrink-0">
             {icon}
           </div>
           <div>

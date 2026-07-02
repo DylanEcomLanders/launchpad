@@ -158,11 +158,11 @@ export default function NewEngagementPage() {
                   className={`text-left rounded-lg border p-2.5 transition-all ${
                     active
                       ? "border-foreground bg-foreground text-surface"
-                      : "border-border bg-surface text-foreground hover:border-white"
+                      : "border-border bg-surface text-foreground hover:border-foreground"
                   }`}
                 >
                   <p className="text-[12px] font-semibold">{opt.label}</p>
-                  <p className={`text-[10px] ${active ? "text-white/70" : "text-subtle"}`}>{opt.sub}</p>
+                  <p className={`text-[10px] ${active ? "text-surface/70" : "text-subtle"}`}>{opt.sub}</p>
                 </button>
               );
             })}
@@ -204,7 +204,7 @@ export default function NewEngagementPage() {
                   className={`flex-1 py-2 text-[12px] font-semibold rounded-md border transition-all ${
                     podNumber === n
                       ? "border-foreground bg-foreground text-surface"
-                      : "border-border bg-surface text-foreground hover:border-white"
+                      : "border-border bg-surface text-foreground hover:border-foreground"
                   }`}
                 >
                   Pod {n}
@@ -238,7 +238,7 @@ export default function NewEngagementPage() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
+              className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground"
             />
           </div>
         </div>
@@ -247,7 +247,7 @@ export default function NewEngagementPage() {
           <button
             type="submit"
             disabled={!valid || submitting}
-            className="text-[12px] font-semibold text-surface bg-foreground hover:bg-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-[12px] font-semibold text-surface bg-foreground hover:bg-foreground px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Creating..." : "Create client"}
           </button>
@@ -289,7 +289,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
+        className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-border"
       />
     </div>
   );

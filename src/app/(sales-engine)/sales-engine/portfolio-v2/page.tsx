@@ -147,7 +147,7 @@ export default function PortfolioV2AdminPage() {
             resetForm();
             setModalOpen(true);
           }}
-          className="px-4 py-2 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors"
+          className="px-4 py-2 bg-surface text-foreground text-sm font-semibold rounded-lg hover:bg-surface-hover transition-colors"
         >
           Add Project
         </button>
@@ -156,7 +156,7 @@ export default function PortfolioV2AdminPage() {
       {loading ? (
         <div className="text-sm text-subtle">Loading...</div>
       ) : projects.length === 0 ? (
-        <div className="text-sm text-subtle border border-dashed border-foreground rounded-xl p-12 text-center">
+        <div className="text-sm text-subtle border border-dashed border-border rounded-xl p-12 text-center">
           No projects yet. Click &ldquo;Add Project&rdquo; to get started.
         </div>
       ) : (
@@ -186,7 +186,7 @@ export default function PortfolioV2AdminPage() {
                   {p.tags.map((t) => (
                     <span
                       key={t}
-                      className="text-[10px] uppercase tracking-wide px-2 py-0.5 bg-[#F5F5F7] text-subtle rounded-full"
+                      className="text-[10px] uppercase tracking-wide px-2 py-0.5 bg-surface-raised text-subtle rounded-full"
                     >
                       {t}
                     </span>

@@ -41,7 +41,7 @@ export function ConfigTab({ agent, canEdit, onSaved }: ConfigTabProps) {
   return (
     <div className="space-y-5">
       {!canEdit && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+        <div className="rounded-lg border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
           You're viewing config in read-only mode. Only admins can edit the system prompt and model.
         </div>
       )}
@@ -118,13 +118,13 @@ export function ConfigTab({ agent, canEdit, onSaved }: ConfigTabProps) {
           <button
             onClick={save}
             disabled={!dirty || saving}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {saving ? "Saving…" : "Save changes"}
           </button>
-          {dirty && <span className="text-xs text-amber-600">Unsaved changes</span>}
+          {dirty && <span className="text-xs text-warning">Unsaved changes</span>}
           {!dirty && savedAt && Date.now() - savedAt < 4000 && (
-            <span className="text-xs text-emerald-600">Saved.</span>
+            <span className="text-xs text-success">Saved.</span>
           )}
         </div>
       )}

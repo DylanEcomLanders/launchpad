@@ -234,7 +234,7 @@ export default function NewInvoicePage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger rounded-lg text-sm text-[#FCA5A5]">
+        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
@@ -351,7 +351,7 @@ export default function NewInvoicePage() {
             <button
               onClick={addDeliverable}
               disabled={!selectedDeliverable}
-              className="px-4 py-2.5 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
+              className="px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
             >
               <PlusIcon className="size-4" />
             </button>
@@ -424,7 +424,7 @@ export default function NewInvoicePage() {
 
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="p-1 text-subtle hover:text-red-500 transition-colors justify-self-center"
+                    className="p-1 text-subtle hover:text-danger transition-colors justify-self-center"
                   >
                     <XMarkIcon className="size-3.5" />
                   </button>
@@ -455,7 +455,7 @@ export default function NewInvoicePage() {
             clientCountry={clientCountry}
           />
           {vatMode !== "off" && profile && !profile.vat_registered && (
-            <p className="text-[11px] text-amber-700 mt-2">
+            <p className="text-[11px] text-warning mt-2">
               Heads-up: profile is marked as not VAT registered. Update in Settings before sending.
             </p>
           )}
@@ -582,7 +582,7 @@ export default function NewInvoicePage() {
           <button
             onClick={() => save("sent")}
             disabled={!canSave || saving}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
           >
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : null}
             Save & mark as sent

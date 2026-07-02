@@ -264,7 +264,7 @@ export default function MyInvoicesPage() {
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-border border-t-muted rounded-full animate-spin" />
       </div>
     );
   }
@@ -277,7 +277,7 @@ export default function MyInvoicesPage() {
             We couldn&apos;t link your account to a team record yet. Try a hard refresh (Cmd+Shift+R). If it persists, ask an admin to check your name + email match on /company/people.
           </p>
           {me && (
-            <p className="text-[11px] text-border mt-3">
+            <p className="text-[11px] text-subtle mt-3">
               Signed in as: {me.name || "(no name)"} · {me.email || "(no email)"}
             </p>
           )}
@@ -404,7 +404,7 @@ export default function MyInvoicesPage() {
                 <button
                   type="button"
                   onClick={removeFile}
-                  className="text-subtle hover:text-rose-400 p-1"
+                  className="text-subtle hover:text-danger p-1"
                   aria-label="Remove file"
                 >
                   <XMarkIcon className="size-4" />
@@ -414,7 +414,7 @@ export default function MyInvoicesPage() {
               <label className="flex flex-col items-center justify-center gap-2 py-6 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-subtle bg-background transition-colors">
                 {uploading ? (
                   <div className="flex items-center gap-2 text-subtle text-sm">
-                    <div className="size-4 border-2 border-border border-t-[#E5E5EA] rounded-full animate-spin" />
+                    <div className="size-4 border-2 border-border border-t-muted rounded-full animate-spin" />
                     Uploading...
                   </div>
                 ) : (
@@ -446,9 +446,9 @@ export default function MyInvoicesPage() {
             />
           </FieldL>
 
-          {error && <p className="text-xs text-red-300">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           {submitted && (
-            <p className="text-xs text-emerald-300">
+            <p className="text-xs text-success">
               Submitted. Admin will see it on the next refresh.
             </p>
           )}
@@ -457,7 +457,7 @@ export default function MyInvoicesPage() {
             <button
               type="submit"
               disabled={submitting || uploading || !file}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ArrowUpTrayIcon className="size-3.5" />
               {submitting ? "Submitting..." : "Submit invoice"}
@@ -517,7 +517,7 @@ export default function MyInvoicesPage() {
                             <button
                               onClick={() => deleteInvoice(i.id)}
                               disabled={deletingId === i.id}
-                              className="text-[11px] text-subtle hover:text-rose-400 disabled:opacity-50"
+                              className="text-[11px] text-subtle hover:text-danger disabled:opacity-50"
                               title="Delete invoice"
                             >
                               {deletingId === i.id ? "Deleting..." : "Delete"}
@@ -571,9 +571,9 @@ function Summary({
 }) {
   const valueColor =
     tone === "positive"
-      ? "text-emerald-300"
+      ? "text-success"
       : tone === "warn"
-      ? "text-amber-300"
+      ? "text-warning"
       : tone === "muted"
       ? "text-subtle"
       : "text-foreground";

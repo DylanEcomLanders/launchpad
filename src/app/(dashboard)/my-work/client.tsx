@@ -69,8 +69,8 @@ interface MyItem {
 // Border + tint per deadline state. Overdue red, soon amber, everything else
 // quiet - mirrors the kanban's STUCK_STYLES philosophy (one signal, no flood).
 const STATE_STYLE: Record<DeadlineState, { ring: string; bg: string }> = {
-  overdue: { ring: "border-red-500/70", bg: "bg-red-500/10" },
-  soon: { ring: "border-amber-500/60", bg: "bg-amber-500/10" },
+  overdue: { ring: "border-danger/20", bg: "bg-danger/10" },
+  soon: { ring: "border-warning/20", bg: "bg-warning/10" },
   ontrack: { ring: "border-border", bg: "bg-surface" },
   done: { ring: "border-border", bg: "bg-surface" },
   awaiting_approval: { ring: "border-border", bg: "bg-surface" },
@@ -601,13 +601,13 @@ export default function MyWorkClient() {
             {overdueCount > 0 && (
               <>
                 {" · "}
-                <span className="text-red-400">{overdueCount} overdue</span>
+                <span className="text-danger">{overdueCount} overdue</span>
               </>
             )}
             {soonCount > 0 && (
               <>
                 {" · "}
-                <span className="text-amber-400">{soonCount} due soon</span>
+                <span className="text-warning">{soonCount} due soon</span>
               </>
             )}
           </p>
@@ -616,9 +616,9 @@ export default function MyWorkClient() {
         {revisionCards.length > 0 && (
           <Link
             href="/kanban"
-            className="group mb-6 flex items-start gap-3 rounded-xl border border-orange-500/30 bg-orange-500/5 px-4 py-3 transition-colors hover:border-orange-500/50 hover:bg-orange-500/10"
+            className="group mb-6 flex items-start gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3 transition-colors hover:border-warning/30 hover:bg-warning/10"
           >
-            <ExclamationTriangleIcon className="size-5 text-orange-400 shrink-0 mt-0.5" />
+            <ExclamationTriangleIcon className="size-5 text-warning shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold text-foreground">
                 {revisionCards.length === 1
@@ -635,7 +635,7 @@ export default function MyWorkClient() {
                   : ""}
               </div>
             </div>
-            <span className="self-center text-[11px] font-semibold uppercase tracking-wider text-orange-400 group-hover:text-orange-300 shrink-0">
+            <span className="self-center text-[11px] font-semibold uppercase tracking-wider text-warning group-hover:text-warning shrink-0">
               Open kanban →
             </span>
           </Link>
@@ -744,7 +744,7 @@ export default function MyWorkClient() {
                 {/* Cards */}
                 <div className="p-2.5 space-y-2.5 flex-1 min-h-[60vh]">
                   {cards.length === 0 ? (
-                    <p className="text-[11px] text-border text-center py-8 px-3 leading-relaxed">
+                    <p className="text-[11px] text-muted text-center py-8 px-3 leading-relaxed">
                       {isFiltered && total > 0
                         ? `No matches for "${search.trim()}" in this lane`
                         : col.key === "todo"
@@ -760,9 +760,9 @@ export default function MyWorkClient() {
                       const dueLabel = d.dueDate ? formatDue(d.dueDate) : "No due date";
                       const dueTone =
                         d.state === "overdue"
-                          ? "text-red-400"
+                          ? "text-danger"
                           : d.state === "soon"
-                            ? "text-amber-400"
+                            ? "text-warning"
                             : "text-subtle";
                       return (
                         <div
@@ -795,7 +795,7 @@ export default function MyWorkClient() {
                             * red dot on /kanban. */}
                           {d.classified.card.revisionRequested && (
                             <span
-                              className="absolute top-2 right-2 size-2 rounded-full bg-rose-500"
+                              className="absolute top-2 right-2 size-2 rounded-full bg-danger"
                               title="Kicked back from internal revisions"
                             />
                           )}
@@ -811,8 +811,8 @@ export default function MyWorkClient() {
                               d.classified.card.revisionRequested ? "right-6" : "right-2"
                             } text-[14px] leading-none transition-colors ${
                               pinnedIds.has(d.cardId)
-                                ? "text-amber-400 hover:text-amber-300"
-                                : "text-border opacity-0 group-hover:opacity-100 hover:text-subtle"
+                                ? "text-warning hover:text-warning"
+                                : "text-muted opacity-0 group-hover:opacity-100 hover:text-subtle"
                             }`}
                           >
                             {pinnedIds.has(d.cardId) ? "★" : "☆"}
@@ -822,7 +822,7 @@ export default function MyWorkClient() {
                             <Link
                               href={`/workspace/clients/${d.clientId}`}
                               onClick={(e) => e.stopPropagation()}
-                              className="text-[10px] font-bold uppercase tracking-wider text-foreground hover:text-white transition-colors truncate block"
+                              className="text-[10px] font-bold uppercase tracking-wider text-foreground hover:text-muted transition-colors truncate block"
                             >
                               {d.clientName}
                             </Link>
@@ -909,7 +909,7 @@ export default function MyWorkClient() {
                   <div className="flex items-center justify-between mb-2">
                     <Link
                       href={`/workspace/clients/${c.clientId}`}
-                      className="text-[11px] font-bold uppercase tracking-wider text-foreground hover:text-white"
+                      className="text-[11px] font-bold uppercase tracking-wider text-foreground hover:text-muted"
                     >
                       {c.clientName}
                     </Link>
@@ -922,9 +922,9 @@ export default function MyWorkClient() {
                       const dueLabel = d.dueDate ? formatDue(d.dueDate) : "—";
                       const dueTone =
                         d.state === "overdue"
-                          ? "text-red-400"
+                          ? "text-danger"
                           : d.state === "soon"
-                            ? "text-amber-400"
+                            ? "text-warning"
                             : "text-subtle";
                       const isPinned = pinnedIds.has(d.cardId);
                       const isKickback = d.classified.card.revisionRequested;
@@ -946,13 +946,13 @@ export default function MyWorkClient() {
                         >
                           {isPinned && (
                             <span
-                              className="size-1.5 rounded-full bg-amber-400 shrink-0"
+                              className="size-1.5 rounded-full bg-warning shrink-0"
                               title="Pinned"
                             />
                           )}
                           {isKickback && (
                             <span
-                              className="size-1.5 rounded-full bg-rose-400 shrink-0"
+                              className="size-1.5 rounded-full bg-danger shrink-0"
                               title="Kicked back"
                             />
                           )}
@@ -1002,7 +1002,7 @@ export default function MyWorkClient() {
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/workspace/clients/${openItem.clientId}`}
-                  className="text-[10px] font-bold uppercase tracking-wider text-foreground hover:text-white block truncate"
+                  className="text-[10px] font-bold uppercase tracking-wider text-foreground hover:text-muted block truncate"
                 >
                   {openItem.clientName}
                 </Link>
@@ -1012,7 +1012,7 @@ export default function MyWorkClient() {
               </div>
               <button
                 onClick={() => setOpenItemId(null)}
-                className="text-subtle hover:text-white text-[18px] leading-none shrink-0"
+                className="text-subtle hover:text-foreground text-[18px] leading-none shrink-0"
               >
                 ×
               </button>
@@ -1090,7 +1090,7 @@ export default function MyWorkClient() {
                   </div>
                 )
               ) : (
-                <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-border italic">
+                <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-muted italic">
                   <span className="text-[10px] uppercase tracking-wider not-italic font-semibold block mb-0.5">
                     Strategist brief
                   </span>
@@ -1111,7 +1111,7 @@ export default function MyWorkClient() {
                       href={openProject.figmaUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[10px] text-muted hover:text-white"
+                      className="text-[10px] text-muted hover:text-foreground"
                     >
                       Open →
                     </a>
@@ -1127,7 +1127,7 @@ export default function MyWorkClient() {
                     })
                   }
                   placeholder="https://figma.com/file/…"
-                  className="w-full px-2.5 py-1.5 text-[12px] bg-surface border border-border rounded-md text-foreground placeholder:text-border focus:outline-none focus:border-border"
+                  className="w-full px-2.5 py-1.5 text-[12px] bg-surface border border-border rounded-md text-foreground placeholder:text-muted focus:outline-none focus:border-border"
                 />
               </div>
             </div>
@@ -1149,9 +1149,9 @@ export default function MyWorkClient() {
                 <span
                   className={`text-[11px] tabular-nums font-medium ${
                     openItem.state === "overdue"
-                      ? "text-rose-300"
+                      ? "text-danger"
                       : openItem.state === "soon"
-                        ? "text-amber-400"
+                        ? "text-warning"
                         : "text-subtle"
                   }`}
                 >
@@ -1183,14 +1183,14 @@ export default function MyWorkClient() {
                   setOpenItemId(null);
                 }}
                 disabled={openItem.lane === "done"}
-                className="px-3 py-2 text-[12px] text-background bg-emerald-400 rounded-lg hover:bg-emerald-300 transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-[12px] text-background bg-success rounded-lg hover:bg-success transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {openItem.lane === "done" ? "Done" : "Mark as done"}
               </button>
             </div>
             <Link
               href={`/kanban?card=${encodeURIComponent(openItem.cardId)}`}
-              className="block text-center text-[11px] text-subtle hover:text-white pt-2 border-t border-surface-raised"
+              className="block text-center text-[11px] text-subtle hover:text-foreground pt-2 border-t border-surface-raised"
             >
               Open in Project Delivery for full actions →
             </Link>
@@ -1244,8 +1244,8 @@ function ViewAsPicker({
         <ChevronDownIcon className="size-3 text-subtle shrink-0" />
       </button>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-72 bg-background rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-white/[0.04]">
+        <div className="absolute left-0 top-9 z-40 w-72 bg-background rounded-lg ring-1 ring-border shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-subtle font-semibold border-b border-border">
             View as ({members.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -1258,13 +1258,13 @@ function ViewAsPicker({
                       onPick(m.id);
                       setOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
-                      isActive ? "bg-white/[0.04]" : ""
+                    className={`w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors ${
+                      isActive ? "bg-surface-hover" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       {isActive ? (
-                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="size-3.5 text-success shrink-0" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
                         </svg>
                       ) : (

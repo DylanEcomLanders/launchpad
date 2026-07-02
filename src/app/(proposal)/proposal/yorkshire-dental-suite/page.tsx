@@ -42,7 +42,7 @@ function Reveal({ children, delay = 0, className = "" }: { children: React.React
 
 export default function YorkshireDentalProposal() {
   return (
-    <div className="min-h-screen bg-white text-surface">
+    <div className="min-h-screen bg-background text-surface">
       {/* HEADER */}
       <header className="border-b border-foreground">
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
@@ -163,7 +163,7 @@ export default function YorkshireDentalProposal() {
                   <div className="size-4 rounded-full border border-surface flex items-center justify-center shrink-0 mt-0.5">
                     <svg className="size-2.5 text-surface" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
                   </div>
-                  <p className="text-sm text-border leading-snug">{item}</p>
+                  <p className="text-sm text-muted leading-snug">{item}</p>
                 </div>
               </Reveal>
             ))}

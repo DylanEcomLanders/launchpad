@@ -158,7 +158,7 @@ export default function EcomProspectingPage() {
           <button
             onClick={searchStores}
             disabled={!query.trim() || loading}
-            className="flex items-center gap-1.5 px-5 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border disabled:opacity-30"
+            className="flex items-center gap-1.5 px-5 py-2 bg-surface text-foreground text-xs font-medium rounded-lg hover:bg-border disabled:opacity-30"
           >
             {loading ? <ArrowPathIcon className="size-3.5 animate-spin" /> : <MagnifyingGlassIcon className="size-3.5" />}
             {loading ? "Searching..." : "Find Stores"}
@@ -181,7 +181,7 @@ export default function EcomProspectingPage() {
             }}
           />
         </div>
-        {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+        {error && <p className="text-xs text-danger mt-2">{error}</p>}
       </div>
 
       {/* Results */}
@@ -224,7 +224,7 @@ export default function EcomProspectingPage() {
                 <div className="flex items-center justify-center">
                   <div className="w-12 h-1.5 bg-foreground rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${store.score >= 70 ? "bg-emerald-500" : store.score >= 40 ? "bg-amber-500" : "bg-muted"}`}
+                      className={`h-full rounded-full ${store.score >= 70 ? "bg-success" : store.score >= 40 ? "bg-warning" : "bg-muted"}`}
                       style={{ width: `${store.score}%` }}
                     />
                   </div>
@@ -232,7 +232,7 @@ export default function EcomProspectingPage() {
                 </div>
                 <div className="text-center">
                   {addedToPipeline.has(store.url) ? (
-                    <span className="text-[9px] text-emerald-500 font-semibold">Added</span>
+                    <span className="text-[9px] text-success font-semibold">Added</span>
                   ) : (
                     <button
                       onClick={() => addToPipeline(store)}

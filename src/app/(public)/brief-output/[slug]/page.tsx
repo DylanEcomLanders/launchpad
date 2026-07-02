@@ -32,7 +32,7 @@ export default function BriefOutputPage({ params }: { params: Promise<{ slug: st
     <div className="min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-10 opacity-40" style={{ backgroundImage: "radial-gradient(circle at 80% 0%, rgba(6,182,212,0.12) 0%, transparent 50%)" }} />
       <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-end print:hidden">
-        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white/10 text-white hover:bg-white/15 ring-1 ring-white/20">
+        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface-raised text-foreground hover:bg-surface-hover ring-1 ring-border">
           <ArrowDownTrayIcon className="size-3.5" />
           Download PDF
         </button>
@@ -113,7 +113,7 @@ export default function BriefOutputPage({ params }: { params: Promise<{ slug: st
 
         {brief.references && (<Block title="References + inspiration" body={brief.references} />)}
 
-        <footer className="pt-8 pb-4 text-center border-t border-white/[0.04]">
+        <footer className="pt-8 pb-4 text-center border-t border-border">
           <Link href="/" className="text-[11px] text-subtle hover:text-cyan-300">ecomlanders.app</Link>
         </footer>
       </div>
@@ -128,7 +128,7 @@ function Block({ title, body }: { title: string; body: string }) {
   return (
     <section>
       <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground mb-3">{title}</h2>
-      <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] prose prose-invert prose-sm max-w-none prose-p:text-muted prose-li:text-muted prose-strong:text-foreground prose-a:text-cyan-300">
+      <div className="bg-background rounded-2xl p-5 ring-1 ring-border prose prose-invert prose-sm max-w-none prose-p:text-muted prose-li:text-muted prose-strong:text-foreground prose-a:text-cyan-300">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
       </div>
     </section>
@@ -136,7 +136,7 @@ function Block({ title, body }: { title: string; body: string }) {
 }
 function Stat({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-xl p-3 ring-1 ${highlight ? "bg-emerald-500/15 ring-emerald-500/30" : "bg-background ring-white/[0.04]"}`}>
+    <div className={`rounded-xl p-3 ring-1 ${highlight ? "bg-emerald-500/15 ring-emerald-500/30" : "bg-background ring-border"}`}>
       <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle">{label}</div>
       <div className={`text-xl font-semibold ${highlight ? "text-emerald-300 font-mono" : "text-foreground"}`}>{value}</div>
     </div>

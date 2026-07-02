@@ -52,16 +52,16 @@ export default function ReportsListPage() {
     router.push(`/tools/reports/${r.id}`);
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <header>
         <div className="flex items-center gap-3 mb-2">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-[0_8px_24px_rgba(14,165,233,0.3)]">
-            <ChartPieIcon className="size-5 text-white" />
+          <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+            <ChartPieIcon className="size-5 text-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Reports
           </h1>
         </div>
@@ -71,7 +71,7 @@ export default function ReportsListPage() {
       </header>
 
       {/* Generator */}
-      <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]">
+      <div className="bg-surface rounded-2xl p-5 border border-border">
         <h2 className="text-sm font-semibold text-foreground mb-3">Generate a report</h2>
         <div className="flex flex-col sm:flex-row items-end gap-3">
           <div className="flex-1">
@@ -92,7 +92,7 @@ export default function ReportsListPage() {
             </select>
           </div>
           <label className="inline-flex items-center gap-2 text-[11px] text-muted pb-2">
-            <input type="checkbox" checked={genIsQbr} onChange={(e) => setGenIsQbr(e.target.checked)} className="accent-sky-500" />
+            <input type="checkbox" checked={genIsQbr} onChange={(e) => setGenIsQbr(e.target.checked)} className="accent-info" />
             QBR mode (VIP)
           </label>
           <button onClick={generate} disabled={!genClient.trim() || generating} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed">
@@ -103,16 +103,16 @@ export default function ReportsListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />)}</div>
       ) : reports.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border">
           <p className="text-sm text-subtle">No reports yet. Generate one above.</p>
         </div>
       ) : (
         <ul className="space-y-2">
           {reports.map((r) => (
             <li key={r.id}>
-              <Link href={`/tools/reports/${r.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
+              <Link href={`/tools/reports/${r.id}`} className="block bg-surface rounded-xl p-4 border border-border hover:border-border transition-all">
                 <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -131,7 +131,7 @@ export default function ReportsListPage() {
                     </div>
                   </div>
                   {r.status !== "draft" && (
-                    <a href={`/report-output/${r.output_slug}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-sky-300 shrink-0">
+                    <a href={`/report-output/${r.output_slug}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-info shrink-0">
                       View
                       <ArrowTopRightOnSquareIcon className="size-3.5" />
                     </a>

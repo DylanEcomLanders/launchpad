@@ -22,13 +22,13 @@ export default function ResultsClient({ submission }: { submission: QuizSubmissi
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
-      <nav className="w-full border-b border-foreground bg-white">
+      <nav className="w-full border-b border-foreground bg-surface">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
           <Logo height={18} className="text-foreground" />
         </div>
       </nav>
 
-      <div className="flex-1 bg-white">
+      <div className="flex-1 bg-surface">
         <div className="px-6 md:px-10 pt-12 md:pt-16 pb-20">
           <ResultCard submission={submission} />
         </div>

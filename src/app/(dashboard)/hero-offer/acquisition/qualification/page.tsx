@@ -115,8 +115,8 @@ export default function QualificationScriptPage() {
     >
       <div className="space-y-8">
         {/* Quick legend */}
-        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-3">
+        <div className="bg-background rounded-2xl ring-1 ring-border p-5">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-success mb-3">
             How to use this on a call
           </div>
           <ul className="space-y-2 text-sm text-muted">
@@ -130,7 +130,7 @@ export default function QualificationScriptPage() {
         {SECTIONS.map((section) => (
           <section key={section.id}>
             <div className="flex items-center gap-2 mb-1">
-              <span className="size-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+              <span className="size-2 rounded-full bg-success" />
               <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
                 {section.label}
               </h2>
@@ -141,10 +141,10 @@ export default function QualificationScriptPage() {
               {section.questions.map((q) => (
                 <div
                   key={q.n}
-                  className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5 hover:ring-emerald-500/30 transition-all"
+                  className="bg-background rounded-2xl ring-1 ring-border p-5 hover:ring-success/30 transition-all"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="shrink-0 size-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-[0_8px_24px_rgba(16,185,129,0.25)]">
+                    <div className="shrink-0 size-9 rounded-xl bg-success flex items-center justify-center text-white font-bold text-sm">
                       {q.n}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -153,17 +153,17 @@ export default function QualificationScriptPage() {
                         Why we ask: {q.why}
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="bg-emerald-500/[0.06] rounded-xl ring-1 ring-emerald-500/20 p-3">
+                        <div className="bg-success/[0.06] rounded-xl ring-1 ring-success/20 p-3">
                           <div className="flex items-center gap-1.5 mb-1.5">
-                            <CheckCircleIcon className="size-3.5 text-emerald-300" />
-                            <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-semibold">Green flag</span>
+                            <CheckCircleIcon className="size-3.5 text-success" />
+                            <span className="text-[10px] uppercase tracking-wider text-success font-semibold">Green flag</span>
                           </div>
                           <p className="text-[12.5px] text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: q.green }} />
                         </div>
-                        <div className="bg-rose-500/[0.06] rounded-xl ring-1 ring-rose-500/20 p-3">
+                        <div className="bg-danger/[0.06] rounded-xl ring-1 ring-danger/20 p-3">
                           <div className="flex items-center gap-1.5 mb-1.5">
-                            <ExclamationTriangleIcon className="size-3.5 text-rose-300" />
-                            <span className="text-[10px] uppercase tracking-wider text-rose-300 font-semibold">Red flag</span>
+                            <ExclamationTriangleIcon className="size-3.5 text-danger" />
+                            <span className="text-[10px] uppercase tracking-wider text-danger font-semibold">Red flag</span>
                           </div>
                           <p className="text-[12.5px] text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: q.red }} />
                         </div>

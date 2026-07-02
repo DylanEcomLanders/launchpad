@@ -211,7 +211,7 @@ export function ChatTab({ agent, onStatusChange, onRunComplete }: ChatTabProps) 
           <button
             onClick={send}
             disabled={sending || !input.trim()}
-            className="shrink-0 inline-flex items-center justify-center size-10 rounded-lg bg-white text-background hover:bg-foreground active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 inline-flex items-center justify-center size-10 rounded-lg bg-accent text-accent-foreground hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Send"
           >
             <PaperAirplaneIcon className="size-4" />
@@ -227,7 +227,7 @@ function Bubble({ msg, agent }: { msg: Message; agent: Agent }) {
   if (msg.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-xl bg-white text-background px-3 py-2 text-sm leading-relaxed shadow-[var(--shadow-soft)] whitespace-pre-wrap">
+        <div className="max-w-[80%] rounded-xl bg-accent text-accent-foreground px-3 py-2 text-sm leading-relaxed shadow-[var(--shadow-soft)] whitespace-pre-wrap">
           {msg.text}
         </div>
       </div>
@@ -252,7 +252,7 @@ function Bubble({ msg, agent }: { msg: Message; agent: Agent }) {
           <ToolCallStrip calls={msg.toolCalls} />
         )}
         {!msg.pending && msg.toolCalls && msg.toolCalls.length === 0 && (
-          <div className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1 inline-block">
+          <div className="text-[10px] text-warning bg-warning/10 border border-warning/20 rounded-md px-2 py-1 inline-block">
             ⚠️ No tools called — this answer came from the model alone. Treat with caution.
           </div>
         )}
@@ -276,12 +276,12 @@ function ToolCallStrip({ calls }: { calls: ToolCall[] }) {
             onClick={() => setOpenIdx(openIdx === i ? null : i)}
             className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-mono transition-colors ${
               openIdx === i
-                ? "bg-white text-background border-white"
-                : "bg-surface text-subtle border-border hover:text-foreground hover:border-white/40"
+                ? "bg-accent text-accent-foreground border-transparent"
+                : "bg-surface text-subtle border-border hover:text-foreground hover:border-border"
             }`}
             title="Tap to inspect what data Felix saw"
           >
-            <span className="size-1 rounded-full bg-emerald-500" />
+            <span className="size-1 rounded-full bg-success" />
             {c.name}
             <span className="opacity-60">({summariseResult(c.result)})</span>
           </button>

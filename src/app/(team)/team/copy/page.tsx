@@ -367,7 +367,7 @@ export default function CopyEnginePage() {
                     </select>
                     <button
                       onClick={() => removeBlock(block.id)}
-                      className="ml-auto p-1 text-subtle hover:text-red-500 transition-colors"
+                      className="ml-auto p-1 text-subtle hover:text-danger transition-colors"
                     >
                       <XMarkIcon className="size-4" />
                     </button>
@@ -495,7 +495,7 @@ export default function CopyEnginePage() {
                     <div
                       className={`size-3.5 rounded border-2 shrink-0 flex items-center justify-center ${
                         isSelected
-                          ? "border-white bg-surface"
+                          ? "border-foreground bg-surface"
                           : "border-muted"
                       }`}
                     >
@@ -512,10 +512,10 @@ export default function CopyEnginePage() {
                       className={`ml-auto text-[9px] font-semibold uppercase tracking-wider shrink-0 px-1.5 py-0.5 rounded ${
                         isSelected
                           ? item.priority === "required"
-                            ? "bg-surface/20 text-white"
+                            ? "bg-surface/20 text-foreground"
                             : item.priority === "recommended"
-                            ? "bg-surface/10 text-white/70"
-                            : "bg-surface/5 text-white/50"
+                            ? "bg-surface/10 text-muted"
+                            : "bg-surface/5 text-subtle"
                           : item.priority === "required"
                           ? "bg-surface/10 text-subtle"
                           : item.priority === "recommended"
@@ -542,7 +542,7 @@ export default function CopyEnginePage() {
           disabled={!canGenerate}
           className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-medium rounded-lg transition-all mb-8 ${
             status === "generating"
-              ? "bg-subtle text-white cursor-wait"
+              ? "bg-subtle text-foreground cursor-wait"
               : !canGenerate
               ? "bg-foreground text-subtle cursor-not-allowed"
               : "bg-surface-raised text-foreground hover:bg-foreground"
@@ -585,11 +585,11 @@ export default function CopyEnginePage() {
 
           {/* Error */}
           {status === "error" && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-5 mb-6">
-              <p className="text-sm text-red-700 font-medium mb-1">
+            <div className="bg-danger/10 border border-danger/20 rounded-lg p-5 mb-6">
+              <p className="text-sm text-danger font-medium mb-1">
                 Generation failed
               </p>
-              <p className="text-xs text-red-600">{errorMessage}</p>
+              <p className="text-xs text-danger">{errorMessage}</p>
             </div>
           )}
 
@@ -606,7 +606,7 @@ export default function CopyEnginePage() {
                   onClick={copyAll}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                     copiedId === "__all__"
-                      ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                      ? "bg-success/10 border border-success/20 text-success"
                       : "bg-surface-raised text-foreground hover:bg-foreground"
                   }`}
                 >
@@ -642,7 +642,7 @@ export default function CopyEnginePage() {
                           }
                           className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-all ${
                             copiedId === section.id
-                              ? "bg-emerald-50 text-emerald-700"
+                              ? "bg-success/10 text-success"
                               : "text-subtle hover:text-subtle hover:bg-surface-raised"
                           }`}
                         >

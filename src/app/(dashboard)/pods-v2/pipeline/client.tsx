@@ -287,9 +287,9 @@ function Stat({
 }) {
   const cls =
     tone === "rose"
-      ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
+      ? "border-danger/20 bg-danger/10 text-danger"
       : tone === "amber"
-        ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+        ? "border-warning/20 bg-warning/10 text-warning"
         : "border-border bg-surface text-foreground";
   return (
     <div className={`rounded-xl border p-4 shadow-[var(--shadow-soft)] ${cls}`}>
@@ -413,16 +413,16 @@ function TableView({
             );
             const tone =
               daysLeft < 0
-                ? "text-rose-700"
+                ? "text-danger"
                 : daysLeft <= 3
-                  ? "text-amber-700"
+                  ? "text-warning"
                   : "text-subtle";
             return (
               <tr key={p.id} className="hover:bg-background">
                 <td className="px-4 py-3">
                   <div className="font-medium">{p.name}</div>
                   {p.is_rush && (
-                    <span className="mt-0.5 inline-block text-[10px] font-medium text-rose-700">
+                    <span className="mt-0.5 inline-block text-[10px] font-medium text-danger">
                       Rush
                     </span>
                   )}
@@ -431,7 +431,7 @@ function TableView({
                 <td className="px-4 py-3">
                   <div>{client?.name ?? ","}</div>
                   {client?.brand_warm && (
-                    <div className="text-[10px] font-medium text-orange-700">Warm</div>
+                    <div className="text-[10px] font-medium text-info">Warm</div>
                   )}
                 </td>
                 <td className="px-4 py-3">

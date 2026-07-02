@@ -70,7 +70,7 @@ export default function HeroOfferLayout({
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
           <h1 className="text-2xl font-semibold mb-1">
-            <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <span className="text-foreground">
               Hero Offer
             </span>
           </h1>
@@ -87,8 +87,8 @@ export default function HeroOfferLayout({
                   onClick={() => pickTab(tab.id)}
                   className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-all ${
                     active
-                      ? "bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 text-white font-medium shadow-[0_4px_24px_rgba(14,165,233,0.35)]"
-                      : "text-subtle hover:text-foreground hover:bg-white/[0.04]"
+                      ? "bg-foreground text-background font-medium"
+                      : "text-subtle hover:text-foreground hover:bg-surface-hover"
                   }`}
                 >
                   <Icon className="size-4" />

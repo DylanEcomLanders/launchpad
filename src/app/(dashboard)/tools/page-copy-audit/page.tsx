@@ -215,7 +215,7 @@ export default function PageCopyAuditPage() {
       </div>
 
       {/* ── Brief + Brand ── */}
-      <div className={`border rounded-xl bg-surface p-5 mb-6 ${briefLocked ? "border-emerald-200" : "border-border"}`}>
+      <div className={`border rounded-xl bg-surface p-5 mb-6 ${briefLocked ? "border-success/20" : "border-border"}`}>
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-sm font-semibold text-foreground">Client Brief</h2>
@@ -238,7 +238,7 @@ export default function PageCopyAuditPage() {
                 if (brandName.trim()) runVoc(brandName);
               }}
               disabled={!brief.trim()}
-              className="px-4 py-1.5 text-[11px] font-medium bg-white text-background rounded-lg hover:bg-foreground disabled:opacity-30"
+              className="px-4 py-1.5 text-[11px] font-medium bg-foreground text-background rounded-lg hover:bg-foreground/90 disabled:opacity-30"
             >
               Lock Brief & Start
             </button>
@@ -257,7 +257,7 @@ export default function PageCopyAuditPage() {
               placeholder="e.g. Ecomlanders"
             />
             {vocLoading && <p className="text-[10px] text-muted mt-1">Researching VOC...</p>}
-            {vocDone && vocData && <p className="text-[10px] text-emerald-600 mt-1">VOC data loaded ✓</p>}
+            {vocDone && vocData && <p className="text-[10px] text-success mt-1">VOC data loaded ✓</p>}
           </div>
           <div>
             <label className={labelClass}>Brief</label>
@@ -287,7 +287,7 @@ export default function PageCopyAuditPage() {
                 <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[85%] px-3.5 py-2.5 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
                     msg.role === "user"
-                      ? "bg-white text-background rounded-br-sm"
+                      ? "bg-foreground text-background rounded-br-sm"
                       : "bg-surface-raised text-foreground rounded-bl-sm"
                   }`}>
                     {msg.content}
@@ -322,7 +322,7 @@ export default function PageCopyAuditPage() {
             <button
               onClick={sendChat}
               disabled={!chatInput.trim() || chatLoading}
-              className="px-4 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground disabled:opacity-30"
+              className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-lg hover:bg-foreground/90 disabled:opacity-30"
             >
               Send
             </button>
@@ -339,17 +339,17 @@ export default function PageCopyAuditPage() {
             </summary>
             <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border border-t border-border">
               <div className="p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500 mb-2">Pain Points</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-danger mb-2">Pain Points</p>
                 {vocData.painPoints.map((p, i) => <p key={i} className="text-xs text-muted italic mb-1.5 leading-relaxed">{p}</p>)}
               </div>
               <div className="p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 mb-2">Objections</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-warning mb-2">Objections</p>
                 {vocData.objections.map((o, i) => <p key={i} className="text-xs text-muted italic mb-1.5 leading-relaxed">{o}</p>)}
               </div>
               <div className="p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 mb-2">Key Phrases</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-info mb-2">Key Phrases</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {vocData.keyPhrases.map((kp, i) => <span key={i} className="inline-block px-2 py-1 text-[10px] font-medium text-blue-300 bg-blue-900/20 rounded-full">{kp}</span>)}
+                  {vocData.keyPhrases.map((kp, i) => <span key={i} className="inline-block px-2 py-1 text-[10px] font-medium text-info bg-info/10 rounded-full">{kp}</span>)}
                 </div>
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function PageCopyAuditPage() {
                   </button>
                   <button
                     onClick={handleAnalyse}
-                    className="px-5 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground"
+                    className="px-5 py-2 bg-foreground text-background text-xs font-medium rounded-lg hover:bg-foreground/90"
                   >
                     Analyse
                   </button>
@@ -425,7 +425,7 @@ export default function PageCopyAuditPage() {
                     <span className="text-[11px] text-muted">{s.analysis.summary}</span>
                   )}
                 </div>
-                <button onClick={() => removeSection(s.id)} className="text-[10px] text-muted hover:text-red-500">Remove</button>
+                <button onClick={() => removeSection(s.id)} className="text-[10px] text-muted hover:text-danger">Remove</button>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
@@ -438,7 +438,7 @@ export default function PageCopyAuditPage() {
                 <div className="p-5">
                   {s.analysing && (
                     <div className="flex items-center gap-3 py-8 justify-center">
-                      <div className="animate-spin size-5 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+                      <div className="animate-spin size-5 border-2 border-border border-t-foreground rounded-full" />
                       <p className="text-xs text-muted">Checking copy...</p>
                     </div>
                   )}
@@ -449,16 +449,16 @@ export default function PageCopyAuditPage() {
                       {s.analysis.redFlags.length > 0 && (
                         <div>
                           <div className="flex items-center gap-2 mb-2.5">
-                            <div className="size-2 rounded-full bg-red-500" />
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500">
+                            <div className="size-2 rounded-full bg-danger" />
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-danger">
                               {s.analysis.redFlags.length} Red Flag{s.analysis.redFlags.length !== 1 ? "s" : ""} — Must Fix
                             </p>
                           </div>
                           <div className="space-y-2">
                             {s.analysis.redFlags.map((flag, i) => (
-                              <div key={i} className="border border-red-100 bg-red-50/30 rounded-lg px-3.5 py-2.5">
+                              <div key={i} className="border border-danger/20 bg-danger/10 rounded-lg px-3.5 py-2.5">
                                 <p className="text-xs font-medium text-foreground italic mb-1">&ldquo;{flag.quote}&rdquo;</p>
-                                <p className="text-[10px] font-semibold text-red-500 mb-0.5">{flag.rule}</p>
+                                <p className="text-[10px] font-semibold text-danger mb-0.5">{flag.rule}</p>
                                 <p className="text-xs text-muted leading-relaxed">{flag.why}</p>
                               </div>
                             ))}
@@ -470,16 +470,16 @@ export default function PageCopyAuditPage() {
                       {s.analysis.warnings.length > 0 && (
                         <div>
                           <div className="flex items-center gap-2 mb-2.5">
-                            <div className="size-2 rounded-full bg-amber-500" />
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+                            <div className="size-2 rounded-full bg-warning" />
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-warning">
                               {s.analysis.warnings.length} Warning{s.analysis.warnings.length !== 1 ? "s" : ""} — Should Review
                             </p>
                           </div>
                           <div className="space-y-2">
                             {s.analysis.warnings.map((warn, i) => (
-                              <div key={i} className="border border-amber-100 bg-amber-50/30 rounded-lg px-3.5 py-2.5">
+                              <div key={i} className="border border-warning/20 bg-warning/10 rounded-lg px-3.5 py-2.5">
                                 <p className="text-xs font-medium text-foreground italic mb-1">&ldquo;{warn.quote}&rdquo;</p>
-                                <p className="text-[10px] font-semibold text-amber-600 mb-0.5">{warn.rule}</p>
+                                <p className="text-[10px] font-semibold text-warning mb-0.5">{warn.rule}</p>
                                 <p className="text-xs text-muted leading-relaxed">{warn.why}</p>
                               </div>
                             ))}
@@ -491,15 +491,15 @@ export default function PageCopyAuditPage() {
                       {s.analysis.passing.length > 0 && (
                         <div>
                           <div className="flex items-center gap-2 mb-2.5">
-                            <div className="size-2 rounded-full bg-emerald-500" />
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                            <div className="size-2 rounded-full bg-success" />
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-success">
                               {s.analysis.passing.length} Passing
                             </p>
                           </div>
                           <div className="space-y-1.5">
                             {s.analysis.passing.map((pass, i) => (
                               <div key={i} className="flex items-start gap-2">
-                                <svg className="size-3.5 text-emerald-500 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                <svg className="size-3.5 text-success shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                                 </svg>
                                 <div>
@@ -514,8 +514,8 @@ export default function PageCopyAuditPage() {
 
                       {/* VOC Gaps */}
                       {s.analysis.vocGaps && s.analysis.vocGaps.length > 0 && (
-                        <div className="bg-blue-50/50 rounded-lg px-3.5 py-3 border border-blue-100">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 mb-2">VOC Gaps — Customer Language Not Used</p>
+                        <div className="bg-info/10 rounded-lg px-3.5 py-3 border border-info/20">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-info mb-2">VOC Gaps — Customer Language Not Used</p>
                           <div className="space-y-1">
                             {s.analysis.vocGaps.map((gap, i) => (
                               <p key={i} className="text-xs text-muted leading-relaxed">• {gap}</p>
@@ -526,8 +526,8 @@ export default function PageCopyAuditPage() {
 
                       {/* No issues */}
                       {s.analysis.redFlags.length === 0 && s.analysis.warnings.length === 0 && (
-                        <div className="bg-emerald-50/50 rounded-lg px-3.5 py-3 border border-emerald-100 text-center">
-                          <p className="text-xs font-medium text-emerald-700">Clean — no flags raised for this section</p>
+                        <div className="bg-success/10 rounded-lg px-3.5 py-3 border border-success/20 text-center">
+                          <p className="text-xs font-medium text-success">Clean — no flags raised for this section</p>
                         </div>
                       )}
                     </div>

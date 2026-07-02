@@ -133,11 +133,11 @@ export default function ScoutPage() {
           <button
             onClick={runScout}
             disabled={running || !niche.trim()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-5 py-2.5 bg-surface text-foreground text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-40"
           >
             {running ? (
               <>
-                <div className="animate-spin size-3.5 border-2 border-white/30 border-t-white rounded-full" />
+                <div className="animate-spin size-3.5 border-2 border-foreground/30 border-t-foreground rounded-full" />
                 Scouting...
               </>
             ) : (
@@ -153,10 +153,10 @@ export default function ScoutPage() {
         {stats && (
           <div className="grid grid-cols-4 gap-3 mb-6">
             {[
-              { label: "Brands Found", value: stats.total, color: "#1B1B1B" },
-              { label: "Saved to Leads", value: stats.saved, color: "#10B981" },
-              { label: "Skipped (dupes)", value: stats.skipped, color: "#F59E0B" },
-              { label: "Web Searches", value: stats.searches, color: "#3B82F6" },
+              { label: "Brands Found", value: stats.total, color: "var(--foreground)" },
+              { label: "Saved to Leads", value: stats.saved, color: "var(--color-success)" },
+              { label: "Skipped (dupes)", value: stats.skipped, color: "var(--color-warning)" },
+              { label: "Web Searches", value: stats.searches, color: "var(--color-info)" },
             ].map(s => (
               <div key={s.label} className="border border-foreground rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
@@ -172,7 +172,7 @@ export default function ScoutPage() {
             <div className="bg-surface-raised px-4 py-2.5 border-b border-foreground flex items-center gap-2">
               <BoltIcon className="size-3.5 text-subtle" />
               <span className="text-xs font-medium text-subtle">Live Feed</span>
-              {running && <div className="animate-pulse size-2 rounded-full bg-emerald-400" />}
+              {running && <div className="animate-pulse size-2 rounded-full bg-success" />}
             </div>
             <div ref={logRef} className="max-h-[500px] overflow-y-auto p-4 space-y-1.5 font-mono text-xs">
               {log.filter(l => l.type !== "text").map((entry, i) => (
@@ -184,23 +184,23 @@ export default function ScoutPage() {
                     <span className="text-subtle">{entry.data.message}</span>
                   )}
                   {entry.type === "search" && (
-                    <span className="text-blue-500">Web search #{entry.data.count}</span>
+                    <span className="text-info">Web search #{entry.data.count}</span>
                   )}
                   {entry.type === "lead_found" && (
-                    <span className="text-amber-600">
+                    <span className="text-warning">
                       Found: {entry.data.brand} {entry.data.priority ? "★" : ""}
                     </span>
                   )}
                   {entry.type === "lead_saved" && (
-                    <span className="text-emerald-600">Saved: {entry.data.brand}</span>
+                    <span className="text-success">Saved: {entry.data.brand}</span>
                   )}
                   {entry.type === "done" && (
-                    <span className="text-emerald-600 font-semibold">
+                    <span className="text-success font-semibold">
                       Done — {entry.data.saved} leads saved, {entry.data.searches} searches
                     </span>
                   )}
                   {entry.type === "error" && (
-                    <span className="text-red-500">{entry.data.message}</span>
+                    <span className="text-danger">{entry.data.message}</span>
                   )}
                 </div>
               ))}

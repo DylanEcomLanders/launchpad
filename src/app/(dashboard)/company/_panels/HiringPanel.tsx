@@ -160,7 +160,7 @@ export default function HiringPanel() {
   return (
     <div>
       {/* Open roles strip */}
-      <div className="bg-background ring-1 ring-white/[0.04] rounded-xl p-4 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <div className="bg-background ring-1 ring-border rounded-xl p-4 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-subtle">
             Open roles
@@ -187,8 +187,8 @@ export default function HiringPanel() {
                     onClick={() => setRoleFilter(active ? "all" : r.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs border ${
                       active
-                        ? "bg-white text-background border-white"
-                        : "bg-background text-foreground ring-1 ring-white/[0.04] hover:ring-white/[0.12]"
+                        ? "bg-foreground text-background border-border"
+                        : "bg-background text-foreground ring-1 ring-border hover:ring-border"
                     }`}
                   >
                     {r.title} <span className="opacity-70">· {count}</span>
@@ -313,7 +313,7 @@ function KanbanColumn({
       className={`rounded-xl flex flex-col transition-colors ${
         over
           ? "bg-surface-raised border-2 border-dashed border-muted"
-          : "bg-background border border-white/[0.04]"
+          : "bg-background border border-border"
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -327,7 +327,7 @@ function KanbanColumn({
         if (cid) onMove(cid, id);
       }}
     >
-      <div className="px-3 py-3 border-b border-white/[0.04]">
+      <div className="px-3 py-3 border-b border-border">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span
@@ -391,7 +391,7 @@ function CandidateCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       onClick={onClick}
-      className="bg-background ring-1 ring-white/[0.04] rounded-lg p-3 cursor-pointer hover:ring-violet-500/30 transition-all"
+      className="bg-background ring-1 ring-border rounded-lg p-3 cursor-pointer hover:ring-ring transition-all"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="font-medium text-sm text-foreground truncate">{candidate.full_name}</div>
@@ -498,7 +498,7 @@ function ComposeCandidateModal({
           <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-subtle hover:text-foreground">
             Cancel
           </button>
-          <button type="submit" className="px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90">
+          <button type="submit" className="px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90">
             Add
           </button>
         </div>
@@ -571,7 +571,7 @@ function AddRoleModal({ onCancel, onSave }: { onCancel: () => void; onSave: (r: 
           <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-subtle hover:text-foreground">
             Cancel
           </button>
-          <button type="submit" className="px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90">
+          <button type="submit" className="px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90">
             Add
           </button>
         </div>
@@ -619,7 +619,7 @@ function CandidateSidePanel({
         className="bg-background w-full max-w-lg h-full overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-background border-b border-white/[0.04] px-5 py-3 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-background border-b border-border px-5 py-3 flex items-center justify-between z-10">
           <h2 className="text-lg font-semibold text-foreground">{candidate.full_name}</h2>
           <button onClick={onClose} className="text-subtle hover:text-foreground">
             <XMarkIcon className="size-5" />
@@ -729,7 +729,7 @@ function CandidateSidePanel({
               placeholder="Markdown supported."
             />
           </div>
-          <div className="text-[11px] text-subtle pt-2 border-t border-white/[0.04]">
+          <div className="text-[11px] text-subtle pt-2 border-t border-border">
             Added {fmtDateUK(candidate.date_added)} · Updated {fmtDateUK(candidate.updated_at)}
           </div>
 
@@ -737,14 +737,14 @@ function CandidateSidePanel({
             {candidate.status === "hired" ? (
               <button
                 onClick={onConvert}
-                className="inline-flex items-center gap-1 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
+                className="inline-flex items-center gap-1 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
               >
                 Convert to person
               </button>
             ) : null}
             <button
               onClick={onDelete}
-              className="px-3 py-2 text-sm text-danger hover:bg-red-500/15 rounded-lg"
+              className="px-3 py-2 text-sm text-danger hover:bg-danger/15 rounded-lg"
             >
               Delete
             </button>

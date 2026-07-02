@@ -179,7 +179,7 @@ function UKTimeBanner({ dark = false }: { dark?: boolean }) {
     <div className="flex items-center gap-2">
       <span
         className={`size-2 rounded-full shrink-0 ${
-          isOnline ? "bg-green-500" : "bg-red-500"
+          isOnline ? "bg-success" : "bg-danger"
         }`}
       />
       <span className={`text-[11px] ${dark ? "text-subtle" : "text-subtle"}`}>
@@ -475,8 +475,8 @@ export function PortalView({
               <p className="px-3 mb-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-muted">Handover Gates</p>
               {teamGateItems.map((g) => {
                 const dotColor =
-                  g.status === "submitted" ? "bg-emerald-500"
-                  : g.status === "in-progress" ? "bg-amber-400"
+                  g.status === "submitted" ? "bg-success"
+                  : g.status === "in-progress" ? "bg-warning"
                   : "bg-muted";
                 const isActive = activeTab === "internal" && focusedGateKey === g.key;
                 return (
@@ -799,10 +799,10 @@ export function PortalView({
                               ) : (
                                 <span className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
                                   review.status === "approved"
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    ? "bg-success/10 text-success border-success/20"
                                     : review.status === "changes_requested"
-                                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                                    : "bg-blue-50 text-blue-700 border-blue-200"
+                                    ? "bg-warning/10 text-warning border-warning/20"
+                                    : "bg-info/10 text-info border-info/20"
                                 }`}>
                                   {review.status === "changes_requested" ? "Changes Requested" : review.status === "approved" ? "Approved" : "In Review"}
                                 </span>
@@ -851,7 +851,7 @@ export function PortalView({
                                             <div>
                                               <p className="text-xs font-medium text-surface">
                                                 Version {v.version_number}
-                                                {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
+                                                {isLatest && <span className="ml-2 text-[10px] text-success font-semibold">Latest</span>}
                                               </p>
                                               <p className="text-[10px] text-muted">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
                                             </div>
@@ -904,7 +904,7 @@ export function PortalView({
                                             <div>
                                               <p className="text-xs font-medium text-surface">
                                                 Version {v.version_number}
-                                                {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
+                                                {isLatest && <span className="ml-2 text-[10px] text-success font-semibold">Latest</span>}
                                               </p>
                                               <p className="text-[10px] text-muted">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
                                             </div>
@@ -929,7 +929,7 @@ export function PortalView({
                                   <div className="space-y-2">
                                     {fb.map((item) => (
                                       <div key={item.id} className="flex items-start gap-2">
-                                        <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-emerald-400" : "bg-amber-400"}`} />
+                                        <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-success" : "bg-warning"}`} />
                                         <div>
                                           <p className="text-xs text-surface">{item.comment}</p>
                                           <p className="text-[10px] text-muted">{item.submitted_by} · {new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}{item.resolved && " · Resolved"}</p>
@@ -991,8 +991,8 @@ export function PortalView({
                                 }`}
                               >
                                 <span className={`size-1.5 rounded-full ${
-                                  node.data.status === "live" ? "bg-emerald-400"
-                                    : node.data.status === "in-progress" ? "bg-amber-400"
+                                  node.data.status === "live" ? "bg-success"
+                                    : node.data.status === "in-progress" ? "bg-warning"
                                     : "bg-muted"
                                 }`} />
                                 {node.data.label}
@@ -1187,14 +1187,14 @@ function AssemblyLineKanban({ portalId }: { portalId: string }) {
                           {ASSET_TYPE_LABELS[type]}
                         </span>
                         {item.shipped_at && (
-                          <span className="text-[10px] text-emerald-600 font-medium shrink-0">
+                          <span className="text-[10px] text-success font-medium shrink-0">
                             {new Date(item.shipped_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                           </span>
                         )}
                       </div>
                       <p className="text-sm font-semibold text-surface leading-snug">{item.title}</p>
                       {item.outcome && (
-                        <p className="text-[11px] text-emerald-600 font-semibold mt-1.5">{item.outcome}</p>
+                        <p className="text-[11px] text-success font-semibold mt-1.5">{item.outcome}</p>
                       )}
                       {!item.outcome && item.impact_hypothesis && (
                         <p className="text-[11px] text-subtle italic mt-1.5 line-clamp-2">{item.impact_hypothesis}</p>
@@ -1326,7 +1326,7 @@ function CheckpointStepper({ currentPhaseName }: { currentPhaseName: string }) {
             {i > 0 && (
               <div
                 className={`absolute top-3.5 right-1/2 w-full h-px ${
-                  prevDone ? "bg-surface" : "bg-[#ECECEC]"
+                  prevDone ? "bg-surface" : "bg-border"
                 }`}
               />
             )}
@@ -1462,13 +1462,13 @@ function ClientHub({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
+                    {proj.status === "active" && <span className="size-2 rounded-full bg-success shrink-0" />}
                     <div>
                       <p className="text-sm font-semibold text-surface">{proj.name}</p>
                       <p className="text-xs text-muted mt-0.5">
                         {proj.created_at && <span className="mr-3">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
                         {tier && <span className="mr-3">· {tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
-                        {liveTests > 0 && <span className="text-emerald-600">{liveTests} live</span>}
+                        {liveTests > 0 && <span className="text-success">{liveTests} live</span>}
                         {completedTests > 0 && <span className="ml-3">{completedTests} completed</span>}
                       </p>
                     </div>

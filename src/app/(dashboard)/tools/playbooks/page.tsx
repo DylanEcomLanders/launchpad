@@ -170,12 +170,12 @@ function PlaybookIndex({
                       <div
                         className={`p-2.5 rounded-md border ${
                           isComplete
-                            ? "bg-emerald-50 border-emerald-200"
+                            ? "bg-success/10 border-success/20"
                             : "bg-surface border-border"
                         }`}
                       >
                         {isComplete ? (
-                          <CheckCircleIcon className="size-5 text-emerald-600" />
+                          <CheckCircleIcon className="size-5 text-success" />
                         ) : (
                           <BookOpenIcon className="size-5" />
                         )}
@@ -194,12 +194,12 @@ function PlaybookIndex({
                             {pb.steps.length} steps
                           </span>
                           {pbProgress && !isComplete && (
-                            <span className="text-amber-600">
+                            <span className="text-warning">
                               {pbProgress.completedSteps.length}/{pb.steps.length} done
                             </span>
                           )}
                           {isComplete && (
-                            <span className="text-emerald-600">Complete</span>
+                            <span className="text-success">Complete</span>
                           )}
                         </div>
 
@@ -208,7 +208,7 @@ function PlaybookIndex({
                           <div className="mt-3 h-1.5 bg-border rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                isComplete ? "bg-emerald-500" : "bg-border border border-border"
+                                isComplete ? "bg-success" : "bg-border border border-border"
                               }`}
                               style={{ width: `${percent}%` }}
                             />
@@ -224,7 +224,7 @@ function PlaybookIndex({
                           e.stopPropagation();
                           onReset(pb.id);
                         }}
-                        className="absolute top-3 right-3 p-1.5 text-muted hover:text-red-500 transition-colors"
+                        className="absolute top-3 right-3 p-1.5 text-muted hover:text-danger transition-colors"
                         title="Reset progress"
                       >
                         <ArrowPathIcon className="size-3.5" />
@@ -334,8 +334,8 @@ function PlaybookView({
         <DecorativeBlocks />
         <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 py-12 md:py-16">
           <div className="text-center py-16">
-            <div className="inline-flex p-4 bg-emerald-50 border border-emerald-200 rounded-full mb-6">
-              <TrophyIcon className="size-10 text-emerald-600" />
+            <div className="inline-flex p-4 bg-success/10 border border-success/20 rounded-full mb-6">
+              <TrophyIcon className="size-10 text-success" />
             </div>
             <h1 className="text-[28px] font-bold leading-tight mb-3">
               Playbook Complete!
@@ -350,7 +350,7 @@ function PlaybookView({
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={onBack}
-                className="px-6 py-2.5 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors"
+                className="px-6 py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors"
               >
                 Back to Playbooks
               </button>
@@ -405,7 +405,7 @@ function PlaybookView({
                   i < playbook.steps.length - 1 ? "mr-[1px]" : ""
                 } ${
                   progress.completedSteps.includes(i)
-                    ? "bg-emerald-500"
+                    ? "bg-success"
                     : i === currentStepIndex
                     ? "bg-border border border-border"
                     : "bg-transparent"
@@ -426,7 +426,7 @@ function PlaybookView({
                 }}
                 className={`w-2 h-2 rounded-full transition-all ${
                   progress.completedSteps.includes(i)
-                    ? "bg-emerald-500 cursor-pointer"
+                    ? "bg-success cursor-pointer"
                     : i === currentStepIndex
                     ? "bg-border border border-border"
                     : "bg-border cursor-not-allowed"
@@ -450,9 +450,9 @@ function PlaybookView({
 
           {/* Tip callout */}
           {step.tip && (
-            <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3">
-              <LightBulbIcon className="size-5 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-900">{step.tip}</p>
+            <div className="mt-6 bg-warning/10 border border-warning/20 rounded-lg p-4 flex gap-3">
+              <LightBulbIcon className="size-5 text-warning shrink-0 mt-0.5" />
+              <p className="text-sm text-warning">{step.tip}</p>
             </div>
           )}
         </div>
@@ -462,9 +462,9 @@ function PlaybookView({
           <div
             className={`border rounded-lg p-6 mb-6 transition-colors ${
               showResult && isCorrect
-                ? "bg-emerald-50 border-emerald-200"
+                ? "bg-success/10 border-success/20"
                 : showResult && !isCorrect
-                ? "bg-red-50 border-red-200"
+                ? "bg-danger/10 border-danger/20"
                 : "bg-surface-raised border-border"
             }`}
           >
@@ -490,12 +490,12 @@ function PlaybookView({
                   className={`w-full text-left px-4 py-3 rounded-md text-sm transition-all border ${
                     selectedAnswer === i
                       ? showResult && isCorrect && i === step.quiz!.correctIndex
-                        ? "bg-emerald-100 border-emerald-300 font-medium"
+                        ? "bg-success/10 border-success/30 font-medium"
                         : showResult && !isCorrect && i === selectedAnswer
-                        ? "bg-red-100 border-red-300"
-                        : "bg-surface border-white font-medium"
+                        ? "bg-danger/10 border-danger/30"
+                        : "bg-surface border-foreground font-medium"
                       : showResult && isCorrect && i === step.quiz!.correctIndex
-                      ? "bg-emerald-100 border-emerald-300"
+                      ? "bg-success/10 border-success/30"
                       : "bg-surface border-border hover:border-muted"
                   } ${showResult && isCorrect ? "cursor-default" : "cursor-pointer"}`}
                 >
@@ -503,7 +503,7 @@ function PlaybookView({
                     <span
                       className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 ${
                         selectedAnswer === i
-                          ? "bg-white border-background text-background"
+                          ? "bg-foreground border-background text-background"
                           : "border-muted text-subtle"
                       }`}
                     >
@@ -520,14 +520,14 @@ function PlaybookView({
               <button
                 onClick={submitQuiz}
                 disabled={selectedAnswer === null}
-                className="w-full px-5 py-2.5 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="w-full px-5 py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Check Answer
               </button>
             )}
 
             {showResult && isCorrect && (
-              <div className="flex items-center gap-2 text-sm text-emerald-700 font-medium">
+              <div className="flex items-center gap-2 text-sm text-success font-medium">
                 <CheckCircleIcon className="size-5" />
                 Correct! You can proceed to the next step.
               </div>
@@ -535,11 +535,11 @@ function PlaybookView({
 
             {showResult && !isCorrect && (
               <div>
-                <p className="text-sm text-red-700 font-medium mb-2">
+                <p className="text-sm text-danger font-medium mb-2">
                   Not quite — try again!
                 </p>
                 {step.quiz.hint && (
-                  <p className="text-xs text-red-600">
+                  <p className="text-xs text-danger">
                     <strong>Hint:</strong> {step.quiz.hint}
                   </p>
                 )}
@@ -548,7 +548,7 @@ function PlaybookView({
                     setShowResult(false);
                     setSelectedAnswer(null);
                   }}
-                  className="mt-3 px-4 py-2 bg-surface border border-red-200 text-red-700 text-sm font-medium rounded-md hover:bg-red-50 transition-colors"
+                  className="mt-3 px-4 py-2 bg-surface border border-danger/20 text-danger text-sm font-medium rounded-md hover:bg-danger/10 transition-colors"
                 >
                   Try Again
                 </button>
@@ -561,7 +561,7 @@ function PlaybookView({
         {!step.quiz && !isStepCompleted && (
           <button
             onClick={completeStepWithoutQuiz}
-            className="w-full px-5 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 transition-colors mb-6"
+            className="w-full px-5 py-2.5 bg-success text-white text-sm font-medium rounded-md hover:bg-success/90 transition-colors mb-6"
           >
             <span className="flex items-center justify-center gap-2">
               <CheckCircleIcon className="size-4" />
@@ -586,7 +586,7 @@ function PlaybookView({
             disabled={!canProceed || (!isStepCompleted && !!step?.quiz)}
             className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-md transition-colors ${
               canProceed && (isStepCompleted || !step?.quiz)
-                ? "bg-white text-background hover:bg-foreground"
+                ? "bg-foreground text-background hover:bg-foreground/90"
                 : "bg-border text-subtle cursor-not-allowed"
             }`}
           >

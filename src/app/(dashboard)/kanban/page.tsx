@@ -1460,7 +1460,7 @@ export default function KanbanPage() {
             <p className="text-2xs font-medium text-subtle">
               Mission Control
               {headerCountLabel && (
-                <span className="text-border">
+                <span className="text-muted">
                   {" · "}{headerCountLabel.toLowerCase()}
                 </span>
               )}
@@ -1921,7 +1921,7 @@ function BoardColumns(props: BoardColumnsProps) {
 
             <div className={`${props.density === "glance" ? "p-1 flex flex-col gap-1" : "px-1 py-1 flex flex-col gap-2"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}>
               {cards.length === 0 ? (
-                <p className="text-3xs text-border text-center py-6">
+                <p className="text-3xs text-muted text-center py-6">
                   -
                 </p>
               ) : (
@@ -2003,7 +2003,7 @@ function BoardColumns(props: BoardColumnsProps) {
                             }
                           }}
                           placeholder={`New ${props.newCategoryDraft}`}
-                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-border"
+                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-muted"
                         />
                       </div>
                     ) : (
@@ -2054,7 +2054,7 @@ function BoardColumns(props: BoardColumnsProps) {
                               ? `New ${props.newDeliverableCategoryDraft}`
                               : "New deliverable"
                           }
-                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-border"
+                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-muted"
                         />
                       </div>
                     )
@@ -2321,7 +2321,7 @@ function Card({
             {d.phase === "launch-testing" ? (
               <>
                 {LAUNCH_TESTING_TESTER}
-                <span className="text-border mx-1">·</span>
+                <span className="text-muted mx-1">·</span>
                 {LAUNCH_TESTING_DEV}
               </>
             ) : d.phase === "strategy" ? (
@@ -2334,7 +2334,7 @@ function Card({
               <>
                 {role.name}
                 {role.isSecondary && (
-                  <span className="text-border ml-1">(2nd)</span>
+                  <span className="text-muted ml-1">(2nd)</span>
                 )}
               </>
             )}
@@ -2529,7 +2529,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2 text-3xs">
               <div>
-                <p className="text-border text-5xs font-bold">
+                <p className="text-muted text-5xs font-bold">
                   Metric
                 </p>
                 <p className="mt-0.5 text-foreground truncate">
@@ -2537,7 +2537,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-border text-5xs font-bold">
+                <p className="text-muted text-5xs font-bold">
                   Uplift
                 </p>
                 <p
@@ -2557,7 +2557,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-border text-5xs font-bold">
+                <p className="text-muted text-5xs font-bold">
                   Confidence
                 </p>
                 <p className="mt-0.5 text-foreground tabular-nums">
@@ -2962,7 +2962,7 @@ function DarkDatePicker({
         <CalendarIcon className="size-4 text-subtle shrink-0" />
         <span
           className={`flex-1 text-left tabular-nums ${
-            value ? "text-foreground" : "text-border"
+            value ? "text-foreground" : "text-muted"
           }`}
         >
           {value ? formatDueDate(value) : placeholder}
@@ -2982,7 +2982,7 @@ function DarkDatePicker({
                 onChange(undefined);
               }
             }}
-            className="text-border hover:text-muted transition-colors shrink-0 cursor-pointer"
+            className="text-muted hover:text-muted transition-colors shrink-0 cursor-pointer"
             aria-label="Clear date"
           >
             <XMarkIcon className="size-3.5" />
@@ -3022,7 +3022,7 @@ function DarkDatePicker({
             {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
               <div
                 key={d}
-                className="text-4xs text-border text-center py-1"
+                className="text-4xs text-muted text-center py-1"
               >
                 {d}
               </div>
@@ -3533,7 +3533,7 @@ function DetailModal({
                       * fallback - if Phase 1 / Phase 2 deadlines are set
                       * directly in the Client deadlines section, those
                       * take precedence for stuck/approaching/on-track. */}
-                    <p className="text-4xs text-border italic pb-1">
+                    <p className="text-4xs text-muted italic pb-1">
                       Schedule anchors (used when no manual deadlines set)
                     </p>
                     <div className="flex items-center justify-between gap-2">
@@ -3770,7 +3770,7 @@ function DetailModal({
               {d.phase === "launch-testing" ? (
                 <p className="text-sm text-foreground">
                   {LAUNCH_TESTING_TESTER}
-                  <span className="text-border mx-1.5">·</span>
+                  <span className="text-muted mx-1.5">·</span>
                   {LAUNCH_TESTING_DEV}
                   <span className="block text-4xs text-subtle mt-1">
                     Test / Dev
@@ -3858,7 +3858,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste brief URL (Google Doc, Notion, SharePoint, etc.)"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-border"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
                 />
                 <button
                   type="button"
@@ -3946,7 +3946,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste Figma file or frame URL"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-border"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
                 />
                 <button
                   type="button"
@@ -4010,7 +4010,7 @@ function DetailModal({
               }}
               placeholder="Context, edge cases, blockers - anything that doesn't fit the structured fields."
               rows={3}
-              className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border leading-relaxed"
+              className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted leading-relaxed"
             />
           </section>
             </>
@@ -4153,7 +4153,7 @@ function DetailModal({
               </div>
               <div className="grid grid-cols-4 gap-3 text-sm">
                 <div>
-                  <p className="text-4xs font-bold text-border">
+                  <p className="text-4xs font-bold text-muted">
                     Metric
                   </p>
                   <p className="mt-0.5 text-foreground">
@@ -4161,7 +4161,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-4xs font-bold text-border">
+                  <p className="text-4xs font-bold text-muted">
                     Uplift
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4171,7 +4171,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-4xs font-bold text-border">
+                  <p className="text-4xs font-bold text-muted">
                     Confidence
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4181,7 +4181,7 @@ function DetailModal({
                   </p>
                 </div>
                 <div>
-                  <p className="text-4xs font-bold text-border">
+                  <p className="text-4xs font-bold text-muted">
                     Duration
                   </p>
                   <p className="mt-0.5 text-foreground tabular-nums">
@@ -4302,7 +4302,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="https://..."
-                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
+                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
                 />
               </div>
 
@@ -4314,7 +4314,7 @@ function DetailModal({
                   <label className="text-4xs font-semibold text-subtle">
                     Metrics
                   </label>
-                  <span className="text-4xs text-border">
+                  <span className="text-4xs text-muted">
                     Before / After
                   </span>
                 </div>
@@ -4328,7 +4328,7 @@ function DetailModal({
                       onChange={(e) => updateMetric(i, { name: e.target.value })}
                       onBlur={blurCommit}
                       placeholder="Metric"
-                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
                     />
                     <input
                       value={m.baseline ?? ""}
@@ -4337,7 +4337,7 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Baseline"
-                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
                     />
                     <input
                       value={m.interim ?? ""}
@@ -4346,12 +4346,12 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Interim"
-                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
                     />
                     <button
                       type="button"
                       onClick={() => removeMetric(i)}
-                      className="size-7 inline-flex items-center justify-center rounded-md text-border hover:text-muted hover:bg-surface transition-colors"
+                      className="size-7 inline-flex items-center justify-center rounded-md text-muted hover:text-muted hover:bg-surface transition-colors"
                       title="Remove metric"
                       aria-label="Remove metric"
                     >
@@ -4384,7 +4384,7 @@ function DetailModal({
                   }}
                   placeholder="What the running data is telling you."
                   rows={2}
-                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
+                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
                 />
               </div>
 

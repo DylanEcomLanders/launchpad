@@ -248,7 +248,7 @@ export default function PodsIndexClient() {
             <>
               <Link
                 href="/pods-v2/new-project"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-surface px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-foreground"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-foreground px-3 py-2 text-xs font-medium text-background shadow-[var(--shadow-soft)] transition-colors hover:opacity-90"
               >
                 <PlusIcon className="size-3.5" />
                 New project
@@ -342,7 +342,7 @@ export default function PodsIndexClient() {
                 window.location.reload();
               }
             }}
-            className="text-[11px] uppercase tracking-wider text-subtle hover:text-rose-700"
+            className="text-[11px] uppercase tracking-wider text-subtle hover:text-danger"
           >
             Wipe all data
           </button>
@@ -474,12 +474,12 @@ function Overview({
                   <span className="font-semibold tabular-nums text-foreground">{dueThisWeek}</span> due this week
                 </span>
                 {behind > 0 ? (
-                  <span className="font-semibold tabular-nums text-rose-600">· {behind} behind</span>
+                  <span className="font-semibold tabular-nums text-danger">· {behind} behind</span>
                 ) : (
-                  <span className="text-emerald-700">· on track</span>
+                  <span className="text-success">· on track</span>
                 )}
                 {activeBlockers > 0 && (
-                  <span className="ml-auto tabular-nums text-amber-700">{activeBlockers} blocked</span>
+                  <span className="ml-auto tabular-nums text-warning">{activeBlockers} blocked</span>
                 )}
               </div>
               <div className="mt-2 flex items-center justify-between text-[11px] text-subtle">
@@ -490,10 +490,10 @@ function Overview({
                 <span
                   className={`rounded-md px-1.5 py-0.5 font-medium tabular-nums ${
                     headroomPct >= 100
-                      ? "bg-rose-50 text-rose-700"
+                      ? "bg-danger/10 text-danger"
                       : headroomPct >= 85
-                        ? "bg-amber-50 text-amber-800"
-                        : "bg-emerald-50 text-emerald-700"
+                        ? "bg-warning/10 text-warning"
+                        : "bg-success/10 text-success"
                   }`}
                   title="Design points committed this week vs the 10 pts/week capacity — headroom for overflow"
                 >
@@ -600,7 +600,7 @@ function Overview({
                     </td>
                     <td
                       className={`px-3 py-2 text-right tabular-nums text-[12px] font-medium ${
-                        ageDays >= 7 ? "text-rose-700" : ageDays >= 3 ? "text-amber-700" : "text-emerald-700"
+                        ageDays >= 7 ? "text-danger" : ageDays >= 3 ? "text-warning" : "text-success"
                       }`}
                     >
                       {ageDays === 0 ? "today" : `${ageDays}d`}
@@ -608,7 +608,7 @@ function Overview({
                     <td className="px-3 py-2 text-right">
                       <button
                         onClick={() => onAssign(o)}
-                        className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-1 text-[10px] font-medium text-white hover:bg-foreground"
+                        className="inline-flex items-center gap-1 rounded-md bg-foreground px-2 py-1 text-[10px] font-medium text-background hover:opacity-90"
                       >
                         Assign to pod
                       </button>
@@ -1035,7 +1035,7 @@ function AssignToPodModal({
 
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              conversionEngine ? "border-success bg-emerald-50" : "border-border"
+              conversionEngine ? "border-success bg-success/10" : "border-border"
             }`}
           >
             <input
@@ -1056,7 +1056,7 @@ function AssignToPodModal({
 
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              rush ? "border-rose-400 bg-rose-50" : "border-border"
+              rush ? "border-danger/40 bg-danger/10" : "border-border"
             }`}
           >
             <input
@@ -1085,22 +1085,22 @@ function AssignToPodModal({
               </span>
             </div>
             {source === "portal" && (
-              <p className="mb-1.5 text-[10px] text-emerald-700">
+              <p className="mb-1.5 text-[10px] text-success">
                 ✓ Pre-filled from the linked client portal&apos;s scope. Confirm or edit before assigning.
               </p>
             )}
             {source === "deliverables" && (
-              <p className="mb-1.5 text-[10px] text-emerald-700">
+              <p className="mb-1.5 text-[10px] text-success">
                 ✓ Pre-filled from the onboarding deliverables. Confirm or edit before assigning.
               </p>
             )}
             {source === "page_type" && (
-              <p className="mb-1.5 text-[10px] text-amber-700">
+              <p className="mb-1.5 text-[10px] text-warning">
                 Pre-filled from the legacy page_type field ({onboarding.page_type}). Confirm or edit before assigning.
               </p>
             )}
             {source === "blank" && (
-              <p className="mb-1.5 text-[10px] text-amber-700">
+              <p className="mb-1.5 text-[10px] text-warning">
                 ⚠ No deliverables found on the portal, the onboarding form, or page_type, add them here.
               </p>
             )}
@@ -1126,7 +1126,7 @@ function AssignToPodModal({
                   />
                   <button
                     onClick={() => removeItem(it.id)}
-                    className="p-1 text-subtle hover:text-rose-600"
+                    className="p-1 text-subtle hover:text-danger"
                     title="Remove"
                     type="button"
                   >
@@ -1138,7 +1138,7 @@ function AssignToPodModal({
             <button
               type="button"
               onClick={addItem}
-              className="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-[10px] text-subtle hover:border-white hover:text-foreground"
+              className="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-[10px] text-subtle hover:border-subtle hover:text-foreground"
             >
               + Add deliverable
             </button>
@@ -1155,7 +1155,7 @@ function AssignToPodModal({
           <button
             onClick={submit}
             disabled={submitting || !podId || items.length === 0}
-            className="rounded bg-foreground text-surface px-3 py-1.5 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
+            className="rounded bg-foreground px-3 py-1.5 text-[11px] font-medium text-background hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Assigning…" : `Confirm & assign · ${items.length} deliverable${items.length === 1 ? "" : "s"}`}
           </button>
@@ -1263,17 +1263,17 @@ function PodHealthRow({
 
   function toneClass(t: Tone): string {
     return t === "red"
-      ? "bg-rose-500"
+      ? "bg-danger"
       : t === "amber"
-        ? "bg-amber-500"
-        : "bg-emerald-500";
+        ? "bg-warning"
+        : "bg-success";
   }
   function toneText(t: Tone): string {
     return t === "red"
-      ? "text-rose-700"
+      ? "text-danger"
       : t === "amber"
-        ? "text-amber-700"
-        : "text-emerald-700";
+        ? "text-warning"
+        : "text-success";
   }
   /* Tile background by tone, matches the pod card PodStat alert pattern
    * (rose-50 for alert) but extended to three tones. Green = neutral pod-
@@ -1281,9 +1281,9 @@ function PodHealthRow({
    * box; amber/red lift attention without flooding the row. */
   function toneTile(t: Tone): string {
     return t === "red"
-      ? "bg-rose-50 text-rose-800"
+      ? "bg-danger/10 text-danger"
       : t === "amber"
-        ? "bg-amber-50 text-amber-800"
+        ? "bg-warning/10 text-warning"
         : "bg-background text-foreground";
   }
 
@@ -1474,7 +1474,7 @@ function FridayDigestPanel({
                 onClick={() => postPodDigest(s)}
                 className={`rounded-md px-2 py-1 text-[10px] font-medium ${
                   s.pod.slack_channel_id
-                    ? "bg-foreground text-surface hover:bg-white"
+                    ? "bg-foreground text-background hover:opacity-90"
                     : "cursor-not-allowed bg-border text-subtle"
                 } ${posting === s.pod.id ? "opacity-60" : ""}`}
                 title={s.pod.slack_channel_id ? "Post to Slack" : "No channel configured for this pod"}
@@ -1597,7 +1597,7 @@ function CroPipeline({
           {isAdmin && allProjects.length > 0 && (
             <button
               onClick={() => setAdding(true)}
-              className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:border-white"
+              className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:border-subtle"
             >
               + Add strategy task
             </button>
@@ -1654,7 +1654,7 @@ function CroPipeline({
                   setAdding(false);
                   onMutate();
                 }}
-                className="rounded-md bg-surface px-2 py-1 text-[11px] font-medium text-white hover:bg-foreground"
+                className="rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background hover:opacity-90"
               >
                 Add
               </button>
@@ -1682,7 +1682,7 @@ function CroPipeline({
                     return (
                       <div key={g.key}>
                         {showHeader && (
-                          <div className="bg-emerald-50/40 px-4 py-1 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
+                          <div className="bg-success/10 px-4 py-1 text-[9px] font-semibold uppercase tracking-wider text-success">
                             {g.label}
                             <span className="ml-1.5 text-subtle">
                               · {g.tasks.filter((t) => t.status !== "done").length} open
@@ -1694,7 +1694,7 @@ function CroPipeline({
                           const client = project ? clientById.get(project.client_id) : undefined;
                           const isDone = t.status === "done";
                           const ageHours = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3_600_000));
-                          const ageColor = ageHours >= 48 ? "text-rose-700" : ageHours >= 24 ? "text-amber-700" : "text-emerald-700";
+                          const ageColor = ageHours >= 48 ? "text-danger" : ageHours >= 24 ? "text-warning" : "text-success";
                           const ageLabel = formatTimeInPhase(t.created_at);
                           return (
                             <div
@@ -1736,10 +1736,10 @@ function CroPipeline({
                                 }}
                                 className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                                   isDone
-                                    ? "border-emerald-500 bg-emerald-500 text-white"
+                                    ? "border-success bg-success text-white"
                                     : t.status === "in_progress"
-                                      ? "border-blue-500 bg-surface text-blue-500"
-                                      : "border-border bg-surface hover:border-white"
+                                      ? "border-info bg-surface text-info"
+                                      : "border-border bg-surface hover:border-subtle"
                                 }`}
                                 title="Click to advance · Shift-click or right-click to step back"
                               >
@@ -1748,7 +1748,7 @@ function CroPipeline({
                                     <path d="M10.28 3.28L4.5 9.06 1.72 6.28l1.06-1.06L4.5 6.94l4.72-4.72z" />
                                   </svg>
                                 )}
-                                {t.status === "in_progress" && <span className="size-1.5 rounded-full bg-blue-500" />}
+                                {t.status === "in_progress" && <span className="size-1.5 rounded-full bg-info" />}
                               </button>
                               <div className="min-w-0 flex-1">
                                 <div className={`truncate text-sm leading-tight ${isDone ? "text-subtle line-through" : "text-foreground"}`}>
@@ -1775,7 +1775,7 @@ function CroPipeline({
                                   className="opacity-0 transition-opacity group-hover:opacity-100"
                                   title="Delete task"
                                 >
-                                  <span className="text-subtle hover:text-rose-600">×</span>
+                                  <span className="text-subtle hover:text-danger">×</span>
                                 </button>
                               )}
                             </div>
@@ -1804,7 +1804,7 @@ function PodStat({
   alert?: boolean;
 }) {
   const cls = alert
-    ? "bg-rose-50 text-rose-800"
+    ? "bg-danger/10 text-danger"
     : "bg-background text-foreground";
   return (
     <div className={`rounded-lg px-3 py-2 ${cls}`}>

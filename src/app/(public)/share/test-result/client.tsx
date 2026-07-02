@@ -79,13 +79,13 @@ export default function ShareCard({
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={downloadPng}
-          className="rounded-lg bg-surface px-3 py-1.5 text-xs font-medium text-white hover:bg-border"
+          className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:bg-foreground/90"
         >
           Save as PNG
         </button>
         <a
           href="/share/test-result"
-          className="rounded-lg border border-foreground bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-raised"
+          className="rounded-lg border border-foreground bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-raised"
         >
           New test
         </a>

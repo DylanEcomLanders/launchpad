@@ -265,13 +265,13 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
           <div className="h-2 bg-surface-raised rounded-full overflow-hidden flex">
             {stats.pass > 0 && (
               <div
-                className="bg-emerald-500 transition-all duration-300"
+                className="bg-success transition-all duration-300"
                 style={{ width: `${(stats.pass / stats.total) * 100}%` }}
               />
             )}
             {stats.fail > 0 && (
               <div
-                className="bg-red-500 transition-all duration-300"
+                className="bg-danger transition-all duration-300"
                 style={{ width: `${(stats.fail / stats.total) * 100}%` }}
               />
             )}
@@ -283,8 +283,8 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
             )}
           </div>
           <div className="flex gap-4 mt-2">
-            <span className="text-xs text-emerald-600 font-medium">{stats.pass} pass</span>
-            <span className="text-xs text-red-500 font-medium">{stats.fail} fail</span>
+            <span className="text-xs text-success font-medium">{stats.pass} pass</span>
+            <span className="text-xs text-danger font-medium">{stats.fail} fail</span>
             <span className="text-xs text-subtle font-medium">{stats.skip} skip</span>
           </div>
         </div>
@@ -304,7 +304,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
               >
                 <div className="flex items-center gap-2">
                   {cs.hasFail && (
-                    <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-danger flex-shrink-0" />
                   )}
                   <span className="text-sm font-semibold">{category}</span>
                   <span className="text-xs text-subtle">
@@ -329,28 +329,28 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                           style={{
                             borderColor:
                               item.result === "pass"
-                                ? "#10b981"
+                                ? "var(--success)"
                                 : item.result === "fail"
-                                  ? "#ef4444"
+                                  ? "var(--danger)"
                                   : item.result === "skip"
-                                    ? "#C5C5C5"
-                                    : "#E5E5EA",
+                                    ? "var(--subtle)"
+                                    : "var(--border)",
                             backgroundColor:
                               item.result === "pass"
-                                ? "#ecfdf5"
+                                ? "color-mix(in srgb, var(--success) 12%, transparent)"
                                 : item.result === "fail"
-                                  ? "#fef2f2"
+                                  ? "color-mix(in srgb, var(--danger) 12%, transparent)"
                                   : item.result === "skip"
-                                    ? "#F3F3F5"
-                                    : "#FFFFFF",
+                                    ? "var(--surface-raised)"
+                                    : "var(--surface)",
                             color:
                               item.result === "pass"
-                                ? "#059669"
+                                ? "var(--success)"
                                 : item.result === "fail"
-                                  ? "#dc2626"
+                                  ? "var(--danger)"
                                   : item.result === "skip"
-                                    ? "#999999"
-                                    : "#C5C5C5",
+                                    ? "var(--subtle)"
+                                    : "var(--subtle)",
                           }}
                         >
                           {item.result === "pass"
@@ -368,7 +368,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                             item.result === "skip"
                               ? "text-subtle line-through"
                               : item.result === "fail"
-                                ? "text-red-700"
+                                ? "text-danger"
                                 : "text-foreground"
                           }`}
                         >
@@ -394,7 +394,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          className="flex-shrink-0 p-1.5 text-muted hover:text-red-500 transition-colors"
+                          className="flex-shrink-0 p-1.5 text-muted hover:text-danger transition-colors"
                         >
                           <TrashIcon className="size-3.5" />
                         </button>
@@ -405,7 +405,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <div className="px-4 pb-2.5 pl-14 border-b border-border">
                           <input
                             type="text"
-                            className="w-full px-2.5 py-1.5 text-xs bg-background border border-border rounded focus:outline-none focus:border-white placeholder:text-muted"
+                            className="w-full px-2.5 py-1.5 text-xs bg-background border border-border rounded focus:outline-none focus:border-subtle placeholder:text-muted"
                             placeholder="Add a note..."
                             value={item.notes}
                             onChange={(e) => updateItem(item.id, { notes: e.target.value })}
@@ -421,7 +421,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          className="flex-1 px-2.5 py-1.5 text-sm bg-background border border-border rounded focus:outline-none focus:border-white placeholder:text-muted"
+                          className="flex-1 px-2.5 py-1.5 text-sm bg-background border border-border rounded focus:outline-none focus:border-subtle placeholder:text-muted"
                           placeholder="New check description..."
                           value={newItemText}
                           onChange={(e) => setNewItemText(e.target.value)}
@@ -486,7 +486,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
           <button
             onClick={handleGenerate}
             disabled={!isFormValid || generating}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 bg-accent text-accent-foreground text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {generating ? (
               <>
@@ -511,10 +511,10 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
             <div
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold ${
                 overallVerdict === "PASS"
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  ? "bg-success/10 text-success border border-success/20"
                   : overallVerdict === "FAIL"
-                    ? "bg-red-50 text-red-700 border border-red-200"
-                    : "bg-amber-50 text-amber-700 border border-amber-200"
+                    ? "bg-danger/10 text-danger border border-danger/20"
+                    : "bg-warning/10 text-warning border border-warning/20"
               }`}
             >
               {overallVerdict === "PASS"

@@ -291,7 +291,7 @@ export default function TaskBoardPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-raised">
-        <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" />
       </div>
     );
   }
@@ -309,7 +309,7 @@ export default function TaskBoardPage() {
   return (
     <div className="min-h-screen bg-surface-raised">
       {/* Header */}
-      <div className="bg-white border-b border-foreground px-6 py-4">
+      <div className="bg-surface border-b border-foreground px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
@@ -345,13 +345,13 @@ export default function TaskBoardPage() {
         <div className="flex-1 min-w-0">
         {/* Tab + assignee filter */}
         <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
-          <div className="inline-flex items-center p-1 bg-[#EFEFF1] rounded-lg">
+          <div className="inline-flex items-center p-1 bg-surface-raised rounded-lg">
             {TAB_META.map((t) => (
               <button
                 key={t.value}
                 onClick={() => setTabFilter(t.value)}
                 className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
-                  tabFilter === t.value ? "bg-white text-surface shadow-sm" : "text-subtle hover:text-surface"
+                  tabFilter === t.value ? "bg-surface text-surface shadow-sm" : "text-subtle hover:text-surface"
                 }`}
               >
                 {t.value !== "all" && <span className="size-1.5 rounded-full" style={{ background: t.color }} />}
@@ -364,13 +364,13 @@ export default function TaskBoardPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center p-0.5 bg-[#EFEFF1] rounded-lg">
+            <div className="inline-flex items-center p-0.5 bg-surface-raised rounded-lg">
               {(["client", "phase"] as const).map((g) => (
                 <button
                   key={g}
                   onClick={() => setGroupBy(g)}
                   className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-colors ${
-                    groupBy === g ? "bg-white text-surface shadow-sm" : "text-subtle hover:text-surface"
+                    groupBy === g ? "bg-surface text-surface shadow-sm" : "text-subtle hover:text-surface"
                   }`}
                 >
                   By {g}
@@ -380,7 +380,7 @@ export default function TaskBoardPage() {
             <select
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
-              className="text-xs px-3 py-1.5 border border-foreground rounded-lg bg-white focus:outline-none focus:border-subtle"
+              className="text-xs px-3 py-1.5 border border-foreground rounded-lg bg-surface focus:outline-none focus:border-subtle"
             >
               <option value="">{assigneeFilterLabel}</option>
               {assignees.map((a) => (
@@ -408,13 +408,13 @@ export default function TaskBoardPage() {
 
         {/* One continuous list, grouped by client via in-table header rows */}
         {active.length === 0 ? (
-          <div className="bg-white border border-foreground rounded-xl">
+          <div className="bg-surface border border-foreground rounded-xl">
             <p className="text-xs text-muted text-center py-10">
               No active tasks{assigneeFilter ? ` for ${assigneeFilter}` : ""}
             </p>
           </div>
         ) : (
-          <div className="bg-white border border-foreground rounded-xl overflow-hidden">
+          <div className="bg-surface border border-foreground rounded-xl overflow-hidden">
             <ColumnHeader />
             {activeGroups.map((group, i) => {
               const isLaunchPhaseGroup = group.mode === "phase" && group.key === "launch";
@@ -477,7 +477,7 @@ export default function TaskBoardPage() {
             <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle">
               {done.length} completed
             </summary>
-            <div className="bg-white border border-foreground rounded-xl overflow-hidden mt-2 opacity-60">
+            <div className="bg-surface border border-foreground rounded-xl overflow-hidden mt-2 opacity-60">
               <ColumnHeader />
               {done.map((t) => <TaskRow key={t.id} task={t} />)}
             </div>

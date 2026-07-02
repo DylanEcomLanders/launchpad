@@ -94,10 +94,10 @@ export default function KnowledgePage() {
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <header>
         <div className="flex items-center gap-3 mb-2">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-emerald-500 via-cyan-500 to-sky-500 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)]">
-            <AcademicCapIcon className="size-5 text-white" />
+          <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+            <AcademicCapIcon className="size-5 text-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-semibold text-foreground">
             Brain library
           </h1>
         </div>
@@ -118,11 +118,11 @@ export default function KnowledgePage() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 max-w-md">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface, write-up, learning" className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-cyan-500/40" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface, write-up, learning" className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-border text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-ring" />
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
             {OUTCOME_FILTERS.map((f) => (
-              <button key={f.value} onClick={() => setOutcomeFilter(f.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${outcomeFilter === f.value ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>
+              <button key={f.value} onClick={() => setOutcomeFilter(f.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${outcomeFilter === f.value ? "bg-foreground text-surface" : "bg-surface text-muted hover:bg-surface-raised"}`}>
                 {f.label}
               </button>
             ))}
@@ -130,11 +130,11 @@ export default function KnowledgePage() {
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold">Tags:</span>
-          <button onClick={() => setTagFilter(null)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tagFilter === null ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>
+          <button onClick={() => setTagFilter(null)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tagFilter === null ? "bg-foreground text-surface" : "bg-surface text-muted hover:bg-surface-raised"}`}>
             All
           </button>
           {allTags.map((tag) => (
-            <button key={tag} onClick={() => setTagFilter(tag === tagFilter ? null : tag)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tag === tagFilter ? "bg-cyan-500/30 text-cyan-100 ring-1 ring-cyan-400/40" : "bg-surface text-muted hover:bg-surface-raised"}`}>
+            <button key={tag} onClick={() => setTagFilter(tag === tagFilter ? null : tag)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tag === tagFilter ? "bg-info/20 text-info ring-1 ring-info/40" : "bg-surface text-muted hover:bg-surface-raised"}`}>
               {tag}
             </button>
           ))}
@@ -144,7 +144,7 @@ export default function KnowledgePage() {
       {!hydrated ? (
         <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-border">
           <p className="text-sm text-subtle">
             {tests.length === 0 ? "No concluded tests yet. The library fills as you call tests." : "No tests match the current filter."}
           </p>
@@ -152,7 +152,7 @@ export default function KnowledgePage() {
       ) : (
         <ul className="space-y-3">
           {filtered.map((t) => (
-            <li key={t.id} className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]">
+            <li key={t.id} className="bg-background rounded-2xl p-5 ring-1 ring-border">
               <div className="flex items-start gap-3 mb-3">
                 <OutcomeIcon outcome={t.outcome!} />
                 <div className="flex-1 min-w-0">
@@ -160,7 +160,7 @@ export default function KnowledgePage() {
                     <span className="text-sm font-semibold text-foreground">{t.client_name || "Unattached"}</span>
                     {t.surface && <span className="text-[12px] text-subtle">· {t.surface}</span>}
                     {t.uplift_pct !== undefined && (
-                      <span className={`text-[12px] font-mono ${t.outcome === "winner" ? "text-emerald-300" : t.outcome === "loser" ? "text-rose-300" : "text-zinc-300"}`}>
+                      <span className={`text-[12px] font-mono ${t.outcome === "winner" ? "text-success" : t.outcome === "loser" ? "text-danger" : "text-muted"}`}>
                         {t.uplift_pct >= 0 ? "+" : ""}{t.uplift_pct}%
                       </span>
                     )}
@@ -170,8 +170,8 @@ export default function KnowledgePage() {
                   </div>
                   <p className="text-[13px] text-foreground mb-2">{t.hypothesis_line || "(no hypothesis)"}</p>
                   {t.learnings && (
-                    <div className="text-[12px] text-muted bg-black/40 rounded-lg p-3 ring-1 ring-white/[0.04] mb-2">
-                      <div className="text-[10px] uppercase tracking-wider text-emerald-300 font-semibold mb-1">Learning</div>
+                    <div className="text-[12px] text-muted bg-surface rounded-lg p-3 ring-1 ring-border mb-2">
+                      <div className="text-[10px] uppercase tracking-wider text-success font-semibold mb-1">Learning</div>
                       {t.learnings}
                     </div>
                   )}
@@ -180,7 +180,7 @@ export default function KnowledgePage() {
                       <button
                         key={tag}
                         onClick={() => isAdmin && toggleTag(t.id, tag)}
-                        className="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-cyan-500/15 text-cyan-200 hover:bg-cyan-500/25"
+                        className="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-info/15 text-info hover:bg-info/25"
                       >
                         {tag} {isAdmin && "×"}
                       </button>
@@ -208,16 +208,16 @@ export default function KnowledgePage() {
 }
 
 function OutcomeIcon({ outcome }: { outcome: TestOutcome }) {
-  if (outcome === "winner") return <CheckCircleIcon className="size-5 text-emerald-400 shrink-0 mt-0.5" />;
-  if (outcome === "loser") return <XCircleIcon className="size-5 text-rose-400 shrink-0 mt-0.5" />;
-  return <ExclamationCircleIcon className="size-5 text-zinc-400 shrink-0 mt-0.5" />;
+  if (outcome === "winner") return <CheckCircleIcon className="size-5 text-success shrink-0 mt-0.5" />;
+  if (outcome === "loser") return <XCircleIcon className="size-5 text-danger shrink-0 mt-0.5" />;
+  return <ExclamationCircleIcon className="size-5 text-muted shrink-0 mt-0.5" />;
 }
 
 function Stat({ label, value, accent = "default" }: { label: string; value: number | string; accent?: "default" | "emerald" }) {
   return (
-    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04]">
+    <div className="bg-background rounded-xl p-4 ring-1 ring-border">
       <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">{label}</div>
-      <div className={`text-2xl font-semibold ${accent === "emerald" ? "text-emerald-300" : "text-foreground"}`}>{value}</div>
+      <div className={`text-2xl font-semibold ${accent === "emerald" ? "text-success" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }

@@ -191,7 +191,7 @@ export function TeamSidebar() {
                     </span>
                   )}
                   {item.badge && !item.comingSoon && (
-                    <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-700 rounded">
+                    <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-warning/10 text-warning rounded">
                       {item.badge}
                     </span>
                   )}

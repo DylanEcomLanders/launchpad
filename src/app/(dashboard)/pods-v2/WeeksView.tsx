@@ -145,7 +145,7 @@ function WeekRow({
   return (
     <div
       className={`rounded-xl border bg-surface shadow-[var(--shadow-soft)] ${
-        isThisWeek ? "border-white/30" : "border-border"
+        isThisWeek ? "border-ring" : "border-border"
       }`}
     >
       <button
@@ -164,7 +164,7 @@ function WeekRow({
                 {week.label}
               </span>
               {isThisWeek && (
-                <span className="rounded bg-foreground text-surface px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
+                <span className="rounded bg-foreground text-surface px-1.5 py-0.5 text-[9px] font-bold uppercase">
                   Now
                 </span>
               )}
@@ -315,9 +315,9 @@ function WeekCard({
   const midWeek = isMidWeekKickoff(project);
   const accent =
     tone === "kickoff"
-      ? "border-l-[3px] border-l-[#1B1B1B]"
+      ? "border-l-[3px] border-l-foreground"
       : tone === "ship"
-        ? "border-l-[3px] border-l-emerald-500"
+        ? "border-l-[3px] border-l-success"
         : "";
   return (
     <div
@@ -348,12 +348,12 @@ function WeekCard({
           </span>
         )}
         {project.is_rush && (
-          <span className="rounded-md border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700">
+          <span className="rounded-md border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger">
             Rush
           </span>
         )}
         {midWeek && (
-          <span className="rounded-md border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[10px] font-medium text-rose-800">
+          <span className="rounded-md border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger">
             Mid-week
           </span>
         )}

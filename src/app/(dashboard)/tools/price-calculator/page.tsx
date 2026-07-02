@@ -257,7 +257,7 @@ export default function PriceCalculatorPage() {
                     onClick={() => toggleRole(role)}
                     className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
                       isOn
-                        ? "bg-white text-background border-white"
+                        ? "bg-foreground text-background border-foreground"
                         : "bg-surface text-subtle border-border hover:text-subtle hover:border-muted"
                     }`}
                   >
@@ -270,7 +270,7 @@ export default function PriceCalculatorPage() {
 
           {/* Volume discount banner */}
           {pageDiscount > 0 && (
-            <div className="flex items-center gap-3 px-4 py-3 bg-success border border-[#BBF7D0] rounded-lg">
+            <div className="flex items-center gap-3 px-4 py-3 bg-success/10 border border-success/20 rounded-lg">
               <span className="text-sm text-success">
                 <strong>{Math.round(pageDiscount * 100)}% volume discount</strong>{" "}
                 applied to page build costs ({totalPages} pages)
@@ -335,7 +335,7 @@ export default function PriceCalculatorPage() {
                                     {fmt.format(costFull)}
                                   </span>
                                   <span
-                                    className={`text-sm tabular-nums ${isActive ? "text-success" : "text-[#6B9F6B]"}`}
+                                    className={`text-sm tabular-nums ${isActive ? "text-success" : "text-success/70"}`}
                                   >
                                     {fmt.format(cost)}
                                   </span>
@@ -498,7 +498,7 @@ export default function PriceCalculatorPage() {
                           <span
                             className={`text-sm tabular-nums font-medium ${
                               item.lineMargin < 0
-                                ? "text-red-600"
+                                ? "text-danger"
                                 : "text-foreground"
                             }`}
                           >
@@ -524,7 +524,7 @@ export default function PriceCalculatorPage() {
                           <span
                             className={`text-sm font-medium tabular-nums ${
                               item.lineMargin < 0
-                                ? "text-red-600"
+                                ? "text-danger"
                                 : "text-foreground"
                             }`}
                           >
@@ -603,7 +603,7 @@ export default function PriceCalculatorPage() {
                     <div className="text-right">
                       <span
                         className={`text-sm font-semibold tabular-nums ${
-                          totalMargin < 0 ? "text-red-600" : "text-foreground"
+                          totalMargin < 0 ? "text-danger" : "text-foreground"
                         }`}
                       >
                         {fmtDetailed.format(totalMargin)}
@@ -621,7 +621,7 @@ export default function PriceCalculatorPage() {
                       </span>
                       <span
                         className={`text-sm font-semibold tabular-nums ${
-                          totalMargin < 0 ? "text-red-600" : "text-foreground"
+                          totalMargin < 0 ? "text-danger" : "text-foreground"
                         }`}
                       >
                         {fmtDetailed.format(totalMargin)}
@@ -688,7 +688,7 @@ export default function PriceCalculatorPage() {
                     </p>
                     <p
                       className={`text-lg font-semibold tabular-nums ${
-                        totalMargin < 0 ? "text-red-600" : "text-foreground"
+                        totalMargin < 0 ? "text-danger" : "text-foreground"
                       }`}
                     >
                       {fmtDetailed.format(totalMargin)}
@@ -700,7 +700,7 @@ export default function PriceCalculatorPage() {
                     </p>
                     <p
                       className={`text-lg font-semibold tabular-nums ${
-                        totalMargin < 0 ? "text-red-600" : "text-foreground"
+                        totalMargin < 0 ? "text-danger" : "text-foreground"
                       }`}
                     >
                       {marginPercent.toFixed(1)}%
@@ -770,15 +770,15 @@ export default function PriceCalculatorPage() {
                             className="flex items-center gap-2"
                           >
                             <div className={`size-4 rounded border transition-colors flex items-center justify-center ${
-                              isOn ? "bg-white border-background" : "border-border bg-surface"
+                              isOn ? "bg-foreground border-background" : "border-border bg-surface"
                             }`}>
-                              {isOn && <svg className="size-2.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>}
+                              {isOn && <svg className="size-2.5 text-background" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>}
                             </div>
                             <span className="text-xs text-muted">{fee.label}</span>
                             <span className="text-xs text-muted">{fee.description}</span>
                           </button>
                           {isOn && (
-                            <span className="text-xs font-semibold tabular-nums text-red-500">
+                            <span className="text-xs font-semibold tabular-nums text-danger">
                               -{fmtDetailed.format(feeAmount)}
                             </span>
                           )}
@@ -801,7 +801,7 @@ export default function PriceCalculatorPage() {
                         <div className="grid grid-cols-3 gap-4">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wider text-subtle mb-0.5">Total Fees</p>
-                            <p className="text-sm font-semibold tabular-nums text-red-500">-{fmtDetailed.format(totalFees)}</p>
+                            <p className="text-sm font-semibold tabular-nums text-danger">-{fmtDetailed.format(totalFees)}</p>
                           </div>
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wider text-subtle mb-0.5">Net Revenue</p>
@@ -809,7 +809,7 @@ export default function PriceCalculatorPage() {
                           </div>
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wider text-subtle mb-0.5">Net Margin</p>
-                            <p className={`text-sm font-semibold tabular-nums ${netMargin < 0 ? "text-red-600" : "text-foreground"}`}>
+                            <p className={`text-sm font-semibold tabular-nums ${netMargin < 0 ? "text-danger" : "text-foreground"}`}>
                               {fmtDetailed.format(netMargin)} <span className="text-xs text-muted">{netMarginPct.toFixed(1)}%</span>
                             </p>
                           </div>

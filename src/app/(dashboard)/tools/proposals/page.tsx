@@ -84,7 +84,7 @@ export default function ProposalsListPage() {
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle">Proposals are admin / CRO only.</p>
         </div>
       </div>
@@ -96,10 +96,10 @@ export default function ProposalsListPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
-              <DocumentTextIcon className="size-5 text-white" />
+            <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+              <DocumentTextIcon className="size-5 text-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               Proposals
             </h1>
           </div>
@@ -124,7 +124,7 @@ export default function ProposalsListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search brand, contact, tier"
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40"
+            className="w-full pl-9 pr-3 py-2 rounded-md bg-surface border border-border text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-ring"
           />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -147,11 +147,11 @@ export default function ProposalsListPage() {
       {!hydrated ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border">
           <p className="text-sm text-subtle mb-4">
             {proposals.length === 0
               ? "No proposals yet. Start one after a verbal yes."
@@ -164,7 +164,7 @@ export default function ProposalsListPage() {
             <li key={p.id}>
               <Link
                 href={`/tools/proposals/${p.id}`}
-                className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all"
+                className="block bg-surface rounded-xl p-4 border border-border hover:border-border transition-all"
               >
                 <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ export default function ProposalsListPage() {
                       <span>· {formatMoney(p.monthly_fee, p.fee_currency)}/mo</span>
                       <span>· {p.term_months}-mo term</span>
                       {p.prepay && <span>· prepay {p.prepay_discount_pct}% off</span>}
-                      <span className="text-emerald-300/80">· {formatMoney(quotedTotal(p), p.fee_currency)} quoted</span>
+                      <span className="text-success/80">· {formatMoney(quotedTotal(p), p.fee_currency)} quoted</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -192,7 +192,7 @@ export default function ProposalsListPage() {
                           e.stopPropagation();
                           createRenewal(p);
                         }}
-                        className="px-2 py-1 rounded text-[10px] uppercase tracking-wider font-semibold bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-500/30 hover:bg-cyan-500/25"
+                        className="px-2 py-1 rounded text-[10px] uppercase tracking-wider font-semibold bg-info/10 text-info ring-1 ring-info/20 hover:bg-info/20"
                         title="Generate renewal proposal from this one"
                       >
                         + Renewal
@@ -204,7 +204,7 @@ export default function ProposalsListPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-emerald-300"
+                        className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-success"
                       >
                         View
                         <ArrowTopRightOnSquareIcon className="size-3.5" />

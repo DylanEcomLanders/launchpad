@@ -130,13 +130,13 @@ const ENGAGEMENTS: Engagement[] = [
 function StatusDot({ status }: { status: Status }) {
   if (status === "done") {
     return (
-      <span className="inline-flex items-center justify-center size-5 rounded-full bg-emerald-500/15 ring-1 ring-emerald-500/30">
-        <CheckIcon className="size-3 text-emerald-300" />
+      <span className="inline-flex items-center justify-center size-5 rounded-full bg-success/10 ring-1 ring-success/20">
+        <CheckIcon className="size-3 text-success" />
       </span>
     );
   }
   if (status === "active") {
-    return <span className="block size-2.5 rounded-full bg-amber-400 ring-4 ring-amber-400/15" />;
+    return <span className="block size-2.5 rounded-full bg-warning ring-4 ring-warning/15" />;
   }
   return <span className="block size-2.5 rounded-full bg-subtle" />;
 }
@@ -155,7 +155,7 @@ function DocCell({
   const view = (
     <Link
       href={output.href}
-      className="inline-flex items-center justify-center size-7 rounded-lg text-subtle hover:text-cyan-200 hover:bg-white/[0.04]"
+      className="inline-flex items-center justify-center size-7 rounded-lg text-subtle hover:text-foreground hover:bg-surface-hover"
       title="View doc"
     >
       <ArrowTopRightOnSquareIcon className="size-4" />
@@ -165,7 +165,7 @@ function DocCell({
   if (output.state === "delivered") {
     return (
       <div className="flex items-center gap-1 shrink-0">
-        <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-300 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-success whitespace-nowrap">
           <CheckIcon className="size-3.5" />
           Sent {output.deliveredOn}
         </span>
@@ -179,7 +179,7 @@ function DocCell({
       <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={onMarkSent}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-amber-400/15 text-amber-200 ring-1 ring-amber-400/30 hover:bg-amber-400/25 whitespace-nowrap"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-warning/10 text-warning ring-1 ring-warning/20 hover:bg-warning/20 whitespace-nowrap"
         >
           <PaperAirplaneIcon className="size-3.5" />
           Mark sent
@@ -192,7 +192,7 @@ function DocCell({
   return (
     <Link
       href={output.href}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-white text-background hover:bg-foreground whitespace-nowrap shrink-0"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium bg-foreground text-background hover:opacity-90 whitespace-nowrap shrink-0"
     >
       <PlusIcon className="size-3.5" />
       Create
@@ -234,8 +234,8 @@ export default function ClientSuccessPreview() {
   return (
     <div className="min-h-full bg-background text-foreground">
       <div className="max-w-6xl mx-auto px-8 py-8">
-        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 ring-1 ring-amber-500/30 text-[12px] text-amber-200 mb-6">
-          <span className="size-1.5 rounded-full bg-amber-400" />
+        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-warning/10 ring-1 ring-warning/20 text-[12px] text-warning mb-6">
+          <span className="size-1.5 rounded-full bg-warning" />
           Preview · mock data
         </div>
 
@@ -302,7 +302,7 @@ function Home({
         </div>
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-white text-background hover:bg-foreground"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-foreground text-background hover:opacity-90"
         >
           <PlusIcon className="size-4" />
           Add engagement
@@ -318,10 +318,10 @@ function Home({
 
       {/* Coming up board */}
       <h2 className="text-[12px] uppercase tracking-[0.08em] text-subtle font-semibold mb-3 flex items-center gap-2">
-        <span className="size-1.5 rounded-full bg-sky-400" />
+        <span className="size-1.5 rounded-full bg-info" />
         Coming up · across all clients
       </h2>
-      <div className="bg-background rounded-2xl ring-1 ring-white/[0.05] divide-y divide-white/[0.05] mb-10">
+      <div className="bg-background rounded-2xl ring-1 ring-border divide-y divide-border mb-10">
         {comingUp.map((r) => {
           const out = resolveOutput(r);
           return (
@@ -343,7 +343,7 @@ function Home({
       </div>
 
       <h2 className="text-[12px] uppercase tracking-[0.08em] text-subtle font-semibold mb-3 flex items-center gap-2">
-        <span className="size-1.5 rounded-full bg-emerald-400" />
+        <span className="size-1.5 rounded-full bg-success" />
         Clients
       </h2>
       <div className="space-y-2.5">
@@ -351,16 +351,16 @@ function Home({
           <button
             key={e.id}
             onClick={() => onOpen(e.id)}
-            className="w-full text-left bg-background rounded-2xl ring-1 ring-white/[0.05] hover:ring-white/[0.14] transition-all px-6 py-5"
+            className="w-full text-left bg-background rounded-2xl ring-1 ring-border hover:ring-border transition-all px-6 py-5"
           >
             <div className="flex items-center gap-4">
-              <span className="inline-flex items-center justify-center size-11 rounded-xl bg-gradient-to-br from-sky-500/25 to-blue-600/25 ring-1 ring-sky-500/25 text-[14px] font-semibold text-sky-100 shrink-0">
+              <span className="inline-flex items-center justify-center size-11 rounded-xl bg-surface-raised ring-1 ring-border text-[14px] font-semibold text-foreground shrink-0">
                 {e.initials}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2.5">
                   <span className="text-[17px] font-semibold truncate">{e.name}</span>
-                  <span className={`size-2 rounded-full shrink-0 ${e.health === "on-track" ? "bg-emerald-400" : "bg-amber-400"}`} />
+                  <span className={`size-2 rounded-full shrink-0 ${e.health === "on-track" ? "bg-success" : "bg-warning"}`} />
                 </div>
                 <div className="text-[13px] text-subtle mt-0.5">
                   {TYPE_LABEL[e.type]}
@@ -387,9 +387,9 @@ function StatCard({
   tone: "amber" | "sky";
   hint?: string;
 }) {
-  const toneText = tone === "amber" ? "text-amber-300" : "text-sky-300";
+  const toneText = tone === "amber" ? "text-warning" : "text-info";
   return (
-    <div className="bg-background rounded-2xl ring-1 ring-white/[0.05] px-6 py-5">
+    <div className="bg-background rounded-2xl ring-1 ring-border px-6 py-5">
       <div className="text-[12px] uppercase tracking-wider text-subtle font-medium">{label}</div>
       <div className={`text-[32px] leading-none font-semibold tabular-nums mt-3 ${value === 0 ? "text-subtle" : toneText}`}>
         {value}
@@ -423,7 +423,7 @@ function Detail({
       </button>
 
       <div className="flex items-center gap-4 mb-6">
-        <span className="inline-flex items-center justify-center size-12 rounded-xl bg-gradient-to-br from-sky-500/25 to-blue-600/25 ring-1 ring-sky-500/25 text-[15px] font-semibold text-sky-100 shrink-0">
+        <span className="inline-flex items-center justify-center size-12 rounded-xl bg-surface-raised ring-1 ring-border text-[15px] font-semibold text-foreground shrink-0">
           {e.initials}
         </span>
         <div>
@@ -434,7 +434,7 @@ function Detail({
               {e.tier ? ` · ${e.tier}` : ""} · {e.progressLabel}
             </span>
             {e.scopeLocked && (
-              <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-500/25">
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-success/10 text-success ring-1 ring-success/20">
                 Scope locked
               </span>
             )}
@@ -449,7 +449,7 @@ function Detail({
       </div>
 
       <div className="relative">
-        <div className="absolute left-[10px] top-3 bottom-3 w-px bg-white/[0.06]" />
+        <div className="absolute left-[10px] top-3 bottom-3 w-px bg-border" />
         <div className="space-y-1">
           {e.schedule.map((s) => {
             const out = resolveOutput(s);
@@ -504,7 +504,7 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
         <Field label="Client name">
           <input
             placeholder="Acme Co"
-            className="w-full h-11 px-3.5 bg-background rounded-lg ring-1 ring-white/[0.06] text-[14px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-white/[0.16]"
+            className="w-full h-11 px-3.5 bg-background rounded-lg ring-1 ring-border text-[14px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-ring"
           />
         </Field>
 
@@ -516,8 +516,8 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
                 onClick={() => setType(t)}
                 className={`px-4 py-3 rounded-lg text-left ring-1 transition-colors ${
                   type === t
-                    ? "bg-white text-background ring-white"
-                    : "bg-background text-muted ring-white/[0.06] hover:text-foreground"
+                    ? "bg-foreground text-background ring-ring"
+                    : "bg-background text-muted ring-border hover:text-foreground"
                 }`}
               >
                 <div className="text-[14px] font-semibold">{TYPE_LABEL[t]}</div>
@@ -533,7 +533,7 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
           <Field label="Tier">
             <div className="grid grid-cols-3 gap-2.5">
               {["Entry", "Core", "VIP"].map((tier) => (
-                <div key={tier} className="px-3 py-2.5 rounded-lg text-center text-[13px] bg-background ring-1 ring-white/[0.06] text-muted">
+                <div key={tier} className="px-3 py-2.5 rounded-lg text-center text-[13px] bg-background ring-1 ring-border text-muted">
                   {tier}
                 </div>
               ))}
@@ -546,7 +546,7 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
           <Field label="Deliverables">
             <div className="space-y-2">
               {["Framing page", "Product page", "Cart"].map((d) => (
-                <div key={d} className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg bg-background ring-1 ring-white/[0.06]">
+                <div key={d} className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg bg-background ring-1 ring-border">
                   <span className="text-[14px] text-foreground">{d}</span>
                   <span className="text-[12px] text-subtle">client date</span>
                 </div>
@@ -562,11 +562,11 @@ function AddEngagement({ onBack }: { onBack: () => void }) {
         <Field label="Kickoff date">
           <input
             type="date"
-            className="w-full h-11 px-3.5 bg-background rounded-lg ring-1 ring-white/[0.06] text-[14px] text-foreground focus:outline-none focus:ring-white/[0.16]"
+            className="w-full h-11 px-3.5 bg-background rounded-lg ring-1 ring-border text-[14px] text-foreground focus:outline-none focus:ring-ring"
           />
         </Field>
 
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[14px] font-semibold bg-white text-background hover:bg-foreground">
+        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[14px] font-semibold bg-foreground text-background hover:opacity-90">
           Create engagement
           <ArrowRightIcon className="size-4" />
         </button>

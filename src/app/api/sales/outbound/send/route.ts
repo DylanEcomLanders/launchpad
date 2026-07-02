@@ -23,6 +23,10 @@ import { NextResponse } from "next/server";
 import { leadsStore } from "@/lib/leads/data";
 import type { LeadTouch } from "@/lib/leads/types";
 import { sendMessage, type UnipileChannel } from "@/lib/sales-dashboard/unipile-adapter";
+import {
+  isBeeperLive,
+  sendBeeperMessage,
+} from "@/lib/sales-dashboard/beeper-adapter";
 
 type OutboundChannel = "whatsapp" | "twitter" | "linkedin" | "email";
 const SUPPORTED: OutboundChannel[] = ["whatsapp", "twitter", "linkedin", "email"];
@@ -84,56 +88,88 @@ export async function POST(req: Request) {
     );
   }
 
-  const lead = await leadsStore.getById(leadId);
-  if (!lead) {
-    return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+  /* Unlinked chat path: leadId === "unlinked" means the caller is
+   * sending into a Beeper chat that doesn't tie to a Lead yet.
+   * Recipient must come from the request body (the Beeper chat id).
+   * Skip lead lookup + touch recording. */
+  const isUnlinked = leadId === "unlinked";
+  let lead: Awaited<ReturnType<typeof leadsStore.getById>> = null;
+  if (!isUnlinked) {
+    lead = await leadsStore.getById(leadId);
+    if (!lead) {
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    }
   }
 
   const recipient =
-    payload.recipient ?? resolveRecipient(channel as OutboundChannel, lead);
+    payload.recipient ??
+    (lead ? resolveRecipient(channel as OutboundChannel, lead) : undefined);
   if (!recipient) {
     return NextResponse.json(
       {
-        error: `No ${channel} recipient on this lead. Add one to the lead first or pass recipient in the request body.`,
+        error: `No ${channel} recipient. Pass recipient in the request body OR add one to the lead first.`,
       },
       { status: 422 },
     );
   }
 
-  /* Dispatch via the Unipile adapter. Adapter handles the stub vs
-   * live decision based on env vars - same call shape either way. */
-  const dispatch = await sendMessage({
-    channel: channel as UnipileChannel,
-    recipient,
-    body,
-    subject,
-  });
-
-  /* Record the outbound touch regardless of dispatch result. If
-   * Unipile failed we still want the UI to show "you tried to send
-   * this" with the provider error attached. */
-  const now = new Date().toISOString();
-  const touch: LeadTouch = {
-    id: `touch-${Math.random().toString(36).slice(2, 10)}`,
-    kind: "outreach_sent",
-    at: now,
-    by: `${by} via ${channel}${dispatch.stubbed ? " (stub)" : ""}`,
-    summary: dispatch.ok
-      ? body.slice(0, 500)
-      : `${body.slice(0, 400)}\n\n[send failed: ${dispatch.error ?? "unknown"}]`,
+  /* Dispatch.
+   * - If Beeper is configured AND the recipient looks like a
+   *   Beeper chat ID (Matrix-style "!abc:beeper.com"), route there
+   * - Otherwise fall back to Unipile */
+  let dispatch: {
+    ok: boolean;
+    stubbed: boolean;
+    providerMessageId?: string;
+    error?: string;
   };
-  await leadsStore.update(leadId, {
-    touches: [...lead.touches, touch],
-    last_touched_at: now,
-    updated_at: now,
-  });
+  if (isBeeperLive() && recipient.startsWith("!")) {
+    const beeper = await sendBeeperMessage(recipient, body);
+    dispatch = {
+      ok: beeper.ok,
+      stubbed: false,
+      providerMessageId: beeper.pendingMessageID,
+      error: beeper.error,
+    };
+  } else {
+    dispatch = await sendMessage({
+      channel: channel as UnipileChannel,
+      recipient,
+      body,
+      subject,
+    });
+  }
+
+  /* Record the outbound touch on the lead - skipped for unlinked
+   * Beeper chats since there is no lead. The Beeper preview pane
+   * re-fetches the thread after send so the new message appears
+   * via the Beeper round-trip instead. */
+  const now = new Date().toISOString();
+  let touchId: string | undefined;
+  if (lead && !isUnlinked) {
+    const touch: LeadTouch = {
+      id: `touch-${Math.random().toString(36).slice(2, 10)}`,
+      kind: "outreach_sent",
+      at: now,
+      by: `${by} via ${channel}${dispatch.stubbed ? " (stub)" : ""}`,
+      summary: dispatch.ok
+        ? body.slice(0, 500)
+        : `${body.slice(0, 400)}\n\n[send failed: ${dispatch.error ?? "unknown"}]`,
+    };
+    await leadsStore.update(leadId, {
+      touches: [...lead.touches, touch],
+      last_touched_at: now,
+      updated_at: now,
+    });
+    touchId = touch.id;
+  }
 
   return NextResponse.json(
     {
       ok: dispatch.ok,
       leadId,
       channel,
-      touchId: touch.id,
+      touchId,
       stubbed: dispatch.stubbed,
       providerMessageId: dispatch.providerMessageId,
       error: dispatch.error,

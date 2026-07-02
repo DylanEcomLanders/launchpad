@@ -212,7 +212,7 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         </header>
 
         {/* Key dates — card containing 3 stat tiles */}
-        <section className="mb-5 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
+        <section className="mb-5 rounded-2xl border border-foreground bg-surface p-5 shadow-[var(--shadow-soft)]">
           <div className="flex items-baseline justify-between mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
               Key dates
@@ -237,7 +237,7 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         </section>
 
         {/* How the cycle runs — card with 4 rhythm tiles + slippage callout */}
-        <section className="mb-5 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
+        <section className="mb-5 rounded-2xl border border-foreground bg-surface p-5 shadow-[var(--shadow-soft)]">
           <div className="flex items-baseline justify-between mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
               How the cycle runs
@@ -286,7 +286,7 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
          * the heading anchors a footnote (below the card) clarifying
          * that these dates assume client-side requirements come back
          * on time. */}
-        <section className="mb-3 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
+        <section className="mb-3 rounded-2xl border border-foreground bg-surface p-5 shadow-[var(--shadow-soft)]">
           <div className="flex items-baseline justify-between mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
               Roadmap <sup className="text-warning font-bold">*</sup>
@@ -300,7 +300,7 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
               {milestones.map((m, i) => {
                 const meta = KIND_META[m.kind];
                 return (
-                  <li key={`${m.date}-${i}`} className="grid grid-cols-[120px_1fr] md:grid-cols-[160px_1fr] gap-4 md:gap-6 px-4 md:px-5 py-4 md:py-5 bg-white">
+                  <li key={`${m.date}-${i}`} className="grid grid-cols-[120px_1fr] md:grid-cols-[160px_1fr] gap-4 md:gap-6 px-4 md:px-5 py-4 md:py-5 bg-surface">
                     <div className="flex flex-col justify-center">
                       <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9A9A9A]">
                         {formatWeekday(m.date)}
@@ -347,30 +347,30 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         {/* After launch — generic post-launch summary, no dates. We
          * follow performance + capture test wins as they come in, plus
          * the 30-day support reminder. */}
-        <section className="mb-5 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
+        <section className="mb-5 rounded-2xl border border-foreground bg-surface p-5 shadow-[var(--shadow-soft)]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle mb-4">
             After launch
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
+            <div className="rounded-lg border border-border bg-surface-raised p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="size-1.5 rounded-full bg-surface" />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground">
                   We watch the numbers
                 </span>
               </div>
-              <p className="text-[14px] leading-snug text-border">
+              <p className="text-[14px] leading-snug text-muted">
                 Performance tracked from go-live. Test wins captured as they come in. A readout call once there's enough signal to act on.
               </p>
             </div>
-            <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
+            <div className="rounded-lg border border-border bg-surface-raised p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="size-1.5 rounded-full bg-subtle" />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-subtle">
                   30-day support window
                 </span>
               </div>
-              <p className="text-[14px] leading-snug text-border">
+              <p className="text-[14px] leading-snug text-muted">
                 Bug fixes, tweaks, and monitoring stay on us for 30 days post-launch. Anything new after that gets scoped separately.
               </p>
             </div>
@@ -378,11 +378,11 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         </section>
 
         {/* Working together — dark card */}
-        <section className="mb-5 rounded-2xl bg-surface text-white p-6 md:p-7 shadow-[var(--shadow-card)]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/55">
+        <section className="mb-5 rounded-2xl bg-foreground text-background p-6 md:p-7 shadow-[var(--shadow-card)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-background/55">
             Working together
           </p>
-          <h2 className="mt-2 text-[20px] md:text-[24px] font-medium leading-tight tracking-tight text-white max-w-[640px]">
+          <h2 className="mt-2 text-[20px] md:text-[24px] font-medium leading-tight tracking-tight text-background max-w-[640px]">
             How communication runs across the engagement.
           </h2>
           <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -394,7 +394,7 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         </section>
 
         {/* Footer */}
-        <footer className="rounded-2xl border border-foreground bg-white p-5 md:p-6 shadow-[var(--shadow-soft)] grid grid-cols-1 md:grid-cols-3 gap-6">
+        <footer className="rounded-2xl border border-foreground bg-surface p-5 md:p-6 shadow-[var(--shadow-soft)] grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <p className="text-[18px] font-semibold tracking-tight text-foreground">
               Ecomlanders
@@ -438,7 +438,7 @@ function KeyDateTile({
   secondary: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
+    <div className="rounded-lg border border-border bg-surface-raised p-4">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
         {label}
       </p>
@@ -460,7 +460,7 @@ function RhythmTile({
   body: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
+    <div className="rounded-lg border border-border bg-surface-raised p-4">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
         {day}
       </p>
@@ -476,11 +476,11 @@ function RhythmTile({
 
 function DarkChannel({ label, body }: { label: string; body: string }) {
   return (
-    <div className="rounded-lg bg-white/5 px-4 py-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white">
+    <div className="rounded-lg bg-background/5 px-4 py-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-background">
         {label}
       </p>
-      <p className="mt-2 text-[14px] leading-relaxed text-white/65 max-w-[260px]">
+      <p className="mt-2 text-[14px] leading-relaxed text-background/65 max-w-[260px]">
         {body}
       </p>
     </div>

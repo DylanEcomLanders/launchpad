@@ -90,8 +90,8 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
           <ul className="space-y-2 text-base">
             {Array.from({ length: t.pages }).map((_, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="size-6 rounded-md bg-cyan-500/15 ring-1 ring-cyan-500/30 flex items-center justify-center text-[11px] font-bold text-subtle shrink-0 mt-0.5">{i + 1}</div>
-                <span className="text-border">Page {i + 1} — <span className="italic text-subtle">replace with actual page name</span></span>
+                <div className="size-6 rounded-md bg-info/15 ring-1 ring-info/30 flex items-center justify-center text-[11px] font-bold text-subtle shrink-0 mt-0.5">{i + 1}</div>
+                <span className="text-muted">Page {i + 1} — <span className="italic text-subtle">replace with actual page name</span></span>
               </li>
             ))}
           </ul>
@@ -108,8 +108,8 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
           <ul className="space-y-2 text-base">
             {Array.from({ length: Math.min(t.tests, 6) }).map((_, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="size-6 rounded-md bg-cyan-500/15 ring-1 ring-cyan-500/30 flex items-center justify-center text-[11px] font-bold text-subtle shrink-0 mt-0.5">T{i + 1}</div>
-                <span className="text-border">Test {i + 1} — <span className="italic text-subtle">hypothesis + variant</span></span>
+                <div className="size-6 rounded-md bg-info/15 ring-1 ring-info/30 flex items-center justify-center text-[11px] font-bold text-subtle shrink-0 mt-0.5">T{i + 1}</div>
+                <span className="text-muted">Test {i + 1} — <span className="italic text-subtle">hypothesis + variant</span></span>
               </li>
             ))}
             {t.tests > 6 && (
@@ -139,7 +139,7 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
           <p className="text-lg">
             One metric. Everything we ship this month traces back to <strong className="text-background">your site&apos;s conversion rate</strong> going up.
           </p>
-          <p className="text-base text-border">
+          <p className="text-base text-muted">
             CR up = revenue up at the same ad spend. That&apos;s the game.
           </p>
         </SlideBody>
@@ -227,8 +227,8 @@ export default function RoadmapPage() {
                     onClick={() => setTier(t)}
                     className={`px-2 py-2 rounded-md text-[11px] uppercase tracking-wider font-semibold transition-all ${
                       tier === t
-                        ? "bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-[0_4px_16px_rgba(6,182,212,0.3)]"
-                        : "bg-surface text-subtle hover:text-white"
+                        ? "bg-info text-white"
+                        : "bg-surface text-subtle hover:text-foreground"
                     }`}
                   >
                     {TIER_META[t].label}

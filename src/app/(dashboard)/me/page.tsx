@@ -121,9 +121,9 @@ export default function MeLanding() {
         {hydrated && unsignedContract && (
           <Link
             href={`/portal/agreement/${unsignedContract.id}`}
-            className="group mt-6 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 px-5 py-4 transition-colors hover:border-amber-500/60 hover:bg-amber-500/10"
+            className="group mt-6 flex items-start gap-3 rounded-xl border border-warning/20 bg-warning/5 px-5 py-4 transition-colors hover:border-warning/30 hover:bg-warning/10"
           >
-            <ShieldCheckIcon className="size-5 text-amber-300 shrink-0 mt-0.5" />
+            <ShieldCheckIcon className="size-5 text-warning shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold text-foreground">
                 Sign your contract
@@ -133,7 +133,7 @@ export default function MeLanding() {
                 signature. Quick review + sign.
               </div>
             </div>
-            <span className="self-center text-[11px] font-semibold uppercase tracking-wider text-amber-300 group-hover:text-amber-200 shrink-0">
+            <span className="self-center text-[11px] font-semibold uppercase tracking-wider text-warning group-hover:text-warning shrink-0">
               Open →
             </span>
           </Link>
@@ -204,7 +204,7 @@ function ChangePasswordCard({ email }: { email?: string | null }) {
     <button
       onClick={send}
       disabled={state === "sending"}
-      className="text-left bg-surface border border-border rounded-xl p-5 hover:border-white transition-colors disabled:opacity-60"
+      className="text-left bg-surface border border-border rounded-xl p-5 hover:border-foreground transition-colors disabled:opacity-60"
     >
       <div className="flex items-center gap-2 text-subtle">
         <LockClosedIcon className="size-4" />
@@ -265,7 +265,7 @@ function HubCard({
   return (
     <Link
       href={href}
-      className="block bg-surface border border-border rounded-xl p-5 hover:border-white transition-colors"
+      className="block bg-surface border border-border rounded-xl p-5 hover:border-foreground transition-colors"
     >
       {inner}
     </Link>

@@ -7,9 +7,9 @@ export default function OnboardingPage() {
   const { role } = useParams();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-foreground">
+      <div className="border-b border-border">
         <div className="max-w-3xl mx-auto px-6 py-6">
           <Logo height={18} />
         </div>

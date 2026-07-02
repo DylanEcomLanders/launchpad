@@ -173,7 +173,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
                       <td className="px-3 py-2.5 text-muted">{row.project.name}</td>
                       <td className="px-3 py-2.5 text-muted">{row.project.current_phase || "—"}</td>
                       <td className="px-3 py-2.5">
-                        <span className={row.daysSinceUpdate > STALE_DAYS ? "inline-flex items-center gap-1 text-amber-700 font-semibold" : "text-muted"}>
+                        <span className={row.daysSinceUpdate > STALE_DAYS ? "inline-flex items-center gap-1 text-warning font-semibold" : "text-muted"}>
                           {row.daysSinceUpdate > STALE_DAYS && <ExclamationTriangleIcon className="size-3" />}
                           {row.daysSinceUpdate}d
                         </span>
@@ -181,7 +181,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
                       <td className="px-3 py-2.5 text-muted">{formatDeadline(row.deadline)}</td>
                       <td className="px-3 py-2.5">
                         {row.blocker ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider bg-rose-50 text-rose-900 border border-rose-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider bg-danger/10 text-danger border border-danger/20">
                             {row.blocker.type}
                           </span>
                         ) : (
@@ -250,7 +250,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
                       <Link href={`/tools/client-portal/${c.id}`} className="font-semibold text-sm text-foreground hover:underline truncate">
                         {c.client_name}
                       </Link>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider border ${isRetainer ? "bg-emerald-50 text-emerald-900 border-emerald-200" : "bg-surface-raised text-muted border-border"}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider border ${isRetainer ? "bg-success/10 text-success border-success/20" : "bg-surface-raised text-muted border-border"}`}>
                         {isRetainer ? "Retainer" : "Project"}
                       </span>
                     </div>
@@ -258,7 +258,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
                       <div className="flex justify-between"><span className="text-subtle">Active projects</span><span className="font-medium text-foreground">{activeCount}</span></div>
                       <div className="flex justify-between"><span className="text-subtle">Last update</span><span className="font-medium text-foreground">{lastUpdate}</span></div>
                     </div>
-                    <button onClick={() => handleUnassign(c.id)} className="text-[10px] text-subtle hover:text-rose-600 uppercase tracking-wider font-semibold">
+                    <button onClick={() => handleUnassign(c.id)} className="text-[10px] text-subtle hover:text-danger uppercase tracking-wider font-semibold">
                       Remove from pod
                     </button>
                   </div>

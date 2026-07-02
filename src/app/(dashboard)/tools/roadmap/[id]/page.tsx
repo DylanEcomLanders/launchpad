@@ -118,13 +118,13 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
   }, [roadmap]);
 
   if (!isAdmin) {
-    return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+    return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
   }
   if (!hydrated) {
-    return (<div className="p-6 space-y-3 max-w-6xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>);
+    return (<div className="p-6 space-y-3 max-w-6xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-surface rounded-xl animate-pulse" />)}</div>);
   }
   if (notFound || !roadmap) {
-    return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle mb-3">Roadmap not found.</p><Link href="/tools/roadmap" className="text-[12px] uppercase tracking-wider text-cyan-300 hover:text-cyan-200">← Back</Link></div></div>);
+    return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle mb-3">Roadmap not found.</p><Link href="/tools/roadmap" className="text-[12px] uppercase tracking-wider text-info hover:text-info">← Back</Link></div></div>);
   }
 
   return (
@@ -137,8 +137,8 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
             All roadmaps
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-8 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)] shrink-0">
-              <MapIcon className="size-4 text-white" />
+            <div className="size-8 rounded-xl bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <MapIcon className="size-4 text-foreground" />
             </div>
             <input
               value={roadmap.client_name}
@@ -151,13 +151,13 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
             {saving ? "Saving…" : savedAt ? `Saved ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Loaded"}
           </div>
         </div>
-        <button onClick={deleteRoadmap} className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]" title="Delete">
+        <button onClick={deleteRoadmap} className="p-1.5 rounded-md text-subtle hover:text-danger hover:bg-danger/10" title="Delete">
           <TrashIcon className="size-4" />
         </button>
       </div>
 
       {/* Meta */}
-      <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="bg-surface rounded-2xl p-5 border border-border grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Strategist</label>
           <input value={roadmap.strategist} onChange={(e) => patch({ strategist: e.target.value })} className={inputClass} placeholder="Dylan / Ajay" />
@@ -172,21 +172,21 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {HORIZONS.map((h) => (
           <div key={h} className="min-h-0">
-            <div className="bg-gradient-to-br from-cyan-500/15 to-teal-500/5 rounded-xl ring-1 ring-cyan-500/30 px-4 py-3 mb-2 flex items-center justify-between">
+            <div className="bg-cyan-500/10 rounded-xl ring-1 ring-cyan-500/30 px-4 py-3 mb-2 flex items-center justify-between">
               <div>
                 <div className="text-[10px] uppercase tracking-wider font-semibold text-cyan-300">
                   {HORIZON_LABEL[h]}
                 </div>
                 <div className="text-[11px] text-subtle mt-0.5">{itemsByHorizon[h].length} items</div>
               </div>
-              <button onClick={() => addItem(h)} className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-white/5 hover:bg-white/10 text-foreground">
+              <button onClick={() => addItem(h)} className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-surface-raised hover:bg-surface-hover text-foreground">
                 <PlusIcon className="size-3" />
                 Add
               </button>
             </div>
             <div className="space-y-2">
               {itemsByHorizon[h].length === 0 ? (
-                <div className="bg-background/60 rounded-xl p-4 ring-1 ring-white/[0.03] text-center">
+                <div className="bg-surface rounded-xl p-4 border border-border text-center">
                   <p className="text-[11px] italic text-subtle">Empty</p>
                 </div>
               ) : (
@@ -229,7 +229,7 @@ function ItemCard({
 
   if (editing) {
     return (
-      <div className="bg-background rounded-xl p-3 space-y-2 ring-1 ring-cyan-500/30 shadow-[0_8px_32px_rgba(6,182,212,0.12)]">
+      <div className="bg-surface rounded-xl p-3 space-y-2 ring-1 ring-cyan-500/30">
         <input
           value={item.title}
           onChange={(e) => onChange({ title: e.target.value })}
@@ -258,7 +258,7 @@ function ItemCard({
           placeholder="Hypothesis (because we observed X, we believe Y will Z)"
         />
         <div className="flex items-center justify-between">
-          <button onClick={onDelete} className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400">
+          <button onClick={onDelete} className="text-[10px] uppercase tracking-wider text-subtle hover:text-danger">
             Delete
           </button>
           <button onClick={onCancel} className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-white text-background hover:bg-foreground">
@@ -270,7 +270,7 @@ function ItemCard({
   }
 
   return (
-    <div className="bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all group">
+    <div className="bg-surface rounded-xl p-3 border border-border hover:ring-1 hover:ring-cyan-500/30 transition-all group">
       <button onClick={onEdit} className="w-full text-left">
         <div className="flex items-start gap-2 mb-2">
           <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold shrink-0 ${ITEM_TYPE_TINT[item.type]}`}>
@@ -291,7 +291,7 @@ function ItemCard({
           )}
         </div>
         {item.hypothesis && (
-          <div className="mt-2 pt-2 border-t border-white/[0.04] text-[11px] text-muted line-clamp-2">
+          <div className="mt-2 pt-2 border-t border-border text-[11px] text-muted line-clamp-2">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.hypothesis}</ReactMarkdown>
           </div>
         )}

@@ -283,7 +283,7 @@ export function GenerateAgreementsModal({
             )}
 
             {error && (
-              <div className="px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-danger">
+              <div className="px-3 py-2 bg-danger/10 border border-danger/20 rounded-lg text-[13px] text-danger">
                 {error}
               </div>
             )}
@@ -298,7 +298,7 @@ export function GenerateAgreementsModal({
               <button
                 onClick={submit}
                 disabled={submitting}
-                className="px-3 py-1.5 bg-white text-background text-[13px] font-semibold rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-accent text-accent-foreground text-[13px] font-semibold rounded-lg hover:opacity-90 transition-colors disabled:opacity-40"
               >
                 {submitting ? "Generating..." : "Generate"}
               </button>

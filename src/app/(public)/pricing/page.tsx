@@ -161,11 +161,11 @@ export default function PricingPage() {
   const upfront = billing === "upfront";
 
   return (
-    <div className="min-h-screen bg-background text-surface-raised flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* ══ Header ════════════════════════════════════════════════ */}
-      <header className="border-b border-white/5">
+      <header className="border-b border-border">
         <div className="max-w-6xl mx-auto w-full flex items-center px-6 md:px-12 h-16">
-          <Logo height={16} className="text-white" />
+          <Logo height={16} className="text-foreground" />
         </div>
       </header>
 
@@ -174,15 +174,15 @@ export default function PricingPage() {
         id="partnership"
         className="px-6 md:px-12 pt-14 md:pt-24 pb-10 max-w-6xl mx-auto w-full scroll-mt-20"
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/45 mb-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted mb-6">
           Conversion partnership
         </p>
         <h1 className="text-5xl md:text-7xl font-semibold tracking-[-0.03em] leading-[0.95] mb-6">
           The Conversion Engine.
           <br />
-          <span className="text-white/45">Built to compound.</span>
+          <span className="text-muted">Built to compound.</span>
         </h1>
-        <p className="text-base md:text-lg text-white/55 leading-relaxed max-w-xl">
+        <p className="text-base md:text-lg text-muted leading-relaxed max-w-xl">
           We turn the traffic you already pay for into revenue. A full
           conversion team, embedded in your business: design, dev, copy and CRO
           under one roof, on a monthly system.
@@ -191,11 +191,11 @@ export default function PricingPage() {
 
       {/* Billing toggle */}
       <div className="px-6 md:px-12 max-w-6xl mx-auto w-full mb-7">
-        <div className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.03] p-1">
+        <div className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised p-1">
           <button
             onClick={() => setBilling("monthly")}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              !upfront ? "bg-white text-background" : "text-white/55 hover:text-white"
+              !upfront ? "bg-foreground text-background" : "text-muted hover:text-foreground"
             }`}
           >
             Monthly
@@ -203,13 +203,13 @@ export default function PricingPage() {
           <button
             onClick={() => setBilling("upfront")}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors flex items-center gap-2 ${
-              upfront ? "bg-white text-background" : "text-white/55 hover:text-white"
+              upfront ? "bg-foreground text-background" : "text-muted hover:text-foreground"
             }`}
           >
             Pay up front
             <span
               className={`font-mono text-[10px] tracking-wider ${
-                upfront ? "text-background/60" : "text-white/40"
+                upfront ? "text-background/60" : "text-subtle"
               }`}
             >
               -10%
@@ -230,12 +230,12 @@ export default function PricingPage() {
                 className={
                   featured
                     ? "rounded-3xl bg-surface-raised text-surface p-7 md:p-8 shadow-xl shadow-black/30"
-                    : "rounded-3xl border border-white/12 bg-white/[0.025] p-7 md:p-8"
+                    : "rounded-3xl border border-border bg-surface-raised p-7 md:p-8"
                 }
               >
                 <div className="flex items-center justify-between gap-2 mb-6">
                   <h2
-                    className={`text-lg font-semibold ${featured ? "" : "text-white/85"}`}
+                    className={`text-lg font-semibold ${featured ? "" : "text-muted"}`}
                   >
                     {tier.name}
                   </h2>
@@ -248,18 +248,18 @@ export default function PricingPage() {
 
                 <div className="flex items-baseline gap-1.5">
                   <span
-                    className={`text-5xl font-semibold tracking-[-0.03em] tabular-nums ${featured ? "" : "text-white/90"}`}
+                    className={`text-5xl font-semibold tracking-[-0.03em] tabular-nums ${featured ? "" : "text-muted"}`}
                   >
                     {fmtK(amount)}
                   </span>
                   <span
-                    className={`text-sm ${featured ? "text-surface/45" : "text-white/40"}`}
+                    className={`text-sm ${featured ? "text-surface/45" : "text-subtle"}`}
                   >
                     /mo
                   </span>
                 </div>
                 <p
-                  className={`font-mono text-[11px] mt-2 ${featured ? "text-surface/45" : "text-white/35"}`}
+                  className={`font-mono text-[11px] mt-2 ${featured ? "text-surface/45" : "text-subtle"}`}
                 >
                   {upfront
                     ? `${fmtK(amount * 3)} up front for 90 days, 10% off`
@@ -267,23 +267,23 @@ export default function PricingPage() {
                 </p>
 
                 <p
-                  className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-surface/60" : "text-white/50"}`}
+                  className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-surface/60" : "text-muted"}`}
                 >
                   {tier.blurb}
                 </p>
 
                 <div
-                  className={`h-px mb-6 ${featured ? "bg-surface/10" : "bg-white/10"}`}
+                  className={`h-px mb-6 ${featured ? "bg-surface/10" : "bg-border"}`}
                 />
 
                 <ul className="space-y-3.5">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5">
                       <CheckIcon
-                        className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-surface" : "text-white/35"}`}
+                        className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-surface" : "text-subtle"}`}
                       />
                       <span
-                        className={`text-sm leading-snug ${featured ? "" : "text-white/70"}`}
+                        className={`text-sm leading-snug ${featured ? "" : "text-muted"}`}
                       >
                         {f}
                       </span>
@@ -295,50 +295,50 @@ export default function PricingPage() {
           })}
         </div>
 
-        <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/35 mt-10 text-center">
+        <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-subtle mt-10 text-center">
           90-day initial commitment · 10% off when paid up front
         </p>
       </section>
 
       {/* ══ Value tally ══════════════════════════════════════════ */}
       <section className="px-6 md:px-12 pt-4 md:pt-6 pb-4 max-w-6xl mx-auto w-full">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 md:items-center">
+        <div className="rounded-3xl border border-border bg-surface-raised p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 md:items-center">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-subtle mb-4">
               It all comes included
             </p>
             <h3 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] leading-tight mb-4">
               A single month carries the kind of build work brands usually buy as
               separate projects.
             </h3>
-            <p className="text-sm text-white/50 leading-relaxed max-w-md">
+            <p className="text-sm text-muted leading-relaxed max-w-md">
               No line items, no extra invoices. It is all part of the
               partnership.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-background p-5 md:p-6">
+          <div className="rounded-2xl border border-border bg-background p-5 md:p-6">
             <ul className="space-y-3 mb-4">
               {tally.map((t) => (
                 <li
                   key={t.name}
                   className="flex items-baseline justify-between gap-3"
                 >
-                  <span className="text-sm text-white/65 truncate">{t.name}</span>
-                  <span className="font-mono text-xs tabular-nums text-white/35 line-through shrink-0">
+                  <span className="text-sm text-muted truncate">{t.name}</span>
+                  <span className="font-mono text-xs tabular-nums text-subtle line-through shrink-0">
                     {t.label}
                   </span>
                 </li>
               ))}
             </ul>
-            <div className="flex items-baseline justify-between gap-3 pt-4 border-t border-white/10">
-              <span className="text-sm text-white/50">As one-off projects</span>
-              <span className="font-mono text-sm font-medium tabular-nums text-white/35 line-through shrink-0">
+            <div className="flex items-baseline justify-between gap-3 pt-4 border-t border-border">
+              <span className="text-sm text-muted">As one-off projects</span>
+              <span className="font-mono text-sm font-medium tabular-nums text-subtle line-through shrink-0">
                 {formatGBP(tallyTotal)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 mt-3">
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-foreground">
                 In the Engine
               </span>
               <span className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] px-3 py-1 rounded-full bg-surface-raised text-background shrink-0">
@@ -354,14 +354,14 @@ export default function PricingPage() {
         id="compare"
         className="hidden md:block px-6 md:px-12 pt-16 md:pt-24 pb-4 max-w-6xl mx-auto w-full scroll-mt-20"
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-subtle mb-4">
           Compare plans
         </p>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] mb-10">
           Every tier, side by side
         </h2>
 
-        <div className="border border-white/10 rounded-2xl overflow-hidden">
+        <div className="border border-border rounded-2xl overflow-hidden">
           {/* header */}
           <div className={`${GRID} items-end px-7 pt-7 pb-5`}>
             <span />
@@ -372,10 +372,10 @@ export default function PricingPage() {
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-sm font-semibold">{t.name}</span>
                     {t.featured && (
-                      <span className="size-1.5 rounded-full bg-white" />
+                      <span className="size-1.5 rounded-full bg-foreground" />
                     )}
                   </div>
-                  <p className="font-mono text-xs tabular-nums text-white/45 mt-1">
+                  <p className="font-mono text-xs tabular-nums text-muted mt-1">
                     {fmtK(amount)}/mo
                   </p>
                 </div>
@@ -385,17 +385,17 @@ export default function PricingPage() {
 
           {MATRIX.map((group) => (
             <div key={group.group}>
-              <div className="px-7 py-2.5 bg-white/[0.03] border-y border-white/10">
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">
+              <div className="px-7 py-2.5 bg-surface-raised border-y border-border">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-subtle">
                   {group.group}
                 </span>
               </div>
               {group.rows.map((row) => (
                 <div
                   key={row.label}
-                  className={`${GRID} items-center px-7 py-3.5 border-b border-white/[0.06] last:border-0`}
+                  className={`${GRID} items-center px-7 py-3.5 border-b border-border last:border-0`}
                 >
-                  <span className="text-sm text-white/70 pr-4">{row.label}</span>
+                  <span className="text-sm text-muted pr-4">{row.label}</span>
                   {row.values.map((v, i) => {
                     const hero = TIERS[i].featured;
                     return (
@@ -403,14 +403,14 @@ export default function PricingPage() {
                         {typeof v === "boolean" ? (
                           v ? (
                             <CheckIcon
-                              className={`size-4 mx-auto ${hero ? "text-white" : "text-white/45"}`}
+                              className={`size-4 mx-auto ${hero ? "text-foreground" : "text-muted"}`}
                             />
                           ) : (
-                            <span className="inline-block w-2.5 h-px bg-white/20 align-middle" />
+                            <span className="inline-block w-2.5 h-px bg-border align-middle" />
                           )
                         ) : (
                           <span
-                            className={`text-sm tabular-nums ${hero ? "text-white font-medium" : "text-white/60"}`}
+                            className={`text-sm tabular-nums ${hero ? "text-foreground font-medium" : "text-muted"}`}
                           >
                             {v}
                           </span>
@@ -430,26 +430,26 @@ export default function PricingPage() {
         id="one-off"
         className="px-6 md:px-12 pt-20 md:pt-28 pb-20 md:pb-28 max-w-6xl mx-auto w-full scroll-mt-20"
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-subtle mb-4">
           Or buy individually
         </p>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] mb-3">
           One-off builds
         </h2>
-        <p className="text-white/55 leading-relaxed mb-10 max-w-xl">
+        <p className="text-muted leading-relaxed mb-10 max-w-xl">
           Need a brand-new store, or just the pages you need without a retainer?
           We build those too.
         </p>
 
         {/* Full Shopify site build */}
-        <div className="border border-white/12 rounded-3xl p-7 md:p-9 bg-white/[0.025] mb-4">
+        <div className="border border-border rounded-3xl p-7 md:p-9 bg-surface-raised mb-4">
           <div className="flex items-baseline justify-between gap-3 mb-3">
             <h3 className="text-lg font-semibold">Full Shopify site build</h3>
             <span className="text-2xl font-semibold tabular-nums shrink-0">
               From £15,000
             </span>
           </div>
-          <p className="text-sm text-white/55 leading-relaxed mb-6 max-w-lg">
+          <p className="text-sm text-muted leading-relaxed mb-6 max-w-lg">
             A complete custom Shopify store designed to convert from day one. The
             full site, not a template: structure, design, copy and development
             handled in one go.
@@ -465,9 +465,9 @@ export default function PricingPage() {
             ].map((f) => (
               <li
                 key={f}
-                className="flex items-start gap-2.5 text-sm text-white/70"
+                className="flex items-start gap-2.5 text-sm text-muted"
               >
-                <CheckIcon className="size-3.5 text-white/40 mt-0.5 shrink-0" />
+                <CheckIcon className="size-3.5 text-subtle mt-0.5 shrink-0" />
                 {f}
               </li>
             ))}
@@ -476,7 +476,7 @@ export default function PricingPage() {
 
         {/* Funnel Build */}
         {funnel && (
-          <div className="border border-white/12 rounded-3xl p-7 bg-white/[0.025] mb-4">
+          <div className="border border-border rounded-3xl p-7 bg-surface-raised mb-4">
             <div className="flex items-baseline justify-between gap-3 mb-3">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h3 className="text-lg font-semibold">Funnel Build</h3>
@@ -488,7 +488,7 @@ export default function PricingPage() {
                 {priceLabel(funnel)}
               </span>
             </div>
-            <p className="text-sm text-white/55 leading-relaxed mb-6 max-w-lg">
+            <p className="text-sm text-muted leading-relaxed mb-6 max-w-lg">
               Framing page, product page and cart, designed as one system. The
               full buyer journey from cold traffic to add-to-cart.
             </p>
@@ -496,9 +496,9 @@ export default function PricingPage() {
               {funnel.features.map((f) => (
                 <li
                   key={f}
-                  className="flex items-start gap-2.5 text-sm text-white/70"
+                  className="flex items-start gap-2.5 text-sm text-muted"
                 >
-                  <CheckIcon className="size-3.5 text-white/40 mt-0.5 shrink-0" />
+                  <CheckIcon className="size-3.5 text-subtle mt-0.5 shrink-0" />
                   {f}
                 </li>
               ))}
@@ -507,7 +507,7 @@ export default function PricingPage() {
         )}
 
         {/* Page builds price list */}
-        <div className="border border-white/12 rounded-3xl divide-y divide-white/[0.07] bg-white/[0.025] mb-12 overflow-hidden">
+        <div className="border border-border rounded-3xl divide-y divide-border bg-surface-raised mb-12 overflow-hidden">
           {pageBuilds.map((s) => (
             <div
               key={s.id}
@@ -515,7 +515,7 @@ export default function PricingPage() {
             >
               <div className="min-w-0">
                 <p className="text-sm font-semibold">{s.name}</p>
-                <p className="text-xs text-white/45 truncate">{s.description}</p>
+                <p className="text-xs text-muted truncate">{s.description}</p>
               </div>
               <span className="text-sm font-semibold tabular-nums shrink-0">
                 {priceLabel(s)}
@@ -525,19 +525,19 @@ export default function PricingPage() {
         </div>
 
         {/* Add-ons */}
-        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-subtle mb-4">
           Add-ons
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3">
           {addOns.map((s) => (
             <div
               key={s.id}
-              className="flex items-baseline justify-between gap-3 border-b border-white/10 pb-2.5"
+              className="flex items-baseline justify-between gap-3 border-b border-border pb-2.5"
             >
-              <span className="text-sm text-white/85 min-w-0 truncate">
+              <span className="text-sm text-muted min-w-0 truncate">
                 {s.name}
               </span>
-              <span className="text-sm font-semibold tabular-nums text-white/60 shrink-0">
+              <span className="text-sm font-semibold tabular-nums text-muted shrink-0">
                 {priceLabel(s)}
               </span>
             </div>
@@ -547,16 +547,16 @@ export default function PricingPage() {
 
 
       {/* ══ Footer ═══════════════════════════════════════════════ */}
-      <footer className="border-t border-white/8 mt-auto">
+      <footer className="border-t border-border mt-auto">
         <div className="max-w-6xl mx-auto w-full px-6 md:px-12 py-7 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <Logo height={14} className="text-white/70" />
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+          <Logo height={14} className="text-muted" />
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-subtle">
             Built by{" "}
             <a
               href="https://ecomlanders.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/60 hover:text-white transition-colors"
+              className="text-muted hover:text-foreground transition-colors"
             >
               Ecomlanders
             </a>

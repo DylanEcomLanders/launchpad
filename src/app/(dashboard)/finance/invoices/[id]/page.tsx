@@ -294,17 +294,17 @@ export default function InvoiceDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger rounded-lg text-sm text-[#FCA5A5]">
+        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
       {sendError && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger rounded-lg text-sm text-[#FCA5A5]">
+        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
           {sendError}
         </div>
       )}
       {sendSuccess && (
-        <div className="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700">
+        <div className="mb-6 px-4 py-3 bg-success/10 border border-success/20 rounded-lg text-sm text-success">
           Invoice emailed successfully.
         </div>
       )}
@@ -352,7 +352,7 @@ export default function InvoiceDetailPage() {
                     </thead>
                     <tbody>
                       {invoice.items.map((item) => (
-                        <tr key={item.id} className="border-b border-[#F4F4F6] last:border-0">
+                        <tr key={item.id} className="border-b border-border last:border-0">
                           <td className="px-4 py-2.5">{item.name}</td>
                           <td className="px-4 py-2.5 text-center text-subtle">{item.quantity}</td>
                           <td className="px-4 py-2.5 text-right text-subtle tabular-nums">
@@ -394,14 +394,14 @@ export default function InvoiceDetailPage() {
                 </div>
 
                 {invoice.currency !== "GBP" && (
-                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-subtle">
+                  <p className="mt-3 pt-3 border-t border-border text-[11px] text-subtle">
                     Amounts billed in {invoice.currency}. GBP equivalent recorded from{" "}
                     {invoice.source_system || "the source"} statement at the time of the
                     transaction; no live FX conversion applied.
                   </p>
                 )}
                 {breakdown.noteForInvoice && (
-                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-subtle">
+                  <p className="mt-3 pt-3 border-t border-border text-[11px] text-subtle">
                     {breakdown.noteForInvoice}
                   </p>
                 )}
@@ -461,7 +461,7 @@ export default function InvoiceDetailPage() {
                   )}
                 </dl>
                 {invoice.disputed_reason && (
-                  <p className="text-[12px] text-foreground whitespace-pre-wrap mt-2 pt-2 border-t border-[#F4F4F6]">
+                  <p className="text-[12px] text-foreground whitespace-pre-wrap mt-2 pt-2 border-t border-border">
                     <span className="text-subtle">Reason:</span> {invoice.disputed_reason}
                   </p>
                 )}
@@ -687,7 +687,7 @@ function EditInvoiceForm({
             {draft.items.map((item) => (
               <div
                 key={item.id}
-                className="grid grid-cols-1 md:grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 border-t border-[#F4F4F6] items-center"
+                className="grid grid-cols-1 md:grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 border-t border-border items-center"
               >
                 <input
                   type="text"
@@ -721,7 +721,7 @@ function EditInvoiceForm({
                 </span>
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="p-1 text-subtle hover:text-red-500 transition-colors justify-self-center"
+                  className="p-1 text-subtle hover:text-danger transition-colors justify-self-center"
                 >
                   <XMarkIcon className="size-3.5" />
                 </button>
@@ -766,7 +766,7 @@ function EditInvoiceForm({
                 </span>
               </div>
             )}
-            <div className="flex justify-between text-sm pt-1.5 border-t border-[#F4F4F6]">
+            <div className="flex justify-between text-sm pt-1.5 border-t border-border">
               <span className="font-semibold">Total</span>
               <span className="font-semibold tabular-nums">
                 {fmtMoney(breakdown.total, draft.currency)}
@@ -847,7 +847,7 @@ function EditInvoiceForm({
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-5 py-2 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-5 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -946,7 +946,7 @@ function InvoiceAttachmentCard({
           </p>
           <button
             onClick={removeAttachment}
-            className="text-xs text-subtle hover:text-red-600 underline"
+            className="text-xs text-subtle hover:text-danger underline"
           >
             Remove
           </button>
@@ -974,7 +974,7 @@ function InvoiceAttachmentCard({
           </label>
         </div>
       )}
-      {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+      {error && <p className="text-xs text-danger mt-2">{error}</p>}
     </Card>
   );
 }
@@ -1001,7 +1001,7 @@ function ToolbarButton({
       title={title}
       className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm transition-colors disabled:opacity-40 ${
         danger
-          ? "text-red-600 hover:bg-surface-raised"
+          ? "text-danger hover:bg-surface-raised"
           : "text-foreground hover:bg-background"
       }`}
     >
@@ -1026,9 +1026,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
  * tighter inline labels than the global form-styles, so admin forms
  * feel less bulky. */
 const compactInput =
-  "w-full px-3 py-2 bg-surface border border-border rounded-md text-sm focus:outline-none focus:border-white focus:ring-1 focus:ring-surface/10 transition-all placeholder:text-muted";
+  "w-full px-3 py-2 bg-surface border border-border rounded-md text-sm focus:outline-none focus:border-border focus:ring-1 focus:ring-surface/10 transition-all placeholder:text-muted";
 const compactTextarea =
-  "w-full px-3 py-2 bg-surface border border-border rounded-md text-sm focus:outline-none focus:border-white focus:ring-1 focus:ring-surface/10 transition-all resize-none placeholder:text-muted";
+  "w-full px-3 py-2 bg-surface border border-border rounded-md text-sm focus:outline-none focus:border-border focus:ring-1 focus:ring-surface/10 transition-all resize-none placeholder:text-muted";
 
 function FormSection({
   title,

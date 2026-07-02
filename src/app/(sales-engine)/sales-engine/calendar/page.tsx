@@ -181,7 +181,7 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
               key={i}
               className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
                 i < pin.length
-                  ? error ? "bg-red-400 scale-110" : "bg-surface scale-110"
+                  ? error ? "bg-danger scale-110" : "bg-surface scale-110"
                   : "bg-foreground"
               }`}
             />
@@ -219,7 +219,7 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
           </button>
         </div>
 
-        {error && <p className="text-xs text-red-400 mt-4">Incorrect PIN</p>}
+        {error && <p className="text-xs text-danger mt-4">Incorrect PIN</p>}
       </div>
     </div>
   );
@@ -2014,9 +2014,9 @@ export default function CalendarPage() {
           </div>
           {/* Active creator badge + lock */}
           <div className="flex items-center gap-2 ml-2">
-            <div className="flex items-center gap-2 bg-white border border-foreground rounded-xl px-3.5 py-2">
+            <div className="flex items-center gap-2 bg-surface border border-foreground rounded-xl px-3.5 py-2">
               <span className={`size-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white ${
-                creator === "ajay" ? "bg-surface" : "bg-[#2563EB]"
+                creator === "ajay" ? "bg-surface-raised" : "bg-info"
               }`}>
                 {creator === "ajay" ? "AJ" : "DE"}
               </span>
@@ -2035,7 +2035,7 @@ export default function CalendarPage() {
           {posts.length > 0 && (
             <button
               onClick={clearAllPosts}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-danger/20 text-danger hover:bg-danger/10 transition-colors"
             >
               <TrashIcon className="size-3.5" />
               Clear Drafts
@@ -2044,7 +2044,7 @@ export default function CalendarPage() {
           <button
             onClick={() => setShowPipeline(!showPipeline)}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
-              showPipeline ? "bg-surface text-white border-surface" : "border-foreground text-subtle hover:bg-surface-raised"
+              showPipeline ? "bg-surface text-foreground border-surface" : "border-foreground text-subtle hover:bg-surface-raised"
             }`}
           >
             <Squares2X2Icon className="size-3.5" />
@@ -2060,7 +2060,7 @@ export default function CalendarPage() {
           <button
             onClick={openTypefullyScheduler}
             disabled={typefullyLoading || weekPosts.filter(p => p.status === "saved" && p.caption?.trim()).length === 0}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-info/20 text-info hover:bg-info/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ArrowUpTrayIcon className="size-3.5" />
             {typefullyLoading ? "Scheduling..." : `Schedule Ready (${weekPosts.filter(p => p.status === "saved" && p.caption?.trim()).length})`}
@@ -2076,7 +2076,7 @@ export default function CalendarPage() {
           <button
             onClick={generateWeeklyDraft}
             disabled={draftLoading}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-surface text-white hover:bg-border transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-surface text-foreground hover:bg-border transition-colors disabled:opacity-50"
           >
             <BoltIcon className="size-3.5" />
             {draftLoading ? "Generating..." : "Weekly Draft"}
@@ -2086,15 +2086,15 @@ export default function CalendarPage() {
 
       {/* Typefully result toast */}
       {typefullyResult && (
-        <div className="mb-4 flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 animate-fadeInUp">
+        <div className="mb-4 flex items-center justify-between bg-success/10 border border-success/20 rounded-xl px-5 py-3 animate-fadeInUp">
           <div className="flex items-center gap-2">
-            <CheckIcon className="size-4 text-emerald-600" />
-            <p className="text-sm font-medium text-emerald-800">
+            <CheckIcon className="size-4 text-success" />
+            <p className="text-sm font-medium text-success">
               {typefullyResult.sent} post{typefullyResult.sent !== 1 ? "s" : ""} scheduled to Typefully
-              {typefullyResult.failed > 0 && <span className="text-red-500 ml-1">({typefullyResult.failed} failed{typefullyResult.failedErrors?.[0] ? `: ${typefullyResult.failedErrors[0].slice(0, 200)}` : ""})</span>}
+              {typefullyResult.failed > 0 && <span className="text-danger ml-1">({typefullyResult.failed} failed{typefullyResult.failedErrors?.[0] ? `: ${typefullyResult.failedErrors[0].slice(0, 200)}` : ""})</span>}
             </p>
           </div>
-          <button onClick={() => setTypefullyResult(null)} className="text-emerald-400 hover:text-emerald-600">
+          <button onClick={() => setTypefullyResult(null)} className="text-success/70 hover:text-success">
             <XMarkIcon className="size-4" />
           </button>
         </div>
@@ -2105,7 +2105,7 @@ export default function CalendarPage() {
         <>
           <div className="fixed inset-0 z-40 bg-black/30 animate-backdropFade" onClick={() => !bulkLoading && setShowBulkModal(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-md p-6 animate-fadeInUp max-h-[90vh] overflow-y-auto">
+            <div className="bg-surface rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-md p-6 animate-fadeInUp max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-base font-bold text-foreground">Bulk upload posts</h3>
                 <button onClick={() => !bulkLoading && setShowBulkModal(false)} className="p-1 rounded-lg hover:bg-surface-raised">
@@ -2117,14 +2117,14 @@ export default function CalendarPage() {
               <div className="flex gap-1 mb-4 bg-surface-raised p-1 rounded-lg">
                 <button
                   onClick={() => { setBulkMode("text"); setBulkFiles([]); }}
-                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "text" ? "bg-white text-foreground shadow-sm" : "text-subtle"}`}
+                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "text" ? "bg-surface text-foreground shadow-sm" : "text-subtle"}`}
                 >
                   <DocumentTextIcon className="size-3.5 inline mr-1 -mt-0.5" />
                   Import captions
                 </button>
                 <button
                   onClick={() => { setBulkMode("images"); setBulkParsedCaptions([]); setBulkTextFile(null); }}
-                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "images" ? "bg-white text-foreground shadow-sm" : "text-subtle"}`}
+                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "images" ? "bg-surface text-foreground shadow-sm" : "text-subtle"}`}
                 >
                   <PhotoIcon className="size-3.5 inline mr-1 -mt-0.5" />
                   Upload images
@@ -2168,7 +2168,7 @@ export default function CalendarPage() {
                     <div className="mb-4 space-y-2 max-h-40 overflow-y-auto">
                       <p className="text-[10px] font-semibold text-subtle uppercase tracking-wider">Preview</p>
                       {bulkParsedCaptions.slice(0, 3).map((cap, i) => (
-                        <div key={i} className="px-3 py-2 bg-surface-raised rounded-lg text-[11px] text-border whitespace-pre-wrap line-clamp-3">
+                        <div key={i} className="px-3 py-2 bg-surface-raised rounded-lg text-[11px] text-muted whitespace-pre-wrap line-clamp-3">
                           {cap}
                         </div>
                       ))}
@@ -2211,7 +2211,7 @@ export default function CalendarPage() {
                     type="date"
                     value={bulkStartDate}
                     onChange={e => setBulkStartDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-white outline-none focus:border-surface transition-colors"
+                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-surface outline-none focus:border-surface transition-colors"
                   />
                 </div>
                 <div>
@@ -2222,7 +2222,7 @@ export default function CalendarPage() {
                         key={n}
                         onClick={() => setBulkPostsPerDay(n)}
                         className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                          bulkPostsPerDay === n ? "bg-surface text-white" : "bg-surface-raised text-subtle hover:bg-border"
+                          bulkPostsPerDay === n ? "bg-surface text-foreground" : "bg-surface-raised text-subtle hover:bg-border"
                         }`}
                       >
                         {n}
@@ -2263,7 +2263,7 @@ export default function CalendarPage() {
                 <button
                   onClick={bulkMode === "text" ? runBulkTextImport : runBulkUpload}
                   disabled={bulkLoading || (bulkMode === "text" ? bulkParsedCaptions.length === 0 : bulkFiles.length === 0)}
-                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-white bg-surface rounded-lg hover:bg-border transition-colors disabled:opacity-40"
+                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-foreground bg-surface rounded-lg hover:bg-border transition-colors disabled:opacity-40"
                 >
                   {bulkLoading ? "Importing..." : `Import ${bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length} post${(bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length) === 1 ? "" : "s"}`}
                 </button>
@@ -2278,7 +2278,7 @@ export default function CalendarPage() {
         <>
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowTypefullyModal(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-sm p-6 animate-fadeInUp">
+            <div className="bg-surface rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-sm p-6 animate-fadeInUp">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-base font-bold text-foreground">Schedule to Typefully</h3>
                 <button onClick={() => setShowTypefullyModal(false)} className="p-1 rounded-lg hover:bg-surface-raised">
@@ -2308,7 +2308,7 @@ export default function CalendarPage() {
                           selected ? "border-surface bg-surface" : "border-muted"
                         }`}
                       >
-                        {selected && <CheckIcon className="size-2.5 text-white" />}
+                        {selected && <CheckIcon className="size-2.5 text-foreground" />}
                       </span>
                       <span className="size-2.5 rounded-full" style={{ backgroundColor: platformColors[p] }} />
                       <span className="text-sm font-medium text-foreground">{platformLabels[p]}</span>
@@ -2353,7 +2353,7 @@ export default function CalendarPage() {
                 return (
                   <p className="text-xs text-subtle mb-4">
                     <span className="inline-flex items-center gap-1">
-                      <span className="size-2 rounded-full bg-blue-500" />
+                      <span className="size-2 rounded-full bg-info" />
                       {readyCount} Ready to Post
                     </span>
                     {" "}post{readyCount !== 1 ? "s" : ""} will be scheduled to {typefullyPlatforms.size} platform{typefullyPlatforms.size !== 1 ? "s" : ""}
@@ -2372,7 +2372,7 @@ export default function CalendarPage() {
                 <button
                   onClick={scheduleToTypefully}
                   disabled={typefullyPlatforms.size === 0}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-40"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-success text-white text-xs font-semibold rounded-lg hover:bg-success/90 transition-colors disabled:opacity-40"
                 >
                   <ArrowUpTrayIcon className="size-3.5" />
                   Schedule
@@ -2384,7 +2384,7 @@ export default function CalendarPage() {
       )}
 
       {/* ── Calendar header bar (like Untitled UI) ── */}
-      <div className="border border-foreground rounded-t-xl bg-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fadeInUp-d1">
+      <div className="border border-foreground rounded-t-xl bg-surface px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fadeInUp-d1">
         {/* Left: Month + date range */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
@@ -2454,7 +2454,7 @@ export default function CalendarPage() {
           {/* Bulk upload */}
           <button
             onClick={() => setShowBulkModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white border border-foreground text-foreground text-xs font-medium rounded-lg hover:bg-surface-raised transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-surface border border-foreground text-foreground text-xs font-medium rounded-lg hover:bg-surface-raised transition-colors"
           >
             <PhotoIcon className="size-3.5" />
             Bulk upload
@@ -2463,7 +2463,7 @@ export default function CalendarPage() {
           {/* Add post */}
           <button
             onClick={() => openStudio()}
-            className="flex items-center gap-1.5 px-4 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-surface text-foreground text-xs font-medium rounded-lg hover:bg-border transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add post
@@ -2502,8 +2502,8 @@ export default function CalendarPage() {
                       <div
                         key={col}
                         className={`min-h-[120px] px-3 py-2 ${col > 0 ? "border-l border-foreground" : ""} ${
-                          !isCurrentMonth ? "bg-surface-raised" : "bg-white"
-                        } ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} transition-colors group`}
+                          !isCurrentMonth ? "bg-surface-raised" : "bg-surface"
+                        } ${isDragOver ? "!bg-info/10 ring-2 ring-inset ring-info/40" : ""} transition-colors group`}
                         onDragOver={(e) => handleDragOver(e, dStr)}
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, dStr)}
@@ -2512,7 +2512,7 @@ export default function CalendarPage() {
                         <div className="flex items-center justify-between mb-1.5">
                           <span className={`text-sm font-semibold ${
                             isToday
-                              ? "text-white bg-surface size-7 flex items-center justify-center rounded-full"
+                              ? "text-foreground bg-surface-raised size-7 flex items-center justify-center rounded-full"
                               : isCurrentMonth ? "text-foreground" : "text-muted"
                           }`}>
                             {d.getDate()}
@@ -2550,10 +2550,10 @@ export default function CalendarPage() {
                               <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDeletePost(p.id); }}
-                                className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-red-100 shrink-0 transition-colors"
+                                className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-danger/10 shrink-0 transition-colors"
                                 title="Delete post"
                               >
-                                <XMarkIcon className="size-2.5 text-red-400" />
+                                <XMarkIcon className="size-2.5 text-danger" />
                               </button>
                             </div>
                             );
@@ -2579,13 +2579,13 @@ export default function CalendarPage() {
                 {weekDates.map((d, i) => {
                   const isToday = toDateStr(d) === toDateStr(new Date());
                   return (
-                    <div key={i} className={`px-3 py-3 ${i > 0 ? "border-l border-foreground" : ""} ${isToday ? "bg-[#F5F8FF]" : ""}`}>
+                    <div key={i} className={`px-3 py-3 ${i > 0 ? "border-l border-foreground" : ""} ${isToday ? "bg-info/10" : ""}`}>
                       <p className="text-xs font-semibold text-subtle">
                         {d.toLocaleDateString("en-GB", { weekday: "short" })}
                       </p>
                       <p className={`text-lg font-bold ${isToday ? "text-foreground" : "text-foreground"}`}>
                         {isToday ? (
-                          <span className="text-white bg-surface size-8 flex items-center justify-center rounded-full text-sm">{d.getDate()}</span>
+                          <span className="text-foreground bg-surface-raised size-8 flex items-center justify-center rounded-full text-sm">{d.getDate()}</span>
                         ) : (
                           d.getDate()
                         )}
@@ -2605,7 +2605,7 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={i}
-                      className={`${i > 0 ? "border-l border-foreground" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} px-2 py-2 transition-colors group`}
+                      className={`${i > 0 ? "border-l border-foreground" : ""} ${isToday ? "bg-info/5" : ""} ${isDragOver ? "!bg-info/10 ring-2 ring-inset ring-info/40" : ""} px-2 py-2 transition-colors group`}
                       onDragOver={(e) => handleDragOver(e, dStr)}
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, dStr)}
@@ -2633,10 +2633,10 @@ export default function CalendarPage() {
                             <span className="text-[11px] font-medium truncate flex-1">{(p.angle || p.caption).slice(0, 20)}{(p.angle || p.caption).length > 20 ? "..." : ""}</span>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDeletePost(p.id); }}
-                              className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-red-100 shrink-0 transition-colors"
+                              className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-danger/10 shrink-0 transition-colors"
                               title="Delete post"
                             >
-                              <XMarkIcon className="size-2.5 text-red-400" />
+                              <XMarkIcon className="size-2.5 text-danger" />
                             </button>
                           </div>
                           <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
@@ -2702,9 +2702,9 @@ export default function CalendarPage() {
       {showStudio && (
         <>
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowStudio(false)} />
-          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn" onPaste={handlePaste}>
+          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-surface shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn" onPaste={handlePaste}>
             {/* Header */}
-            <div className="shrink-0 bg-white border-b border-foreground px-5 py-3 flex items-center justify-between z-10">
+            <div className="shrink-0 bg-surface border-b border-foreground px-5 py-3 flex items-center justify-between z-10">
               <h2 className="text-sm font-bold text-foreground">{studioPost.id ? "Edit Post" : "New Post"}</h2>
               <button onClick={() => setShowStudio(false)} className="p-1 rounded-lg hover:bg-surface-raised">
                 <XMarkIcon className="size-5 text-subtle" />
@@ -2714,8 +2714,8 @@ export default function CalendarPage() {
             {/* Platform tabs removed — both captions render side-by-side below */}
 
             {repurposeError && (
-              <div className="shrink-0 px-5 py-2 bg-red-50 border-b border-red-100">
-                <p className="text-[11px] text-red-500">{repurposeError}</p>
+              <div className="shrink-0 px-5 py-2 bg-danger/10 border-b border-danger/20">
+                <p className="text-[11px] text-danger">{repurposeError}</p>
               </div>
             )}
 
@@ -2747,7 +2747,7 @@ export default function CalendarPage() {
                           onClick={() => setStudioPost(prev => ({ ...prev, post_format: f }))}
                           className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
                             active
-                              ? "bg-surface text-white"
+                              ? "bg-surface-raised text-foreground"
                               : "text-subtle hover:bg-surface-raised"
                           }`}
                         >
@@ -2775,7 +2775,7 @@ export default function CalendarPage() {
                               <img src={src} alt={`Post media ${i + 1}`} className="w-full h-full object-cover" />
                               <button
                                 onClick={() => removeImageAt(i)}
-                                className="absolute top-1 right-1 px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-red-400 rounded shadow-sm hover:bg-white transition-colors"
+                                className="absolute top-1 right-1 px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-danger rounded shadow-sm hover:bg-white transition-colors"
                               >
                                 Remove
                               </button>
@@ -2785,7 +2785,7 @@ export default function CalendarPage() {
                             </div>
                           ))}
                           {canAddMore && (
-                            <label className="flex flex-col items-center justify-center gap-1 aspect-square border border-dashed border-border rounded-lg cursor-pointer hover:border-[#B0B0B0] hover:bg-surface-raised transition-colors">
+                            <label className="flex flex-col items-center justify-center gap-1 aspect-square border border-dashed border-border rounded-lg cursor-pointer hover:border-muted hover:bg-surface-raised transition-colors">
                               <PhotoIcon className="size-5 text-muted" />
                               <span className="text-[10px] text-subtle">Add image</span>
                               <input type="file" accept="image/*" multiple className="hidden" onChange={e => { const fs = Array.from(e.target.files || []); if (fs.length) handleImageUploads(fs); }} />
@@ -2798,7 +2798,7 @@ export default function CalendarPage() {
                         )}
                       </div>
                     ) : (
-                      <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-border rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-surface-raised transition-colors">
+                      <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-border rounded-xl cursor-pointer hover:border-muted hover:bg-surface-raised transition-colors">
                         <PhotoIcon className="size-5 text-muted" />
                         <span className="text-[11px] text-subtle">Upload or paste image(s)</span>
                         <input type="file" accept="image/*" multiple className="hidden" onChange={e => { const fs = Array.from(e.target.files || []); if (fs.length) handleImageUploads(fs); }} />
@@ -2821,7 +2821,7 @@ export default function CalendarPage() {
                           onClick={() => setCaptionLength(l)}
                           className={`px-3 py-1.5 text-[10px] font-medium rounded-lg transition-colors capitalize ${
                             active
-                              ? "bg-surface text-white"
+                              ? "bg-surface-raised text-foreground"
                               : "text-subtle hover:bg-surface-raised"
                           }`}
                         >
@@ -2839,7 +2839,7 @@ export default function CalendarPage() {
                 <button
                   onClick={() => generateCaptions()}
                   disabled={captionLoading || !studioPost.angle?.trim()}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-40 mb-3"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-surface text-foreground text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-40 mb-3"
                 >
                   <SparklesIcon className="size-4" />
                   {captionLoading ? "Generating captions..." : "Generate Captions"}
@@ -2848,7 +2848,7 @@ export default function CalendarPage() {
                   <p className="text-[10px] text-muted text-center mb-3">Write an idea above first</p>
                 )}
 
-                {captionError && <p className="text-[11px] text-red-500 mb-2">{captionError}</p>}
+                {captionError && <p className="text-[11px] text-danger mb-2">{captionError}</p>}
 
                 {/* Two stacked caption blocks — X and LinkedIn — both filled by Generate */}
                 {(["x", "linkedin"] as Platform[]).map(plat => {
@@ -2867,7 +2867,7 @@ export default function CalendarPage() {
                             <button
                               onClick={() => adaptCaptionForPlatform(xCaption, "x", "linkedin")}
                               disabled={!!adaptingPlatform}
-                              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors disabled:opacity-50"
+                              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-info bg-info/10 rounded-md hover:bg-info/20 transition-colors disabled:opacity-50"
                             >
                               <SparklesIcon className="size-3" />
                               {adaptingPlatform === "linkedin" ? "Adapting..." : "Generate from X"}
@@ -2892,7 +2892,7 @@ export default function CalendarPage() {
                                 key={i}
                                 onClick={() => setDraftCaptions(prev => ({ ...prev, [plat]: c }))}
                                 className={`flex-1 px-2 py-1 text-[9px] font-semibold rounded-md transition-colors ${
-                                  isActive ? "bg-surface text-white" : "bg-surface-raised text-subtle hover:bg-border"
+                                  isActive ? "bg-border text-foreground" : "bg-surface-raised text-subtle hover:bg-border"
                                 }`}
                               >
                                 Variant {i + 1}
@@ -2927,8 +2927,8 @@ export default function CalendarPage() {
                     return score > 0 ? (
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] text-subtle">Slot score</span>
-                        <span className={`text-[10px] font-bold ${score >= 80 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-subtle"}`}>{score}/100</span>
-                        {score >= 80 && <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>}
+                        <span className={`text-[10px] font-bold ${score >= 80 ? "text-success" : score >= 50 ? "text-warning" : "text-subtle"}`}>{score}/100</span>
+                        {score >= 80 && <span className="text-[8px] font-semibold text-success bg-success/10 px-1.5 py-0.5 rounded-full">Optimal</span>}
                       </div>
                     ) : null;
                   })()}
@@ -2938,13 +2938,13 @@ export default function CalendarPage() {
                     type="date"
                     value={studioPost.scheduled_date || ""}
                     onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-white outline-none focus:border-surface transition-colors"
+                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-surface outline-none focus:border-surface transition-colors"
                   />
                   <input
                     type="time"
                     value={studioPost.scheduled_time || ""}
                     onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-white outline-none focus:border-surface transition-colors"
+                    className="w-full px-3 py-2 text-xs border border-foreground rounded-lg bg-surface outline-none focus:border-surface transition-colors"
                   />
                 </div>
 
@@ -2971,7 +2971,7 @@ export default function CalendarPage() {
                               onClick={() => setStudioPost(prev => ({ ...prev, scheduled_time: timeStr }))}
                               className={`text-[9px] font-semibold px-2 py-1 rounded-md transition-colors ${
                                 studioPost.scheduled_time === timeStr
-                                  ? "bg-emerald-100 text-emerald-700"
+                                  ? "bg-success/15 text-success"
                                   : "bg-surface-raised text-subtle hover:bg-border"
                               }`}
                             >
@@ -3016,7 +3016,7 @@ export default function CalendarPage() {
             </div>
 
             {/* ── 8. Footer (sticky bottom) ── */}
-            <div className="shrink-0 border-t border-foreground px-5 py-3 bg-white flex items-center gap-2">
+            <div className="shrink-0 border-t border-foreground px-5 py-3 bg-surface flex items-center gap-2">
               <button
                 onClick={repurposePost}
                 disabled={repurposeLoading || !studioPost.caption?.trim()}
@@ -3028,7 +3028,7 @@ export default function CalendarPage() {
               <button
                 onClick={handleSavePost}
                 disabled={saving}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-surface text-foreground text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save Draft"}
               </button>
@@ -3077,8 +3077,8 @@ export default function CalendarPage() {
                 disabled={!studioPost.caption?.trim() || !studioPost.scheduled_date}
                 className={`flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold rounded-lg transition-colors disabled:opacity-40 ${
                   studioPost.status === "saved"
-                    ? "bg-blue-500 text-white hover:bg-blue-600 border border-blue-500"
-                    : "border border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100"
+                    ? "bg-info text-white hover:bg-info/90 border border-info"
+                    : "border border-info/20 text-info bg-info/10 hover:bg-info/20"
                 }`}
               >
                 <CheckIcon className="size-3" />
@@ -3095,7 +3095,7 @@ export default function CalendarPage() {
                     await savePosts(updated);
                     setStudioPost(prev => ({ ...prev, status: newStatus }));
                   }}
-                  className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-amber-200 text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+                  className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-warning/20 text-warning bg-warning/10 rounded-lg hover:bg-warning/20 transition-colors"
                   title="Reset so it can be re-sent to Typefully"
                 >
                   Reset
@@ -3104,7 +3104,7 @@ export default function CalendarPage() {
               {studioPost.id && (
                 <button
                   onClick={() => handleDeletePost(studioPost.id!)}
-                  className="p-2.5 text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2.5 text-muted hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
                   title="Delete post"
                 >
                   <TrashIcon className="size-4" />
@@ -3119,17 +3119,17 @@ export default function CalendarPage() {
       {showIdeas && (
         <>
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowIdeas(false)} />
-          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm bg-white shadow-[var(--shadow-elevated)] overflow-y-auto animate-slideIn">
-            <div className="sticky top-0 bg-white border-b border-foreground px-5 py-4 flex items-center justify-between z-10">
+          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm bg-surface shadow-[var(--shadow-elevated)] overflow-y-auto animate-slideIn">
+            <div className="sticky top-0 bg-surface border-b border-foreground px-5 py-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-2">
-                <LightBulbIcon className="size-4 text-amber-500" />
+                <LightBulbIcon className="size-4 text-warning" />
                 <h2 className="text-sm font-bold text-foreground">Idea Engine</h2>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={generateIdeas}
                   disabled={ideasLoading}
-                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-surface text-white rounded-lg hover:bg-border transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-surface text-foreground rounded-lg hover:bg-border transition-colors disabled:opacity-50"
                 >
                   <SparklesIcon className="size-3" />
                   {ideasLoading ? "Generating..." : "Refresh"}
@@ -3142,7 +3142,7 @@ export default function CalendarPage() {
 
             <div className="p-5">
               {ideasError && (
-                <p className="text-[11px] text-red-500 mb-3">{ideasError}</p>
+                <p className="text-[11px] text-danger mb-3">{ideasError}</p>
               )}
               {ideasLoading && (
                 <div className="space-y-3">
@@ -3199,11 +3199,11 @@ export default function CalendarPage() {
       {showWeeklyDraft && (
         <>
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => { if (!draftLoading) setShowWeeklyDraft(false); }} />
-          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-lg bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
+          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-lg bg-surface shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
             {/* Header */}
-            <div className="shrink-0 bg-white border-b border-foreground px-5 py-4 flex items-center justify-between">
+            <div className="shrink-0 bg-surface border-b border-foreground px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BoltIcon className="size-4 text-amber-500" />
+                <BoltIcon className="size-4 text-warning" />
                 <div>
                   <h2 className="text-sm font-bold text-foreground">Weekly Draft</h2>
                   <p className="text-[10px] text-subtle">
@@ -3230,14 +3230,14 @@ export default function CalendarPage() {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-5">
               {draftError && (
-                <p className="text-[11px] text-red-500 mb-3">{draftError}</p>
+                <p className="text-[11px] text-danger mb-3">{draftError}</p>
               )}
 
               {draftLoading && (
                 <div className="space-y-4">
                   <div className="text-center py-6">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-raised rounded-full">
-                      <SparklesIcon className="size-4 text-amber-500 animate-pulse" />
+                      <SparklesIcon className="size-4 text-warning animate-pulse" />
                       <span className="text-xs font-medium text-subtle">Analysing performance & generating drafts...</span>
                     </div>
                   </div>
@@ -3313,7 +3313,7 @@ export default function CalendarPage() {
                                 key={index}
                                 className={`border rounded-lg px-3 py-2.5 transition-all ${
                                   draft.selected
-                                    ? "border-muted bg-white"
+                                    ? "border-muted bg-surface"
                                     : "border-foreground bg-surface-raised opacity-40"
                                 }`}
                               >
@@ -3325,7 +3325,7 @@ export default function CalendarPage() {
                                       draft.selected ? "bg-surface border-surface" : "border-muted"
                                     }`}
                                   >
-                                    {draft.selected && <CheckIcon className="size-2.5 text-white" />}
+                                    {draft.selected && <CheckIcon className="size-2.5 text-foreground" />}
                                   </button>
 
                                   {/* Content */}
@@ -3348,8 +3348,8 @@ export default function CalendarPage() {
                                   </div>
 
                                   {/* Remove */}
-                                  <button onClick={() => removeDraft(index)} className="p-0.5 rounded hover:bg-red-50 shrink-0">
-                                    <TrashIcon className="size-3 text-muted hover:text-red-400" />
+                                  <button onClick={() => removeDraft(index)} className="p-0.5 rounded hover:bg-danger/10 shrink-0">
+                                    <TrashIcon className="size-3 text-muted hover:text-danger" />
                                   </button>
                                 </div>
                               </div>
@@ -3373,11 +3373,11 @@ export default function CalendarPage() {
 
             {/* Footer — Apply */}
             {!draftLoading && draftPosts.length > 0 && (
-              <div className="shrink-0 border-t border-foreground px-5 py-4 bg-white">
+              <div className="shrink-0 border-t border-foreground px-5 py-4 bg-surface">
                 <button
                   onClick={applyDrafts}
                   disabled={draftSaving || draftPosts.filter(d => d.selected).length === 0}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-surface text-foreground text-xs font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50"
                 >
                   <CheckIcon className="size-3.5" />
                   {draftSaving ? "Adding to calendar..." : `Add ${draftPosts.filter(d => d.selected).length} ideas to calendar`}

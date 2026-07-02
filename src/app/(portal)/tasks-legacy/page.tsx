@@ -74,7 +74,7 @@ export default function LegacyTaskBoardPage() {
     const s = statusLabel[task.status] || statusLabel.todo;
     const overdue = task.status !== "done" && isOverdue(task.dueDate);
     return (
-      <div className={`flex items-center gap-4 px-5 py-3.5 border-b border-foreground last:border-0 ${overdue ? "bg-red-50/30" : ""}`}>
+      <div className={`flex items-center gap-4 px-5 py-3.5 border-b border-foreground last:border-0 ${overdue ? "bg-danger/10" : ""}`}>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-surface truncate">{task.title}</p>
           <div className="flex items-center gap-2 mt-0.5">
@@ -85,7 +85,7 @@ export default function LegacyTaskBoardPage() {
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {task.dueDate && (
-            <span className={`text-[11px] font-medium ${overdue ? "text-red-500" : "text-muted"}`}>
+            <span className={`text-[11px] font-medium ${overdue ? "text-danger" : "text-muted"}`}>
               {formatDate(task.dueDate)}
               {overdue && " (overdue)"}
             </span>
@@ -111,7 +111,7 @@ export default function LegacyTaskBoardPage() {
 
   return (
     <div className="min-h-screen bg-surface-raised">
-      <div className="bg-white border-b border-foreground px-6 py-4">
+      <div className="bg-surface border-b border-foreground px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
@@ -131,8 +131,8 @@ export default function LegacyTaskBoardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-6">
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 mb-6">
-          <p className="text-[11px] text-amber-800">
+        <div className="bg-warning/10 border border-warning/20 rounded-lg px-4 py-2.5 mb-6">
+          <p className="text-[11px] text-warning">
             Legacy view — shows the original Title / Assignee / Due / Status layout with pre-phase <code>dueDate</code> values intact. The live team view is at{" "}
             <a href="/tasks" className="underline font-medium">/tasks</a>.
           </p>
@@ -147,7 +147,7 @@ export default function LegacyTaskBoardPage() {
                 Design ({activeTasks(board.designTasks).length} active)
               </h2>
             </div>
-            <div className="bg-white border border-foreground rounded-xl overflow-hidden">
+            <div className="bg-surface border border-foreground rounded-xl overflow-hidden">
               {activeTasks(board.designTasks).length === 0 ? (
                 <p className="text-xs text-muted text-center py-8">No active design tasks</p>
               ) : (
@@ -159,7 +159,7 @@ export default function LegacyTaskBoardPage() {
                 <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle">
                   {doneTasks(board.designTasks).length} completed
                 </summary>
-                <div className="bg-white border border-foreground rounded-xl overflow-hidden mt-1 opacity-60">
+                <div className="bg-surface border border-foreground rounded-xl overflow-hidden mt-1 opacity-60">
                   {doneTasks(board.designTasks).map((t) => <TaskRow key={t.id} task={t} />)}
                 </div>
               </details>
@@ -174,7 +174,7 @@ export default function LegacyTaskBoardPage() {
                 Development ({activeTasks(board.devTasks).length} active)
               </h2>
             </div>
-            <div className="bg-white border border-foreground rounded-xl overflow-hidden">
+            <div className="bg-surface border border-foreground rounded-xl overflow-hidden">
               {activeTasks(board.devTasks).length === 0 ? (
                 <p className="text-xs text-muted text-center py-8">No active dev tasks</p>
               ) : (
@@ -186,7 +186,7 @@ export default function LegacyTaskBoardPage() {
                 <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle">
                   {doneTasks(board.devTasks).length} completed
                 </summary>
-                <div className="bg-white border border-foreground rounded-xl overflow-hidden mt-1 opacity-60">
+                <div className="bg-surface border border-foreground rounded-xl overflow-hidden mt-1 opacity-60">
                   {doneTasks(board.devTasks).map((t) => <TaskRow key={t.id} task={t} />)}
                 </div>
               </details>
