@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-139",
+    date: "1 July 2026",
+    version: "3.0.1",
+    title: "Client onboarding form: professional redesign + fixes",
+    changes: [
+      { type: "fixed", text: "Typed text on the public /onboard form was invisible. The page inherited the app's dark theme for first-time visitors, so text fell back to a near-white colour on white inputs. The page is now theme-independent with explicit colours, so every client sees the same clean, light document and their typing is fully legible" },
+      { type: "added", text: "Autosave: answers are stored on the client's device as they type and restored on return (with a 'we saved your progress, start over' banner), so returning clients never re-fill from scratch. The draft clears itself on successful submit" },
+      { type: "added", text: "A sticky completion bar that tracks required fields as they're filled, plus numbered section cards (1 to 8) for a structured, document-like feel" },
+      { type: "improved", text: "Elevated the whole form to feel more professional: brand ink header in Inter Tight, lime section badges, softer card shadows, larger inputs, refined focus states, and tidied copy (removed em-dashes throughout)" },
+    ],
+  },
+  {
     id: "cl-138",
     date: "26 June 2026",
     version: "3.0.0",
