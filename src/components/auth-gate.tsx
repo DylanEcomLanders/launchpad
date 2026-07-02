@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { Tackboard } from "@/components/tackboard";
+import { isStaging } from "@/lib/env";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   findAppUserByEmail,
@@ -437,6 +438,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             </div>
             <h1 className="text-2xl font-semibold text-white drop-shadow-md">Launchpad</h1>
             <p className="text-sm text-white/60 mt-1.5 drop-shadow-sm">Ecom Landers Command Centre</p>
+            {isStaging() && (
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/15 px-3 py-1 backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-warning" />
+                <span className="text-2xs font-semibold uppercase tracking-wider text-warning drop-shadow-sm">
+                  Sandbox · not the live build
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Frosted glass login card */}
