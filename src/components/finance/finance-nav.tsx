@@ -31,7 +31,7 @@ const tabs = [
 export function FinanceNav() {
   const pathname = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto scrollbar-thin">
+    <nav className="flex gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {tabs.map((tab) => {
         const active =
           tab.href === "/finance"
@@ -41,10 +41,10 @@ export function FinanceNav() {
           <Link
             key={tab.href}
             href={tab.href}
-            className={`whitespace-nowrap px-3.5 py-1.5 text-[13px] font-medium rounded-full transition-colors ${
+            className={`whitespace-nowrap px-3 py-1 text-[13px] font-medium rounded-md transition-colors ${
               active
-                ? "bg-white text-background"
-                : "text-subtle hover:text-foreground hover:bg-surface-raised"
+                ? "bg-surface-raised text-foreground"
+                : "text-muted hover:text-foreground hover:bg-surface-raised"
             }`}
           >
             {tab.label}
