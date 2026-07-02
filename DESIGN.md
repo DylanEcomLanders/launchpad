@@ -55,6 +55,9 @@ or shadow. Reference surface: `src/app/(dashboard)/finance/page.tsx` (the calibr
   not by shrinking everything uniformly.
 - Cards fill their grid cell. No orphan cards in empty space, no stretched single-column
   layouts. If a row has leftover width, a card spans it (`lg:col-span-2`).
+- Views fill the full container width. The outer page/area wrapper uses horizontal padding
+  only (`px-6 md:px-10`) — NO `max-w-*` + `mx-auto` narrow centred column. Empty left/right
+  gutters are a violation.
 
 ## 7. Forbidden (instant rejection)
 - Any hex/rgb/hsl literal in a component. Tokens only. (Fixed data-viz palettes live in

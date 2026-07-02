@@ -8,8 +8,10 @@ import {
   ArrowPathIcon,
   DocumentArrowUpIcon,
 } from "@heroicons/react/24/outline";
-import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { inputClass, selectClass, textareaClass } from "@/lib/form-styles";
 import { expensesStore, todayISO, nowISO, uid } from "@/lib/finance/data";
+
+const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-medium mb-2";
 import {
   EXPENSE_CATEGORY_LABELS,
   type Expense,
@@ -103,32 +105,30 @@ export default function NewExpensePage() {
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       <Link
         href="/finance/expenses"
-        className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground transition-colors"
       >
         <ArrowLeftIcon className="size-4" /> Back to expenses
       </Link>
 
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-foreground">New expense</h2>
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">New expense</h2>
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger text-danger rounded-lg text-sm">
+        <div className="px-4 py-3 bg-danger/10 border border-danger text-danger rounded-lg text-sm">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
+      <form onSubmit={handleSubmit} className="bg-surface border border-border rounded-lg p-5 space-y-6">
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            What & Who
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h3 className="text-sm font-medium text-foreground mb-4">What &amp; who</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Supplier / payee</label>
+              <label className={fieldLabel}>Supplier / payee</label>
               <input
                 type="text"
                 value={supplierName}
@@ -139,7 +139,7 @@ export default function NewExpensePage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Category</label>
+              <label className={fieldLabel}>Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
@@ -153,7 +153,7 @@ export default function NewExpensePage() {
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Description (optional)</label>
+              <label className={fieldLabel}>Description (optional)</label>
               <input
                 type="text"
                 value={description}
@@ -165,13 +165,11 @@ export default function NewExpensePage() {
           </div>
         </section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            Amount & VAT
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="pt-6 border-t border-dashed border-border">
+          <h3 className="text-sm font-medium text-foreground mb-4">Amount &amp; VAT</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Amount (gross, £)</label>
+              <label className={fieldLabel}>Amount (gross, £)</label>
               <input
                 type="number"
                 min={0.01}
@@ -184,23 +182,23 @@ export default function NewExpensePage() {
               />
             </div>
             <div className="flex flex-col">
-              <label className={labelClass}>VAT included?</label>
-              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface border border-border rounded-lg cursor-pointer">
+              <label className={fieldLabel}>VAT included?</label>
+              <label className="inline-flex w-full items-center gap-2 px-3 py-2.5 bg-surface-raised border border-border rounded-lg cursor-pointer">
                 <input
                   type="checkbox"
                   checked={vatIncluded}
                   onChange={(e) => setVatIncluded(e.target.checked)}
                   className="rounded border-border"
                 />
-                <span className="text-sm">Amount includes UK VAT (20%)</span>
+                <span className="text-sm text-muted">Amount includes UK VAT (20%)</span>
               </label>
-              <p className="text-[11px] text-subtle mt-2">
+              <p className="text-2xs text-subtle mt-2">
                 Required to track reclaimable input VAT once VAT registered
               </p>
             </div>
             {vatIncluded && (
               <div>
-                <label className={labelClass}>VAT amount (£, optional)</label>
+                <label className={fieldLabel}>VAT amount (£, optional)</label>
                 <input
                   type="number"
                   min={0}
@@ -215,13 +213,11 @@ export default function NewExpensePage() {
           </div>
         </section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            Dates
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <section className="pt-6 border-t border-dashed border-border">
+          <h3 className="text-sm font-medium text-foreground mb-4">Dates</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className={labelClass}>Date due</label>
+              <label className={fieldLabel}>Date due</label>
               <input
                 type="date"
                 value={dateDue}
@@ -231,7 +227,7 @@ export default function NewExpensePage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Date paid (leave blank if unpaid)</label>
+              <label className={fieldLabel}>Date paid (leave blank if unpaid)</label>
               <input
                 type="date"
                 value={datePaid}
@@ -240,7 +236,7 @@ export default function NewExpensePage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Recurring?</label>
+              <label className={fieldLabel}>Recurring?</label>
               <select
                 value={recurring}
                 onChange={(e) => setRecurring(e.target.value as RecurringFrequency | "")}
@@ -255,13 +251,11 @@ export default function NewExpensePage() {
           </div>
         </section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
-            Document & Notes
-          </h3>
-          <div className="grid grid-cols-1 gap-4">
+        <section className="pt-6 border-t border-dashed border-border">
+          <h3 className="text-sm font-medium text-foreground mb-4">Document &amp; notes</h3>
+          <div className="grid grid-cols-1 gap-3">
             <div>
-              <label className={labelClass}>Receipt / invoice PDF (optional)</label>
+              <label className={fieldLabel}>Receipt / invoice PDF (optional)</label>
               <input
                 type="file"
                 accept="application/pdf,image/*"
@@ -270,21 +264,21 @@ export default function NewExpensePage() {
                   setFile(f);
                   if (f) uploadFile(f);
                 }}
-                className="text-sm"
+                className="text-sm text-muted"
               />
               {uploading && (
-                <p className="text-[11px] text-subtle mt-1 inline-flex items-center gap-1.5">
+                <p className="text-2xs text-subtle mt-1 inline-flex items-center gap-1.5">
                   <ArrowPathIcon className="size-3 animate-spin" /> Uploading...
                 </p>
               )}
               {fileMeta && (
-                <p className="text-[11px] text-success mt-1 inline-flex items-center gap-1.5">
+                <p className="text-2xs text-success mt-1 inline-flex items-center gap-1.5">
                   <DocumentArrowUpIcon className="size-3" /> {fileMeta.name} uploaded
                 </p>
               )}
             </div>
             <div>
-              <label className={labelClass}>Notes</label>
+              <label className={fieldLabel}>Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -295,17 +289,17 @@ export default function NewExpensePage() {
           </div>
         </section>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 pt-6 border-t border-dashed border-border">
           <Link
             href="/finance/expenses"
-            className="px-5 py-3 text-sm text-subtle hover:text-foreground"
+            className="px-4 py-2 text-xs text-subtle hover:text-foreground"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving || uploading}
-            className="flex items-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save expense

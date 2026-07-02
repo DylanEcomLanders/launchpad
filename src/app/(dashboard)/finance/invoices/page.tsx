@@ -14,13 +14,23 @@ import {
   deriveInvoiceStatus,
 } from "@/lib/finance/data";
 import {
-  INVOICE_STATUS_BADGE,
   INVOICE_STATUS_LABELS,
   type InvoiceIssued,
   type InvoiceStatus,
 } from "@/lib/finance/types";
 import { calculateVatBreakdown } from "@/lib/finance/vat";
 import { inputClass, selectClass } from "@/lib/form-styles";
+
+/* Status badges use token classes only (no hex). Mirrors the expenses
+ * table treatment: quiet 10%-opacity fill on a semantic foreground. */
+const STATUS_BADGE: Record<InvoiceStatus, string> = {
+  draft: "bg-info/10 text-info",
+  sent: "bg-info/10 text-info",
+  paid: "bg-success/10 text-success",
+  overdue: "bg-danger/10 text-danger",
+  disputed: "bg-warning/10 text-warning",
+  void: "bg-subtle/10 text-subtle",
+};
 
 type SortKey = "invoice_date" | "due_date" | "client_name" | "total" | "status";
 
@@ -198,37 +208,29 @@ export default function ReceivablesListPage() {
   }
 
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <SummaryCard label="Outstanding" amount={summary.outstanding} />
         <SummaryCard label="Overdue" amount={summary.overdue} accent="red" />
         <SummaryCard label="Paid this month" amount={summary.paidThisMonth} accent="green" />
       </div>
 
-      {/* Country pill bar - All / UK / International / per-country */}
+      {/* Country filter - quiet chips, count beside each */}
       {hydrated && countryPills.length > 1 && (
-        <div className="mb-3 -mx-1 overflow-x-auto">
-          <div className="flex items-center gap-1.5 px-1 py-1 min-w-max">
+        <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-0.5 min-w-max">
             {countryPills.map((p) => {
               const active = countryFilter === p.key;
               return (
                 <button
                   key={p.key}
                   onClick={() => setCountryFilter(p.key)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
-                    active
-                      ? "bg-foreground text-background border-border"
-                      : "bg-surface text-foreground border-border hover:bg-background"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-2xs font-medium transition-colors ${
+                    active ? "bg-surface-raised text-foreground" : "text-muted hover:text-foreground hover:bg-surface-raised"
                   }`}
                 >
                   {p.label}
-                  <span
-                    className={`text-[10px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${
-                      active ? "bg-surface-raised text-foreground" : "bg-surface-raised text-subtle"
-                    }`}
-                  >
-                    {p.count}
-                  </span>
+                  <span className="tabular-nums text-subtle">{p.count}</span>
                 </button>
               );
             })}
@@ -236,7 +238,7 @@ export default function ReceivablesListPage() {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
             <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
@@ -273,13 +275,13 @@ export default function ReceivablesListPage() {
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised disabled:opacity-40 transition-colors"
           >
             <ArrowDownTrayIcon className="size-4" /> CSV
           </button>
           <Link
             href="/finance/invoices/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
           >
             <PlusIcon className="size-4" /> New invoice
           </Link>
@@ -287,74 +289,75 @@ export default function ReceivablesListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-background rounded-xl animate-pulse" />
+        <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
-          <div className="text-sm text-subtle mb-3">
+        <div className="bg-surface border border-border rounded-lg p-12 text-center">
+          <p className="text-sm text-subtle mb-3">
             {invoices.length === 0
-              ? "No invoices yet - create your first one."
+              ? "No invoices yet. Create your first one."
               : "No invoices match these filters."}
-          </div>
+          </p>
           {invoices.length === 0 && (
             <Link
               href="/finance/invoices/new"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
             >
               <PlusIcon className="size-4" /> New invoice
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-surface border border-border rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
-          <table className="w-full text-sm">
-            <thead className="bg-background text-[11px] uppercase tracking-wider text-subtle">
-              <tr>
+        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-dashed border-border">
                 <Th onClick={() => toggleSort("invoice_date")}>Invoice #</Th>
                 <Th onClick={() => toggleSort("client_name")}>Client</Th>
                 <Th onClick={() => toggleSort("invoice_date")}>Issued</Th>
                 <Th onClick={() => toggleSort("due_date")}>Due</Th>
                 <Th onClick={() => toggleSort("status")}>Status</Th>
-                <th className="text-right px-4 py-3 font-semibold cursor-pointer select-none hover:text-foreground" onClick={() => toggleSort("total")}>
+                <th
+                  className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle cursor-pointer select-none hover:text-foreground"
+                  onClick={() => toggleSort("total")}
+                >
                   Total
                 </th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((i) => {
-                const badge = INVOICE_STATUS_BADGE[i.status];
-                return (
-                  <tr key={i.id} className="border-t border-border hover:bg-background">
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/finance/invoices/${i.id}`}
-                        className="font-medium text-foreground hover:underline"
-                      >
-                        {i.invoice_number}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-foreground">{i.client_name}</td>
-                    <td className="px-4 py-3 text-subtle">{fmtDateUK(i.invoice_date)}</td>
-                    <td className="px-4 py-3 text-subtle">{fmtDateUK(i.due_date)}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                        style={{ background: badge.bg, color: badge.text }}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: badge.dot }} />
-                        {INVOICE_STATUS_LABELS[i.status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium text-foreground tabular-nums">
-                      {fmtMoney(i.total, i.currency)}
-                      {i.currency !== "GBP" && i.gbp_equivalent !== i.total && (
-                        <div className="text-[10px] font-normal text-subtle mt-0.5">
-                          ≈ {fmtMoney(i.gbp_equivalent, "GBP")}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {filtered.map((i) => (
+                <tr
+                  key={i.id}
+                  className="border-b border-dashed border-border last:border-0 hover:bg-surface-hover transition-colors"
+                >
+                  <td className="px-5 py-3">
+                    <Link
+                      href={`/finance/invoices/${i.id}`}
+                      className="text-sm text-foreground hover:underline"
+                    >
+                      {i.invoice_number}
+                    </Link>
+                  </td>
+                  <td className="px-5 py-3 text-sm text-foreground">{i.client_name}</td>
+                  <td className="px-5 py-3 text-xs text-muted tabular-nums">{fmtDateUK(i.invoice_date)}</td>
+                  <td className="px-5 py-3 text-xs text-muted tabular-nums">{fmtDateUK(i.due_date)}</td>
+                  <td className="px-5 py-3">
+                    <span
+                      className={`text-2xs uppercase tracking-wider font-medium px-2 py-0.5 rounded ${STATUS_BADGE[i.status]}`}
+                    >
+                      {INVOICE_STATUS_LABELS[i.status]}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">
+                    {fmtMoney(i.total, i.currency)}
+                    {i.currency !== "GBP" && i.gbp_equivalent !== i.total && (
+                      <div className="text-2xs text-subtle">
+                        {fmtMoney(i.gbp_equivalent, "GBP")}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -366,7 +369,7 @@ export default function ReceivablesListPage() {
 function Th({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
     <th
-      className="text-left px-4 py-3 font-semibold cursor-pointer select-none hover:text-foreground"
+      className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle cursor-pointer select-none hover:text-foreground"
       onClick={onClick}
     >
       {children}
@@ -390,9 +393,9 @@ function SummaryCard({
         ? "text-success"
         : "text-foreground";
   return (
-    <div className="bg-surface border border-border rounded-xl p-4 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] uppercase tracking-wider text-subtle mb-1">{label}</div>
-      <div className={`text-2xl font-semibold tabular-nums ${color}`}>{fmtMoney(amount)}</div>
+    <div className="bg-surface border border-border rounded-lg p-5">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
+      <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${color}`}>{fmtMoney(amount)}</div>
     </div>
   );
 }

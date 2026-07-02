@@ -143,12 +143,12 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       <div
         ref={dropRef}
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
-        className="bg-surface border-2 border-dashed border-border rounded-xl p-8 text-center mb-6 hover:border-border transition-colors"
+        className="bg-surface border border-dashed border-border rounded-lg p-8 text-center hover:bg-surface-raised transition-colors"
       >
         <DocumentArrowUpIcon className="size-8 text-subtle mx-auto mb-2" />
         <p className="text-sm text-foreground font-medium mb-1">
@@ -163,7 +163,7 @@ export default function DocumentsPage() {
           />
           <span className="text-sm text-foreground underline">choose a file</span>
         </label>
-        <p className="text-[11px] text-subtle mt-2">
+        <p className="text-2xs text-subtle mt-2">
           PDF, image, CSV or Excel · 25MB max · stored privately
         </p>
         {uploading && (
@@ -172,7 +172,7 @@ export default function DocumentsPage() {
         {error && <p className="text-xs text-danger mt-2">{error}</p>}
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
             <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
@@ -202,9 +202,9 @@ export default function DocumentsPage() {
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-background rounded-xl animate-pulse" />
+        <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+        <div className="bg-surface border border-border rounded-lg p-12 text-center">
           <p className="text-sm text-subtle">
             {docs.length === 0
               ? "No documents yet - drop a file above to get started."
@@ -212,11 +212,11 @@ export default function DocumentsPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-surface border border-border rounded-xl divide-y divide-border shadow-[var(--shadow-soft)]">
+        <div className="bg-surface border border-border rounded-lg overflow-hidden">
           {filtered.map((doc) => (
             <div
               key={doc.id}
-              className="px-4 py-3 hover:bg-background transition-colors flex items-center gap-3"
+              className="px-5 py-3 border-b border-dashed border-border last:border-0 hover:bg-surface-hover transition-colors flex items-center gap-3"
             >
               <DocumentIcon className="size-5 text-subtle shrink-0" />
               <div className="flex-1 min-w-0">
@@ -226,7 +226,7 @@ export default function DocumentsPage() {
                 >
                   {doc.name}
                 </button>
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-subtle mt-0.5">
+                <div className="flex flex-wrap items-center gap-2 text-2xs text-subtle mt-0.5">
                   <span>{DOCUMENT_CATEGORY_LABELS[doc.category]}</span>
                   {doc.document_date && (
                     <>
@@ -257,10 +257,10 @@ export default function DocumentsPage() {
       )}
 
       {showAdd && pendingFile && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-xl shadow-xl w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-background/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-border rounded-lg w-full max-w-md p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground">
+              <h3 className="text-lg font-medium text-foreground">
                 Tag this document
               </h3>
               <button
@@ -320,13 +320,13 @@ export default function DocumentsPage() {
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={resetAdd}
-                className="px-3 py-2 text-sm text-subtle hover:text-foreground"
+                className="px-3 py-2 text-xs text-subtle hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={saveDocument}
-                className="px-4 py-2 bg-foreground text-background text-sm font-medium rounded-lg hover:opacity-90"
+                className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
               >
                 Save document
               </button>

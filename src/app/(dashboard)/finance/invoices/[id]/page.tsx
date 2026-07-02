@@ -29,7 +29,6 @@ import { calculateVatBreakdown } from "@/lib/finance/vat";
 import { loadCompanyProfile } from "@/lib/finance/profile";
 import { FinanceInvoicePdf } from "@/components/finance/finance-invoice-pdf";
 import {
-  INVOICE_STATUS_BADGE,
   INVOICE_STATUS_LABELS,
   VAT_TREATMENT_LABELS,
   type InvoiceIssued,
@@ -40,7 +39,18 @@ import {
 } from "@/lib/finance/types";
 import { deriveVatTreatment, vatTreatmentToMode } from "@/lib/finance/vat";
 import { VatModePicker } from "@/components/finance/vat-mode-picker";
-import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { selectClass } from "@/lib/form-styles";
+
+/* Token-class status badges (no hex). Matches the invoices list + expenses
+ * table treatment. */
+const STATUS_BADGE: Record<InvoiceStatus, string> = {
+  draft: "bg-info/10 text-info",
+  sent: "bg-info/10 text-info",
+  paid: "bg-success/10 text-success",
+  overdue: "bg-danger/10 text-danger",
+  disputed: "bg-warning/10 text-warning",
+  void: "bg-subtle/10 text-subtle",
+};
 
 export default function InvoiceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -207,12 +217,12 @@ export default function InvoiceDetailPage() {
   }
 
   if (loading) {
-    return <div className="h-48 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />;
   }
 
   if (!invoice) {
     return (
-      <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+      <div className="bg-surface border border-border rounded-lg p-12 text-center">
         <p className="text-sm text-subtle mb-3">Invoice not found</p>
         <Link href="/finance/invoices" className="text-sm text-foreground underline">
           Back to invoices
@@ -222,7 +232,6 @@ export default function InvoiceDetailPage() {
   }
 
   const derivedStatus = deriveInvoiceStatus(invoice);
-  const badge = INVOICE_STATUS_BADGE[derivedStatus];
   const breakdown = calculateVatBreakdown(
     invoice.items,
     invoice.vat_treatment,
@@ -238,28 +247,26 @@ export default function InvoiceDetailPage() {
         <ArrowLeftIcon className="size-4" /> Back to invoices
       </Link>
 
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h2 className="text-xl font-semibold text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {invoice.invoice_number}
             </h2>
             <span
-              className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-              style={{ background: badge.bg, color: badge.text }}
+              className={`text-2xs uppercase tracking-wider font-medium px-2 py-0.5 rounded ${STATUS_BADGE[derivedStatus]}`}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: badge.dot }} />
               {INVOICE_STATUS_LABELS[derivedStatus]}
             </span>
           </div>
-          <p className="text-sm text-subtle">
+          <p className="text-sm text-muted">
             {invoice.client_name} · Issued {fmtDateUK(invoice.invoice_date)} · Due{" "}
             {fmtDateUK(invoice.due_date)}
           </p>
         </div>
 
         {!editing && (
-          <div className="inline-flex items-center divide-x divide-border border border-border rounded-lg bg-surface overflow-hidden shadow-[var(--shadow-soft)]">
+          <div className="inline-flex items-center divide-x divide-dashed divide-border border border-border rounded-lg bg-surface overflow-hidden">
             <ToolbarButton onClick={startEdit} icon={<PencilSquareIcon className="size-4" />}>
               Edit
             </ToolbarButton>
@@ -294,17 +301,17 @@ export default function InvoiceDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
       {sendError && (
-        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
           {sendError}
         </div>
       )}
       {sendSuccess && (
-        <div className="mb-6 px-4 py-3 bg-success/10 border border-success/20 rounded-lg text-sm text-success">
+        <div className="mb-4 px-4 py-3 bg-success/10 border border-success/20 rounded-lg text-sm text-success">
           Invoice emailed successfully.
         </div>
       )}
@@ -319,8 +326,8 @@ export default function InvoiceDetailPage() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="md:col-span-2 space-y-3">
               <Card title="Client">
                 <div className="text-sm text-foreground">
                   <div className="font-medium">{invoice.client_name}</div>
@@ -335,30 +342,30 @@ export default function InvoiceDetailPage() {
                       {invoice.client_address}
                     </div>
                   )}
-                  <div className="text-[11px] text-subtle mt-1.5">{invoice.client_country}</div>
+                  <div className="text-2xs text-subtle mt-1.5">{invoice.client_country}</div>
                 </div>
               </Card>
 
               <Card title="Line items">
-                <div className="overflow-x-auto -mx-4">
-                  <table className="w-full text-sm">
-                    <thead className="text-[10px] uppercase tracking-wider text-subtle border-b border-border">
-                      <tr>
-                        <th className="text-left px-4 py-2 font-semibold">Description</th>
-                        <th className="text-center px-4 py-2 font-semibold">Qty</th>
-                        <th className="text-right px-4 py-2 font-semibold">Unit price</th>
-                        <th className="text-right px-4 py-2 font-semibold">Amount</th>
+                <div className="overflow-x-auto -mx-5">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-dashed border-border">
+                        <th className="text-left px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Description</th>
+                        <th className="text-center px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Qty</th>
+                        <th className="text-right px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Unit price</th>
+                        <th className="text-right px-5 py-2 text-2xs uppercase tracking-wider font-medium text-subtle">Amount</th>
                       </tr>
                     </thead>
                     <tbody>
                       {invoice.items.map((item) => (
-                        <tr key={item.id} className="border-b border-border last:border-0">
-                          <td className="px-4 py-2.5">{item.name}</td>
-                          <td className="px-4 py-2.5 text-center text-subtle">{item.quantity}</td>
-                          <td className="px-4 py-2.5 text-right text-subtle tabular-nums">
+                        <tr key={item.id} className="border-b border-dashed border-border last:border-0">
+                          <td className="px-5 py-2.5 text-sm text-foreground">{item.name}</td>
+                          <td className="px-5 py-2.5 text-center text-xs text-muted tabular-nums">{item.quantity}</td>
+                          <td className="px-5 py-2.5 text-right text-xs text-muted tabular-nums">
                             {fmtMoney(item.unitPrice, invoice.currency)}
                           </td>
-                          <td className="px-4 py-2.5 text-right tabular-nums">
+                          <td className="px-5 py-2.5 text-right text-sm text-foreground tabular-nums">
                             {fmtMoney(item.quantity * item.unitPrice, invoice.currency)}
                           </td>
                         </tr>
@@ -384,8 +391,8 @@ export default function InvoiceDetailPage() {
                     bold
                   />
                   {invoice.currency !== "GBP" && (
-                    <div className="flex justify-between text-[11px] text-subtle pt-1">
-                      <span>≈ GBP equivalent</span>
+                    <div className="flex justify-between text-2xs text-subtle pt-1">
+                      <span>GBP equivalent</span>
                       <span className="tabular-nums">
                         {fmtMoney(invoice.gbp_equivalent, "GBP")}
                       </span>
@@ -394,14 +401,14 @@ export default function InvoiceDetailPage() {
                 </div>
 
                 {invoice.currency !== "GBP" && (
-                  <p className="mt-3 pt-3 border-t border-border text-[11px] text-subtle">
+                  <p className="mt-3 pt-3 border-t border-dashed border-border text-2xs text-subtle">
                     Amounts billed in {invoice.currency}. GBP equivalent recorded from{" "}
                     {invoice.source_system || "the source"} statement at the time of the
                     transaction; no live FX conversion applied.
                   </p>
                 )}
                 {breakdown.noteForInvoice && (
-                  <p className="mt-3 pt-3 border-t border-border text-[11px] text-subtle">
+                  <p className="mt-3 pt-3 border-t border-dashed border-border text-2xs text-subtle">
                     {breakdown.noteForInvoice}
                   </p>
                 )}
@@ -417,7 +424,7 @@ export default function InvoiceDetailPage() {
 
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Card title="Status">
                 <select
                   value={derivedStatus}
@@ -440,35 +447,35 @@ export default function InvoiceDetailPage() {
                   <option value="disputed">Disputed</option>
                   <option value="void">Void</option>
                 </select>
-                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12px] mt-2">
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs mt-2.5">
                   {invoice.sent_date && (
                     <>
                       <dt className="text-subtle">Sent</dt>
-                      <dd className="text-foreground text-right">{fmtDateUK(invoice.sent_date)}</dd>
+                      <dd className="text-foreground text-right tabular-nums">{fmtDateUK(invoice.sent_date)}</dd>
                     </>
                   )}
                   {invoice.paid_date && (
                     <>
                       <dt className="text-subtle">Paid</dt>
-                      <dd className="text-foreground text-right">{fmtDateUK(invoice.paid_date)}</dd>
+                      <dd className="text-foreground text-right tabular-nums">{fmtDateUK(invoice.paid_date)}</dd>
                     </>
                   )}
                   {invoice.disputed_at && (
                     <>
                       <dt className="text-subtle">Disputed</dt>
-                      <dd className="text-foreground text-right">{fmtDateUK(invoice.disputed_at)}</dd>
+                      <dd className="text-foreground text-right tabular-nums">{fmtDateUK(invoice.disputed_at)}</dd>
                     </>
                   )}
                 </dl>
                 {invoice.disputed_reason && (
-                  <p className="text-[12px] text-foreground whitespace-pre-wrap mt-2 pt-2 border-t border-border">
+                  <p className="text-xs text-foreground whitespace-pre-wrap mt-2.5 pt-2.5 border-t border-dashed border-border">
                     <span className="text-subtle">Reason:</span> {invoice.disputed_reason}
                   </p>
                 )}
               </Card>
 
               <Card title="VAT & Payment">
-                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[12px]">
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
                   <dt className="text-subtle">Treatment</dt>
                   <dd className="text-foreground text-right">
                     {VAT_TREATMENT_LABELS[invoice.vat_treatment]}
@@ -677,7 +684,7 @@ function EditInvoiceForm({
       <FormSection title="Line items">
         {draft.items.length > 0 && (
           <div className="border border-border rounded-md overflow-hidden mb-3">
-            <div className="hidden md:grid grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 bg-background text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle">
+            <div className="hidden md:grid grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 bg-surface-raised text-2xs font-medium uppercase tracking-wider text-subtle">
               <span>Description</span>
               <span className="text-center">Qty</span>
               <span className="text-right">Unit price</span>
@@ -687,7 +694,7 @@ function EditInvoiceForm({
             {draft.items.map((item) => (
               <div
                 key={item.id}
-                className="grid grid-cols-1 md:grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 border-t border-border items-center"
+                className="grid grid-cols-1 md:grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 border-t border-dashed border-border items-center"
               >
                 <input
                   type="text"
@@ -749,16 +756,16 @@ function EditInvoiceForm({
         </FormSection>
 
         <FormSection title={`Totals (live, ${draft.currency})`}>
-          <div className="border border-border rounded-md p-3 space-y-1.5">
+          <div className="bg-surface-raised border border-border rounded-md p-3 space-y-1.5">
             <div className="flex justify-between text-sm">
-              <span className="text-subtle">Subtotal</span>
+              <span className="text-muted">Subtotal</span>
               <span className="tabular-nums">
                 {fmtMoney(breakdown.subtotal, draft.currency)}
               </span>
             </div>
             {breakdown.vatAmount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-subtle">
+                <span className="text-muted">
                   VAT ({Math.round(breakdown.vatRate * 100)}%)
                 </span>
                 <span className="tabular-nums">
@@ -766,8 +773,8 @@ function EditInvoiceForm({
                 </span>
               </div>
             )}
-            <div className="flex justify-between text-sm pt-1.5 border-t border-border">
-              <span className="font-semibold">Total</span>
+            <div className="flex justify-between text-sm pt-1.5 border-t border-dashed border-border">
+              <span className="font-semibold text-foreground">Total</span>
               <span className="font-semibold tabular-nums">
                 {fmtMoney(breakdown.total, draft.currency)}
               </span>
@@ -837,7 +844,7 @@ function EditInvoiceForm({
         </FormGrid>
       </FormSection>
 
-      <div className="flex justify-end gap-2 pt-4 border-t border-border">
+      <div className="flex justify-end gap-2 pt-4 border-t border-dashed border-border">
         <button
           onClick={onCancel}
           className="px-4 py-2 text-sm text-subtle hover:text-foreground"
@@ -941,7 +948,7 @@ function InvoiceAttachmentCard({
             )}
             {invoice.attachment_name}
           </button>
-          <p className="text-[11px] text-subtle">
+          <p className="text-2xs text-subtle">
             Signed on click, expires 15min
           </p>
           <button
@@ -953,10 +960,10 @@ function InvoiceAttachmentCard({
         </div>
       ) : (
         <div>
-          <p className="text-[11px] text-subtle mb-2">
+          <p className="text-2xs text-subtle mb-2">
             Signed PO, payment confirmation, contract reference, etc.
           </p>
-          <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background cursor-pointer">
+          <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-raised border border-border text-foreground text-xs rounded-md hover:bg-surface cursor-pointer">
             <input
               type="file"
               accept="application/pdf,image/*"
@@ -999,10 +1006,10 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm transition-colors disabled:opacity-40 ${
+      className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs transition-colors disabled:opacity-40 ${
         danger
           ? "text-danger hover:bg-surface-raised"
-          : "text-foreground hover:bg-background"
+          : "text-foreground hover:bg-surface-raised"
       }`}
     >
       {icon}
@@ -1013,8 +1020,8 @@ function ToolbarButton({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 shadow-[var(--shadow-soft)]">
-      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-subtle mb-2.5">
+    <div className="bg-surface border border-border rounded-lg p-5">
+      <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-3">
         {title}
       </h3>
       <div>{children}</div>
@@ -1026,9 +1033,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
  * tighter inline labels than the global form-styles, so admin forms
  * feel less bulky. */
 const compactInput =
-  "w-full px-3 py-2 bg-surface border border-border rounded-md text-sm focus:outline-none focus:border-border focus:ring-1 focus:ring-surface/10 transition-all placeholder:text-muted";
+  "w-full px-3 py-2 bg-surface-raised border border-border rounded-md text-sm focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground/10 transition-all placeholder:text-subtle";
 const compactTextarea =
-  "w-full px-3 py-2 bg-surface border border-border rounded-md text-sm focus:outline-none focus:border-border focus:ring-1 focus:ring-surface/10 transition-all resize-none placeholder:text-muted";
+  "w-full px-3 py-2 bg-surface-raised border border-border rounded-md text-sm focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground/10 transition-all resize-none placeholder:text-subtle";
 
 function FormSection({
   title,
@@ -1039,7 +1046,7 @@ function FormSection({
 }) {
   return (
     <section>
-      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-subtle mb-3">
+      <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-3">
         {title}
       </h3>
       {children}
@@ -1062,7 +1069,7 @@ function FormField({
 }) {
   return (
     <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-[11px] font-medium text-subtle mb-1">{label}</label>
+      <label className="block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">{label}</label>
       {children}
     </div>
   );
@@ -1079,7 +1086,7 @@ function KV({
 }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-subtle mb-0.5">{label}</div>
+      <div className="text-2xs uppercase tracking-wider text-subtle mb-0.5">{label}</div>
       <div className={`text-sm text-foreground ${multiline ? "whitespace-pre-wrap" : ""}`}>
         {value}
       </div>
@@ -1090,9 +1097,9 @@ function KV({
 function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
     <div
-      className={`flex justify-between text-sm ${bold ? "font-bold pt-2 border-t border-border" : ""}`}
+      className={`flex justify-between text-sm ${bold ? "font-semibold pt-2 border-t border-dashed border-border text-foreground" : ""}`}
     >
-      <span className={bold ? "" : "text-subtle"}>{label}</span>
+      <span className={bold ? "" : "text-muted"}>{label}</span>
       <span className="tabular-nums">{value}</span>
     </div>
   );

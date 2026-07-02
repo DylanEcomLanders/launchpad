@@ -111,27 +111,27 @@ export default function FinanceSettingsPage() {
   }
 
   if (loading || !profile) {
-    return <div className="h-48 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-48 bg-surface rounded-lg border border-border animate-pulse" />;
   }
 
   return (
-    <div className="max-w-3xl">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-foreground mb-1">Company profile</h2>
-        <p className="text-sm text-subtle">
+    <div className="space-y-3">
+      <div className="bg-surface border border-border rounded-lg p-5">
+        <h2 className="text-lg font-medium text-foreground mb-1">Company profile</h2>
+        <p className="text-sm text-muted leading-relaxed max-w-2xl">
           These details appear on every invoice you generate and feed the dashboard tax logic.
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
+        <div className="px-4 py-3 bg-danger/10 rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
 
-      <div className="space-y-8">
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
+      <div className="space-y-3">
+        <section className="bg-surface border border-border rounded-lg p-5">
+          <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             Legal
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -183,19 +183,19 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
+        <section className="bg-surface border border-border rounded-lg p-5">
+          <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             VAT
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>VAT registered?</label>
-              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface border border-border rounded-lg cursor-pointer">
+              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface-raised border border-border rounded-lg cursor-pointer">
                 <input
                   type="checkbox"
                   checked={vatRegistered}
                   onChange={(e) => setVatRegistered(e.target.checked)}
-                  className="rounded border-border"
+                  className="rounded border-border accent-foreground"
                 />
                 <span className="text-sm">
                   Charge VAT on UK invoices and reclaim input VAT on expenses
@@ -217,8 +217,8 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
+        <section className="bg-surface border border-border rounded-lg p-5">
+          <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             Default payment method (pre-fill on new invoices)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,7 +232,7 @@ export default function FinanceSettingsPage() {
                 <option value="online">Whop (online)</option>
                 <option value="bank_transfer">Bank transfer (Tide)</option>
               </select>
-              <p className="text-[11px] text-subtle mt-1">
+              <p className="text-2xs text-subtle mt-1">
                 {paymentMethod === "online"
                   ? "PDF will say payment is processed via Whop; you handle the Whop invoice separately."
                   : "Bank details below will print on every invoice."}
@@ -297,7 +297,7 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+        <div className="flex items-center justify-end gap-3">
           {saved && (
             <span className="inline-flex items-center gap-1.5 text-sm text-success">
               <CheckIcon className="size-4" /> Saved
@@ -306,30 +306,30 @@ export default function FinanceSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save profile
           </button>
         </div>
 
-        <section className="pt-8 mt-8 border-t border-border">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-2">
+        <section className="bg-surface border border-border rounded-lg p-5">
+          <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-2">
             Legacy data
           </h3>
-          <p className="text-sm text-subtle mb-4">
+          <p className="text-sm text-muted leading-relaxed mb-4 max-w-2xl">
             Import receivable invoices from <code className="text-foreground">/company/invoices</code> and expenses from <code className="text-foreground">/tools/expenses</code> into the Finance module. Idempotent, safe to re-run.
           </p>
           <button
             onClick={runMigration}
             disabled={migrating}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-surface border border-border text-foreground text-sm font-medium rounded-md hover:bg-background disabled:opacity-40"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border text-foreground text-xs font-medium rounded-md hover:bg-surface-raised disabled:opacity-40 transition-colors"
           >
             {migrating && <ArrowPathIcon className="size-4 animate-spin" />}
             {migrating ? "Importing..." : "Import legacy data"}
           </button>
           {migrationResult && (
-            <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg text-sm text-success">
+            <div className="mt-4 p-3 bg-success/10 rounded-lg text-sm text-success">
               Imported {migrationResult.companyInvoicesImported} from company_invoices,{" "}
               {migrationResult.expensesImported} from expenses.{" "}
               {migrationResult.skipped > 0 && `Skipped ${migrationResult.skipped} already-imported.`}
