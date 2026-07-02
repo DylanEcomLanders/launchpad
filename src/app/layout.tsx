@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeScript } from "@/components/theme";
+import { SandboxRibbon } from "@/components/sandbox-ribbon";
 import "./globals.css";
 
 const inter = Inter({
@@ -68,6 +69,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         {children}
+        <SandboxRibbon />
         <script
           dangerouslySetInnerHTML={{
             __html: `if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js")`,
