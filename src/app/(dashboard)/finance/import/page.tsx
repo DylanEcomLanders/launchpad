@@ -52,7 +52,7 @@ const EXPENSE_HEADER =
 export default function ImportPage() {
   return (
     <div className="space-y-6">
-      <div className="bg-surface border border-border-faint rounded-md p-5">
+      <div className="bg-surface border border-border-faint rounded p-5">
         <h2 className="text-lg font-medium text-foreground mb-1">Bulk import</h2>
         <p className="text-sm text-muted leading-relaxed max-w-2xl">
           Four-stage CSV import. Run masters first (clients, suppliers) so the transactional imports (invoices, expenses) can match by name. All four endpoints are idempotent on the natural key.
@@ -138,7 +138,7 @@ function ImportSection<R extends { errors: string[] }>({
   }
 
   return (
-    <div className="bg-surface border border-border-faint rounded-md p-5">
+    <div className="bg-surface border border-border-faint rounded p-5">
       <div className="flex items-start gap-3 mb-4">
         {icon}
         <div>
@@ -155,7 +155,7 @@ function ImportSection<R extends { errors: string[] }>({
             setFile(e.target.files?.[0] || null);
             setResult(null);
           }}
-          className="block w-full text-sm text-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border file:border-border file:text-xs file:font-medium file:bg-surface-raised file:text-foreground hover:file:bg-surface-raised"
+          className="block w-full text-sm text-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-border file:text-xs file:font-medium file:bg-surface-raised file:text-foreground hover:file:bg-surface-raised"
         />
         {file && (
           <p className="text-xs text-subtle">
@@ -166,7 +166,7 @@ function ImportSection<R extends { errors: string[] }>({
         <button
           onClick={handleImport}
           disabled={!file || importing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-foreground text-background text-xs font-medium rounded hover:opacity-90 disabled:opacity-40"
         >
           {importing ? (
             <ArrowPathIcon className="size-4 animate-spin" />
@@ -177,7 +177,7 @@ function ImportSection<R extends { errors: string[] }>({
         </button>
 
         {error && (
-          <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-late">
+          <div className="px-3 py-2 bg-surface-raised rounded text-xs text-status-late">
             {error}
           </div>
         )}
@@ -185,7 +185,7 @@ function ImportSection<R extends { errors: string[] }>({
 
         <details className="text-xs text-subtle">
           <summary className="cursor-pointer">CSV header reference</summary>
-          <code className="block bg-surface-raised px-3 py-2 rounded-md text-4xs mt-2 overflow-x-auto">
+          <code className="block bg-surface-raised px-3 py-2 rounded text-4xs mt-2 overflow-x-auto">
             {headerReference}
           </code>
         </details>
@@ -196,7 +196,7 @@ function ImportSection<R extends { errors: string[] }>({
 
 function ClientResult({ result }: { result: ClientImportResult }) {
   return (
-    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
+    <div className="px-3 py-2 bg-surface-raised rounded text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -212,7 +212,7 @@ function ClientResult({ result }: { result: ClientImportResult }) {
 
 function InvoiceResult({ result }: { result: InvoiceImportResult }) {
   return (
-    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
+    <div className="px-3 py-2 bg-surface-raised rounded text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -229,7 +229,7 @@ function InvoiceResult({ result }: { result: InvoiceImportResult }) {
 
 function SupplierResult({ result }: { result: SupplierImportResult }) {
   return (
-    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
+    <div className="px-3 py-2 bg-surface-raised rounded text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete
@@ -245,7 +245,7 @@ function SupplierResult({ result }: { result: SupplierImportResult }) {
 
 function ExpenseResult({ result }: { result: ExpenseImportResult }) {
   return (
-    <div className="px-3 py-2 bg-surface-raised rounded-md text-xs text-status-ontrack">
+    <div className="px-3 py-2 bg-surface-raised rounded text-xs text-status-ontrack">
       <div className="flex items-center gap-1.5 font-medium mb-1">
         <CheckCircleIcon className="size-4" />
         Import complete

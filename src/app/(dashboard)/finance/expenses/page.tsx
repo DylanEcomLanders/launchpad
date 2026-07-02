@@ -175,7 +175,7 @@ export default function ExpensesListPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as "all" | ExpenseCategory)}
-            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
           >
             {categoryPills.map((p) => (
               <option key={p.key} value={p.key}>
@@ -186,7 +186,7 @@ export default function ExpensesListPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as "all" | ExpenseStatus)}
-            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
             <option value="all">All statuses</option>
             <option value="due">Due</option>
@@ -197,13 +197,13 @@ export default function ExpensesListPage() {
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
           >
             <ArrowDownTrayIcon className="size-3.5" /> CSV
           </button>
           <Link
             href="/finance/expenses/new"
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" /> New expense
           </Link>
@@ -214,29 +214,29 @@ export default function ExpensesListPage() {
             placeholder="Search supplier or description"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="h-8 w-full pl-8 pr-3 rounded-md border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+            className="h-8 w-full pl-8 pr-3 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
           />
         </div>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />
+        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
           <p className="text-sm text-subtle">
             {expenses.length === 0 ? "No expenses yet." : "No expenses match these filters."}
           </p>
           {expenses.length === 0 && (
             <Link
               href="/finance/expenses/new"
-              className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+              className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
             >
               <PlusIcon className="size-3.5" /> New expense
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-surface border border-border-faint rounded-md overflow-x-auto">
+        <div className="bg-surface border border-border-faint rounded overflow-x-auto">
           <Table>
             <THead>
               <TR hover={false}>
@@ -293,7 +293,7 @@ function SummaryCard({
 }) {
   const color = accent === "red" ? "text-status-late" : "text-foreground";
   return (
-    <div className="bg-surface border border-border-faint rounded-md p-5">
+    <div className="bg-surface border border-border-faint rounded p-5">
       <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
       <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${color}`}>{fmtMoney(amount)}</div>
     </div>

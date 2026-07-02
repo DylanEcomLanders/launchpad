@@ -149,7 +149,7 @@ export default function DocumentsPage() {
         ref={dropRef}
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
-        className="bg-surface border border-dashed border-border rounded-md p-8 text-center hover:bg-surface-raised transition-colors"
+        className="bg-surface border border-dashed border-border rounded p-8 text-center hover:bg-surface-raised transition-colors"
       >
         <DocumentArrowUpIcon className="size-8 text-subtle mx-auto mb-2" />
         <p className="text-sm text-foreground font-medium mb-1">
@@ -182,7 +182,7 @@ export default function DocumentsPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as "all" | DocumentCategory)}
-            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
           >
             <option value="all">All categories</option>
             {Object.entries(DOCUMENT_CATEGORY_LABELS).map(([k, label]) => (
@@ -198,15 +198,15 @@ export default function DocumentsPage() {
             placeholder="Search name, tag, or note"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="h-8 w-full pl-8 pr-3 rounded-md border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+            className="h-8 w-full pl-8 pr-3 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
           />
         </div>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />
+        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
           <p className="text-sm text-subtle">
             {docs.length === 0
               ? "No documents yet - drop a file above to get started."
@@ -214,7 +214,7 @@ export default function DocumentsPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-surface border border-border-faint rounded-md overflow-x-auto">
+        <div className="bg-surface border border-border-faint rounded overflow-x-auto">
           <Table>
             <THead>
               <TR hover={false}>
@@ -262,7 +262,7 @@ export default function DocumentsPage() {
 
       {showAdd && pendingFile && (
         <div className="fixed inset-0 bg-background/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-border-faint rounded-md w-full max-w-md p-5">
+          <div className="bg-surface border border-border-faint rounded w-full max-w-md p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-foreground">
                 Tag this document
@@ -330,7 +330,7 @@ export default function DocumentsPage() {
               </button>
               <button
                 onClick={saveDocument}
-                className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
+                className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded hover:opacity-90"
               >
                 Save document
               </button>

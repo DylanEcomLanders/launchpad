@@ -293,7 +293,7 @@ export default function ExpenseDetailPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={startEdit}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded hover:bg-surface-raised transition-colors"
                 >
                   <PencilSquareIcon className="size-4" /> Edit
                 </button>
@@ -301,7 +301,7 @@ export default function ExpenseDetailPage() {
                   <button
                     onClick={rollForward}
                     disabled={rolling}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised disabled:opacity-40 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded hover:bg-surface-raised disabled:opacity-40 transition-colors"
                   >
                     <ForwardIcon className="size-4" /> {rolling ? "Rolling..." : "Roll forward"}
                   </button>
@@ -309,7 +309,7 @@ export default function ExpenseDetailPage() {
                 {status !== "paid" && status !== "disputed" && (
                   <button
                     onClick={markPaid}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded hover:opacity-90"
                   >
                     <CheckIcon className="size-4" /> Mark paid
                   </button>
@@ -317,7 +317,7 @@ export default function ExpenseDetailPage() {
                 {status === "paid" && (
                   <button
                     onClick={markDue}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded hover:bg-surface-raised transition-colors"
                   >
                     Mark unpaid
                   </button>
@@ -325,7 +325,7 @@ export default function ExpenseDetailPage() {
                 {status !== "disputed" && status !== "paid" && (
                   <button
                     onClick={() => changeStatus("disputed")}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-warning text-xs rounded-md hover:bg-surface-raised transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-warning text-xs rounded hover:bg-surface-raised transition-colors"
                   >
                     Mark disputed
                   </button>
@@ -333,14 +333,14 @@ export default function ExpenseDetailPage() {
                 {status === "disputed" && (
                   <button
                     onClick={() => changeStatus("due")}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded-md hover:bg-surface-raised transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-xs rounded hover:bg-surface-raised transition-colors"
                   >
                     Resolve dispute
                   </button>
                 )}
                 <button
                   onClick={handleDelete}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-danger text-xs rounded-md hover:bg-surface-raised transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-danger text-xs rounded hover:bg-surface-raised transition-colors"
                 >
                   <TrashIcon className="size-4" />
                 </button>
@@ -611,7 +611,7 @@ function EditExpenseForm({
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>

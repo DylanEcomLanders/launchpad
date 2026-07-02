@@ -113,12 +113,12 @@ export default function FinanceSettingsPage() {
   }
 
   if (loading || !profile) {
-    return <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />;
+    return <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-surface border border-border-faint rounded-md p-5">
+      <div className="bg-surface border border-border-faint rounded p-5">
         <h2 className="text-lg font-medium text-foreground mb-1">Company profile</h2>
         <p className="text-sm text-muted leading-relaxed max-w-2xl">
           These details appear on every invoice you generate and feed the dashboard tax logic.
@@ -126,13 +126,13 @@ export default function FinanceSettingsPage() {
       </div>
 
       {error && (
-        <div className="px-4 py-3 bg-surface-raised rounded-md text-sm text-status-late">
+        <div className="px-4 py-3 bg-surface-raised rounded text-sm text-status-late">
           {error}
         </div>
       )}
 
       <div className="space-y-6">
-        <section className="bg-surface border border-border-faint rounded-md p-5">
+        <section className="bg-surface border border-border-faint rounded p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             Legal
           </h3>
@@ -185,14 +185,14 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <section className="bg-surface border border-border-faint rounded-md p-5">
+        <section className="bg-surface border border-border-faint rounded p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             VAT
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className={fieldLabelClass}>VAT registered?</label>
-              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface-raised border border-border rounded-md cursor-pointer">
+              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface-raised border border-border rounded cursor-pointer">
                 <input
                   type="checkbox"
                   checked={vatRegistered}
@@ -219,7 +219,7 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <section className="bg-surface border border-border-faint rounded-md p-5">
+        <section className="bg-surface border border-border-faint rounded p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             Default payment method (pre-fill on new invoices)
           </h3>
@@ -308,14 +308,14 @@ export default function FinanceSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-xs font-medium rounded hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save profile
           </button>
         </div>
 
-        <section className="bg-surface border border-border-faint rounded-md p-5">
+        <section className="bg-surface border border-border-faint rounded p-5">
           <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-2">
             Legacy data
           </h3>
@@ -325,13 +325,13 @@ export default function FinanceSettingsPage() {
           <button
             onClick={runMigration}
             disabled={migrating}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border text-foreground text-xs font-medium rounded-md hover:bg-surface-raised disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border text-foreground text-xs font-medium rounded hover:bg-surface-raised disabled:opacity-40 transition-colors"
           >
             {migrating && <ArrowPathIcon className="size-4 animate-spin" />}
             {migrating ? "Importing..." : "Import legacy data"}
           </button>
           {migrationResult && (
-            <div className="mt-4 p-3 bg-surface-raised rounded-md text-sm text-status-ontrack">
+            <div className="mt-4 p-3 bg-surface-raised rounded text-sm text-status-ontrack">
               Imported {migrationResult.companyInvoicesImported} from company_invoices,{" "}
               {migrationResult.expensesImported} from expenses.{" "}
               {migrationResult.skipped > 0 && `Skipped ${migrationResult.skipped} already-imported.`}

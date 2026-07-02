@@ -171,8 +171,8 @@ export default function FinanceDashboardPage() {
     return (
       <div className="space-y-6">
         <div className="h-8 w-56 bg-surface rounded-lg animate-pulse" />
-        <div className="h-72 bg-surface rounded-md border border-border-faint animate-pulse" />
-        <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />
+        <div className="h-72 bg-surface rounded border border-border-faint animate-pulse" />
+        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
       </div>
     );
   }
@@ -203,7 +203,7 @@ export default function FinanceDashboardPage() {
         </div>
         {!profile?.vat_registered && vatThreshold.status !== "ok" && (
           <div
-            className={`flex items-center gap-2 px-3 py-1 rounded-md text-2xs border w-fit ${
+            className={`flex items-center gap-2 px-3 py-1 rounded text-2xs border w-fit ${
               vatThreshold.status === "exceeded"
                 ? "bg-danger/10 border-danger/20 text-danger"
                 : "bg-warning/10 border-warning/20 text-warning"
@@ -223,7 +223,7 @@ export default function FinanceDashboardPage() {
       </div>
 
       {/* HERO: period P&L + trend, one dominant surface */}
-      <div className="bg-surface border border-border-faint rounded-md grid grid-cols-1 lg:grid-cols-[minmax(0,360px)_1fr]">
+      <div className="bg-surface border border-border-faint rounded grid grid-cols-1 lg:grid-cols-[minmax(0,360px)_1fr]">
         {/* Left: the number + story, with a full-bleed supporting strip */}
         <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-dashed border-border">
           <div className="p-5 flex-1">
@@ -317,7 +317,7 @@ export default function FinanceDashboardPage() {
 
       {/* Secondary row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div className="lg:col-span-2 bg-surface border border-border-faint rounded-md p-5">
+        <div className="lg:col-span-2 bg-surface border border-border-faint rounded p-5">
           <h3 className="text-sm font-medium text-foreground mb-4">Expense breakdown</h3>
           {expenseSlices.length === 0 ? (
             <p className="text-sm text-subtle py-12 text-center">No expenses this period</p>
@@ -349,7 +349,7 @@ export default function FinanceDashboardPage() {
         </div>
 
         {/* Right column: one full-height panel */}
-        <div className="bg-surface border border-border-faint rounded-md p-5 h-full flex flex-col gap-6">
+        <div className="bg-surface border border-border-faint rounded p-5 h-full flex flex-col gap-6">
           {showVat && (
             <section>
               <h3 className="text-sm font-medium text-foreground mb-3">
@@ -411,14 +411,14 @@ function PeriodPills({
     { key: "custom", label: "Custom" },
   ];
   return (
-    <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-raised rounded-md border border-border">
+    <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-raised rounded border border-border">
       {options.map((o) => {
         const active = value === o.key;
         return (
           <button
             key={o.key}
             onClick={() => onChange(o.key)}
-            className={`px-3 py-1 rounded-md text-2xs font-medium transition-colors ${
+            className={`px-3 py-1 rounded text-2xs font-medium transition-colors ${
               active ? "bg-surface text-foreground" : "text-muted hover:text-foreground"
             }`}
           >
@@ -555,7 +555,7 @@ function ChartTooltip({
   const expenses = Number(payload.find((p) => p.dataKey === "expenses")?.value ?? 0);
   const total = revenue + expenses;
   return (
-    <div className="pointer-events-none rounded-md border border-border bg-surface-raised px-3 py-2.5 min-w-[184px]">
+    <div className="pointer-events-none rounded border border-border bg-surface-raised px-3 py-2.5 min-w-[184px]">
       <div className="text-2xs uppercase tracking-wider text-subtle font-medium mb-1">{label}</div>
       <div className="text-sm font-semibold tabular-nums leading-none text-foreground mb-2.5">{fmtMoney(total)}</div>
       <div className="flex items-center gap-2 text-xs mb-1">

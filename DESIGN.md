@@ -19,7 +19,7 @@ or shadow. Reference surface: `src/app/(dashboard)/finance/page.tsx` (the calibr
 ## 2. Elevation logic
 - Exactly 3 surface steps: page (`bg-background`) → card (`bg-surface`) → sub-card
   (`bg-surface-raised`). Each step is ONE token lighter.
-- Every card: `rounded-md` (6px, NOT rounded-lg — too bubbly) + a SUBTLE 1px border
+- Every card: `rounded` (4px — tight/precise reads more premium; NOT rounded-md/lg) + a SUBTLE 1px border
   `border-border-faint` (the quiet 0.04 hairline), NOT the stronger `border-border` (that one
   is for controls + table row/header dividers only). Obvious card outlines read as cheap.
   No shadows as the primary elevation cue on dark surfaces — borders + background steps do the work.
@@ -90,7 +90,7 @@ Exemplar: `src/app/(dashboard)/finance/expenses/page.tsx`. Primitive:
 primitive (quiet dot, muted text, subtle bg).
 
 - **Structure**: toolbar → header → body rows → (footer). Table sits flush in a
-  `bg-surface border border-border-faint rounded-md overflow-x-auto` container — NO inner padding,
+  `bg-surface border border-border-faint rounded overflow-x-auto` container — NO inner padding,
   NO card-within-table framing, NO title bar inside the table.
 - **Toolbar**: left = result count (`text-xs text-subtle`) + filters + bulk actions; right =
   search. All controls same height (`h-8`), quiet/bordered, small leading icon. NO filled/primary
