@@ -19,13 +19,6 @@ const tabs = [
   { href: "/finance/documents", label: "Documents" },
   { href: "/finance/import", label: "Import" },
   { href: "/finance/settings", label: "Settings" },
-  // Founder tools — these jump out to their existing routes for now.
-  { href: "/internal/pricing", label: "Pricing" },
-  { href: "/tools/price-calculator", label: "Calculator" },
-  { href: "/tools/revenue", label: "Revenue" },
-  { href: "/internal/turnarounds", label: "Turnarounds" },
-  { href: "/tools/payment-link", label: "Payment link" },
-  { href: "/tools/dev-hours", label: "Dev hours" },
 ];
 
 export function FinanceNav() {
