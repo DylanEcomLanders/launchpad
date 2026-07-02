@@ -2271,7 +2271,7 @@ function Card({
       cluster={
         <>
           <span
-            className="size-1.5 rounded-full shrink-0"
+            className="size-2 rounded-full shrink-0"
             style={{ background: statusDot }}
             title={status === "stuck" ? "Late" : status === "approaching" ? "Approaching" : "On track"}
           />
@@ -3128,6 +3128,14 @@ function DetailModal({
 }: DetailModalProps) {
   const status = statusForHoursInPhase(d.phase, d.hoursInPhase);
   const style = STUCK_STYLES[status];
+  // Status value colour: green on-track, amber approaching, red late (the
+  // STUCK_STYLES on-track dot is intentionally grey, so map it explicitly).
+  const statusColor =
+    status === "stuck"
+      ? "var(--color-status-late)"
+      : status === "approaching"
+        ? "var(--color-status-approaching)"
+        : "var(--color-status-ontrack)";
   const rounds = revisionRoundCount(d.phaseHistory);
   const calDays = calendarDaysInCurrentPhase(d.phaseHistory);
   const live = d.phase === "launch-testing" && d.liveStartedAt && !d.testResult;
@@ -3146,6 +3154,7 @@ function DetailModal({
     ? parseFloat(primaryMetric.interim.replace(/[^-0-9.]/g, ""))
     : NaN;
 
+  const [tab, setTab] = useState<"status" | "info">("status");
   const [concluding, setConcluding] = useState(false);
   const [outcomeDraft, setOutcomeDraft] = useState<TestOutcome>("winner");
   const [metricDraft, setMetricDraft] = useState<string>(
@@ -3276,7 +3285,7 @@ function DetailModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-border"
       >
-        <div className="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+        <div className="px-6 pt-5 pb-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-3xs font-medium text-subtle">
               {d.clientName} · {d.projectName}
@@ -3285,30 +3294,6 @@ function DetailModal({
             <h2 className="mt-1.5 font-heading text-xl font-medium tracking-tight text-foreground leading-tight">
               {d.title}
             </h2>
-            <div className="mt-5 flex items-start gap-x-10 gap-y-3 flex-wrap">
-              <Field
-                label="Status"
-                value={
-                  <span className="flex items-center gap-1.5">
-                    <span
-                      className="size-1.5 rounded-full"
-                      style={{ background: style.dot }}
-                    />
-                    {style.label}
-                  </span>
-                }
-              />
-              <Field
-                label="In phase"
-                value={<span className="tabular-nums">{formatHours(d.hoursInPhase)}</span>}
-              />
-              {calDays > 0 && (
-                <Field label="Calendar" value={<span className="tabular-nums">{calDays}d</span>} />
-              )}
-              {rounds > 0 && (
-                <Field label="Revisions" value={<span className="tabular-nums">R{rounds}</span>} />
-              )}
-            </div>
           </div>
           <button
             onClick={onClose}
@@ -3318,7 +3303,103 @@ function DetailModal({
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-6">
+        <div className="px-6 pb-6 flex items-end justify-between gap-6 flex-wrap">
+          <div className="flex items-start gap-10 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 text-2xs text-muted mb-2">
+                <span className="size-2 rounded-[3px]" style={{ background: statusColor }} />
+                Status
+              </div>
+              <div className="text-xl font-medium leading-none" style={{ color: statusColor }}>
+                {style.label}
+              </div>
+            </div>
+            <div>
+              <div className="text-2xs text-muted mb-2">In phase</div>
+              <div className="text-xl font-medium text-foreground leading-none tabular-nums">
+                {formatHours(d.hoursInPhase)}
+              </div>
+            </div>
+            {calDays > 0 && (
+              <div>
+                <div className="text-2xs text-muted mb-2">Calendar</div>
+                <div className="text-xl font-medium text-foreground leading-none tabular-nums">
+                  {calDays}d
+                </div>
+              </div>
+            )}
+            {rounds > 0 && (
+              <div>
+                <div className="text-2xs text-muted mb-2">Revisions</div>
+                <div className="text-xl font-medium text-foreground leading-none tabular-nums">
+                  R{rounds}
+                </div>
+              </div>
+            )}
+          </div>
+          <Segmented
+            variant="ghost"
+            value={tab}
+            onChange={setTab}
+            options={[
+              { label: "Status", value: "status" },
+              { label: "Info", value: "info" },
+            ]}
+            className="shrink-0"
+          />
+        </div>
+
+        <div className="px-6 pb-6 space-y-6">
+          {tab === "status" && (
+            <>
+          {/* Phase progress - the hero. Shows where the deliverable sits in
+              the build pipeline: done phases filled, current bright, future
+              hatched. Build-with-schedule cards get the dated version below
+              instead, so this is skipped for them. */}
+          {(() => {
+            const hasBuildSchedule =
+              d.projectType === "build" && !!d.projectStartDate && !!d.turnaroundDays;
+            if (hasBuildSchedule) return null;
+            const PIPELINE: PreviewPhase[] = [
+              ...PHASE_1_ORDER,
+              "external-revisions",
+              ...PHASE_2_ORDER,
+            ];
+            const currentIdx = PIPELINE.indexOf(d.phase);
+            if (currentIdx < 0) return null;
+            return (
+              <section>
+                <div className="flex items-baseline justify-between mb-3">
+                  <h3 className="text-3xs font-medium text-subtle">Progress</h3>
+                  <span className="text-4xs text-subtle">
+                    {previewPhaseMeta(d.phase)?.label ?? d.phase}
+                  </span>
+                </div>
+                <div className="flex gap-1 h-2">
+                  {PIPELINE.map((p, i) => (
+                    <div
+                      key={p}
+                      title={previewPhaseMeta(p)?.label ?? p}
+                      className={`flex-1 rounded-sm ${
+                        i === currentIdx
+                          ? "bg-foreground"
+                          : i < currentIdx
+                            ? "bg-white/25"
+                            : "border border-white/[0.05] bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.05)_3px,rgba(255,255,255,0.05)_6px)]"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="mt-2 flex items-center justify-between text-4xs text-subtle">
+                  <span>{previewPhaseMeta(PIPELINE[0])?.label ?? PIPELINE[0]}</span>
+                  <span>
+                    {previewPhaseMeta(PIPELINE[PIPELINE.length - 1])?.label ??
+                      PIPELINE[PIPELINE.length - 1]}
+                  </span>
+                </div>
+              </section>
+            );
+          })()}
           {/* Build schedule - the full Phase 1 + Phase 2 internal due dates
               for this project. Phase 2 reads "TBC" until the client approves
               the design (first card moves Ext Rev -> Dev). External client
@@ -3387,50 +3468,58 @@ function DetailModal({
               ];
               return (
                 <section className="border-t border-white/[0.05] pt-6">
-                  <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-3xs font-medium text-subtle">
-                      Build schedule
-                    </h3>
-                    <span className="text-4xs text-subtle">
-                      {d.turnaroundDays}d project
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 text-xs">
-                    {scheduleCells.map(({ phase, due, isCurrent }) => {
-                      const meta = previewPhaseMeta(phase);
-                      return (
-                        <div
-                          key={phase}
-                          className={`rounded-md p-2 border ${
-                            isCurrent
-                              ? "border-border bg-surface"
-                              : "border-border"
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span
-                              className="size-1.5 rounded-full"
-                              style={{ background: meta?.color ?? "var(--color-subtle)" }}
-                            />
-                            <span className="text-4xs text-muted truncate">
-                              {meta?.label ?? phase}
-                            </span>
-                          </div>
-                          <span
-                            className={`text-2xs tabular-nums ${
-                              due
-                                ? isCurrent
-                                  ? "text-white font-medium"
-                                  : "text-foreground"
-                                : "text-border"
-                            }`}
-                          >
-                            {due ? formatShortDate(due) : "TBC"}
-                          </span>
+                  {(() => {
+                    const currentIdx = scheduleCells.findIndex((c) => c.isCurrent);
+                    const first = scheduleCells[0];
+                    const last = scheduleCells[scheduleCells.length - 1];
+                    const currentCell = currentIdx >= 0 ? scheduleCells[currentIdx] : null;
+                    return (
+                      <>
+                        <div className="flex items-baseline justify-between mb-3">
+                          <h3 className="text-3xs font-medium text-subtle">Progress</h3>
+                          <span className="text-4xs text-subtle">{d.turnaroundDays}d build</span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="flex gap-1 h-2">
+                          {scheduleCells.map((c, i) => {
+                            const done = currentIdx >= 0 && i < currentIdx;
+                            return (
+                              <div
+                                key={c.phase}
+                                title={`${previewPhaseMeta(c.phase)?.label ?? c.phase}${c.due ? ` · ${formatShortDate(c.due)}` : ""}`}
+                                className={`flex-1 rounded-sm ${
+                                  c.isCurrent
+                                    ? "bg-foreground"
+                                    : done
+                                      ? "bg-white/25"
+                                      : "border border-white/[0.05] bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.05)_3px,rgba(255,255,255,0.05)_6px)]"
+                                }`}
+                              />
+                            );
+                          })}
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-4xs text-subtle">
+                          <span>{previewPhaseMeta(first.phase)?.label ?? first.phase}</span>
+                          <span>{previewPhaseMeta(last.phase)?.label ?? last.phase}</span>
+                        </div>
+                        {currentCell && (
+                          <p className="mt-3 text-2xs text-muted">
+                            Currently in{" "}
+                            <span className="text-foreground font-medium">
+                              {previewPhaseMeta(currentCell.phase)?.label ?? currentCell.phase}
+                            </span>
+                            {currentCell.due && (
+                              <>
+                                {" · due "}
+                                <span className="text-foreground tabular-nums">
+                                  {formatShortDate(currentCell.due)}
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                   {isLate && (
                     <div className="mt-3 px-3 py-2 rounded-md bg-rose-500/10 border border-rose-500/30 text-3xs text-rose-300">
                       External revisions ran long: Launch & Testing now lands
@@ -3512,30 +3601,22 @@ function DetailModal({
             <h3 className="text-3xs font-medium text-subtle mb-3">
               Client deadlines
             </h3>
-            <div className="space-y-2 text-3xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-subtle shrink-0">
-                  Phase 1 deadline
-                </span>
-                <div className="min-w-0 flex-1 max-w-[180px]">
-                  <DarkDatePicker
-                    value={d.projectPhase1Deadline}
-                    onChange={(v) => onSetPhase1Deadline(v)}
-                    placeholder="Set Phase 1 due"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-3xs text-subtle mb-1.5">Phase 1 deadline</div>
+                <DarkDatePicker
+                  value={d.projectPhase1Deadline}
+                  onChange={(v) => onSetPhase1Deadline(v)}
+                  placeholder="Set Phase 1 due"
+                />
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-subtle shrink-0">
-                  Phase 2 deadline
-                </span>
-                <div className="min-w-0 flex-1 max-w-[180px]">
-                  <DarkDatePicker
-                    value={d.projectPhase2Deadline}
-                    onChange={(v) => onSetPhase2Deadline(v)}
-                    placeholder="Set Phase 2 due"
-                  />
-                </div>
+              <div>
+                <div className="text-3xs text-subtle mb-1.5">Phase 2 deadline</div>
+                <DarkDatePicker
+                  value={d.projectPhase2Deadline}
+                  onChange={(v) => onSetPhase2Deadline(v)}
+                  placeholder="Set Phase 2 due"
+                />
               </div>
             </div>
           </section>
@@ -3736,7 +3817,11 @@ function DetailModal({
               )}
             </div>
           </section>
+            </>
+          )}
 
+          {tab === "info" && (
+            <>
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
               <h3 className="text-3xs font-medium text-subtle">
@@ -3928,7 +4013,11 @@ function DetailModal({
               className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border leading-relaxed"
             />
           </section>
+            </>
+          )}
 
+          {tab === "status" && (
+            <>
           {/* Phase history is collapsed by default at the bottom of the modal. */}
 
           {/* Nudge banner only. The actual Conclude button lives in the
@@ -4354,6 +4443,8 @@ function DetailModal({
               Delete card
             </button>
           </section>
+          )}
+            </>
           )}
         </div>
       </div>

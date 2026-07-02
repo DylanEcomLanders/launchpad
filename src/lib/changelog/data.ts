@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-139",
+    date: "2 July 2026",
+    version: "3.1.0",
+    title: "Design system foundation + Linear-clean kanban, cards, and sidebar",
+    changes: [
+      { type: "added", text: "Design system foundation. Semantic design tokens (colour, a full micro-to-display type scale, radius, shadow, and status/category palettes) live in globals.css, and src/components/ui is now the single locked source of primitives: Pill, Segmented, ProjectCard, Field/Fields, StatusGlyph, Button. Every new page composes from these instead of hardcoded styles, so the whole app can move up a tier from one place" },
+      { type: "improved", text: "Kanban board rebuilt to a Linear-clean standard. The header is split into two zones: client context on the left (client switch as the title, an inline project breadcrumb, onboarding brief + assign-pod in a lean client menu) and display controls on the right (scope, search, a Display menu for filters). Project and pod switches are now inline breadcrumbs, so the board no longer shifts between views" },
+      { type: "improved", text: "Board density and responsiveness. Tight 8px card rows, columns that fit the viewport height, and fixed-width columns packed from the left for a dense, calm board" },
+      { type: "added", text: "Card state signals, all token-driven (derived from the status palette via colour-mix, not hardcoded). Live tests carry a subtle green tint, overdue cards a red tint, and cards due today or tomorrow an amber tint (revision cards included)" },
+      { type: "improved", text: "Card and detail-modal redesign. Larger status dot, header and assignee inline with the type icon, and a genuinely rebuilt modal: a bold stat row (Status coloured green/amber/red by state, in-phase, due, revisions), a phase-progress hero, and a clean two-tab Status/Info form with generous spacing" },
+      { type: "improved", text: "Sidebar rebuilt as a navigational surface. Collapsible sections (Client Health, Sales, Offer, Team, Company) with My Tasks pinned, multiple sections open at once, a calmer active state, a muted Hero Offer icon, and full migration onto the design tokens" },
+    ],
+  },
+  {
     id: "cl-138",
     date: "26 June 2026",
     version: "3.0.0",

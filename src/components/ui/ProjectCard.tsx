@@ -112,11 +112,11 @@ export function ProjectCard({
       </div>
 
       {description && (
-        <p className="mt-1.5 pl-[26px] text-3xs text-subtle truncate">{description}</p>
+        <p className="mt-1.5 text-3xs text-subtle truncate">{description}</p>
       )}
 
       {footer && (
-        <div className="mt-3 pl-[26px] flex items-center justify-between gap-2 text-3xs">
+        <div className="mt-3 flex items-center justify-between gap-2 text-3xs">
           {footer}
         </div>
       )}
