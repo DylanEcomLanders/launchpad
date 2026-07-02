@@ -114,14 +114,14 @@ export default function AuditDetailPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) return <div className="max-w-3xl mx-auto py-20 text-center"><div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full mx-auto" /></div>;
-  if (!audit) return <div className="max-w-3xl mx-auto py-20 text-center"><p className="text-sm text-[#AAA]">Audit not found</p></div>;
+  if (loading) return <div className="max-w-3xl mx-auto py-20 text-center"><div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full mx-auto" /></div>;
+  if (!audit) return <div className="max-w-3xl mx-auto py-20 text-center"><p className="text-sm text-muted">Audit not found</p></div>;
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
       {/* Header */}
       <div className="mb-8">
-        <Link href="/sales-engine/audits" className="inline-flex items-center gap-1 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-4">
+        <Link href="/sales-engine/audits" className="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-foreground transition-colors mb-4">
           <ArrowLeftIcon className="size-3" />
           All Audits
         </Link>
@@ -132,23 +132,23 @@ export default function AuditDetailPage() {
                 type="text"
                 value={audit.brand_name}
                 onChange={(e) => update({ brand_name: e.target.value })}
-                className="text-2xl font-bold capitalize bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none px-0 py-0"
+                className="text-2xl font-bold capitalize bg-transparent border-0 border-b border-transparent hover:border-foreground focus:border-subtle focus:outline-none px-0 py-0"
               />
               <span className={`text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full shrink-0 ${
                 audit.status === "published" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
               }`}>{audit.status}</span>
             </div>
-            <p className="text-xs text-[#AAA] mt-1">{audit.url} · {audit.issues.length} issues · {audit.view_count} views</p>
+            <p className="text-xs text-muted mt-1">{audit.url} · {audit.issues.length} issues · {audit.view_count} views</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {dirty && (
-              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-1.5 bg-[#1B1B1B] text-white text-[11px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-1.5 bg-surface text-white text-[11px] font-medium rounded-lg hover:bg-border transition-colors disabled:opacity-50">
                 <CheckIcon className="size-3.5" />
                 {saving ? "Saving..." : "Save"}
               </button>
             )}
             {audit.status === "published" && (
-              <button onClick={copyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#7A7A7A] hover:text-[#1A1A1A] hover:border-[#999] transition-colors">
+              <button onClick={copyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-foreground rounded-lg text-subtle hover:text-surface hover:border-subtle transition-colors">
                 {copied ? <CheckIcon className="size-3.5 text-emerald-500" /> : <ClipboardDocumentIcon className="size-3.5" />}
                 {copied ? "Copied!" : "Copy Link"}
               </button>
@@ -158,7 +158,7 @@ export default function AuditDetailPage() {
                 Publish
               </button>
             )}
-            <a href={`/audit/${audit.token}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#7A7A7A] hover:text-[#1A1A1A] hover:border-[#999] transition-colors">
+            <a href={`/audit/${audit.token}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-foreground rounded-lg text-subtle hover:text-surface hover:border-subtle transition-colors">
               Preview
             </a>
           </div>
@@ -168,25 +168,25 @@ export default function AuditDetailPage() {
       <div className="space-y-8">
         {/* Executive Summary */}
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Executive Summary</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">Executive Summary</h2>
           <textarea
             value={audit.executive_summary}
             onChange={(e) => update({ executive_summary: e.target.value })}
-            className="w-full text-sm text-[#333] leading-relaxed bg-transparent border border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none rounded-lg px-3 py-2 min-h-[120px] resize-y"
+            className="w-full text-sm text-border leading-relaxed bg-transparent border border-transparent hover:border-foreground focus:border-subtle focus:outline-none rounded-lg px-3 py-2 min-h-[120px] resize-y"
           />
         </div>
 
         {/* Scorecard */}
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Scorecard</h2>
-          <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#333333] overflow-hidden">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">Scorecard</h2>
+          <div className="border border-foreground rounded-xl bg-white divide-y divide-border overflow-hidden">
             {audit.scorecard.map((s, i) => (
               <div key={i} className="flex items-center justify-between px-4 py-2.5">
                 <input
                   type="text"
                   value={s.area}
                   onChange={(e) => updateScorecard(i, { area: e.target.value })}
-                  className="text-xs text-[#1A1A1A] bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none flex-1 px-0 py-0"
+                  className="text-xs text-surface bg-transparent border-0 border-b border-transparent hover:border-foreground focus:border-subtle focus:outline-none flex-1 px-0 py-0"
                 />
                 <select
                   value={s.rating}
@@ -205,22 +205,22 @@ export default function AuditDetailPage() {
         {/* Issues */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Issues ({audit.issues.length})</h2>
-            <button onClick={addIssue} className="flex items-center gap-1 text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Issues ({audit.issues.length})</h2>
+            <button onClick={addIssue} className="flex items-center gap-1 text-[10px] text-muted hover:text-surface transition-colors">
               <PlusIcon className="size-3" /> Add Issue
             </button>
           </div>
           <div className="space-y-4">
             {audit.issues.map((issue, i) => (
-              <div key={issue.id || i} className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0F0F0]">
+              <div key={issue.id || i} className="border border-foreground rounded-xl bg-white overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-foreground">
                   <div className="flex items-center gap-2 flex-1">
-                    <span className="text-xs text-[#AAA] shrink-0">Issue {i + 1} —</span>
+                    <span className="text-xs text-muted shrink-0">Issue {i + 1} —</span>
                     <input
                       type="text"
                       value={issue.title}
                       onChange={(e) => updateIssue(i, { title: e.target.value })}
-                      className="text-sm font-semibold text-[#1A1A1A] bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none flex-1 px-0 py-0"
+                      className="text-sm font-semibold text-surface bg-transparent border-0 border-b border-transparent hover:border-foreground focus:border-subtle focus:outline-none flex-1 px-0 py-0"
                     />
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -233,7 +233,7 @@ export default function AuditDetailPage() {
                       <option value="high">High</option>
                       <option value="quick-win">Quick Win</option>
                     </select>
-                    <button onClick={() => removeIssue(i)} className="text-[#CCC] hover:text-red-500 transition-colors">
+                    <button onClick={() => removeIssue(i)} className="text-muted hover:text-red-500 transition-colors">
                       <TrashIcon className="size-3.5" />
                     </button>
                   </div>
@@ -243,7 +243,7 @@ export default function AuditDetailPage() {
                     type="text"
                     value={issue.subtitle}
                     onChange={(e) => updateIssue(i, { subtitle: e.target.value })}
-                    className="w-full text-xs text-[#999] italic bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none px-0 py-0"
+                    className="w-full text-xs text-subtle italic bg-transparent border-0 border-b border-transparent hover:border-foreground focus:border-subtle focus:outline-none px-0 py-0"
                     placeholder="One-line subtitle..."
                   />
                   <div>
@@ -251,7 +251,7 @@ export default function AuditDetailPage() {
                     <textarea
                       value={issue.problem}
                       onChange={(e) => updateIssue(i, { problem: e.target.value })}
-                      className="w-full text-xs text-[#555] leading-relaxed bg-transparent border border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none rounded px-2 py-1.5 min-h-[60px] resize-y"
+                      className="w-full text-xs text-subtle leading-relaxed bg-transparent border border-transparent hover:border-foreground focus:border-subtle focus:outline-none rounded px-2 py-1.5 min-h-[60px] resize-y"
                     />
                   </div>
                   <div>
@@ -259,7 +259,7 @@ export default function AuditDetailPage() {
                     <textarea
                       value={issue.fix}
                       onChange={(e) => updateIssue(i, { fix: e.target.value })}
-                      className="w-full text-xs text-[#555] leading-relaxed bg-transparent border border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none rounded px-2 py-1.5 min-h-[60px] resize-y"
+                      className="w-full text-xs text-subtle leading-relaxed bg-transparent border border-transparent hover:border-foreground focus:border-subtle focus:outline-none rounded px-2 py-1.5 min-h-[60px] resize-y"
                     />
                   </div>
                 </div>
@@ -271,22 +271,22 @@ export default function AuditDetailPage() {
         {/* Priority Order */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Priority Order</h2>
-            <button onClick={addPriority} className="flex items-center gap-1 text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Priority Order</h2>
+            <button onClick={addPriority} className="flex items-center gap-1 text-[10px] text-muted hover:text-surface transition-colors">
               <PlusIcon className="size-3" /> Add
             </button>
           </div>
           <div className="space-y-2">
             {audit.priority_order.map((p, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-2.5 bg-[#FAFAFA] rounded-lg">
-                <span className="text-xs font-bold text-[#1A1A1A] shrink-0">{i + 1}.</span>
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5 bg-surface-raised rounded-lg">
+                <span className="text-xs font-bold text-surface shrink-0">{i + 1}.</span>
                 <input
                   type="text"
                   value={p}
                   onChange={(e) => updatePriority(i, e.target.value)}
-                  className="flex-1 text-xs text-[#555] bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none px-0 py-0"
+                  className="flex-1 text-xs text-subtle bg-transparent border-0 border-b border-transparent hover:border-foreground focus:border-subtle focus:outline-none px-0 py-0"
                 />
-                <button onClick={() => removePriority(i)} className="text-[#CCC] hover:text-red-500 transition-colors">
+                <button onClick={() => removePriority(i)} className="text-muted hover:text-red-500 transition-colors">
                   <TrashIcon className="size-3" />
                 </button>
               </div>
@@ -296,11 +296,11 @@ export default function AuditDetailPage() {
 
         {/* Not Saying */}
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">What This Audit Is Not Saying</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">What This Audit Is Not Saying</h2>
           <textarea
             value={audit.not_saying || ""}
             onChange={(e) => update({ not_saying: e.target.value })}
-            className="w-full text-sm text-[#555] leading-relaxed italic bg-transparent border border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none rounded-lg px-3 py-2 min-h-[80px] resize-y"
+            className="w-full text-sm text-subtle leading-relaxed italic bg-transparent border border-transparent hover:border-foreground focus:border-subtle focus:outline-none rounded-lg px-3 py-2 min-h-[80px] resize-y"
             placeholder="Acknowledge the brand's strengths..."
           />
         </div>
@@ -308,9 +308,9 @@ export default function AuditDetailPage() {
 
       {/* Sticky save bar */}
       {dirty && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E5EA] px-6 py-3 flex items-center justify-end gap-3 z-50">
-          <p className="text-xs text-[#AAA] mr-auto">Unsaved changes</p>
-          <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-foreground px-6 py-3 flex items-center justify-end gap-3 z-50">
+          <p className="text-xs text-muted mr-auto">Unsaved changes</p>
+          <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border disabled:opacity-50">
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>

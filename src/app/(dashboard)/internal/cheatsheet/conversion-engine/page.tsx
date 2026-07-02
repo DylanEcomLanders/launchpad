@@ -136,7 +136,7 @@ const DEFAULT_OBJECTIONS: ObjectionDef[] = [
 /* ── Page ── */
 
 const PROSE_CLASS =
-  "prose prose-sm max-w-none prose-p:text-[#C7C9CD] prose-p:my-1 prose-strong:text-[#E5E5EA] prose-ul:my-1 prose-li:my-0 prose-li:text-[#C7C9CD]";
+  "prose prose-sm max-w-none prose-p:text-muted prose-p:my-1 prose-strong:text-foreground prose-ul:my-1 prose-li:my-0 prose-li:text-muted";
 
 export default function ConversionEngineCheatsheetPage() {
   const [overrides, setOverrides] = useState<NonNullable<OfferContentOverrides["cheatsheet"]>>(() => {
@@ -251,17 +251,17 @@ export default function ConversionEngineCheatsheetPage() {
   return (
     <div className="px-6 py-6 max-w-[1400px] mx-auto">
       {/* Page header */}
-      <header className="mb-5 flex items-baseline justify-between gap-4 border-b border-[#2A2A2A] pb-3">
+      <header className="mb-5 flex items-baseline justify-between gap-4 border-b border-border pb-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Internal · Sales Enablement</p>
-          <h1 className="text-xl font-semibold text-[#E5E5EA] mt-0.5">Conversion Engine — Cheat Sheet</h1>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Internal · Sales Enablement</p>
+          <h1 className="text-xl font-semibold text-foreground mt-0.5">Conversion Engine — Cheat Sheet</h1>
         </div>
-        <p className="text-[11px] text-[#71757D]">Hover any block to edit. Cmd+F to find any answer.</p>
+        <p className="text-[11px] text-subtle">Hover any block to edit. Cmd+F to find any answer.</p>
       </header>
 
       {/* Section 1: Cheat Sheet */}
       <section className="mb-8">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-3">§ 1 · Cheat Sheet</h2>
+        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-3">§ 1 · Cheat Sheet</h2>
 
         {/* Positioning — full width */}
         <EditableBlock
@@ -276,8 +276,8 @@ export default function ConversionEngineCheatsheetPage() {
           saving={saving}
           className={`rounded-lg border px-4 py-3 mb-3 ${
             editing === "positioning"
-              ? "border-white bg-[#181818]"
-              : "border-[#E5E5EA] bg-[#E5E5EA] text-[#181818]"
+              ? "border-white bg-surface"
+              : "border-foreground bg-foreground text-surface"
           }`}
           textareaRows={3}
         >
@@ -305,14 +305,14 @@ export default function ConversionEngineCheatsheetPage() {
                 saving={saving}
                 className={`rounded-lg border p-3 ${
                   isEditing
-                    ? "border-white bg-[#181818]"
+                    ? "border-white bg-surface"
                     : overridden
-                      ? "border-[#2A2A2A] bg-amber-500/15"
-                      : "border-[#2A2A2A] bg-[#181818]"
+                      ? "border-border bg-amber-500/15"
+                      : "border-border bg-surface"
                 }`}
                 textareaRows={8}
               >
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">{c.title}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1.5">{c.title}</p>
                 <div className={`${PROSE_CLASS} text-[11px] leading-snug`}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
                 </div>
@@ -324,13 +324,13 @@ export default function ConversionEngineCheatsheetPage() {
 
       {/* Section 2: Objections */}
       <section>
-        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-3">§ 2 · Objections</h2>
-        <div className="rounded-lg border border-[#2A2A2A] overflow-hidden">
+        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-3">§ 2 · Objections</h2>
+        <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="bg-[#0C0C0C] border-b border-[#2A2A2A]">
-                <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] w-[28%]">Objection</th>
-                <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">Response</th>
+              <tr className="bg-background border-b border-border">
+                <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle w-[28%]">Objection</th>
+                <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-subtle">Response</th>
                 <th className="w-[80px]"></th>
               </tr>
             </thead>
@@ -345,11 +345,11 @@ export default function ConversionEngineCheatsheetPage() {
                 return (
                   <tr
                     key={i}
-                    className={`border-b border-[#2A2A2A] last:border-0 align-top ${
-                      rowOverridden ? "bg-amber-500/15/60" : "hover:bg-[#0C0C0C]/60"
+                    className={`border-b border-border last:border-0 align-top ${
+                      rowOverridden ? "bg-amber-500/15/60" : "hover:bg-background/60"
                     }`}
                   >
-                    <td className="px-3 py-2.5 text-[12px] font-medium text-[#E5E5EA] leading-snug">
+                    <td className="px-3 py-2.5 text-[12px] font-medium text-foreground leading-snug">
                       <InlineEditable
                         isEditing={editingQ}
                         overridden={qOverridden}
@@ -364,7 +364,7 @@ export default function ConversionEngineCheatsheetPage() {
                         textareaRows={2}
                       />
                     </td>
-                    <td className="px-3 py-2.5 text-[12px] text-[#C7C9CD] leading-snug">
+                    <td className="px-3 py-2.5 text-[12px] text-muted leading-snug">
                       <InlineEditable
                         isEditing={editingA}
                         overridden={aOverridden}
@@ -382,7 +382,7 @@ export default function ConversionEngineCheatsheetPage() {
                     <td className="px-2 py-2.5">
                       <button
                         onClick={() => copy(obj.a, i)}
-                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-[#2A2A2A] text-[#9CA3AF] hover:border-white hover:text-[#E5E5EA] transition-colors"
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-border text-muted hover:border-white hover:text-foreground transition-colors"
                       >
                         {copiedIdx === i ? (
                           <>
@@ -450,7 +450,7 @@ function EditableBlock({
             <button
               onClick={onReset}
               title="Reset to default"
-              className="p-1 rounded hover:bg-[#F3F4F6]/10 text-[#71757D] hover:text-[#E5E5EA]"
+              className="p-1 rounded hover:bg-foreground/10 text-subtle hover:text-foreground"
             >
               <ArrowUturnLeftIcon className="size-3.5" />
             </button>
@@ -458,7 +458,7 @@ function EditableBlock({
           <button
             onClick={onEdit}
             title="Edit"
-            className="p-1 rounded hover:bg-[#F3F4F6]/10 text-[#71757D] hover:text-[#E5E5EA]"
+            className="p-1 rounded hover:bg-foreground/10 text-subtle hover:text-foreground"
           >
             <PencilSquareIcon className="size-3.5" />
           </button>
@@ -470,13 +470,13 @@ function EditableBlock({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={Math.max(textareaRows, draft.split("\n").length + 1)}
-            className="w-full font-mono text-[11px] leading-relaxed border border-[#2A2A2A] rounded-md p-2 focus:outline-none focus:border-white focus:ring-1 focus:ring-[#1B1B1B] resize-y text-[#E5E5EA] bg-[#181818]"
+            className="w-full font-mono text-[11px] leading-relaxed border border-border rounded-md p-2 focus:outline-none focus:border-white focus:ring-1 focus:ring-surface resize-y text-foreground bg-surface"
           />
           <div className="mt-1.5 flex items-center justify-end gap-2">
             <button
               onClick={onCancel}
               disabled={saving}
-              className="inline-flex items-center gap-1 text-[10px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-2 py-1 rounded disabled:opacity-50"
+              className="inline-flex items-center gap-1 text-[10px] font-medium text-muted hover:text-foreground px-2 py-1 rounded disabled:opacity-50"
             >
               <XMarkIcon className="size-3" />
               Cancel
@@ -484,7 +484,7 @@ function EditableBlock({
             <button
               onClick={onSave}
               disabled={saving}
-              className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-2 py-1 rounded disabled:opacity-50"
+              className="inline-flex items-center gap-1 text-[10px] font-semibold text-surface bg-foreground hover:bg-white px-2 py-1 rounded disabled:opacity-50"
             >
               <CheckIcon className="size-3" />
               {saving ? "Saving…" : "Save"}
@@ -532,13 +532,13 @@ function InlineEditable({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           rows={Math.max(textareaRows, draft.split("\n").length + 1)}
-          className="w-full text-[12px] leading-snug border border-white rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-[#1B1B1B] resize-y bg-[#181818]"
+          className="w-full text-[12px] leading-snug border border-white rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-surface resize-y bg-surface"
         />
         <div className="mt-1 flex items-center justify-end gap-1.5">
           <button
             onClick={onCancel}
             disabled={saving}
-            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-1.5 py-0.5 rounded disabled:opacity-50"
+            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted hover:text-foreground px-1.5 py-0.5 rounded disabled:opacity-50"
           >
             <XMarkIcon className="size-3" />
             Cancel
@@ -546,7 +546,7 @@ function InlineEditable({
           <button
             onClick={onSave}
             disabled={saving}
-            className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-1.5 py-0.5 rounded disabled:opacity-50"
+            className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-surface bg-foreground hover:bg-white px-1.5 py-0.5 rounded disabled:opacity-50"
           >
             <CheckIcon className="size-3" />
             {saving ? "Saving…" : "Save"}
@@ -563,7 +563,7 @@ function InlineEditable({
           <button
             onClick={onReset}
             title="Reset to default"
-            className="p-0.5 rounded hover:bg-[#222222] text-[#71757D] hover:text-[#E5E5EA]"
+            className="p-0.5 rounded hover:bg-surface-raised text-subtle hover:text-foreground"
           >
             <ArrowUturnLeftIcon className="size-3" />
           </button>
@@ -571,7 +571,7 @@ function InlineEditable({
         <button
           onClick={onEdit}
           title="Edit"
-          className="p-0.5 rounded hover:bg-[#222222] text-[#71757D] hover:text-[#E5E5EA]"
+          className="p-0.5 rounded hover:bg-surface-raised text-subtle hover:text-foreground"
         >
           <PencilSquareIcon className="size-3" />
         </button>

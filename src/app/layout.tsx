@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import { ThemeScript } from "@/components/theme";
 import "./globals.css";
 
 const inter = Inter({
@@ -62,9 +63,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`light ${inter.variable} ${interTight.variable} ${articulatCF.variable} ${jetBrainsMono.variable}`}>
       <head>
+        <ThemeScript />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
-      <body className="font-body antialiased bg-[#0C0C0C] text-[#E5E5EA]">
+      <body className="font-body antialiased bg-background text-foreground">
         {children}
         <script
           dangerouslySetInnerHTML={{

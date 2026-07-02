@@ -42,43 +42,43 @@ function Reveal({ children, delay = 0, className = "" }: { children: React.React
 
 export default function YorkshireDentalProposal() {
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen bg-white text-surface">
       {/* HEADER */}
-      <header className="border-b border-[#E8E8E8]">
+      <header className="border-b border-foreground">
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src="/el-logo.svg" alt="Ecomlanders" className="w-5 h-5 block" />
-            <span className="text-xs font-semibold text-[#1A1A1A] tracking-wide leading-none">
-              Ecomlanders <span className="text-[#BBB] mx-1">×</span> Yorkshire Dental Suite
+            <span className="text-xs font-semibold text-surface tracking-wide leading-none">
+              Ecomlanders <span className="text-muted mx-1">×</span> Yorkshire Dental Suite
             </span>
           </div>
-          <p className="text-[10px] text-[#AAA] uppercase tracking-widest">20 April 2026</p>
+          <p className="text-[10px] text-muted uppercase tracking-widest">20 April 2026</p>
         </div>
       </header>
 
       {/* HERO */}
-      <section className="px-6 md:px-12 pt-20 md:pt-24 pb-20 border-b border-[#E8E8E8]">
+      <section className="px-6 md:px-12 pt-20 md:pt-24 pb-20 border-b border-foreground">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-6">Conversion Engine Proposal</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-6">Conversion Engine Proposal</p>
           </Reveal>
 
           <Reveal delay={100}>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1] mb-6 text-[#1A1A1A]">
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1] mb-6 text-surface">
               Proposed Scope of Work
             </h1>
           </Reveal>
 
           <Reveal delay={250}>
-            <p className="text-base md:text-lg text-[#555] leading-relaxed max-w-2xl">
+            <p className="text-base md:text-lg text-subtle leading-relaxed max-w-2xl">
               Following our call, we've prepared this proposal outlining how we'd support Yorkshire Dental Suite in closing the gap between paid traffic and inquiry submissions. The bookings engine downstream is already strong. This work focuses on the conversion layer sitting between your ads and your inquiry form.
             </p>
           </Reveal>
 
           <Reveal delay={400}>
-            <div className="flex items-center gap-3 mt-10 text-[11px] text-[#AAA]">
+            <div className="flex items-center gap-3 mt-10 text-[11px] text-muted">
               <span>Prepared for Yorkshire Dental Suite</span>
-              <span className="size-1 rounded-full bg-[#DDD]" />
+              <span className="size-1 rounded-full bg-muted" />
               <span>Valid for 30 days</span>
             </div>
           </Reveal>
@@ -86,17 +86,17 @@ export default function YorkshireDentalProposal() {
       </section>
 
       {/* 01 THE OPPORTUNITY */}
-      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+      <section className="px-6 md:px-12 py-20 border-b border-foreground">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">01. The Opportunity</p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
-              <span className="text-[#AAA]">Your bookings engine is strong.</span> The inquiry layer needs work.
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-4">01. The Opportunity</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-surface">
+              <span className="text-muted">Your bookings engine is strong.</span> The inquiry layer needs work.
             </h2>
           </Reveal>
 
           <Reveal delay={100}>
-            <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
+            <p className="text-base text-subtle leading-relaxed mb-10 max-w-2xl">
               Over the last three months you've taken pickup rates from 40-50% to 80% and hold a steady 15-20% booking rate once on the phone. That's a well-oiled machine. The bottleneck sits earlier, in the space between ad click and form submission.
             </p>
           </Reveal>
@@ -108,22 +108,22 @@ export default function YorkshireDentalProposal() {
               { label: "Traffic split", value: "50/50", sub: "Google / Meta" },
             ].map((stat, i) => (
               <Reveal key={stat.label} delay={150 + i * 80} className="h-full">
-                <div className="p-5 border border-[#E8E8E8] rounded-xl h-full flex flex-col">
-                  <p className="text-[10px] font-medium uppercase tracking-widest text-[#AAA] mb-2">{stat.label}</p>
-                  <p className="text-2xl font-bold text-[#1A1A1A]">{stat.value}</p>
-                  {stat.sub && <p className="text-[11px] text-[#999] mt-1">{stat.sub}</p>}
+                <div className="p-5 border border-foreground rounded-xl h-full flex flex-col">
+                  <p className="text-[10px] font-medium uppercase tracking-widest text-muted mb-2">{stat.label}</p>
+                  <p className="text-2xl font-bold text-surface">{stat.value}</p>
+                  {stat.sub && <p className="text-[11px] text-subtle mt-1">{stat.sub}</p>}
                 </div>
               </Reveal>
             ))}
           </div>
 
           <Reveal delay={400}>
-            <div className="p-6 border-l-2 border-[#1A1A1A] bg-[#FAFAFA] rounded-r-xl">
-              <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider mb-3">Where the leak sits</p>
-              <p className="text-sm text-[#555] leading-relaxed mb-3">
+            <div className="p-6 border-l-2 border-surface bg-surface-raised rounded-r-xl">
+              <p className="text-xs font-semibold text-surface uppercase tracking-wider mb-3">Where the leak sits</p>
+              <p className="text-sm text-subtle leading-relaxed mb-3">
                 Google and Meta traffic arrive at the same inquiry page, despite having very different intent levels. Google visitors are searching actively and ready to book. Meta visitors are in discovery mode. They need more context and reassurance before submitting their details.
               </p>
-              <p className="text-sm text-[#555] leading-relaxed">
+              <p className="text-sm text-subtle leading-relaxed">
                 A single page can't serve both well. The £65 consultation fee also drops in earlier than ideal for colder traffic, creating friction before desire is built. Resolving these is a matter of segmentation and sequencing, not a full rebuild.
               </p>
             </div>
@@ -132,17 +132,17 @@ export default function YorkshireDentalProposal() {
       </section>
 
       {/* 02 HOW WE PLUG IN */}
-      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+      <section className="px-6 md:px-12 py-20 border-b border-foreground">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">02. How We Plug In</p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
-              <span className="text-[#AAA]">A conversion layer</span> that works with your existing setup.
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-4">02. How We Plug In</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-surface">
+              <span className="text-muted">A conversion layer</span> that works with your existing setup.
             </h2>
           </Reveal>
 
           <Reveal delay={100}>
-            <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
+            <p className="text-base text-subtle leading-relaxed mb-10 max-w-2xl">
               We slot in between your ad team and your bookings team without disrupting either. No replatforming, no changes to your inquiry system, no interference with how your calls are run. Our role is to make every pound of ad spend work harder by the time it hits your form.
             </p>
           </Reveal>
@@ -159,18 +159,18 @@ export default function YorkshireDentalProposal() {
               "Monthly reporting tied to inquiry and booking impact",
             ].map((item, i) => (
               <Reveal key={i} delay={i * 40}>
-                <div className="flex items-start gap-3 p-4 border border-[#E8E8E8] rounded-xl">
-                  <div className="size-4 rounded-full border border-[#1A1A1A] flex items-center justify-center shrink-0 mt-0.5">
-                    <svg className="size-2.5 text-[#1A1A1A]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
+                <div className="flex items-start gap-3 p-4 border border-foreground rounded-xl">
+                  <div className="size-4 rounded-full border border-surface flex items-center justify-center shrink-0 mt-0.5">
+                    <svg className="size-2.5 text-surface" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
                   </div>
-                  <p className="text-sm text-[#444] leading-snug">{item}</p>
+                  <p className="text-sm text-border leading-snug">{item}</p>
                 </div>
               </Reveal>
             ))}
           </div>
 
           <Reveal delay={500}>
-            <p className="text-sm text-[#777] italic max-w-2xl">
+            <p className="text-sm text-subtle italic max-w-2xl">
               We don't manage ads, we don't touch your CRM, and we don't staff your phone lines. Those already work. Our remit starts at the click and ends at the submitted form.
             </p>
           </Reveal>
@@ -178,29 +178,29 @@ export default function YorkshireDentalProposal() {
       </section>
 
       {/* 03 SCOPE & INVESTMENT */}
-      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+      <section className="px-6 md:px-12 py-20 border-b border-foreground">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">03. Scope & Investment</p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-4">03. Scope & Investment</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-surface">
               Two ways to start.
             </h2>
           </Reveal>
 
           <Reveal delay={100}>
-            <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
+            <p className="text-base text-subtle leading-relaxed mb-10 max-w-2xl">
               The retainer is the full engagement. Ongoing, compounding, team-led. The pilot is a scoped project covering the three pages you shared, designed as a standalone piece of work or a stepping stone into the retainer.
             </p>
           </Reveal>
 
           {/* Option A Retainer */}
           <Reveal delay={150}>
-            <div className="mb-6 p-8 md:p-10 bg-[#1A1A1A] text-white rounded-2xl">
+            <div className="mb-6 p-8 md:p-10 bg-surface text-white rounded-2xl">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
                 <div className="md:w-1/2">
                   <div className="flex items-center gap-2 mb-3">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">Option A</p>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-400 to-amber-300 text-[#1A1A1A] text-[9px] font-bold uppercase tracking-wider rounded-full">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-400 to-amber-300 text-surface text-[9px] font-bold uppercase tracking-wider rounded-full">
                       <svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                       Highest Return
                     </span>
@@ -235,18 +235,18 @@ export default function YorkshireDentalProposal() {
 
           {/* Option B Pilot */}
           <Reveal delay={250}>
-            <div className="p-8 border border-[#E8E8E8] rounded-2xl">
+            <div className="p-8 border border-foreground rounded-2xl">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
                 <div className="md:w-1/2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-3">Option B. Phase 1 Pilot</p>
-                  <h3 className="text-xl font-bold mb-3 text-[#1A1A1A]">Three-Page Rebuild</h3>
-                  <p className="text-sm text-[#555] leading-relaxed">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-3">Option B. Phase 1 Pilot</p>
+                  <h3 className="text-xl font-bold mb-3 text-surface">Three-Page Rebuild</h3>
+                  <p className="text-sm text-subtle leading-relaxed">
                     A scoped project covering the three pages you shared. Full redesign and rebuild, with the audit and recommendations feeding into a broader roadmap should you choose to move into the retainer afterwards.
                   </p>
                 </div>
-                <div className="md:w-1/2 md:border-l md:border-[#E8E8E8] md:pl-8">
-                  <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-1">£15,000</p>
-                  <p className="text-xs text-[#999] mb-5">One-time. 30-day delivery.</p>
+                <div className="md:w-1/2 md:border-l md:border-foreground md:pl-8">
+                  <p className="text-3xl md:text-4xl font-bold text-surface mb-1">£15,000</p>
+                  <p className="text-xs text-subtle mb-5">One-time. 30-day delivery.</p>
                   <div className="space-y-2">
                     {[
                       "Conversion audit covering the three pages",
@@ -256,8 +256,8 @@ export default function YorkshireDentalProposal() {
                       "Handover report with prioritised next steps",
                       "Credit toward the retainer if upgraded within 30 days",
                     ].map((item) => (
-                      <div key={item} className="flex items-start gap-2 text-xs text-[#555]">
-                        <div className="size-1 rounded-full bg-[#1A1A1A] mt-1.5 shrink-0" />
+                      <div key={item} className="flex items-start gap-2 text-xs text-subtle">
+                        <div className="size-1 rounded-full bg-surface mt-1.5 shrink-0" />
                         <span>{item}</span>
                       </div>
                     ))}
@@ -270,11 +270,11 @@ export default function YorkshireDentalProposal() {
       </section>
 
       {/* 04 HOW WE WORK */}
-      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+      <section className="px-6 md:px-12 py-20 border-b border-foreground">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">04. How We Work</p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-[#1A1A1A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-4">04. How We Work</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-surface">
               Four principles that shape every engagement.
             </h2>
           </Reveal>
@@ -299,11 +299,11 @@ export default function YorkshireDentalProposal() {
               },
             ].map((item, i) => (
               <Reveal key={item.title} delay={i * 80}>
-                <div className="flex gap-6 py-6 border-t border-[#E8E8E8] first:border-t-0">
-                  <div className="text-sm font-semibold text-[#AAA] shrink-0 tabular-nums w-6">0{i + 1}</div>
+                <div className="flex gap-6 py-6 border-t border-foreground first:border-t-0">
+                  <div className="text-sm font-semibold text-muted shrink-0 tabular-nums w-6">0{i + 1}</div>
                   <div>
-                    <h3 className="text-base font-semibold text-[#1A1A1A] mb-1.5">{item.title}</h3>
-                    <p className="text-sm text-[#555] leading-relaxed">{item.body}</p>
+                    <h3 className="text-base font-semibold text-surface mb-1.5">{item.title}</h3>
+                    <p className="text-sm text-subtle leading-relaxed">{item.body}</p>
                   </div>
                 </div>
               </Reveal>
@@ -313,11 +313,11 @@ export default function YorkshireDentalProposal() {
       </section>
 
       {/* 05 TIMELINE */}
-      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+      <section className="px-6 md:px-12 py-20 border-b border-foreground">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">05. Timeline</p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-[#1A1A1A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-4">05. Timeline</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-surface">
               First month, mapped out.
             </h2>
           </Reveal>
@@ -330,13 +330,13 @@ export default function YorkshireDentalProposal() {
               { week: "Week 4", title: "Pages go live", body: "First pages shipped to production with tracking in place. Baseline metrics captured, testing programme begins." },
             ].map((phase, i) => (
               <Reveal key={phase.week} delay={i * 80}>
-                <div className="flex gap-6 py-5 border-t border-[#E8E8E8] first:border-t-0">
+                <div className="flex gap-6 py-5 border-t border-foreground first:border-t-0">
                   <div className="shrink-0 w-20">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#AAA]">{phase.week}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">{phase.week}</p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#1A1A1A] mb-1">{phase.title}</h4>
-                    <p className="text-sm text-[#555] leading-relaxed">{phase.body}</p>
+                    <h4 className="text-sm font-semibold text-surface mb-1">{phase.title}</h4>
+                    <p className="text-sm text-subtle leading-relaxed">{phase.body}</p>
                   </div>
                 </div>
               </Reveal>
@@ -344,7 +344,7 @@ export default function YorkshireDentalProposal() {
           </div>
 
           <Reveal delay={400}>
-            <p className="text-xs text-[#999] mt-10 italic">
+            <p className="text-xs text-subtle mt-10 italic">
               Ecomlanders is a partner of Intelligems and can provide access to their testing platform if needed during the engagement.
             </p>
           </Reveal>
@@ -355,44 +355,44 @@ export default function YorkshireDentalProposal() {
       <section className="px-6 md:px-12 py-20">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">06. Sign-Off</p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-8 leading-tight text-[#1A1A1A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle mb-4">06. Sign-Off</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-8 leading-tight text-surface">
               This proposal is valid for 30 days from the date above.
             </h2>
           </Reveal>
 
           <Reveal delay={100}>
-            <div className="p-6 border border-[#E8E8E8] rounded-xl mb-10">
-              <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider mb-4">Quote Summary</p>
+            <div className="p-6 border border-foreground rounded-xl mb-10">
+              <p className="text-xs font-semibold text-surface uppercase tracking-wider mb-4">Quote Summary</p>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between py-2 border-b border-[#F0F0F0]">
-                  <span className="text-[#555]">Conversion Engine Retainer</span>
-                  <span className="font-semibold text-[#1A1A1A]">£20,000 / month</span>
+                <div className="flex justify-between py-2 border-b border-foreground">
+                  <span className="text-subtle">Conversion Engine Retainer</span>
+                  <span className="font-semibold text-surface">£20,000 / month</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-[#555]">Phase 1 Pilot (Three Pages)</span>
-                  <span className="font-semibold text-[#1A1A1A]">£15,000 one-time</span>
+                  <span className="text-subtle">Phase 1 Pilot (Three Pages)</span>
+                  <span className="font-semibold text-surface">£15,000 one-time</span>
                 </div>
               </div>
-              <p className="text-[11px] text-[#999] mt-4">All figures GBP, inclusive of VAT where applicable. Invoices issued monthly in advance for retainer.</p>
+              <p className="text-[11px] text-subtle mt-4">All figures GBP, inclusive of VAT where applicable. Invoices issued monthly in advance for retainer.</p>
             </div>
           </Reveal>
 
           <Reveal delay={200}>
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div>
-                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Ajay Jani</p>
-                <p className="text-xs text-[#999]">Founder, Ecomlanders</p>
+                <p className="text-sm text-surface font-semibold mb-1">Ajay Jani</p>
+                <p className="text-xs text-subtle">Founder, Ecomlanders</p>
               </div>
               <div>
-                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Dylan Evans</p>
-                <p className="text-xs text-[#999]">COO, Ecomlanders</p>
+                <p className="text-sm text-surface font-semibold mb-1">Dylan Evans</p>
+                <p className="text-xs text-subtle">COO, Ecomlanders</p>
               </div>
             </div>
           </Reveal>
 
           <Reveal delay={300}>
-            <p className="text-sm text-[#555] leading-relaxed">
+            <p className="text-sm text-subtle leading-relaxed">
               To confirm either option, a reply via WhatsApp or email is sufficient to begin. We'll issue the relevant invoice or payment link, and the kickoff call will be scheduled within 24 hours of confirmation.
             </p>
           </Reveal>
@@ -400,13 +400,13 @@ export default function YorkshireDentalProposal() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-[#E8E8E8] px-6 md:px-12 py-8">
+      <footer className="border-t border-foreground px-6 md:px-12 py-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src="/el-logo.svg" alt="Ecomlanders" className="w-4 h-4 opacity-60" />
-            <span className="text-[11px] text-[#999]">Ecomlanders</span>
+            <span className="text-[11px] text-subtle">Ecomlanders</span>
           </div>
-          <p className="text-[10px] text-[#CCC]">Prepared for Yorkshire Dental Suite, April 2026</p>
+          <p className="text-[10px] text-muted">Prepared for Yorkshire Dental Suite, April 2026</p>
         </div>
       </footer>
     </div>

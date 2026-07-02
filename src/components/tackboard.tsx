@@ -136,7 +136,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
   }, []);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#080808] text-white">
+    <div className="relative h-screen overflow-hidden bg-background text-white">
       {/* Dotted pattern bg */}
       <div
         aria-hidden
@@ -155,7 +155,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
           </p>
           <button
             onClick={addNote}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#181818]/10 border border-white/20 text-white text-[11px] font-medium rounded-lg hover:bg-[#181818]/20 backdrop-blur-xl transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-surface/10 border border-white/20 text-white text-[11px] font-medium rounded-lg hover:bg-surface/20 backdrop-blur-xl transition-colors"
           >
             <PlusIcon className="size-3" />
             Add note
@@ -178,7 +178,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
           </div>
           <button
             onClick={addNote}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#181818] text-[#E5E5EA] text-xs font-semibold rounded-lg hover:bg-[#181818]/90 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-surface text-foreground text-xs font-semibold rounded-lg hover:bg-surface/90 transition-colors"
           >
             <PlusIcon className="size-3.5" />
             New note
@@ -288,9 +288,9 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
       {/* Author prompt */}
       {authorPrompt && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="bg-[#181818] rounded-xl p-6 max-w-sm w-full">
-            <h2 className="text-lg font-bold text-[#E5E5EA] mb-1">What's your name?</h2>
-            <p className="text-xs text-[#9CA3AF] mb-4">Saved to this browser — shows on notes you post.</p>
+          <div className="bg-surface rounded-xl p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold text-foreground mb-1">What's your name?</h2>
+            <p className="text-xs text-muted mb-4">Saved to this browser — shows on notes you post.</p>
             <input
               autoFocus
               defaultValue={author}
@@ -299,12 +299,12 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
                 if (e.key === "Escape") setAuthorPrompt(false);
               }}
               placeholder="e.g. Dylan"
-              className="w-full px-3 py-2 text-sm border border-[#2A2A2A] rounded-lg text-[#E5E5EA] focus:border-white outline-none"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg text-foreground focus:border-white outline-none"
             />
             <div className="flex items-center justify-end gap-2 mt-4">
               <button
                 onClick={() => setAuthorPrompt(false)}
-                className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-3 py-1.5"
+                className="text-xs font-medium text-muted hover:text-foreground px-3 py-1.5"
               >
                 Cancel
               </button>
@@ -314,7 +314,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
                   const val = input?.value?.trim() || "";
                   if (val) saveAuthor(val);
                 }}
-                className="text-xs font-semibold bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A] px-3 py-1.5 rounded-lg"
+                className="text-xs font-semibold bg-surface-raised text-foreground hover:bg-border px-3 py-1.5 rounded-lg"
               >
                 Save
               </button>

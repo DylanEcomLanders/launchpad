@@ -101,7 +101,7 @@ export default function KnowledgePage() {
             Brain library
           </h1>
         </div>
-        <p className="text-sm text-[#9CA3AF] max-w-2xl">
+        <p className="text-sm text-muted max-w-2xl">
           What we&apos;ve tried, what worked, why. Every concluded test - searchable, tag-filterable. The patterns of what works across our Shopify stores, brought out from the team&apos;s head.
         </p>
       </header>
@@ -117,24 +117,24 @@ export default function KnowledgePage() {
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 max-w-md">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D]" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface, write-up, learning" className="w-full pl-9 pr-3 py-2 rounded-md bg-[#0F0F10] ring-1 ring-white/[0.06] text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-cyan-500/40" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface, write-up, learning" className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-cyan-500/40" />
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
             {OUTCOME_FILTERS.map((f) => (
-              <button key={f.value} onClick={() => setOutcomeFilter(f.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${outcomeFilter === f.value ? "bg-white text-[#0C0C0C]" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>
+              <button key={f.value} onClick={() => setOutcomeFilter(f.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${outcomeFilter === f.value ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>
                 {f.label}
               </button>
             ))}
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">Tags:</span>
-          <button onClick={() => setTagFilter(null)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tagFilter === null ? "bg-white text-[#0C0C0C]" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>
+          <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold">Tags:</span>
+          <button onClick={() => setTagFilter(null)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tagFilter === null ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>
             All
           </button>
           {allTags.map((tag) => (
-            <button key={tag} onClick={() => setTagFilter(tag === tagFilter ? null : tag)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tag === tagFilter ? "bg-cyan-500/30 text-cyan-100 ring-1 ring-cyan-400/40" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>
+            <button key={tag} onClick={() => setTagFilter(tag === tagFilter ? null : tag)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${tag === tagFilter ? "bg-cyan-500/30 text-cyan-100 ring-1 ring-cyan-400/40" : "bg-surface text-muted hover:bg-surface-raised"}`}>
               {tag}
             </button>
           ))}
@@ -142,35 +142,35 @@ export default function KnowledgePage() {
       </div>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">
             {tests.length === 0 ? "No concluded tests yet. The library fills as you call tests." : "No tests match the current filter."}
           </p>
         </div>
       ) : (
         <ul className="space-y-3">
           {filtered.map((t) => (
-            <li key={t.id} className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04]">
+            <li key={t.id} className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]">
               <div className="flex items-start gap-3 mb-3">
                 <OutcomeIcon outcome={t.outcome!} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-semibold text-[#E5E5EA]">{t.client_name || "Unattached"}</span>
-                    {t.surface && <span className="text-[12px] text-[#71757D]">· {t.surface}</span>}
+                    <span className="text-sm font-semibold text-foreground">{t.client_name || "Unattached"}</span>
+                    {t.surface && <span className="text-[12px] text-subtle">· {t.surface}</span>}
                     {t.uplift_pct !== undefined && (
                       <span className={`text-[12px] font-mono ${t.outcome === "winner" ? "text-emerald-300" : t.outcome === "loser" ? "text-rose-300" : "text-zinc-300"}`}>
                         {t.uplift_pct >= 0 ? "+" : ""}{t.uplift_pct}%
                       </span>
                     )}
                     {t.ended_at && (
-                      <span className="text-[11px] text-[#71757D] ml-auto">{new Date(t.ended_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                      <span className="text-[11px] text-subtle ml-auto">{new Date(t.ended_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                     )}
                   </div>
-                  <p className="text-[13px] text-[#E5E5EA] mb-2">{t.hypothesis_line || "(no hypothesis)"}</p>
+                  <p className="text-[13px] text-foreground mb-2">{t.hypothesis_line || "(no hypothesis)"}</p>
                   {t.learnings && (
-                    <div className="text-[12px] text-[#9CA3AF] bg-black/40 rounded-lg p-3 ring-1 ring-white/[0.04] mb-2">
+                    <div className="text-[12px] text-muted bg-black/40 rounded-lg p-3 ring-1 ring-white/[0.04] mb-2">
                       <div className="text-[10px] uppercase tracking-wider text-emerald-300 font-semibold mb-1">Learning</div>
                       {t.learnings}
                     </div>
@@ -191,7 +191,7 @@ export default function KnowledgePage() {
                           const tag = window.prompt("Add tag (lowercase, e.g. pdp, cart, hero, color-swatch)");
                           if (tag) toggleTag(t.id, tag.trim().toLowerCase());
                         }}
-                        className="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-[#1A1A1A] text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]"
+                        className="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-surface text-subtle hover:bg-surface-raised hover:text-foreground"
                       >
                         + tag
                       </button>
@@ -215,9 +215,9 @@ function OutcomeIcon({ outcome }: { outcome: TestOutcome }) {
 
 function Stat({ label, value, accent = "default" }: { label: string; value: number | string; accent?: "default" | "emerald" }) {
   return (
-    <div className="bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04]">
-      <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">{label}</div>
-      <div className={`text-2xl font-semibold ${accent === "emerald" ? "text-emerald-300" : "text-[#E5E5EA]"}`}>{value}</div>
+    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04]">
+      <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">{label}</div>
+      <div className={`text-2xl font-semibold ${accent === "emerald" ? "text-emerald-300" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }

@@ -256,7 +256,7 @@ export default function FunnelBuilderPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin size-6 border-2 border-[#2A2A2A] border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
@@ -267,14 +267,14 @@ export default function FunnelBuilderPage() {
       <div className="max-w-5xl mx-auto px-6 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">Funnel Roadmaps</h1>
-            <p className="text-xs text-[#71757D] mt-1">
+            <h1 className="text-[28px] leading-tight font-bold text-foreground">Funnel Roadmaps</h1>
+            <p className="text-xs text-subtle mt-1">
               Pick the pieces, render a clean, shareable client roadmap.
             </p>
           </div>
           <button
             onClick={createNew}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#0C0C0C] text-xs font-semibold rounded-lg hover:bg-[#F3F4F6]"
+            className="flex items-center gap-1.5 px-4 py-2 bg-white text-background text-xs font-semibold rounded-lg hover:bg-foreground"
           >
             <PlusIcon className="size-4" />
             New roadmap
@@ -282,9 +282,9 @@ export default function FunnelBuilderPage() {
         </div>
 
         {list.length === 0 ? (
-          <div className="border border-dashed border-[#2A2A2A] rounded-xl bg-[#0C0C0C] py-16 text-center">
-            <p className="text-sm text-[#71757D]">
-              No roadmaps yet. Click <span className="font-semibold text-[#E5E5EA]">New roadmap</span> to start.
+          <div className="border border-dashed border-border rounded-xl bg-background py-16 text-center">
+            <p className="text-sm text-subtle">
+              No roadmaps yet. Click <span className="font-semibold text-foreground">New roadmap</span> to start.
             </p>
           </div>
         ) : (
@@ -293,20 +293,20 @@ export default function FunnelBuilderPage() {
               <button
                 key={r.id}
                 onClick={() => setActiveId(r.id)}
-                className="text-left bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-[#1A1A1A] transition-colors"
+                className="text-left bg-surface border border-border rounded-xl p-4 hover:border-surface transition-colors"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#E5E5EA] truncate">
+                    <p className="text-sm font-semibold text-foreground truncate">
                       {r.name || "Untitled roadmap"}
                     </p>
                     {r.clientName && (
-                      <p className="text-[11px] text-[#71757D] mt-0.5 truncate">
+                      <p className="text-[11px] text-subtle mt-0.5 truncate">
                         {r.clientName}
                       </p>
                     )}
                   </div>
-                  <span className="text-[10px] text-[#71757D] shrink-0">
+                  <span className="text-[10px] text-subtle shrink-0">
                     {totalStepCount(r)} steps
                   </span>
                 </div>
@@ -315,7 +315,7 @@ export default function FunnelBuilderPage() {
                     href={`/funnel/${r.shareToken}`}
                     target="_blank"
                     onClick={(e) => e.stopPropagation()}
-                    className="text-[10px] font-semibold text-[#71757D] hover:text-[#E5E5EA] flex items-center gap-1"
+                    className="text-[10px] font-semibold text-subtle hover:text-foreground flex items-center gap-1"
                   >
                     <ArrowTopRightOnSquareIcon className="size-3" />
                     Client view
@@ -333,7 +333,7 @@ export default function FunnelBuilderPage() {
                         handleDelete(r.id);
                       }
                     }}
-                    className="text-[10px] font-semibold text-[#71757D] hover:text-red-500 flex items-center gap-1 ml-auto cursor-pointer"
+                    className="text-[10px] font-semibold text-subtle hover:text-red-500 flex items-center gap-1 ml-auto cursor-pointer"
                   >
                     <TrashIcon className="size-3" />
                     Delete
@@ -364,7 +364,7 @@ export default function FunnelBuilderPage() {
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <button
           onClick={() => setActiveId(null)}
-          className="flex items-center gap-1 px-2 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA]"
+          className="flex items-center gap-1 px-2 py-1.5 text-xs text-subtle hover:text-foreground"
         >
           <ArrowLeftIcon className="size-3.5" />
           All roadmaps
@@ -379,15 +379,15 @@ export default function FunnelBuilderPage() {
           value={active.clientName}
           onChange={(e) => persist({ ...active, clientName: e.target.value })}
           placeholder="Client name"
-          className="text-xs text-[#71757D] border-0 focus:outline-none focus:ring-0 bg-transparent min-w-[160px]"
+          className="text-xs text-subtle border-0 focus:outline-none focus:ring-0 bg-transparent min-w-[160px]"
         />
-        <span className="text-[10px] text-[#71757D] tabular-nums">
+        <span className="text-[10px] text-subtle tabular-nums">
           {liveCount} of {totalSteps} live
         </span>
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={copyShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#2A2A2A] rounded-lg hover:border-white"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-border rounded-lg hover:border-white"
           >
             <LinkIcon className="size-3.5" />
             {copied ? "Copied" : "Copy share link"}
@@ -395,14 +395,14 @@ export default function FunnelBuilderPage() {
           <Link
             href={`/funnel/${active.shareToken}`}
             target="_blank"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#2A2A2A] rounded-lg hover:border-white"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-border rounded-lg hover:border-white"
           >
             <ArrowTopRightOnSquareIcon className="size-3.5" />
             Preview client
           </Link>
           <button
             onClick={exportPng}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6]"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white text-background rounded-lg hover:bg-foreground"
           >
             <ArrowDownTrayIcon className="size-3.5" />
             Export PNG
@@ -414,7 +414,7 @@ export default function FunnelBuilderPage() {
         {/* ── Library rail ──────────────────────────────── */}
         <aside className="w-[240px] flex-shrink-0 space-y-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-2">
               Traffic sources
             </p>
             <div className="grid grid-cols-2 gap-1.5">
@@ -424,7 +424,7 @@ export default function FunnelBuilderPage() {
                   <button
                     key={t}
                     onClick={() => addTraffic(t)}
-                    className="flex items-center gap-1 px-2 py-1.5 border border-[#2A2A2A] rounded-md text-[11px] hover:border-white hover:bg-[#0C0C0C] truncate"
+                    className="flex items-center gap-1 px-2 py-1.5 border border-border rounded-md text-[11px] hover:border-white hover:bg-background truncate"
                   >
                     <span
                       className="text-[8px] font-bold tracking-wider px-1 py-0.5 rounded shrink-0"
@@ -443,7 +443,7 @@ export default function FunnelBuilderPage() {
           </div>
 
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-2">
               Pages
             </p>
             <div className="grid grid-cols-2 gap-1.5">
@@ -453,7 +453,7 @@ export default function FunnelBuilderPage() {
                   <button
                     key={p}
                     onClick={() => addPage(p)}
-                    className="flex items-center gap-1 px-2 py-1.5 border border-[#2A2A2A] rounded-md text-[11px] hover:border-white hover:bg-[#0C0C0C] truncate"
+                    className="flex items-center gap-1 px-2 py-1.5 border border-border rounded-md text-[11px] hover:border-white hover:bg-background truncate"
                   >
                     <span
                       className="text-[8px] font-bold tracking-wider px-1 py-0.5 rounded shrink-0"
@@ -472,20 +472,20 @@ export default function FunnelBuilderPage() {
           </div>
 
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-2">
               Lead gen
             </p>
             {active.leadGen ? (
               <button
                 onClick={removeLeadGen}
-                className="w-full px-2 py-2 border border-[#2A2A2A] rounded-md text-[11px] text-[#71757D] hover:text-red-500 hover:border-red-200"
+                className="w-full px-2 py-2 border border-border rounded-md text-[11px] text-subtle hover:text-red-500 hover:border-red-200"
               >
                 Remove lead-gen track
               </button>
             ) : (
               <button
                 onClick={addLeadGen}
-                className="w-full flex items-center justify-center gap-1 px-2 py-2 border border-dashed border-[#2A2A2A] rounded-md text-[11px] text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
+                className="w-full flex items-center justify-center gap-1 px-2 py-2 border border-dashed border-border rounded-md text-[11px] text-subtle hover:border-white hover:text-foreground"
               >
                 <PlusIcon className="size-3" />
                 Add Lead Magnet + Email Sequence
@@ -498,7 +498,7 @@ export default function FunnelBuilderPage() {
         <div className="flex-1 min-w-0">
           <div
             ref={exportRef}
-            className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-6 mb-4"
+            className="bg-surface border border-border rounded-xl p-6 mb-4"
           >
             <RoadmapSVG roadmap={active} onStepClick={(s) => setSelectedStepId(s.id)} />
           </div>
@@ -513,8 +513,8 @@ export default function FunnelBuilderPage() {
               onClose={() => setSelectedStepId(null)}
             />
           ) : (
-            <div className="bg-[#0C0C0C] border border-dashed border-[#2A2A2A] rounded-lg px-4 py-6 text-center">
-              <p className="text-[12px] text-[#71757D]">
+            <div className="bg-background border border-dashed border-border rounded-lg px-4 py-6 text-center">
+              <p className="text-[12px] text-subtle">
                 Click any step in the roadmap to edit its status, note, or KPI target.
               </p>
             </div>
@@ -543,9 +543,9 @@ function StepEditorPanel({
   const reorderable = step.kind === "traffic" || step.kind === "page";
 
   return (
-    <div className="bg-[#181818] border border-white rounded-xl p-4">
+    <div className="bg-surface border border-white rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#E5E5EA]">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
           Edit step
         </p>
         <div className="flex items-center gap-1">
@@ -553,14 +553,14 @@ function StepEditorPanel({
             <>
               <button
                 onClick={() => onMove(-1)}
-                className="p-1 text-[#71757D] hover:text-[#E5E5EA]"
+                className="p-1 text-subtle hover:text-foreground"
                 title="Move earlier"
               >
                 <ChevronUpIcon className="size-4" />
               </button>
               <button
                 onClick={() => onMove(1)}
-                className="p-1 text-[#71757D] hover:text-[#E5E5EA]"
+                className="p-1 text-subtle hover:text-foreground"
                 title="Move later"
               >
                 <ChevronDownIcon className="size-4" />
@@ -569,14 +569,14 @@ function StepEditorPanel({
           )}
           <button
             onClick={onRemove}
-            className="p-1 text-[#71757D] hover:text-red-500"
+            className="p-1 text-subtle hover:text-red-500"
             title="Remove"
           >
             <TrashIcon className="size-3.5" />
           </button>
           <button
             onClick={onClose}
-            className="p-1 text-[#71757D] hover:text-[#E5E5EA] text-sm"
+            className="p-1 text-subtle hover:text-foreground text-sm"
             title="Close"
           >
             ×

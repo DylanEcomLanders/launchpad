@@ -100,7 +100,7 @@ export default function TeamToolsPage() {
           <h1 className="text-2xl md:text-3xl font-bold mb-1">
             Team Tools
           </h1>
-          <p className="text-sm text-[#71757D]">
+          <p className="text-sm text-subtle">
             Everything the team needs to deliver — portals, the playbook, and our QA gates.
           </p>
         </div>
@@ -111,23 +111,23 @@ export default function TeamToolsPage() {
             <Link
               key={item.title}
               href={item.href}
-              className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group transition-all"
+              className="bg-surface border border-border rounded-lg p-5 hover:border-surface hover:shadow-sm cursor-pointer group transition-all"
             >
               <div className="flex items-center gap-2 mb-3">
-                <item.icon className="size-5 text-[#71757D]" />
-                <h2 className="text-sm font-semibold text-[#E5E5EA]">
+                <item.icon className="size-5 text-subtle" />
+                <h2 className="text-sm font-semibold text-foreground">
                   {item.title}
                 </h2>
                 {"badge" in item && item.badge && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#222222] text-[#E5E5EA] rounded">
+                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-surface-raised text-foreground rounded">
                     {item.badge}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#71757D] leading-relaxed mb-3">
+              <p className="text-xs text-subtle leading-relaxed mb-3">
                 {item.description}
               </p>
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-[#E5E5EA] group-hover:gap-1.5 transition-all">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground group-hover:gap-1.5 transition-all">
                 Open
                 <ChevronRightIcon className="size-3" />
               </span>
@@ -137,7 +137,7 @@ export default function TeamToolsPage() {
 
         {/* Tools Section */}
         <div className="mt-10">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-4">
             Tools
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -150,23 +150,23 @@ export default function TeamToolsPage() {
                   key={tool.title}
                   href={tool.href}
                   {...linkProps}
-                  className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group transition-all"
+                  className="bg-surface border border-border rounded-lg p-5 hover:border-surface hover:shadow-sm cursor-pointer group transition-all"
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <tool.icon className="size-5 text-[#71757D]" />
-                    <h2 className="text-sm font-semibold text-[#E5E5EA]">
+                    <tool.icon className="size-5 text-subtle" />
+                    <h2 className="text-sm font-semibold text-foreground">
                       {tool.title}
                     </h2>
                     {tool.external && (
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
                         ↗
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-[#71757D] leading-relaxed mb-3">
+                  <p className="text-xs text-subtle leading-relaxed mb-3">
                     {tool.description}
                   </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#E5E5EA] group-hover:gap-1.5 transition-all">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground group-hover:gap-1.5 transition-all">
                     Open
                     <ChevronRightIcon className="size-3" />
                   </span>

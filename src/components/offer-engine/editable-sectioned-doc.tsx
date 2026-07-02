@@ -29,7 +29,7 @@ interface Props {
 }
 
 const PROSE_CLASS =
-  "prose prose-sm max-w-none prose-headings:text-[#E5E5EA] prose-p:text-[#C7C9CD] prose-strong:text-[#E5E5EA] prose-a:text-blue-600 prose-table:text-xs prose-th:text-[#71757D] prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-[#222222] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[#E5E5EA] prose-code:font-mono prose-code:text-xs prose-pre:bg-[#1B1B1B] prose-pre:text-[#E5E5EA]";
+  "prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-a:text-blue-600 prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-amber-900 prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground";
 
 export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: Props) {
   const parsed = parseMarkdown(defaultContent, sectionLevel);
@@ -101,7 +101,7 @@ export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: 
     <div>
       {/* Title */}
       {parsed.title && (
-        <h1 className="text-2xl font-semibold text-[#E5E5EA] mb-3">
+        <h1 className="text-2xl font-semibold text-foreground mb-3">
           {parsed.title}
         </h1>
       )}
@@ -117,7 +117,7 @@ export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: 
       {parsed.groups.map((g, gi) => (
         <div key={gi} className="mb-8">
           {g.heading && (
-            <h2 className="text-base font-semibold text-[#E5E5EA] mb-3 mt-6 pb-1.5 border-b border-[#2A2A2A]">
+            <h2 className="text-base font-semibold text-foreground mb-3 mt-6 pb-1.5 border-b border-border">
               {g.heading}
             </h2>
           )}
@@ -130,10 +130,10 @@ export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: 
                   key={s.id}
                   className={`group relative rounded-lg border p-4 transition-colors ${
                     isEditing
-                      ? "border-white bg-[#181818]"
+                      ? "border-white bg-surface"
                       : isOverridden
-                        ? "border-[#2A2A2A] bg-amber-500/15"
-                        : "border-[#2A2A2A] bg-[#181818] hover:border-[#2A2A2A]"
+                        ? "border-border bg-amber-500/15"
+                        : "border-border bg-surface hover:border-border"
                   }`}
                 >
                   {isOverridden && !isEditing && (
@@ -149,7 +149,7 @@ export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: 
                         <button
                           onClick={() => resetSection(s)}
                           title="Reset to default"
-                          className="p-1 rounded hover:bg-[#222222] text-[#71757D] hover:text-[#E5E5EA]"
+                          className="p-1 rounded hover:bg-surface-raised text-subtle hover:text-foreground"
                         >
                           <ArrowUturnLeftIcon className="size-3.5" />
                         </button>
@@ -157,7 +157,7 @@ export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: 
                       <button
                         onClick={() => startEdit(s)}
                         title="Edit"
-                        className="p-1 rounded hover:bg-[#222222] text-[#71757D] hover:text-[#E5E5EA]"
+                        className="p-1 rounded hover:bg-surface-raised text-subtle hover:text-foreground"
                       >
                         <PencilSquareIcon className="size-3.5" />
                       </button>
@@ -170,17 +170,17 @@ export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: 
                         value={draft}
                         onChange={(e) => setDraft(e.target.value)}
                         rows={Math.max(6, draft.split("\n").length + 1)}
-                        className="w-full font-mono text-[12px] leading-relaxed border border-[#2A2A2A] rounded-md p-3 focus:outline-none focus:border-white focus:ring-1 focus:ring-[#1B1B1B] resize-y"
+                        className="w-full font-mono text-[12px] leading-relaxed border border-border rounded-md p-3 focus:outline-none focus:border-white focus:ring-1 focus:ring-surface resize-y"
                       />
                       <div className="mt-2 flex items-center justify-between">
-                        <p className="text-[10px] text-[#71757D]">
+                        <p className="text-[10px] text-subtle">
                           Markdown — heading line included. Save returns it to default if you revert all changes.
                         </p>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={cancelEdit}
                             disabled={saving}
-                            className="inline-flex items-center gap-1 text-[11px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-2 py-1 rounded disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted hover:text-foreground px-2 py-1 rounded disabled:opacity-50"
                           >
                             <XMarkIcon className="size-3" />
                             Cancel
@@ -188,7 +188,7 @@ export function EditableSectionedDoc({ pageKey, defaultContent, sectionLevel }: 
                           <button
                             onClick={() => saveEdit(s)}
                             disabled={saving}
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#E5E5EA] bg-[#222222] hover:bg-[#2A2A2A] px-2.5 py-1 rounded disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-foreground bg-surface-raised hover:bg-border px-2.5 py-1 rounded disabled:opacity-50"
                           >
                             <CheckIcon className="size-3" />
                             {saving ? "Saving…" : "Save"}

@@ -66,19 +66,19 @@ function buildSlides(i: Inputs) {
       content: (
         <SlideBody eyebrow="Month at a glance" title="The headline numbers.">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-            <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">CR delta</div>
-              <div className="text-4xl font-bold text-[#0E0D0B] tabular-nums">{i.crDelta.trim() || "—"}</div>
-              <p className="text-[12px] text-[#6E6E6E] mt-2">vs prior month</p>
+            <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">CR delta</div>
+              <div className="text-4xl font-bold text-background tabular-nums">{i.crDelta.trim() || "—"}</div>
+              <p className="text-[12px] text-subtle mt-2">vs prior month</p>
             </div>
-            <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Revenue delta</div>
-              <div className="text-4xl font-bold text-[#0E0D0B] tabular-nums">{i.revDelta.trim() || "—"}</div>
-              <p className="text-[12px] text-[#6E6E6E] mt-2">vs prior month</p>
+            <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Revenue delta</div>
+              <div className="text-4xl font-bold text-background tabular-nums">{i.revDelta.trim() || "—"}</div>
+              <p className="text-[12px] text-subtle mt-2">vs prior month</p>
             </div>
-            <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Shipped</div>
-              <div className="text-4xl font-bold text-[#0E0D0B] tabular-nums">{i.pagesShipped.trim() || "0"}<span className="text-base text-[#6E6E6E]"> pages · {i.testsRun.trim() || "0"} tests</span></div>
+            <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Shipped</div>
+              <div className="text-4xl font-bold text-background tabular-nums">{i.pagesShipped.trim() || "0"}<span className="text-base text-subtle"> pages · {i.testsRun.trim() || "0"} tests</span></div>
             </div>
           </div>
         </SlideBody>
@@ -91,11 +91,11 @@ function buildSlides(i: Inputs) {
           {i.week1.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week1).map((l, idx) => (
-                <li key={idx} className="text-[#444]">• {l}</li>
+                <li key={idx} className="text-border">• {l}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-base text-[#6E6E6E] italic">Fill in week 1 in the form above.</p>
+            <p className="text-base text-subtle italic">Fill in week 1 in the form above.</p>
           )}
         </SlideBody>
       ),
@@ -107,11 +107,11 @@ function buildSlides(i: Inputs) {
           {i.week2.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week2).map((l, idx) => (
-                <li key={idx} className="text-[#444]">• {l}</li>
+                <li key={idx} className="text-border">• {l}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-base text-[#6E6E6E] italic">Fill in week 2 in the form above.</p>
+            <p className="text-base text-subtle italic">Fill in week 2 in the form above.</p>
           )}
         </SlideBody>
       ),
@@ -123,11 +123,11 @@ function buildSlides(i: Inputs) {
           {i.week3.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week3).map((l, idx) => (
-                <li key={idx} className="text-[#444]">• {l}</li>
+                <li key={idx} className="text-border">• {l}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-base text-[#6E6E6E] italic">Fill in week 3 in the form above.</p>
+            <p className="text-base text-subtle italic">Fill in week 3 in the form above.</p>
           )}
         </SlideBody>
       ),
@@ -139,11 +139,11 @@ function buildSlides(i: Inputs) {
           {i.week4.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week4).map((l, idx) => (
-                <li key={idx} className="text-[#444]">• {l}</li>
+                <li key={idx} className="text-border">• {l}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-base text-[#6E6E6E] italic">Fill in week 4 in the form above.</p>
+            <p className="text-base text-subtle italic">Fill in week 4 in the form above.</p>
           )}
         </SlideBody>
       ),
@@ -155,11 +155,11 @@ function buildSlides(i: Inputs) {
           {i.wins.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.wins).map((l, idx) => (
-                <li key={idx} className="text-[#444]">• {l}</li>
+                <li key={idx} className="text-border">• {l}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-base text-[#6E6E6E] italic">Capture the wins from this month.</p>
+            <p className="text-base text-subtle italic">Capture the wins from this month.</p>
           )}
         </SlideBody>
       ),
@@ -171,11 +171,11 @@ function buildSlides(i: Inputs) {
           {i.lessons.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.lessons).map((l, idx) => (
-                <li key={idx} className="text-[#444]">• {l}</li>
+                <li key={idx} className="text-border">• {l}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-base text-[#6E6E6E] italic">A losing test is a learning. Capture them here.</p>
+            <p className="text-base text-subtle italic">A losing test is a learning. Capture them here.</p>
           )}
         </SlideBody>
       ),
@@ -187,11 +187,11 @@ function buildSlides(i: Inputs) {
           {i.nextMonth.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.nextMonth).map((l, idx) => (
-                <li key={idx} className="text-[#444]">• {l}</li>
+                <li key={idx} className="text-border">• {l}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-base text-[#6E6E6E] italic">Brief outline of next month&apos;s roadmap.</p>
+            <p className="text-base text-subtle italic">Brief outline of next month&apos;s roadmap.</p>
           )}
         </SlideBody>
       ),
@@ -203,7 +203,7 @@ function buildSlides(i: Inputs) {
           <p className="text-lg leading-relaxed">
             Every test we ship makes the system smarter. Every page we build raises the bar. The number trends up, month over month.
           </p>
-          <p className="text-base text-[#444] mt-4">— The {safeBrand} pod at Ecom Landers</p>
+          <p className="text-base text-border mt-4">— The {safeBrand} pod at Ecom Landers</p>
         </SlideBody>
       ),
     },
@@ -292,8 +292,8 @@ export default function MonthlyReportPage() {
       icon={<ChartPieIcon className="size-4" />}
     >
       {!isPresent && (
-        <section className="bg-[#0F0F10] rounded-2xl ring-1 ring-[#E5E5E5] p-5 mb-4 space-y-4">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-[#6E6E6E]">
+        <section className="bg-background rounded-2xl ring-1 ring-foreground p-5 mb-4 space-y-4">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle">
             Setup
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

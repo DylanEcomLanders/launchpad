@@ -89,7 +89,7 @@ export function Card({
   const Tag = as ?? "div";
   return (
     <Tag
-      className={`rounded-2xl border border-[#2A2A2A] bg-[#181818] shadow-[0_1px_2px_rgba(0,0,0,0.3)] ${className}`}
+      className={`rounded-2xl border border-border bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.3)] ${className}`}
     >
       {children}
     </Tag>
@@ -136,14 +136,14 @@ export function StatTile({
     <Card className="px-5 py-4">
       <div className="flex items-center gap-2">
         <span className={`h-2 w-2 rounded-full ${TONE_DOT[tone]}`} />
-        <span className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted">
           {label}
         </span>
       </div>
       <div className="mt-2 font-heading text-3xl font-semibold tabular-nums text-white">
         {value}
       </div>
-      {sub && <div className="mt-0.5 text-xs text-[#9CA3AF]">{sub}</div>}
+      {sub && <div className="mt-0.5 text-xs text-muted">{sub}</div>}
     </Card>
   );
 }
@@ -161,7 +161,7 @@ export function ProgressBar({
   // Over capacity flips the bar red regardless of the requested tone.
   const barTone: Tone = value > max ? "red" : tone;
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-[#2A2A2A]">
+    <div className="h-2 w-full overflow-hidden rounded-full bg-border">
       <div
         className={`h-full rounded-full ${TONE_BAR[barTone]} transition-all`}
         style={{ width: `${Math.max(pct, value > 0 ? 4 : 0)}%` }}
@@ -204,7 +204,7 @@ export function OwnerChip({
           className={`${dim} inline-flex items-center justify-center rounded-full font-semibold ${
             unassigned
               ? "bg-red-950 text-red-400"
-              : "bg-[#2A2A2A] text-[#9CA3AF]"
+              : "bg-border text-muted"
           }`}
         >
           {unassigned ? "!" : initials(name)}
@@ -248,7 +248,7 @@ export function SectionTitle({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-[#9CA3AF]">
+      <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted">
         {children}
       </h2>
       {action}
@@ -260,14 +260,14 @@ export function LaneTag({ lane, label }: { lane: Lane; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className={`h-2 w-2 rounded-full ${TONE_DOT[LANE_TONE[lane]]}`} />
-      <span className="text-xs font-medium text-[#9CA3AF]">{label}</span>
+      <span className="text-xs font-medium text-muted">{label}</span>
     </span>
   );
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#2A2A2A] px-4 py-6 text-center text-sm text-[#71757D]">
+    <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-subtle">
       {children}
     </div>
   );
@@ -299,7 +299,7 @@ export function Checkbox({
       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
         checked
           ? "border-emerald-500 bg-emerald-500 text-white"
-          : "border-[#383838] bg-[#181818] hover:border-[#4B4D52]"
+          : "border-border bg-surface hover:border-border"
       }`}
     >
       {checked && (
@@ -351,7 +351,7 @@ export function InlineAdd({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full rounded-lg border border-dashed border-[#2A2A2A] px-3 py-2 text-left text-xs font-medium text-[#71757D] transition-colors hover:border-[#383838] hover:text-[#9CA3AF]"
+        className="w-full rounded-lg border border-dashed border-border px-3 py-2 text-left text-xs font-medium text-subtle transition-colors hover:border-border hover:text-muted"
       >
         {ctaLabel}
       </button>
@@ -359,7 +359,7 @@ export function InlineAdd({
   }
 
   return (
-    <div className="space-y-1.5 rounded-lg border border-[#2A2A2A] bg-[#181818] p-2">
+    <div className="space-y-1.5 rounded-lg border border-border bg-surface p-2">
       <input
         autoFocus
         value={value}
@@ -369,7 +369,7 @@ export function InlineAdd({
           if (e.key === "Escape") setOpen(false);
         }}
         placeholder={placeholder}
-        className="w-full rounded-md border border-[#2A2A2A] px-2.5 py-1.5 text-sm outline-none focus:border-[#383838]"
+        className="w-full rounded-md border border-border px-2.5 py-1.5 text-sm outline-none focus:border-border"
       />
       {secondaryPlaceholder && (
         <input
@@ -380,7 +380,7 @@ export function InlineAdd({
             if (e.key === "Escape") setOpen(false);
           }}
           placeholder={secondaryPlaceholder}
-          className="w-full rounded-md border border-[#2A2A2A] px-2.5 py-1.5 text-sm outline-none focus:border-[#383838]"
+          className="w-full rounded-md border border-border px-2.5 py-1.5 text-sm outline-none focus:border-border"
         />
       )}
       <div className="flex items-center gap-2">
@@ -420,10 +420,10 @@ export function LaneChip({
   atRisk: number;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md bg-[#181818] px-2 py-1 text-xs">
+    <span className="inline-flex items-center gap-1.5 rounded-md bg-surface px-2 py-1 text-xs">
       <span className={`h-1.5 w-1.5 rounded-full ${TONE_DOT[LANE_TONE[lane]]}`} />
-      <span className="font-medium text-[#9CA3AF]">{short}</span>
-      <span className="tabular-nums text-[#A0A0A0]">
+      <span className="font-medium text-muted">{short}</span>
+      <span className="tabular-nums text-muted">
         {done}/{total}
       </span>
       {atRisk > 0 && (

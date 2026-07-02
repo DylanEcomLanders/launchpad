@@ -71,7 +71,7 @@ export default function SalesEngineDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin size-6 border-2 border-[#404040] border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
@@ -160,21 +160,21 @@ export default function SalesEngineDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fadeInUp">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-[#7A7A7A] mt-0.5">
+          <p className="text-sm text-subtle mt-0.5">
             {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/sales-engine/pipeline"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#404040] rounded-lg hover:bg-[#222222]"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-subtle border border-border rounded-lg hover:bg-surface-raised"
           >
             <UserGroupIcon className="size-3.5" />
             Pipeline
           </Link>
           <Link
             href="/tools/proposals"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-surface text-white rounded-lg hover:bg-border"
           >
             <PaperAirplaneIcon className="size-3.5" />
             Send Proposal
@@ -186,43 +186,43 @@ export default function SalesEngineDashboard() {
         {/* -- Funnel Performance -- */}
         <div className="animate-fadeInUp-d1">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Funnel Performance</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">Funnel Performance</h2>
             {hasFunnelData && (
-              <span className="text-[10px] text-[#9CA3AF]">All time</span>
+              <span className="text-[10px] text-muted">All time</span>
             )}
           </div>
           {hasFunnelData ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {funnelStats.map((f) => (
-                <div key={f.name} className="border border-[#404040] rounded-xl p-5">
+                <div key={f.name} className="border border-border rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <FunnelIcon className="size-3.5 text-[#71757D]" />
-                    <span className="text-xs font-semibold text-[#1B1B1B]">{f.label}</span>
-                    <span className="text-[9px] text-[#9CA3AF] font-medium ml-auto">/{f.name}</span>
+                    <FunnelIcon className="size-3.5 text-subtle" />
+                    <span className="text-xs font-semibold text-foreground">{f.label}</span>
+                    <span className="text-[9px] text-muted font-medium ml-auto">/{f.name}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <p className="text-lg font-bold text-[#1B1B1B]">{f.views}</p>
-                      <p className="text-[10px] text-[#71757D]">Views</p>
+                      <p className="text-lg font-bold text-foreground">{f.views}</p>
+                      <p className="text-[10px] text-subtle">Views</p>
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-[#1B1B1B]">{f.submissions}</p>
-                      <p className="text-[10px] text-[#71757D]">Leads</p>
+                      <p className="text-lg font-bold text-foreground">{f.submissions}</p>
+                      <p className="text-[10px] text-subtle">Leads</p>
                     </div>
                     <div>
                       <p className="text-lg font-bold text-emerald-600">{f.cvr}%</p>
-                      <p className="text-[10px] text-[#71757D]">CVR</p>
+                      <p className="text-[10px] text-subtle">CVR</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="border border-dashed border-[#404040] rounded-xl p-8 text-center">
-              <FunnelIcon className="size-5 text-[#DDD] mx-auto mb-2" />
-              <p className="text-sm text-[#9CA3AF] mb-1">No funnel data yet</p>
-              <p className="text-xs text-[#DDD]">
-                Share your <Link href="/audit" className="text-[#71757D] underline hover:text-[#1B1B1B]">/audit</Link> page to start tracking views and conversions
+            <div className="border border-dashed border-border rounded-xl p-8 text-center">
+              <FunnelIcon className="size-5 text-muted mx-auto mb-2" />
+              <p className="text-sm text-muted mb-1">No funnel data yet</p>
+              <p className="text-xs text-muted">
+                Share your <Link href="/audit" className="text-subtle underline hover:text-foreground">/audit</Link> page to start tracking views and conversions
               </p>
             </div>
           )}
@@ -232,17 +232,17 @@ export default function SalesEngineDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeInUp-d2">
           {/* Lead Sources */}
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">Lead Sources</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle mb-3">Lead Sources</h2>
             {sourceStats.length > 0 ? (
-              <div className="border border-[#404040] rounded-xl p-5">
+              <div className="border border-border rounded-xl p-5">
                 <div className="space-y-3">
                   {sourceStats.slice(0, 6).map((s) => (
                     <div key={s.source}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-[#1B1B1B]">{s.source}</span>
-                        <span className="text-xs text-[#7A7A7A]">{s.count} lead{s.count !== 1 ? "s" : ""}</span>
+                        <span className="text-xs font-medium text-foreground">{s.source}</span>
+                        <span className="text-xs text-subtle">{s.count} lead{s.count !== 1 ? "s" : ""}</span>
                       </div>
-                      <div className="h-2 bg-[#222222] rounded-full overflow-hidden">
+                      <div className="h-2 bg-surface-raised rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all"
                           style={{
@@ -256,11 +256,11 @@ export default function SalesEngineDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="border border-dashed border-[#404040] rounded-xl p-8 text-center">
-                <GlobeAltIcon className="size-5 text-[#DDD] mx-auto mb-2" />
-                <p className="text-sm text-[#9CA3AF] mb-1">No leads tracked yet</p>
-                <p className="text-xs text-[#DDD]">
-                  Add <span className="font-mono text-[#BBB]">?ref=x-dylan-bio</span> to your links to track sources
+              <div className="border border-dashed border-border rounded-xl p-8 text-center">
+                <GlobeAltIcon className="size-5 text-muted mx-auto mb-2" />
+                <p className="text-sm text-muted mb-1">No leads tracked yet</p>
+                <p className="text-xs text-muted">
+                  Add <span className="font-mono text-muted">?ref=x-dylan-bio</span> to your links to track sources
                 </p>
               </div>
             )}
@@ -268,25 +268,25 @@ export default function SalesEngineDashboard() {
 
           {/* Pipeline Health */}
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">Pipeline</h2>
-            <div className="border border-[#404040] rounded-xl p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle mb-3">Pipeline</h2>
+            <div className="border border-border rounded-xl p-5">
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
-                  <p className="text-2xl font-bold text-[#1A1A1A]">{activeLeads.length}</p>
-                  <p className="text-[10px] text-[#71757D]">Active</p>
+                  <p className="text-2xl font-bold text-surface">{activeLeads.length}</p>
+                  <p className="text-[10px] text-subtle">Active</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-emerald-600">{wonLeads.length}</p>
-                  <p className="text-[10px] text-[#71757D]">Won</p>
+                  <p className="text-[10px] text-subtle">Won</p>
                 </div>
                 <div>
-                  <p className={`text-2xl font-bold ${overdue.length > 0 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
+                  <p className={`text-2xl font-bold ${overdue.length > 0 ? "text-amber-600" : "text-surface"}`}>
                     {overdue.length}
                   </p>
-                  <p className="text-[10px] text-[#71757D]">Overdue</p>
+                  <p className="text-[10px] text-subtle">Overdue</p>
                 </div>
               </div>
-              <div className="flex gap-1 h-3 rounded-full overflow-hidden bg-[#222222]">
+              <div className="flex gap-1 h-3 rounded-full overflow-hidden bg-surface-raised">
                 {LEAD_STATUSES.filter((s) => s.key !== "lost" && pipelineCounts[s.key] > 0).map((s) => (
                   <div
                     key={s.key}
@@ -303,7 +303,7 @@ export default function SalesEngineDashboard() {
                 {LEAD_STATUSES.filter((s) => s.key !== "lost" && pipelineCounts[s.key] > 0).map((s) => (
                   <div key={s.key} className="flex items-center gap-1.5">
                     <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
-                    <span className="text-[10px] text-[#7A7A7A]">{s.label} ({pipelineCounts[s.key]})</span>
+                    <span className="text-[10px] text-subtle">{s.label} ({pipelineCounts[s.key]})</span>
                   </div>
                 ))}
               </div>
@@ -313,22 +313,22 @@ export default function SalesEngineDashboard() {
 
         {/* -- Stats Row -- */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="border border-[#404040] rounded-xl p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">Active Clients</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]">{portals.length}</p>
-            <p className="text-[10px] text-[#999] mt-0.5">{retainers.length} retainers · {projects.length} projects</p>
+          <div className="border border-border rounded-xl p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Active Clients</p>
+            <p className="text-2xl font-bold text-surface">{portals.length}</p>
+            <p className="text-[10px] text-subtle mt-0.5">{retainers.length} retainers · {projects.length} projects</p>
           </div>
-          <div className="border border-[#404040] rounded-xl p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">Content This Week</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]">{thisWeekPosts.length}</p>
-            <p className="text-[10px] text-[#999] mt-0.5">
+          <div className="border border-border rounded-xl p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Content This Week</p>
+            <p className="text-2xl font-bold text-surface">{thisWeekPosts.length}</p>
+            <p className="text-[10px] text-subtle mt-0.5">
               {scheduledPosts.length} scheduled · {draftPosts.length} draft
             </p>
           </div>
-          <div className="border border-[#404040] rounded-xl p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">Total Leads</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]">{leads.length}</p>
-            <p className="text-[10px] text-[#999] mt-0.5">
+          <div className="border border-border rounded-xl p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Total Leads</p>
+            <p className="text-2xl font-bold text-surface">{leads.length}</p>
+            <p className="text-[10px] text-subtle mt-0.5">
               {leads.filter((l) => {
                 const weekAgo = new Date();
                 weekAgo.setDate(weekAgo.getDate() - 7);
@@ -338,22 +338,22 @@ export default function SalesEngineDashboard() {
           </div>
           <Link
             href="/sales-engine/calendar"
-            className="border border-[#404040] rounded-xl p-4 hover:border-[#CCC] transition-colors"
+            className="border border-border rounded-xl p-4 hover:border-muted transition-colors"
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">Next Post</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Next Post</p>
             {scheduledPosts.length > 0 ? (
               <>
-                <p className="text-sm font-medium text-[#1A1A1A] line-clamp-1">
+                <p className="text-sm font-medium text-surface line-clamp-1">
                   {scheduledPosts.sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))[0].caption.slice(0, 50)}...
                 </p>
-                <p className="text-[10px] text-[#999] mt-1">
+                <p className="text-[10px] text-subtle mt-1">
                   {new Date(scheduledPosts[0].scheduled_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
                   {" · "}
                   {scheduledPosts[0].scheduled_time}
                 </p>
               </>
             ) : (
-              <p className="text-sm text-[#9CA3AF] mt-1">Nothing scheduled</p>
+              <p className="text-sm text-muted mt-1">Nothing scheduled</p>
             )}
           </Link>
         </div>
@@ -363,33 +363,33 @@ export default function SalesEngineDashboard() {
           {/* Recent Leads */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Recent Leads</h2>
-              <Link href="/sales-engine/pipeline" className="text-[10px] text-[#71757D] hover:text-[#1A1A1A] transition-colors">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">Recent Leads</h2>
+              <Link href="/sales-engine/pipeline" className="text-[10px] text-subtle hover:text-surface transition-colors">
                 View all →
               </Link>
             </div>
             {recentLeads.length > 0 ? (
-              <div className="border border-[#404040] rounded-xl overflow-hidden">
+              <div className="border border-border rounded-xl overflow-hidden">
                 {recentLeads.map((lead) => {
                   const statusInfo = LEAD_STATUSES.find((s) => s.key === lead.status);
                   return (
                     <Link
                       key={lead.id}
                       href="/sales-engine/pipeline"
-                      className="flex items-center justify-between px-4 py-3 border-b border-[#EDEDEF] last:border-0 hover:bg-[#FAFAFA] transition-colors"
+                      className="flex items-center justify-between px-4 py-3 border-b border-border last:border-0 hover:bg-surface-raised transition-colors"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-[#1A1A1A] truncate">{lead.brand_name || "Unnamed"}</p>
+                          <p className="text-sm font-medium text-surface truncate">{lead.brand_name || "Unnamed"}</p>
                           {lead.funnel && (
                             <span className="text-[9px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full shrink-0">
                               {lead.funnel}
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] text-[#999] mt-0.5">
+                        <p className="text-[10px] text-subtle mt-0.5">
                           {lead.source && lead.source !== "direct" && (
-                            <span className="text-[#BBB]">{parseSourceLabel(lead.source)} · </span>
+                            <span className="text-muted">{parseSourceLabel(lead.source)} · </span>
                           )}
                           {lead.contact_name && `${lead.contact_name} · `}{timeAgo(lead.created_at)}
                         </p>
@@ -408,9 +408,9 @@ export default function SalesEngineDashboard() {
                 })}
               </div>
             ) : (
-              <div className="border border-dashed border-[#404040] rounded-xl p-8 text-center">
-                <p className="text-sm text-[#9CA3AF]">No leads yet</p>
-                <p className="text-xs text-[#DDD] mt-1">
+              <div className="border border-dashed border-border rounded-xl p-8 text-center">
+                <p className="text-sm text-muted">No leads yet</p>
+                <p className="text-xs text-muted mt-1">
                   Leads will appear here when prospects submit your funnel forms
                 </p>
               </div>
@@ -420,7 +420,7 @@ export default function SalesEngineDashboard() {
           {/* Follow-ups */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Upcoming Follow-ups</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">Upcoming Follow-ups</h2>
             </div>
             {overdue.length > 0 && (
               <div className="border border-amber-200 bg-amber-50 rounded-xl p-3 mb-3">
@@ -440,21 +440,21 @@ export default function SalesEngineDashboard() {
               </div>
             )}
             {upcomingFollowUps.length > 0 ? (
-              <div className="border border-[#404040] rounded-xl overflow-hidden">
+              <div className="border border-border rounded-xl overflow-hidden">
                 {upcomingFollowUps.map((lead) => (
                   <div
                     key={lead.id}
-                    className="flex items-center justify-between px-4 py-3 border-b border-[#EDEDEF] last:border-0"
+                    className="flex items-center justify-between px-4 py-3 border-b border-border last:border-0"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[#1A1A1A] truncate">{lead.brand_name}</p>
-                      <p className="text-[10px] text-[#999]">
+                      <p className="text-sm font-medium text-surface truncate">{lead.brand_name}</p>
+                      <p className="text-[10px] text-subtle">
                         {LEAD_STATUSES.find((s) => s.key === lead.status)?.label}
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5 ml-3 shrink-0">
-                      <CalendarDaysIcon className="size-3 text-[#71757D]" />
-                      <span className="text-[10px] text-[#777]">
+                      <CalendarDaysIcon className="size-3 text-subtle" />
+                      <span className="text-[10px] text-subtle">
                         {new Date(lead.follow_up_date!).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
                       </span>
                     </div>
@@ -462,8 +462,8 @@ export default function SalesEngineDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="border border-dashed border-[#404040] rounded-xl p-8 text-center">
-                <p className="text-sm text-[#9CA3AF]">No upcoming follow-ups</p>
+              <div className="border border-dashed border-border rounded-xl p-8 text-center">
+                <p className="text-sm text-muted">No upcoming follow-ups</p>
               </div>
             )}
           </div>
@@ -471,35 +471,35 @@ export default function SalesEngineDashboard() {
 
         {/* -- Quick Actions -- */}
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">Quick Actions</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Link
               href="/sales-engine/pipeline"
-              className="flex items-center gap-2.5 px-4 py-3 border border-[#404040] rounded-xl hover:border-[#CCC] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-3 border border-border rounded-xl hover:border-muted transition-colors"
             >
-              <PlusIcon className="size-4 text-[#71757D]" />
-              <span className="text-sm font-medium text-[#1A1A1A]">Add Lead</span>
+              <PlusIcon className="size-4 text-subtle" />
+              <span className="text-sm font-medium text-surface">Add Lead</span>
             </Link>
             <Link
               href="/sales-engine/audits"
-              className="flex items-center gap-2.5 px-4 py-3 border border-[#404040] rounded-xl hover:border-[#CCC] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-3 border border-border rounded-xl hover:border-muted transition-colors"
             >
-              <MagnifyingGlassIcon className="size-4 text-[#71757D]" />
-              <span className="text-sm font-medium text-[#1A1A1A]">Run Audit</span>
+              <MagnifyingGlassIcon className="size-4 text-subtle" />
+              <span className="text-sm font-medium text-surface">Run Audit</span>
             </Link>
             <Link
               href="/tools/proposals"
-              className="flex items-center gap-2.5 px-4 py-3 border border-[#404040] rounded-xl hover:border-[#CCC] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-3 border border-border rounded-xl hover:border-muted transition-colors"
             >
-              <PaperAirplaneIcon className="size-4 text-[#71757D]" />
-              <span className="text-sm font-medium text-[#1A1A1A]">Send Proposal</span>
+              <PaperAirplaneIcon className="size-4 text-subtle" />
+              <span className="text-sm font-medium text-surface">Send Proposal</span>
             </Link>
             <Link
               href="/sales-engine/calendar"
-              className="flex items-center gap-2.5 px-4 py-3 border border-[#404040] rounded-xl hover:border-[#CCC] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-3 border border-border rounded-xl hover:border-muted transition-colors"
             >
-              <CalendarDaysIcon className="size-4 text-[#71757D]" />
-              <span className="text-sm font-medium text-[#1A1A1A]">Content Calendar</span>
+              <CalendarDaysIcon className="size-4 text-subtle" />
+              <span className="text-sm font-medium text-surface">Content Calendar</span>
             </Link>
           </div>
         </div>

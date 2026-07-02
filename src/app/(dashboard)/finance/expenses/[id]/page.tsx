@@ -213,13 +213,13 @@ export default function ExpenseDetailPage() {
     }
   }
 
-  if (loading) return <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+  if (loading) return <div className="h-48 bg-background rounded-xl animate-pulse" />;
 
   if (!expense) {
     return (
-      <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
-        <p className="text-sm text-[#71757D] mb-3">Expense not found</p>
-        <Link href="/finance/expenses" className="text-sm text-[#E5E5EA] underline">
+      <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+        <p className="text-sm text-subtle mb-3">Expense not found</p>
+        <Link href="/finance/expenses" className="text-sm text-foreground underline">
           Back to expenses
         </Link>
       </div>
@@ -232,17 +232,17 @@ export default function ExpenseDetailPage() {
     <div>
       <Link
         href="/finance/expenses"
-        className="inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA] mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground mb-6 transition-colors"
       >
         <ArrowLeftIcon className="size-4" /> Back to expenses
       </Link>
 
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl font-semibold text-[#E5E5EA] mb-1">
+          <h2 className="text-xl font-semibold text-foreground mb-1">
             {expense.supplier_name}
           </h2>
-          <p className="text-sm text-[#71757D]">
+          <p className="text-sm text-subtle">
             {EXPENSE_CATEGORY_LABELS[expense.category]}
             {expense.recurring ? ` · ${expense.recurring} recurring` : ""} · Due{" "}
             {fmtDateUK(expense.date_due)}
@@ -253,7 +253,7 @@ export default function ExpenseDetailPage() {
           {!editing && (
             <button
               onClick={startEdit}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background"
             >
               <PencilSquareIcon className="size-4" /> Edit
             </button>
@@ -262,7 +262,7 @@ export default function ExpenseDetailPage() {
             <button
               onClick={rollForward}
               disabled={rolling}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C] disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background disabled:opacity-40"
             >
               <ForwardIcon className="size-4" /> {rolling ? "Rolling..." : "Roll forward"}
             </button>
@@ -278,7 +278,7 @@ export default function ExpenseDetailPage() {
           {!editing && status === "paid" && (
             <button
               onClick={markDue}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background"
             >
               Mark unpaid
             </button>
@@ -286,7 +286,7 @@ export default function ExpenseDetailPage() {
           {!editing && status !== "disputed" && status !== "paid" && (
             <button
               onClick={() => changeStatus("disputed")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#92400E] text-sm rounded-lg hover:bg-[#222222]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-[#92400E] text-sm rounded-lg hover:bg-surface-raised"
             >
               Mark disputed
             </button>
@@ -294,7 +294,7 @@ export default function ExpenseDetailPage() {
           {!editing && status === "disputed" && (
             <button
               onClick={() => changeStatus("due")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background"
             >
               Resolve dispute
             </button>
@@ -302,7 +302,7 @@ export default function ExpenseDetailPage() {
           {!editing && (
             <button
               onClick={handleDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-red-600 text-sm rounded-lg hover:bg-[#222222]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-red-600 text-sm rounded-lg hover:bg-surface-raised"
             >
               <TrashIcon className="size-4" />
             </button>
@@ -311,7 +311,7 @@ export default function ExpenseDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-[#991B1B] rounded-lg text-sm text-[#FCA5A5]">
+        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger rounded-lg text-sm text-[#FCA5A5]">
           {error}
         </div>
       )}
@@ -352,7 +352,7 @@ export default function ExpenseDetailPage() {
                 <button
                   onClick={openDoc}
                   disabled={openingDoc}
-                  className="inline-flex items-center gap-2 text-sm text-[#E5E5EA] underline hover:opacity-80 disabled:opacity-40"
+                  className="inline-flex items-center gap-2 text-sm text-foreground underline hover:opacity-80 disabled:opacity-40"
                 >
                   {openingDoc ? (
                     <ArrowPathIcon className="size-4 animate-spin" />
@@ -361,7 +361,7 @@ export default function ExpenseDetailPage() {
                   )}{" "}
                   {expense.file_name}
                 </button>
-                <p className="text-[11px] text-[#71757D] mt-1">
+                <p className="text-[11px] text-subtle mt-1">
                   Link signed on click, expires 15min
                 </p>
               </Card>
@@ -371,7 +371,7 @@ export default function ExpenseDetailPage() {
           <div className="space-y-6">
             <Card title="Status">
               <div>
-                <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-1">
+                <div className="text-[11px] uppercase tracking-wider text-subtle mb-1">
                   Change to
                 </div>
                 <select
@@ -392,10 +392,10 @@ export default function ExpenseDetailPage() {
               )}
               {expense.disputed_reason && (
                 <div>
-                  <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-0.5">
+                  <div className="text-[11px] uppercase tracking-wider text-subtle mb-0.5">
                     Reason
                   </div>
-                  <div className="text-sm text-[#E5E5EA] whitespace-pre-wrap">
+                  <div className="text-sm text-foreground whitespace-pre-wrap">
                     {expense.disputed_reason}
                   </div>
                 </div>
@@ -413,7 +413,7 @@ export default function ExpenseDetailPage() {
 
             {expense.legacy_source && (
               <Card title="Migration source">
-                <p className="text-[11px] text-[#71757D]">
+                <p className="text-[11px] text-subtle">
                   Imported from {expense.legacy_source}
                   {expense.legacy_id ? ` (${expense.legacy_id})` : ""}
                 </p>
@@ -446,7 +446,7 @@ function EditExpenseForm({
   return (
     <div className="space-y-8 max-w-3xl">
       <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
           Edit expense
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -486,7 +486,7 @@ function EditExpenseForm({
       </section>
 
       <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
           Amount & VAT
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -503,12 +503,12 @@ function EditExpenseForm({
           </div>
           <div>
             <label className={labelClass}>VAT included?</label>
-            <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-[#181818] border border-[#2A2A2A] rounded-lg cursor-pointer">
+            <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-surface border border-border rounded-lg cursor-pointer">
               <input
                 type="checkbox"
                 checked={draft.vat_included}
                 onChange={(e) => update("vat_included", e.target.checked)}
-                className="rounded border-[#2A2A2A]"
+                className="rounded border-border"
               />
               <span className="text-sm">Amount includes UK VAT (20%)</span>
             </label>
@@ -533,7 +533,7 @@ function EditExpenseForm({
       </section>
 
       <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
           Dates & Recurring
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -574,7 +574,7 @@ function EditExpenseForm({
       </section>
 
       <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
           Notes
         </h3>
         <textarea
@@ -585,17 +585,17 @@ function EditExpenseForm({
         />
       </section>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-[#2A2A2A]">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border">
         <button
           onClick={onCancel}
-          className="px-5 py-3 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+          className="px-5 py-3 text-sm text-subtle hover:text-foreground"
         >
           Cancel
         </button>
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -614,8 +614,8 @@ function nextOccurrence(date: string, freq: RecurringFrequency): string {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
+    <div className="bg-surface border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-subtle mb-3">
         {title}
       </h3>
       <div className="space-y-2">{children}</div>
@@ -626,8 +626,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function KV({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-0.5">{label}</div>
-      <div className="text-sm text-[#E5E5EA]">{value}</div>
+      <div className="text-[11px] uppercase tracking-wider text-subtle mb-0.5">{label}</div>
+      <div className="text-sm text-foreground">{value}</div>
     </div>
   );
 }

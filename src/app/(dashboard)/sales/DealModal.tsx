@@ -38,16 +38,16 @@ export function DealModal({
         onClick={onClose}
       >
         <div
-          className="bg-[#181818] border border-[#2A2A2A] rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-md mx-4 p-5"
+          className="bg-surface border border-border rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-md mx-4 p-5"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-[#E5E5EA]">Close won — {lead.company}</h3>
-            <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]">
+            <h3 className="text-sm font-semibold text-foreground">Close won — {lead.company}</h3>
+            <button onClick={onClose} className="text-subtle hover:text-foreground">
               <XMarkIcon className="size-4" />
             </button>
           </div>
-          <p className="text-[11px] text-[#71757D] mb-4">
+          <p className="text-[11px] text-subtle mb-4">
             Records the deal and hands {lead.company} off as a new client (CSM + pod left for ops).
           </p>
 
@@ -94,11 +94,11 @@ export function DealModal({
           <div className="flex items-center gap-2 mt-5">
             <button
               onClick={() => onConfirm({ plan, mrr, setup_fee: setupFee, contract_months: months })}
-              className="flex-1 py-2 bg-[#E5E5EA] text-[#0C0C0C] text-xs font-semibold rounded-lg hover:bg-white transition-colors"
+              className="flex-1 py-2 bg-foreground text-background text-xs font-semibold rounded-lg hover:bg-white transition-colors"
             >
               Record deal + create client
             </button>
-            <button onClick={onClose} className="px-3 py-2 text-xs text-[#71757D] hover:text-[#E5E5EA]">
+            <button onClick={onClose} className="px-3 py-2 text-xs text-subtle hover:text-foreground">
               Cancel
             </button>
           </div>

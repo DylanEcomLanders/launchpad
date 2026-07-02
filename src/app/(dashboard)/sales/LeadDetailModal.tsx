@@ -39,17 +39,17 @@ export function LeadDetailModal({
         onClick={onClose}
       >
         <div
-          className="bg-[#181818] border border-[#2A2A2A] rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-lg mx-4 p-5 max-h-[90vh] overflow-y-auto"
+          className="bg-surface border border-border rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-lg mx-4 p-5 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className="text-base font-semibold text-[#E5E5EA]">{lead.company || "Untitled"}</h3>
-              <p className="text-[12px] text-[#71757D] mt-0.5">
+              <h3 className="text-base font-semibold text-foreground">{lead.company || "Untitled"}</h3>
+              <p className="text-[12px] text-subtle mt-0.5">
                 Source: {lead.source.replace("_", " ")} · {lead.revenue_band || "—"}
               </p>
             </div>
-            <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]">
+            <button onClick={onClose} className="text-subtle hover:text-foreground">
               <XMarkIcon className="size-5" />
             </button>
           </div>
@@ -141,7 +141,7 @@ export function LeadDetailModal({
                     key={t}
                     onClick={() => onChange({ temperature: t })}
                     className={`inline-flex items-center gap-1.5 text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
-                      lead.temperature === t ? "font-semibold" : "border-[#2A2A2A] text-[#9CA3AF] hover:border-[#3A3A3A]"
+                      lead.temperature === t ? "font-semibold" : "border-border text-muted hover:border-subtle"
                     }`}
                     style={
                       lead.temperature === t
@@ -170,7 +170,7 @@ export function LeadDetailModal({
           <div className="flex justify-end mt-5">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-[#E5E5EA] text-[#0C0C0C] text-xs font-semibold rounded-lg hover:bg-white transition-colors"
+              className="px-4 py-2 bg-foreground text-background text-xs font-semibold rounded-lg hover:bg-white transition-colors"
             >
               Done
             </button>

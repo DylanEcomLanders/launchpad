@@ -14,7 +14,7 @@ export default function FinanceLayout({
          * "Founder access" eyebrow dropped since the passcode gate
          * already conveys that. */}
         <header className="flex items-center justify-between gap-4 mb-6">
-          <h1 className="text-xl font-semibold text-[#E5E5EA] shrink-0">
+          <h1 className="text-xl font-semibold text-foreground shrink-0">
             Finance
           </h1>
           <FinanceNav />

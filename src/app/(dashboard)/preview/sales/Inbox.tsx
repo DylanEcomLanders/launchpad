@@ -101,35 +101,35 @@ export function Inbox({
   const selected = convos.find((c) => c.lead.id === selectedLeadId) ?? convos[0] ?? null;
 
   return (
-    <div className="grid grid-cols-[300px_1fr_300px] h-[calc(100vh-220px)] min-h-[560px] rounded-xl border border-[#222222] overflow-hidden bg-[#141414]">
+    <div className="grid grid-cols-[300px_1fr_300px] h-[calc(100vh-220px)] min-h-[560px] rounded-xl border border-surface-raised overflow-hidden bg-background">
       {/* Conversation list */}
-      <div className="border-r border-[#222222] overflow-y-auto">
+      <div className="border-r border-surface-raised overflow-y-auto">
         {convos.map(({ lead, last, unread }) => (
           <button
             key={lead.id}
             onClick={() => onSelectLead(lead.id)}
-            className={`w-full text-left px-3 py-2.5 border-b border-[#1C1C1C] transition-colors ${
-              selected?.lead.id === lead.id ? "bg-[#1C1C1C]" : "hover:bg-[#181818]"
+            className={`w-full text-left px-3 py-2.5 border-b border-surface transition-colors ${
+              selected?.lead.id === lead.id ? "bg-surface" : "hover:bg-surface"
             }`}
           >
             <div className="flex items-center gap-2">
               <span
-                className={`text-sm truncate ${unread ? "font-semibold text-[#E5E5EA]" : "font-medium text-[#9CA3AF]"}`}
+                className={`text-sm truncate ${unread ? "font-semibold text-foreground" : "font-medium text-muted"}`}
               >
                 {lead.company}
               </span>
               {unread > 0 && (
-                <span className="ml-auto shrink-0 size-4 rounded-full bg-[#E5E5EA] text-[#0C0C0C] text-[11px] font-bold flex items-center justify-center">
+                <span className="ml-auto shrink-0 size-4 rounded-full bg-foreground text-background text-[11px] font-bold flex items-center justify-center">
                   {unread}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-1.5 mt-1">
               {last && <ChannelTag channel={last.channel} />}
-              <span className="text-[11px] text-[#71757D] ml-auto">{last && timeShort(last.created_at)}</span>
+              <span className="text-[11px] text-subtle ml-auto">{last && timeShort(last.created_at)}</span>
             </div>
             {last && (
-              <p className="text-[12px] text-[#71757D] mt-1 line-clamp-1">
+              <p className="text-[12px] text-subtle mt-1 line-clamp-1">
                 {last.direction === "outbound" ? "You: " : ""}
                 {last.body}
               </p>
@@ -151,7 +151,7 @@ export function Inbox({
             .map((c) => ({ id: c.lead.id, company: c.lead.company, channel: c.last!.channel }))}
         />
       ) : (
-        <div className="flex items-center justify-center text-sm text-[#71757D]">No conversations</div>
+        <div className="flex items-center justify-center text-sm text-subtle">No conversations</div>
       )}
 
       {/* Lead context */}
@@ -165,7 +165,7 @@ export function Inbox({
           onAddTask={onAddTask}
         />
       ) : (
-        <div className="border-l border-[#222222]" />
+        <div className="border-l border-surface-raised" />
       )}
     </div>
   );
@@ -215,23 +215,23 @@ function ThreadPane({
   return (
     <div className="flex flex-col">
       {/* Header */}
-      <div className="px-4 py-2.5 border-b border-[#222222] flex items-center gap-2 relative">
-        <span className="text-sm font-semibold text-[#E5E5EA]">{lead.company}</span>
-        <span className="text-[12px] text-[#71757D]">{lead.name}</span>
+      <div className="px-4 py-2.5 border-b border-surface-raised flex items-center gap-2 relative">
+        <span className="text-sm font-semibold text-foreground">{lead.company}</span>
+        <span className="text-[12px] text-subtle">{lead.name}</span>
         <div className="ml-auto relative">
           <button
             onClick={() => setMergeOpen((v) => !v)}
-            className="inline-flex items-center gap-1 text-[12px] text-[#9CA3AF] hover:text-[#E5E5EA] border border-[#2A2A2A] hover:border-[#3A3A3A] rounded-md px-2 py-1 transition-colors"
+            className="inline-flex items-center gap-1 text-[12px] text-muted hover:text-foreground border border-border hover:border-subtle rounded-md px-2 py-1 transition-colors"
           >
             <LinkIcon className="size-3.5" />
             Link conversation
           </button>
           {mergeOpen && (
-            <div className="absolute right-0 top-full mt-1 w-64 bg-[#1C1C1C] border border-[#2A2A2A] rounded-lg shadow-[var(--shadow-elevated)] z-10 p-1">
-              <p className="text-[11px] text-[#71757D] px-2 py-1.5">Merge another conversation into {lead.company}:</p>
+            <div className="absolute right-0 top-full mt-1 w-64 bg-surface border border-border rounded-lg shadow-[var(--shadow-elevated)] z-10 p-1">
+              <p className="text-[11px] text-subtle px-2 py-1.5">Merge another conversation into {lead.company}:</p>
               <div className="max-h-48 overflow-y-auto">
                 {otherConvos.length === 0 && (
-                  <p className="text-[12px] text-[#71757D] px-2 py-2">No other conversations.</p>
+                  <p className="text-[12px] text-subtle px-2 py-2">No other conversations.</p>
                 )}
                 {otherConvos.map((c) => (
                   <button
@@ -240,10 +240,10 @@ function ThreadPane({
                       onMerge(lead.id, c.id);
                       setMergeOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 text-left px-2 py-1.5 rounded-md hover:bg-[#222222] transition-colors"
+                    className="w-full flex items-center gap-2 text-left px-2 py-1.5 rounded-md hover:bg-surface-raised transition-colors"
                   >
                     <ChannelTag channel={c.channel} />
-                    <span className="text-[13px] text-[#E5E5EA] truncate">{c.company}</span>
+                    <span className="text-[13px] text-foreground truncate">{c.company}</span>
                   </button>
                 ))}
               </div>
@@ -254,7 +254,7 @@ function ThreadPane({
 
       {/* Channel sub-tabs (only when more than one channel is present) */}
       {channelsPresent.length > 1 && (
-        <div className="flex items-center gap-1 px-3 py-2 border-b border-[#222222]">
+        <div className="flex items-center gap-1 px-3 py-2 border-b border-surface-raised">
           <SubTab label={`All (${thread.length})`} active={activeFilter === "all"} onClick={() => setFilter("all")} />
           {channelsPresent.map((c) => (
             <SubTab
@@ -274,13 +274,13 @@ function ThreadPane({
             <div className="max-w-[78%]">
               <div className="flex items-center gap-1.5 mb-1">
                 <ChannelTag channel={m.channel} />
-                <span className="text-[11px] text-[#71757D]">{timeShort(m.created_at)}</span>
+                <span className="text-[11px] text-subtle">{timeShort(m.created_at)}</span>
               </div>
               <div
                 className={`rounded-lg px-3 py-2 text-[14px] leading-relaxed ${
                   m.direction === "outbound"
-                    ? "bg-[#E5E5EA] text-[#0C0C0C]"
-                    : "bg-[#1C1C1C] text-[#E5E5EA] border border-[#2A2A2A]"
+                    ? "bg-foreground text-background"
+                    : "bg-surface text-foreground border border-border"
                 }`}
               >
                 {m.subject && <p className="font-semibold mb-0.5">{m.subject}</p>}
@@ -292,13 +292,13 @@ function ThreadPane({
       </div>
 
       {/* Inline reply — channel is determined by the thread you're viewing */}
-      <div className="border-t border-[#222222] p-3">
+      <div className="border-t border-surface-raised p-3">
         <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-[#71757D]">
+          <span className="inline-flex items-center gap-1.5 text-[12px] text-subtle">
             Replying via
             <ChannelTag channel={replyChannel} />
           </span>
-          {isManual && <span className="text-[11px] text-[#F5A623]">no API — logs as a manual message</span>}
+          {isManual && <span className="text-[11px] text-warning">no API — logs as a manual message</span>}
         </div>
         <div className="flex items-end gap-2">
           <textarea
@@ -313,7 +313,7 @@ function ThreadPane({
           <button
             onClick={submit}
             disabled={!body.trim() || !canSend}
-            className="shrink-0 size-9 rounded-lg bg-[#E5E5EA] text-[#0C0C0C] flex items-center justify-center hover:bg-white disabled:opacity-30 transition-colors"
+            className="shrink-0 size-9 rounded-lg bg-foreground text-background flex items-center justify-center hover:bg-white disabled:opacity-30 transition-colors"
           >
             <PaperAirplaneIcon className="size-4" />
           </button>
@@ -338,7 +338,7 @@ function SubTab({
     <button
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 text-[12px] px-2.5 py-1 rounded-full transition-colors ${
-        active ? "bg-[#E5E5EA] text-[#0C0C0C] font-medium" : "text-[#9CA3AF] hover:bg-[#1C1C1C]"
+        active ? "bg-foreground text-background font-medium" : "text-muted hover:bg-surface"
       }`}
     >
       {color && <span className="size-1.5 rounded-full" style={{ background: color }} />}
@@ -367,17 +367,17 @@ function ContextPane({
   const overdue = (t: LeadTask) => !t.completed_at && new Date(t.due_at) < new Date(`${MOCK_TODAY}T23:59:59Z`);
 
   return (
-    <div className="border-l border-[#222222] overflow-y-auto p-3 space-y-4">
+    <div className="border-l border-surface-raised overflow-y-auto p-3 space-y-4">
       {/* Temperature */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">Temperature</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-1.5">Temperature</p>
         <div className="flex flex-wrap gap-1">
           {TEMPS.map((t) => (
             <button
               key={t}
               onClick={() => onSetTemperature(lead.id, t)}
               className={`inline-flex items-center gap-1 text-[12px] px-2 py-1 rounded-full border transition-colors ${
-                lead.temperature === t ? "font-semibold" : "border-[#2A2A2A] text-[#9CA3AF] hover:border-[#3A3A3A]"
+                lead.temperature === t ? "font-semibold" : "border-border text-muted hover:border-subtle"
               }`}
               style={
                 lead.temperature === t
@@ -394,7 +394,7 @@ function ContextPane({
 
       {/* Notes */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">Notes</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-1.5">Notes</p>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -406,7 +406,7 @@ function ContextPane({
 
       {/* Tasks */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5">Tasks</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-1.5">Tasks</p>
         <div className="space-y-1.5">
           {tasks.map((t) => (
             <button
@@ -417,16 +417,16 @@ function ContextPane({
               {t.completed_at ? (
                 <CheckCircleSolid className="size-4 text-[#25D366] shrink-0 mt-0.5" />
               ) : (
-                <CheckCircleIcon className="size-4 text-[#71757D] group-hover:text-[#9CA3AF] shrink-0 mt-0.5" />
+                <CheckCircleIcon className="size-4 text-subtle group-hover:text-muted shrink-0 mt-0.5" />
               )}
               <span className="flex-1">
                 <span
-                  className={`text-[13px] ${t.completed_at ? "line-through text-[#71757D]" : "text-[#E5E5EA]"}`}
+                  className={`text-[13px] ${t.completed_at ? "line-through text-subtle" : "text-foreground"}`}
                 >
                   {t.title}
                 </span>
                 <span
-                  className={`block text-[11px] ${overdue(t) ? "text-[#F97066] font-semibold" : "text-[#71757D]"}`}
+                  className={`block text-[11px] ${overdue(t) ? "text-[#F97066] font-semibold" : "text-subtle"}`}
                 >
                   {overdue(t) ? "overdue · " : ""}
                   {timeShort(t.due_at)}
@@ -434,7 +434,7 @@ function ContextPane({
               </span>
             </button>
           ))}
-          {tasks.length === 0 && <p className="text-[12px] text-[#71757D]">No tasks</p>}
+          {tasks.length === 0 && <p className="text-[12px] text-subtle">No tasks</p>}
         </div>
         <div className="flex items-center gap-1.5 mt-2">
           <input
@@ -447,7 +447,7 @@ function ContextPane({
               }
             }}
             placeholder="Add task…"
-            className="flex-1 bg-[#1C1C1C] border border-[#2A2A2A] rounded-md text-[12px] text-[#E5E5EA] px-2 py-1.5 focus:outline-none placeholder:text-[#71757D]"
+            className="flex-1 bg-surface border border-border rounded-md text-[12px] text-foreground px-2 py-1.5 focus:outline-none placeholder:text-subtle"
           />
           <button
             onClick={() => {
@@ -456,7 +456,7 @@ function ContextPane({
                 setNewTask("");
               }
             }}
-            className="shrink-0 size-7 rounded-md bg-[#1C1C1C] border border-[#2A2A2A] text-[#9CA3AF] flex items-center justify-center hover:border-[#3A3A3A]"
+            className="shrink-0 size-7 rounded-md bg-surface border border-border text-muted flex items-center justify-center hover:border-subtle"
           >
             <PlusIcon className="size-3.5" />
           </button>

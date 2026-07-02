@@ -117,9 +117,9 @@ export default function OnboardingDetailPage({ params }: { params: Promise<{ id:
     router.push("/tools/onboarding");
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
-  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>);
-  if (notFound || !o) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D] mb-3">Onboarding not found.</p><Link href="/tools/onboarding" className="text-[12px] uppercase tracking-wider text-sky-300">← Back</Link></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>);
+  if (notFound || !o) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle mb-3">Onboarding not found.</p><Link href="/tools/onboarding" className="text-[12px] uppercase tracking-wider text-sky-300">← Back</Link></div></div>);
 
   const pct = completionPct(o);
 
@@ -127,7 +127,7 @@ export default function OnboardingDetailPage({ params }: { params: Promise<{ id:
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <Link href="/tools/onboarding" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] mb-3">
+          <Link href="/tools/onboarding" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground mb-3">
             <ArrowLeftIcon className="size-3.5" />
             All onboardings
           </Link>
@@ -135,12 +135,12 @@ export default function OnboardingDetailPage({ params }: { params: Promise<{ id:
             <div className="size-8 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-[0_8px_24px_rgba(14,165,233,0.3)] shrink-0">
               <SparklesIcon className="size-4 text-white" />
             </div>
-            <input value={o.client_name} onChange={(e) => patch({ client_name: e.target.value })} className="text-2xl font-semibold text-[#E5E5EA] bg-transparent border-none outline-none focus:ring-0 min-w-0 flex-1" placeholder="Client name" />
+            <input value={o.client_name} onChange={(e) => patch({ client_name: e.target.value })} className="text-2xl font-semibold text-foreground bg-transparent border-none outline-none focus:ring-0 min-w-0 flex-1" placeholder="Client name" />
             <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${STATUS_TINT[o.status]}`}>
               {STATUS_LABEL[o.status]}
             </span>
           </div>
-          <div className="text-[12px] text-[#71757D]">
+          <div className="text-[12px] text-subtle">
             Day {dayNumber(o)} · {pct}% done · {saving ? "Saving…" : savedAt ? `Saved ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Loaded"}
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function OnboardingDetailPage({ params }: { params: Promise<{ id:
           <select value={o.status} onChange={(e) => patch({ status: e.target.value as OnboardingStatus })} className={`${inputClass} w-auto`}>
             {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
-          <button onClick={deleteOnboarding} className="p-1.5 rounded-md text-[#71757D] hover:text-rose-400"><TrashIcon className="size-4" /></button>
+          <button onClick={deleteOnboarding} className="p-1.5 rounded-md text-subtle hover:text-rose-400"><TrashIcon className="size-4" /></button>
         </div>
       </div>
 
@@ -158,20 +158,20 @@ export default function OnboardingDetailPage({ params }: { params: Promise<{ id:
           <div className="text-[10px] uppercase tracking-wider text-sky-300 font-semibold">Progress</div>
           <div className="text-[11px] font-mono text-sky-200">{o.items.filter((i) => i.done_at).length} / {o.items.length}</div>
         </div>
-        <div className="h-2 bg-[#1A1A1A] rounded-full overflow-hidden">
+        <div className="h-2 bg-surface rounded-full overflow-hidden">
           <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
         </div>
       </div>
 
       {/* Meta */}
-      <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] grid grid-cols-1 md:grid-cols-2 gap-3">
         <div><label className={labelClass}>CSM</label><input value={o.csm_name} onChange={(e) => patch({ csm_name: e.target.value })} className={inputClass} /></div>
         <div><label className={labelClass}>Strategist</label><input value={o.strategist_name} onChange={(e) => patch({ strategist_name: e.target.value })} className={inputClass} /></div>
       </div>
 
       {/* Checklist */}
-      <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5">
-        <h2 className="text-sm font-semibold text-[#E5E5EA] mb-4">Checklist</h2>
+      <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Checklist</h2>
         <ul className="space-y-2">
           {o.items
             .slice()
@@ -186,14 +186,14 @@ export default function OnboardingDetailPage({ params }: { params: Promise<{ id:
               />
             ))}
         </ul>
-        <button onClick={addItem} className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]">
+        <button onClick={addItem} className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised">
           <PlusIcon className="size-3.5" /> Add item
         </button>
       </div>
 
       {/* Notes */}
-      <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04]">
-        <h2 className="text-sm font-semibold text-[#E5E5EA] mb-3">Notes</h2>
+      <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]">
+        <h2 className="text-sm font-semibold text-foreground mb-3">Notes</h2>
         <textarea value={o.notes} onChange={(e) => patch({ notes: e.target.value })} rows={4} className={`${textareaClass} font-mono text-[13px]`} placeholder="Context, intel, anything specific to this onboarding." />
       </div>
     </div>
@@ -223,16 +223,16 @@ function ChecklistRow({
           {item.done_at && <CheckIcon className="size-3.5" />}
         </button>
         <button onClick={() => setExpanded((v) => !v)} className="flex-1 min-w-0 text-left">
-          <div className={`text-[13px] ${item.done_at ? "text-[#71757D] line-through" : "text-[#E5E5EA]"}`}>
+          <div className={`text-[13px] ${item.done_at ? "text-subtle line-through" : "text-foreground"}`}>
             {item.title || "Untitled"}
           </div>
-          <div className="text-[10px] uppercase tracking-wider text-[#71757D] mt-0.5 flex items-center gap-2">
+          <div className="text-[10px] uppercase tracking-wider text-subtle mt-0.5 flex items-center gap-2">
             <span className="inline-flex items-center gap-1"><UserIcon className="size-3" /> {OWNER_LABEL[item.owner_role]}</span>
             <span>· Due day {item.due_offset_days}</span>
             {item.done_at && <span className="text-emerald-300">· done {new Date(item.done_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>}
           </div>
         </button>
-        <button onClick={onDelete} className="p-1 text-[#71757D] hover:text-rose-400" title="Delete"><TrashIcon className="size-3.5" /></button>
+        <button onClick={onDelete} className="p-1 text-subtle hover:text-rose-400" title="Delete"><TrashIcon className="size-3.5" /></button>
       </div>
       {expanded && (
         <div className="mt-3 ml-8 space-y-2">

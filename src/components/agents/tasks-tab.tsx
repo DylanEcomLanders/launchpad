@@ -29,9 +29,9 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
   }, [tasks, filter, sort]);
 
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
+    <div className="rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[#2A2A2A] p-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
         <div className="flex gap-1">
           {STATUS_FILTERS.map((s) => {
             const label = s.key === "ALL" ? "All" : TASK_STATUS_META[s.key].label;
@@ -41,7 +41,7 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
                 key={s.key}
                 onClick={() => setFilter(s.key)}
                 className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
-                  active ? "bg-white text-[#0C0C0C]" : "text-[#71757D] hover:text-[#E5E5EA]"
+                  active ? "bg-white text-background" : "text-subtle hover:text-foreground"
                 }`}
               >
                 {label}
@@ -49,12 +49,12 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
             );
           })}
         </div>
-        <div className="ml-auto flex items-center gap-2 text-[11px] text-[#71757D]">
+        <div className="ml-auto flex items-center gap-2 text-[11px] text-subtle">
           <span>Sort:</span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] focus:outline-none focus:border-white"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] focus:outline-none focus:border-white"
           >
             <option value="date-desc">Newest first</option>
             <option value="date-asc">Oldest first</option>
@@ -65,13 +65,13 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
 
       {/* Empty state */}
       {visible.length === 0 ? (
-        <div className="p-12 text-center text-sm text-[#71757D]">
+        <div className="p-12 text-center text-sm text-subtle">
           {tasks.length === 0
             ? `${agent.name} hasn't run any tasks yet.`
             : "No tasks match this filter."}
         </div>
       ) : (
-        <ul className="divide-y divide-[#333333]">
+        <ul className="divide-y divide-border">
           {visible.map((task) => {
             const meta = TASK_STATUS_META[task.status];
             const isOpen = open === task.id;
@@ -79,7 +79,7 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
               <li key={task.id}>
                 <button
                   onClick={() => setOpen(isOpen ? null : task.id)}
-                  className="grid w-full grid-cols-[110px_1fr_120px_60px] items-center gap-3 px-4 py-2.5 text-left hover:bg-[#0C0C0C] transition-colors"
+                  className="grid w-full grid-cols-[110px_1fr_120px_60px] items-center gap-3 px-4 py-2.5 text-left hover:bg-background transition-colors"
                 >
                   <span
                     className="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
@@ -87,8 +87,8 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
                   >
                     {meta.label}
                   </span>
-                  <span className="truncate text-sm text-[#E5E5EA]">{task.input}</span>
-                  <span className="text-[11px] tabular-nums text-[#71757D]">
+                  <span className="truncate text-sm text-foreground">{task.input}</span>
+                  <span className="text-[11px] tabular-nums text-subtle">
                     {new Date(task.startedAt).toLocaleString("en-GB", {
                       day: "2-digit",
                       month: "short",
@@ -96,12 +96,12 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
                       minute: "2-digit",
                     })}
                   </span>
-                  <span className="text-[11px] tabular-nums text-[#71757D] text-right">
+                  <span className="text-[11px] tabular-nums text-subtle text-right">
                     {durationLabel(task)}
                   </span>
                 </button>
                 {isOpen && (
-                  <div className="border-t border-[#2A2A2A] bg-[#0C0C0C] px-4 py-3 space-y-2">
+                  <div className="border-t border-border bg-background px-4 py-3 space-y-2">
                     <DetailRow label="Input"  value={task.input} />
                     <DetailRow label="Output" value={task.output || "—"} />
                     <DetailRow label="By"     value={task.triggeredBy} mono />
@@ -121,8 +121,8 @@ export function TasksTab({ tasks, agent }: { tasks: AgentTask[]; agent: Agent })
 function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="grid grid-cols-[80px_1fr] gap-3 text-xs">
-      <span className="font-semibold uppercase tracking-wider text-[#71757D]">{label}</span>
-      <span className={mono ? "font-mono text-[#E5E5EA]" : "text-[#E5E5EA] whitespace-pre-wrap"}>{value}</span>
+      <span className="font-semibold uppercase tracking-wider text-subtle">{label}</span>
+      <span className={mono ? "font-mono text-foreground" : "text-foreground whitespace-pre-wrap"}>{value}</span>
     </div>
   );
 }

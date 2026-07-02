@@ -84,7 +84,7 @@ export default function PodsPanel() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="h-64 bg-[#0F0F10] rounded-2xl animate-pulse" />
+          <div key={i} className="h-64 bg-background rounded-2xl animate-pulse" />
         ))}
       </div>
     );
@@ -126,12 +126,12 @@ export default function PodsPanel() {
       )}
 
       <div className="flex items-center justify-between">
-        <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+        <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
           {pods.length} pod{pods.length === 1 ? "" : "s"}
         </div>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
         >
           <PlusIcon className="size-3.5" />
           New pod
@@ -139,10 +139,10 @@ export default function PodsPanel() {
       </div>
 
       {pods.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-12 text-center">
-          <UserGroupIcon className="size-8 text-[#71757D] mx-auto mb-3" />
-          <p className="text-sm text-[#E5E5EA] mb-1">No pods yet.</p>
-          <p className="text-[12px] text-[#71757D]">
+        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-12 text-center">
+          <UserGroupIcon className="size-8 text-subtle mx-auto mb-3" />
+          <p className="text-sm text-foreground mb-1">No pods yet.</p>
+          <p className="text-[12px] text-subtle">
             Create your first pod above. Slot Persons from /company/people into Strategist / Designer / Developer / Copy roles. Kanban + KPIs read from here.
           </p>
         </div>
@@ -159,8 +159,8 @@ export default function PodsPanel() {
         </div>
       )}
 
-      <p className="text-[11px] text-[#71757D] italic">
-        Pods defined here are the canonical roster. Kanban project assignment + KPI attribution + retention CSM all read from this. Renames in <Link href="/company/people" className="text-[#E5E5EA] hover:underline">/company/people</Link> propagate to every slot below.
+      <p className="text-[11px] text-subtle italic">
+        Pods defined here are the canonical roster. Kanban project assignment + KPI attribution + retention CSM all read from this. Renames in <Link href="/company/people" className="text-foreground hover:underline">/company/people</Link> propagate to every slot below.
       </p>
     </div>
   );
@@ -196,7 +196,7 @@ function PodCard({
   }
 
   return (
-    <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
       {/* Header */}
       <div className="p-5 pb-3 border-b border-white/[0.04]">
         {editingIdentity ? (
@@ -221,7 +221,7 @@ function PodCard({
                   setTaglineDraft(pod.tagline);
                   setEditingIdentity(false);
                 }}
-                className="p-1 rounded text-[#71757D] hover:text-[#E5E5EA]"
+                className="p-1 rounded text-subtle hover:text-foreground"
               >
                 <XMarkIcon className="size-3.5" />
               </button>
@@ -237,24 +237,24 @@ function PodCard({
           <div className="flex items-start justify-between gap-2 group">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <UserGroupIcon className="size-4 text-[#71757D] shrink-0" />
-                <h3 className="text-base font-semibold text-[#E5E5EA] truncate">{pod.name}</h3>
+                <UserGroupIcon className="size-4 text-subtle shrink-0" />
+                <h3 className="text-base font-semibold text-foreground truncate">{pod.name}</h3>
               </div>
               {pod.tagline && (
-                <p className="text-[12px] text-[#71757D] mt-0.5 truncate">{pod.tagline}</p>
+                <p className="text-[12px] text-subtle mt-0.5 truncate">{pod.tagline}</p>
               )}
             </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() => setEditingIdentity(true)}
-                className="p-1 rounded text-[#71757D] hover:text-[#E5E5EA]"
+                className="p-1 rounded text-subtle hover:text-foreground"
                 title="Rename"
               >
                 <PencilSquareIcon className="size-3.5" />
               </button>
               <button
                 onClick={onDelete}
-                className="p-1 rounded text-[#71757D] hover:text-rose-400"
+                className="p-1 rounded text-subtle hover:text-rose-400"
                 title="Delete pod"
               >
                 <TrashIcon className="size-3.5" />
@@ -267,7 +267,7 @@ function PodCard({
       {/* Slots */}
       <div className="p-5 space-y-2">
         {sortedMembers.length === 0 ? (
-          <p className="text-[12px] italic text-[#71757D]">No slots yet.</p>
+          <p className="text-[12px] italic text-subtle">No slots yet.</p>
         ) : (
           sortedMembers.map((member) => (
             <SlotRow key={member.id} member={member} onChange={onChange} />
@@ -276,7 +276,7 @@ function PodCard({
 
         {/* Add-slot row */}
         <details className="pt-2">
-          <summary className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] cursor-pointer inline-flex items-center gap-1">
+          <summary className="text-[10px] uppercase tracking-wider text-subtle hover:text-foreground cursor-pointer inline-flex items-center gap-1">
             <PlusIcon className="size-3" />
             Add slot
           </summary>
@@ -285,7 +285,7 @@ function PodCard({
               <button
                 key={role}
                 onClick={() => handleAddSlot(role)}
-                className="px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222] hover:text-[#E5E5EA]"
+                className="px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-foreground"
               >
                 + {ROLE_LABEL[role]}
               </button>
@@ -358,7 +358,7 @@ function SlotRow({
       <select
         value={member.role}
         onChange={(e) => handleRoleChange(e.target.value as PodMemberRole)}
-        className="h-8 px-2 pr-7 rounded-md bg-[#0F0F10] ring-1 ring-white/[0.04] text-[11px] uppercase tracking-wider text-[#9CA3AF] focus:outline-none focus:ring-white/[0.12] w-32 shrink-0 cursor-pointer"
+        className="h-8 px-2 pr-7 rounded-md bg-background ring-1 ring-white/[0.04] text-[11px] uppercase tracking-wider text-muted focus:outline-none focus:ring-white/[0.12] w-32 shrink-0 cursor-pointer"
       >
         {ROLE_ORDER.map((r) => (
           <option key={r} value={r}>
@@ -376,7 +376,7 @@ function SlotRow({
       </div>
       <button
         onClick={handleRemove}
-        className="p-1 text-[#71757D] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="p-1 text-subtle hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
         title="Remove slot"
       >
         <TrashIcon className="size-3.5" />

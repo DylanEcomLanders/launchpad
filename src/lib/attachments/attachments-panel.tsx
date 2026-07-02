@@ -47,7 +47,7 @@ const TYPE_TINT: Record<AttachmentTargetType, string> = {
   ab_test: "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-500/30",
   test_win: "bg-emerald-500/25 text-emerald-100 ring-1 ring-emerald-500/40",
   case_study: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
-  external: "bg-[#222222] text-[#9CA3AF] ring-1 ring-white/[0.08]",
+  external: "bg-surface-raised text-muted ring-1 ring-white/[0.08]",
 };
 
 const TYPE_LABEL_SHORT: Record<AttachmentTargetType, string> = {
@@ -136,13 +136,13 @@ export function AttachmentsPanel({
   return (
     <div className={`${className ?? ""}`}>
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-subtle font-semibold">
           <PaperClipIcon className="size-3.5" />
           Attachments ({rows.length})
         </div>
         <button
           onClick={() => setPickerOpen(true)}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider bg-[#1A1A1A] text-[#9CA3AF] hover:text-[#E5E5EA] hover:bg-[#222222]"
+          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider bg-surface text-muted hover:text-foreground hover:bg-surface-raised"
         >
           <PlusIcon className="size-3" />
           Attach
@@ -150,9 +150,9 @@ export function AttachmentsPanel({
       </div>
 
       {!hydrated ? (
-        <div className="space-y-1.5">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-10 bg-[#0C0C0C] rounded-md animate-pulse" />)}</div>
+        <div className="space-y-1.5">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-10 bg-background rounded-md animate-pulse" />)}</div>
       ) : rows.length === 0 ? (
-        <p className="text-[11px] italic text-[#71757D]">No attachments yet.</p>
+        <p className="text-[11px] italic text-subtle">No attachments yet.</p>
       ) : (
         <ul className="space-y-1.5">
           {rows.map((r) => (
@@ -195,28 +195,28 @@ function AttachmentRow({
           {TYPE_LABEL_SHORT[attachment.target_type]}
         </span>
         {attachment.target_type === "external" ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 text-[12px] text-[#E5E5EA] hover:text-emerald-300 truncate inline-flex items-center gap-1">
-            <LinkIcon className="size-3 text-[#71757D] shrink-0" />
+          <a href={href} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 text-[12px] text-foreground hover:text-emerald-300 truncate inline-flex items-center gap-1">
+            <LinkIcon className="size-3 text-subtle shrink-0" />
             {title}
           </a>
         ) : (
-          <Link href={href} className="flex-1 min-w-0 text-[12px] text-[#E5E5EA] hover:text-emerald-300 truncate">
+          <Link href={href} className="flex-1 min-w-0 text-[12px] text-foreground hover:text-emerald-300 truncate">
             {title}
           </Link>
         )}
-        {subtitle && <span className="hidden md:inline text-[11px] text-[#71757D] truncate max-w-[150px]">{subtitle}</span>}
+        {subtitle && <span className="hidden md:inline text-[11px] text-subtle truncate max-w-[150px]">{subtitle}</span>}
         <a
           href={href}
           target={attachment.target_type === "external" ? "_blank" : undefined}
           rel={attachment.target_type === "external" ? "noopener noreferrer" : undefined}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-[#E5E5EA] shrink-0"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-subtle hover:text-foreground shrink-0"
           title="Open"
         >
           <ArrowTopRightOnSquareIcon className="size-3.5" />
         </a>
         <button
           onClick={onRemove}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-rose-400 shrink-0"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-subtle hover:text-rose-400 shrink-0"
           title="Remove attachment"
         >
           <TrashIcon className="size-3.5" />
@@ -247,11 +247,11 @@ function AttachmentRow({
           />
         </div>
       ) : attachment.note ? (
-        <button onClick={() => setEditingNote(true)} className="block w-full text-left mt-1 text-[11px] text-[#9CA3AF] hover:text-[#E5E5EA]">
+        <button onClick={() => setEditingNote(true)} className="block w-full text-left mt-1 text-[11px] text-muted hover:text-foreground">
           {attachment.note}
         </button>
       ) : (
-        <button onClick={() => setEditingNote(true)} className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] italic text-[#71757D] hover:text-[#9CA3AF] mt-1">
+        <button onClick={() => setEditingNote(true)} className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] italic text-subtle hover:text-muted mt-1">
           + add note
         </button>
       )}
@@ -303,21 +303,21 @@ function AttachmentPicker({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] w-full max-w-2xl mt-16 max-h-[80vh] flex flex-col overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+      <div onClick={(e) => e.stopPropagation()} className="bg-background rounded-2xl ring-1 ring-white/[0.08] w-full max-w-2xl mt-16 max-h-[80vh] flex flex-col overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
         <div className="flex items-center justify-between p-4 border-b border-white/[0.04]">
-          <div className="text-sm font-semibold text-[#E5E5EA]">Attach artefact</div>
-          <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]"><XMarkIcon className="size-5" /></button>
+          <div className="text-sm font-semibold text-foreground">Attach artefact</div>
+          <button onClick={onClose} className="text-subtle hover:text-foreground"><XMarkIcon className="size-5" /></button>
         </div>
 
         {/* Mode toggle */}
         <div className="px-4 pt-3 flex items-center gap-1.5">
-          <button onClick={() => setExtMode(false)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider ${!extMode ? "bg-white text-[#0C0C0C]" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>Launchpad artefact</button>
-          <button onClick={() => setExtMode(true)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider ${extMode ? "bg-white text-[#0C0C0C]" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>External link</button>
+          <button onClick={() => setExtMode(false)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider ${!extMode ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>Launchpad artefact</button>
+          <button onClick={() => setExtMode(true)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider ${extMode ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>External link</button>
         </div>
 
         {extMode ? (
           <div className="p-4 space-y-3">
-            <p className="text-[12px] text-[#9CA3AF]">For URLs outside Launchpad (Figma, Notion, Google Docs, anything).</p>
+            <p className="text-[12px] text-muted">For URLs outside Launchpad (Figma, Notion, Google Docs, anything).</p>
             <input
               value={extUrl}
               onChange={(e) => setExtUrl(e.target.value)}
@@ -339,7 +339,7 @@ function AttachmentPicker({
                   onPickExternal(u, extTitle.trim());
                 }}
                 disabled={!extUrl.trim()}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40"
               >
                 Attach link
               </button>
@@ -349,22 +349,22 @@ function AttachmentPicker({
           <>
             <div className="p-4 space-y-3 border-b border-white/[0.04]">
               <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D]" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search every artefact…" className="w-full pl-9 pr-3 py-2 rounded-md bg-black/40 ring-1 ring-white/[0.06] text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-emerald-500/40" autoFocus />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search every artefact…" className="w-full pl-9 pr-3 py-2 rounded-md bg-black/40 ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40" autoFocus />
               </div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <button onClick={() => setTypeFilter("all")} className={`px-2.5 py-1 rounded text-[10px] uppercase tracking-wider ${typeFilter === "all" ? "bg-white text-[#0C0C0C]" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>All</button>
+                <button onClick={() => setTypeFilter("all")} className={`px-2.5 py-1 rounded text-[10px] uppercase tracking-wider ${typeFilter === "all" ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>All</button>
                 {allTypes.map((t) => (
-                  <button key={t} onClick={() => setTypeFilter(t)} className={`px-2.5 py-1 rounded text-[10px] uppercase tracking-wider ${typeFilter === t ? "bg-white text-[#0C0C0C]" : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"}`}>{artefactLabel(t)}</button>
+                  <button key={t} onClick={() => setTypeFilter(t)} className={`px-2.5 py-1 rounded text-[10px] uppercase tracking-wider ${typeFilter === t ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>{artefactLabel(t)}</button>
                 ))}
               </div>
             </div>
 
             <div className="overflow-y-auto flex-1 p-2">
               {loading ? (
-                <div className="space-y-1.5 p-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-14 bg-[#0C0C0C] rounded-md animate-pulse" />)}</div>
+                <div className="space-y-1.5 p-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-14 bg-background rounded-md animate-pulse" />)}</div>
               ) : filtered.length === 0 ? (
-                <div className="p-8 text-center text-[12px] text-[#71757D]">No artefacts match.</div>
+                <div className="p-8 text-center text-[12px] text-subtle">No artefacts match.</div>
               ) : (
                 <ul>
                   {filtered.map((a) => (
@@ -372,10 +372,10 @@ function AttachmentPicker({
                       <button onClick={() => onPickInternal(a)} className="w-full text-left flex items-center gap-3 p-3 rounded-md hover:bg-white/[0.04] transition-colors">
                         <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold shrink-0 ${TYPE_TINT[a.type]}`}>{TYPE_LABEL_SHORT[a.type]}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[13px] text-[#E5E5EA] truncate">{a.title}</div>
-                          {a.subtitle && <div className="text-[11px] text-[#71757D] truncate">{a.subtitle}</div>}
+                          <div className="text-[13px] text-foreground truncate">{a.title}</div>
+                          {a.subtitle && <div className="text-[11px] text-subtle truncate">{a.subtitle}</div>}
                         </div>
-                        <span className="text-[10px] text-[#71757D] shrink-0">{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                        <span className="text-[10px] text-subtle shrink-0">{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
                       </button>
                     </li>
                   ))}

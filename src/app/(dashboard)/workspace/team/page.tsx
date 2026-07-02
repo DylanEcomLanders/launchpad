@@ -132,10 +132,10 @@ export default function WorkspaceTeamAccess() {
       <BackLink />
 
       <div>
-        <h1 className="font-heading text-2xl font-semibold text-[#E5E5EA]">
+        <h1 className="font-heading text-2xl font-semibold text-foreground">
           Team access
         </h1>
-        <p className="mt-1 text-sm text-[#9CA3AF]">
+        <p className="mt-1 text-sm text-muted">
           Invite people to sign in with their own email. Only listed emails can
           get a magic link, and every action they take is logged under their name.
         </p>
@@ -145,15 +145,15 @@ export default function WorkspaceTeamAccess() {
         {/* People list */}
         <section>
           <SectionTitle
-            action={<span className="text-xs text-[#71757D]">{users.length}</span>}
+            action={<span className="text-xs text-subtle">{users.length}</span>}
           >
             People
           </SectionTitle>
           <Card className="divide-y divide-slate-100">
             {loading ? (
-              <div className="px-5 py-8 text-center text-sm text-[#71757D]">Loading…</div>
+              <div className="px-5 py-8 text-center text-sm text-subtle">Loading…</div>
             ) : users.length === 0 ? (
-              <div className="px-5 py-8 text-center text-sm text-[#71757D]">
+              <div className="px-5 py-8 text-center text-sm text-subtle">
                 No one invited yet.
               </div>
             ) : (
@@ -163,7 +163,7 @@ export default function WorkspaceTeamAccess() {
                   <div key={u.id} className="flex items-center gap-3 px-5 py-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${u.active ? "text-[#E5E5EA]" : "text-[#71757D] line-through"}`}>
+                        <span className={`text-sm font-medium ${u.active ? "text-foreground" : "text-subtle line-through"}`}>
                           {u.name}
                         </span>
                         {u.auth_id ? (
@@ -172,7 +172,7 @@ export default function WorkspaceTeamAccess() {
                           <Pill tone="amber">Invited</Pill>
                         )}
                       </div>
-                      <div className="mt-0.5 truncate text-xs text-[#71757D]">
+                      <div className="mt-0.5 truncate text-xs text-subtle">
                         {u.email}
                         {linked && ` · ${linked.name} (${linked.podName})`}
                       </div>
@@ -183,7 +183,7 @@ export default function WorkspaceTeamAccess() {
                       value={u.role}
                       onChange={(e) => changeRole(u, e.target.value as AppUserRole)}
                       disabled={busy}
-                      className="shrink-0 rounded-md border border-[#2A2A2A] bg-black/40 px-2 py-1 text-xs text-[#E5E5EA] outline-none focus:border-[#383838] disabled:opacity-50"
+                      className="shrink-0 rounded-md border border-border bg-black/40 px-2 py-1 text-xs text-foreground outline-none focus:border-border disabled:opacity-50"
                       title="Access level"
                     >
                       <option value="team">Member</option>
@@ -195,7 +195,7 @@ export default function WorkspaceTeamAccess() {
                       disabled={busy}
                       className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
                         u.active
-                          ? "text-[#71757D] hover:text-rose-600"
+                          ? "text-subtle hover:text-rose-600"
                           : "text-emerald-600 hover:text-emerald-700"
                       }`}
                     >
@@ -218,7 +218,7 @@ export default function WorkspaceTeamAccess() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Jane Doe"
-                  className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
                 />
               </Field>
               <Field label="Work email">
@@ -227,14 +227,14 @@ export default function WorkspaceTeamAccess() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jane@ecomlanders.com"
-                  className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
                 />
               </Field>
               <Field label="Role">
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as AppUserRole)}
-                  className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
                 >
                   <option value="team">Team</option>
                   <option value="cro">CRO</option>
@@ -245,7 +245,7 @@ export default function WorkspaceTeamAccess() {
                 <select
                   value={podMemberId}
                   onChange={(e) => setPodMemberId(e.target.value)}
-                  className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-border"
                 >
                   <option value="">Not a pod member</option>
                   {members.map((m) => (
@@ -262,10 +262,10 @@ export default function WorkspaceTeamAccess() {
               >
                 {busy ? "Adding…" : "Add to team"}
               </button>
-              {notice && <p className="text-xs text-[#9CA3AF]">{notice}</p>}
+              {notice && <p className="text-xs text-muted">{notice}</p>}
             </form>
           </Card>
-          <p className="mt-3 px-1 text-[11px] leading-relaxed text-[#71757D]">
+          <p className="mt-3 px-1 text-[11px] leading-relaxed text-subtle">
             They&apos;ll sign in at the login screen by entering this email and
             clicking the link we send them. No password to share.
           </p>
@@ -278,7 +278,7 @@ export default function WorkspaceTeamAccess() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
+      <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-subtle">
         {label}
       </span>
       {children}
@@ -290,7 +290,7 @@ function BackLink() {
   return (
     <Link
       href="/workspace"
-      className="inline-flex items-center gap-1 text-sm text-[#9CA3AF] hover:text-[#E5E5EA]"
+      className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
     >
       ← Workspace
     </Link>

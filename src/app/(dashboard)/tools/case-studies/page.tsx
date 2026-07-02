@@ -12,8 +12,8 @@ export default function CaseStudiesPreview() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">Case Studies</h1>
-            <p className="text-xs text-[#71757D] mt-0.5">
+            <h1 className="text-[28px] leading-tight font-bold text-foreground">Case Studies</h1>
+            <p className="text-xs text-subtle mt-0.5">
               Live preview of the client-facing index at /case-studies.
             </p>
           </div>
@@ -21,13 +21,13 @@ export default function CaseStudiesPreview() {
             href="/case-studies"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#0C0C0C] hover:bg-[#E5E5EA] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-medium text-background hover:bg-foreground transition-colors"
           >
             Open external
             <ArrowTopRightOnSquareIcon className="size-3.5" />
           </a>
         </div>
-        <div className="rounded-xl overflow-hidden border border-[#2A2A2A] bg-[#181818]">
+        <div className="rounded-xl overflow-hidden border border-border bg-surface">
           <iframe
             src="/case-studies"
             className="w-full h-[calc(100vh-180px)] bg-white"

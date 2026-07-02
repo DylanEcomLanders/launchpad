@@ -9,7 +9,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="border-b border-[#E8E8E8]">
+      <div className="border-b border-foreground">
         <div className="max-w-3xl mx-auto px-6 py-6">
           <Logo height={18} />
         </div>
@@ -18,7 +18,7 @@ export default function OnboardingPage() {
       <div className="max-w-3xl mx-auto px-6 py-12">
         <div className="mb-12">
           <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome to Ecom Landers</h1>
-          <p className="text-[#777] text-sm">
+          <p className="text-subtle text-sm">
             {role === "cro"
               ? "Everything you need to know about how we work as a CRO strategist."
               : "Everything you need to know about working with us."}
@@ -66,14 +66,14 @@ export default function OnboardingPage() {
           <>
             <Section title="CRO Retainer — How It Works">
               <p>Retainer clients pay a monthly fee for ongoing A/B testing. The amount of tests per week depends on their tier:</p>
-              <div className="border border-[#E5E5EA] rounded-lg overflow-hidden my-4">
-                <div className="grid grid-cols-4 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
+              <div className="border border-foreground rounded-lg overflow-hidden my-4">
+                <div className="grid grid-cols-4 px-4 py-2 bg-surface-raised border-b border-foreground text-[10px] font-semibold uppercase tracking-wider text-muted">
                   <span>Tier</span><span>Tests/Week</span><span>Tests/Month</span><span>Cadence</span>
                 </div>
-                <div className="grid grid-cols-4 px-4 py-3 border-b border-[#F0F0F0] text-xs">
+                <div className="grid grid-cols-4 px-4 py-3 border-b border-foreground text-xs">
                   <span className="font-medium">Foundation</span><span>1</span><span>4</span><span>Weekly</span>
                 </div>
-                <div className="grid grid-cols-4 px-4 py-3 border-b border-[#F0F0F0] text-xs">
+                <div className="grid grid-cols-4 px-4 py-3 border-b border-foreground text-xs">
                   <span className="font-medium">Growth</span><span>2</span><span>8</span><span>Weekly</span>
                 </div>
                 <div className="grid grid-cols-4 px-4 py-3 text-xs">
@@ -92,7 +92,7 @@ export default function OnboardingPage() {
                 <Step num="5" title="Live" desc="Test is running. Monitor for any issues. Don't call it too early — let it reach statistical significance." />
                 <Step num="6" title="Complete" desc="Analyse results. Document the outcome — winner, loser, or inconclusive. Share learnings. Plan the next test." />
               </div>
-              <p className="text-[#777] text-sm italic">Key rule: you should always be one week ahead. While this week's test is live, next week's test should already be in "Scheduled" (designed and ready to go).</p>
+              <p className="text-subtle text-sm italic">Key rule: you should always be one week ahead. While this week's test is live, next week's test should already be in "Scheduled" (designed and ready to go).</p>
             </Section>
 
             <Section title="The Bigger Picture — Testing as a Growth Engine">
@@ -171,7 +171,7 @@ export default function OnboardingPage() {
         {(role === "cro" || !role) && (
           <Section title="Intelligems — How We Use It">
             <p>Intelligems is our A/B testing platform. Every test runs through it. Here&apos;s what you need to know:</p>
-            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Setting Up a Test</h3>
+            <h3 className="text-sm font-bold text-surface mt-4 mb-2">Setting Up a Test</h3>
             <ol>
               <li>Create the experiment in Intelligems — name it clearly (e.g. &quot;Test 4.1 — Hero CTA Copy&quot;)</li>
               <li>Set traffic split (usually 50/50 for two variants)</li>
@@ -179,15 +179,15 @@ export default function OnboardingPage() {
               <li>Set the page targeting — which URLs the test runs on</li>
               <li>QA both variants before going live</li>
             </ol>
-            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Reading Results</h3>
+            <h3 className="text-sm font-bold text-surface mt-4 mb-2">Reading Results</h3>
             <p>The three metrics that matter most:</p>
             <ul>
               <li><strong>CVR (Conversion Rate)</strong> — % of visitors who purchase. The primary metric.</li>
               <li><strong>AOV (Average Order Value)</strong> — how much each buyer spends. Important for price tests.</li>
               <li><strong>RPV (Revenue Per Visitor)</strong> — CVR × AOV. The ultimate metric. A test can lose on CVR but win on RPV if AOV increases enough.</li>
             </ul>
-            <p className="text-[#777] italic mt-2">Never call a test based on CVR alone. RPV tells the full story. A variant that converts 5% less but has 15% higher AOV is often the winner.</p>
-            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Statistical Significance</h3>
+            <p className="text-subtle italic mt-2">Never call a test based on CVR alone. RPV tells the full story. A variant that converts 5% less but has 15% higher AOV is often the winner.</p>
+            <h3 className="text-sm font-bold text-surface mt-4 mb-2">Statistical Significance</h3>
             <p>Don&apos;t call a test until you have enough data. Rules of thumb:</p>
             <ul>
               <li>Minimum 1,000 visitors per variant (ideally 2,000+)</li>
@@ -195,7 +195,7 @@ export default function OnboardingPage() {
               <li>Look for 95%+ confidence before declaring a winner</li>
               <li>If results are flat after 2 weeks with enough traffic, call it inconclusive and move on</li>
             </ul>
-            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Test ID Integration</h3>
+            <h3 className="text-sm font-bold text-surface mt-4 mb-2">Test ID Integration</h3>
             <p>Each test in Intelligems has a unique ID. When you set up a test in our Launchpad portal, paste the Intelligems test ID into the test card. This connects the live metrics directly — CVR, AOV, RPV auto-populate from Intelligems data.</p>
           </Section>
         )}
@@ -226,7 +226,7 @@ export default function OnboardingPage() {
               <li><strong>Food & Beverage</strong> — sensory language. Subscription is the business model. Flavour variety reduces decision paralysis. Social proof from recognisable names converts.</li>
               <li><strong>Fitness / Sports</strong> — outcome-focused. Before/after transformations. Performance data and specifics. Athlete endorsements carry weight.</li>
             </ul>
-            <p className="text-[#777] italic mt-2">The best tests come from understanding the customer&apos;s psychology in that specific niche, not from generic CRO playbooks.</p>
+            <p className="text-subtle italic mt-2">The best tests come from understanding the customer&apos;s psychology in that specific niche, not from generic CRO playbooks.</p>
           </Section>
         )}
 
@@ -311,8 +311,8 @@ export default function OnboardingPage() {
         </Section>
 
         {/* Footer */}
-        <div className="mt-16 pt-8 border-t border-[#E8E8E8]">
-          <p className="text-xs text-[#AAA]">
+        <div className="mt-16 pt-8 border-t border-foreground">
+          <p className="text-xs text-muted">
             Ecom Landers Ltd. · This document is confidential and intended for internal use only.
           </p>
         </div>
@@ -326,8 +326,8 @@ export default function OnboardingPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-12">
-      <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">{title}</h2>
-      <div className="text-sm text-[#555] leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-2 [&_li]:text-sm [&_code]:bg-[#F3F3F5] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono">
+      <h2 className="text-lg font-bold text-surface mb-4">{title}</h2>
+      <div className="text-sm text-subtle leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-2 [&_li]:text-sm [&_code]:bg-surface-raised [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono">
         {children}
       </div>
     </section>
@@ -337,12 +337,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Step({ num, title, desc }: { num: string; title: string; desc: string }) {
   return (
     <div className="flex gap-4">
-      <div className="size-8 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-bold shrink-0">
+      <div className="size-8 rounded-full bg-surface text-white flex items-center justify-center text-xs font-bold shrink-0">
         {num}
       </div>
       <div>
-        <p className="text-sm font-semibold text-[#1A1A1A]">{title}</p>
-        <p className="text-sm text-[#777] mt-0.5">{desc}</p>
+        <p className="text-sm font-semibold text-surface">{title}</p>
+        <p className="text-sm text-subtle mt-0.5">{desc}</p>
       </div>
     </div>
   );
@@ -350,9 +350,9 @@ function Step({ num, title, desc }: { num: string; title: string; desc: string }
 
 function ToolRow({ name, desc }: { name: string; desc: string }) {
   return (
-    <div className="flex items-start gap-3 py-2 border-b border-[#F0F0F0] last:border-0">
-      <span className="text-sm font-semibold text-[#1A1A1A] w-28 shrink-0">{name}</span>
-      <span className="text-sm text-[#777]">{desc}</span>
+    <div className="flex items-start gap-3 py-2 border-b border-foreground last:border-0">
+      <span className="text-sm font-semibold text-surface w-28 shrink-0">{name}</span>
+      <span className="text-sm text-subtle">{desc}</span>
     </div>
   );
 }

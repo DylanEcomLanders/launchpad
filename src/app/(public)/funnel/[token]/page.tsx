@@ -57,31 +57,31 @@ export default async function ClientRoadmapView({
   });
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-surface-raised">
       {/* ── Header ────────────────────────────── */}
-      <header className="bg-white border-b border-[#E5E5EA]">
+      <header className="bg-white border-b border-foreground">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="https://ecomlanders.app"
-              className="text-[#1B1B1B] shrink-0"
+              className="text-foreground shrink-0"
               aria-label="Ecom Landers"
             >
               <Logo height={18} />
             </Link>
-            <div className="h-4 w-px bg-[#E5E5EA] shrink-0" />
+            <div className="h-4 w-px bg-foreground shrink-0" />
             <div className="min-w-0">
               {roadmap.clientName && (
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
                   {roadmap.clientName}
                 </p>
               )}
-              <h1 className="text-base font-semibold text-[#1B1B1B] truncate">
+              <h1 className="text-base font-semibold text-foreground truncate">
                 {roadmap.name || "Funnel roadmap"}
               </h1>
             </div>
           </div>
-          <p className="text-[11px] text-[#A0A0A0] tabular-nums shrink-0">
+          <p className="text-[11px] text-muted tabular-nums shrink-0">
             Updated {updated}
           </p>
         </div>
@@ -91,7 +91,7 @@ export default async function ClientRoadmapView({
         {/* ── Progress summary ────────────────────────── */}
         {total > 0 && (
           <div className="mb-8 flex items-center gap-3 text-[11px] flex-wrap">
-            <span className="font-semibold text-[#1B1B1B]">
+            <span className="font-semibold text-foreground">
               {counts.live} of {total} stages live
             </span>
             {(["planned", "in-build", "live", "optimising"] as const).map(
@@ -117,14 +117,14 @@ export default async function ClientRoadmapView({
         )}
 
         {/* ── Roadmap SVG ──────────────────────────────── */}
-        <div className="bg-white border border-[#E5E5EA] rounded-xl p-6 mb-8">
+        <div className="bg-white border border-foreground rounded-xl p-6 mb-8">
           <RoadmapSVG roadmap={roadmap} />
         </div>
 
         {/* ── Step detail list ─────────────────────────── */}
         {allSteps.length > 0 && (
           <div>
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-3">
               The plan, step by step
             </h2>
             <ol className="space-y-3">
@@ -135,12 +135,12 @@ export default async function ClientRoadmapView({
           </div>
         )}
 
-        <footer className="mt-12 pt-6 border-t border-[#E5E5EA] text-center">
-          <p className="text-[10px] uppercase tracking-wider text-[#A0A0A0]">
+        <footer className="mt-12 pt-6 border-t border-foreground text-center">
+          <p className="text-[10px] uppercase tracking-wider text-muted">
             Built with{" "}
             <Link
               href="https://ecomlanders.app"
-              className="font-semibold text-[#1B1B1B] hover:underline"
+              className="font-semibold text-foreground hover:underline"
             >
               Ecom Landers
             </Link>
@@ -164,7 +164,7 @@ function StepDetailRow({ step, index }: { step: RoadmapStep; index: number }) {
       : "Email sequence";
 
   return (
-    <li className="bg-white border border-[#E5E5EA] rounded-lg p-4 flex items-start gap-4">
+    <li className="bg-white border border-foreground rounded-lg p-4 flex items-start gap-4">
       <div
         className="size-8 rounded-full flex items-center justify-center text-[11px] font-semibold tabular-nums shrink-0"
         style={{ background: status.bg, color: status.text }}
@@ -173,7 +173,7 @@ function StepDetailRow({ step, index }: { step: RoadmapStep; index: number }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap mb-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             {kindLabel}
           </p>
           <span
@@ -187,15 +187,15 @@ function StepDetailRow({ step, index }: { step: RoadmapStep; index: number }) {
             {ROADMAP_STATUS_LABELS[step.status]}
           </span>
         </div>
-        <p className="text-sm font-semibold text-[#1B1B1B]">{label}</p>
+        <p className="text-sm font-semibold text-foreground">{label}</p>
         {step.note && (
-          <p className="mt-1 text-[12px] leading-snug text-[#5A5A5A]">
+          <p className="mt-1 text-[12px] leading-snug text-subtle">
             {step.note}
           </p>
         )}
         {step.kpiTarget && (
-          <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#1B1B1B]">
-            <span className="text-[#A0A0A0]">KPI:</span> {step.kpiTarget}
+          <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-foreground">
+            <span className="text-muted">KPI:</span> {step.kpiTarget}
           </p>
         )}
       </div>

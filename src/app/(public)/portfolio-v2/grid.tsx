@@ -30,7 +30,7 @@ export default function PortfolioGrid({ projects }: { projects: PortfolioProject
   return (
     <>
       {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-6 md:px-10 border-b border-[#EDEDEF] sticky top-0 bg-white z-10">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 border-b border-border sticky top-0 bg-white z-10">
         <div className="flex gap-6 md:gap-8 overflow-x-auto -mb-px">
           {categories.map((c) => {
             const isActive = c === active;
@@ -40,8 +40,8 @@ export default function PortfolioGrid({ projects }: { projects: PortfolioProject
                 onClick={() => setActive(c)}
                 className={`shrink-0 py-4 text-sm font-semibold border-b-2 transition-colors ${
                   isActive
-                    ? "text-[#1B1B1B] border-[#1B1B1B]"
-                    : "text-[#A0A0A0] border-transparent hover:text-[#1B1B1B]"
+                    ? "text-foreground border-surface"
+                    : "text-muted border-transparent hover:text-foreground"
                 }`}
               >
                 {c}
@@ -51,13 +51,13 @@ export default function PortfolioGrid({ projects }: { projects: PortfolioProject
         </div>
       </div>
 
-      <p className="max-w-7xl mx-auto px-6 md:px-10 pt-6 text-[11px] uppercase tracking-wider text-[#A0A0A0]">
+      <p className="max-w-7xl mx-auto px-6 md:px-10 pt-6 text-[11px] uppercase tracking-wider text-muted">
         Click any thumbnail to view the full design →
       </p>
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 py-6 pb-24">
         {filtered.length === 0 ? (
-          <div className="text-[#A0A0A0] text-sm border border-dashed border-[#EDEDEF] rounded-2xl p-16 text-center">
+          <div className="text-muted text-sm border border-dashed border-border rounded-2xl p-16 text-center">
             No projects in this category yet.
           </div>
         ) : (
@@ -68,7 +68,7 @@ export default function PortfolioGrid({ projects }: { projects: PortfolioProject
                 <button
                   key={p.id}
                   onClick={() => setOpenProject(p)}
-                  className="group relative block aspect-[9/19] overflow-hidden rounded-lg bg-[#F5F5F7] border border-[#EDEDEF] text-left"
+                  className="group relative block aspect-[9/19] overflow-hidden rounded-lg bg-[#F5F5F7] border border-border text-left"
                 >
                   {thumb && (
                     <img
@@ -80,7 +80,7 @@ export default function PortfolioGrid({ projects }: { projects: PortfolioProject
                     />
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-[10px] font-semibold px-2.5 py-1 bg-white text-[#1B1B1B] rounded-full">
+                    <span className="text-[10px] font-semibold px-2.5 py-1 bg-white text-foreground rounded-full">
                       View →
                     </span>
                   </div>
@@ -128,7 +128,7 @@ function ProjectModal({ project, onClose }: { project: PortfolioProject; onClose
               <button
                 onClick={() => setMode("desktop")}
                 className={`px-3 md:px-4 py-1 text-[11px] font-semibold rounded-full transition-colors ${
-                  mode === "desktop" ? "bg-white text-[#080808]" : "text-white/70 hover:text-white"
+                  mode === "desktop" ? "bg-white text-background" : "text-white/70 hover:text-white"
                 }`}
               >
                 Desktop
@@ -136,7 +136,7 @@ function ProjectModal({ project, onClose }: { project: PortfolioProject; onClose
               <button
                 onClick={() => setMode("mobile")}
                 className={`px-3 md:px-4 py-1 text-[11px] font-semibold rounded-full transition-colors ${
-                  mode === "mobile" ? "bg-white text-[#080808]" : "text-white/70 hover:text-white"
+                  mode === "mobile" ? "bg-white text-background" : "text-white/70 hover:text-white"
                 }`}
               >
                 Mobile

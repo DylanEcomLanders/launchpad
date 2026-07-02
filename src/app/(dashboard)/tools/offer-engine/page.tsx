@@ -165,45 +165,45 @@ export default function OfferEnginePage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-[28px] font-bold mb-2">Offer Engine</h1>
-          <p className="text-[#71757D]">
+          <p className="text-subtle">
             Paste call notes, fill the offer inputs, and Claude drafts a personalised Conversion Engine proposal at{" "}
-            <code className="text-[#E5E5EA] bg-[#222222] px-1.5 py-0.5 rounded text-[12px]">/proposal/[brand]</code>.
+            <code className="text-foreground bg-surface-raised px-1.5 py-0.5 rounded text-[12px]">/proposal/[brand]</code>.
           </p>
         </div>
 
         {/* Saved confirmation */}
         {savedSlug && (
-          <div className="mb-8 p-5 border border-white bg-[#0C0C0C] rounded-xl">
+          <div className="mb-8 p-5 border border-white bg-background rounded-xl">
             <div className="flex items-center gap-2 mb-3">
-              <CheckIcon className="size-4 text-[#E5E5EA]" />
-              <p className="text-sm font-semibold text-[#E5E5EA]">Proposal saved</p>
+              <CheckIcon className="size-4 text-foreground" />
+              <p className="text-sm font-semibold text-foreground">Proposal saved</p>
             </div>
             <div className="flex items-center gap-2">
-              <code className="flex-1 px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded-md text-[12px] text-[#E5E5EA] truncate">
+              <code className="flex-1 px-3 py-2 bg-surface border border-border rounded-md text-[12px] text-foreground truncate">
                 {proposalUrl(savedSlug)}
               </code>
               <button
                 onClick={() => handleCopy(proposalUrl(savedSlug))}
-                className="px-3 py-2 text-xs font-medium text-[#E5E5EA] border border-[#2A2A2A] rounded-md hover:bg-[#222222] transition-colors"
+                className="px-3 py-2 text-xs font-medium text-foreground border border-border rounded-md hover:bg-surface-raised transition-colors"
               >
                 {copied ? "Copied" : "Copy"}
               </button>
               <Link
                 href={`/proposal/${savedSlug}`}
                 target="_blank"
-                className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium text-[#0C0C0C] bg-white rounded-md hover:bg-[#F3F4F6] transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium text-background bg-white rounded-md hover:bg-foreground transition-colors"
               >
                 Open
                 <ArrowTopRightOnSquareIcon className="size-3" />
               </Link>
             </div>
-            <button onClick={reset} className="mt-4 text-xs text-[#71757D] underline">Start another</button>
+            <button onClick={reset} className="mt-4 text-xs text-subtle underline">Start another</button>
           </div>
         )}
 
         {/* Form */}
         {!savedSlug && (
-          <div className="mb-12 p-6 bg-[#181818] border border-[#2A2A2A] rounded-xl">
+          <div className="mb-12 p-6 bg-surface border border-border rounded-xl">
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className={labelClass}>Brand name</label>
@@ -270,7 +270,7 @@ export default function OfferEnginePage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
-              <p className="text-[11px] text-[#71757D] mt-1">
+              <p className="text-[11px] text-subtle mt-1">
                 Claude only pulls stats from what you paste here. Missing numbers stay as <code>[needs input]</code> so you can spot them.
               </p>
             </div>
@@ -282,7 +282,7 @@ export default function OfferEnginePage() {
             <button
               onClick={handleGenerate}
               disabled={generating || !brandName.trim() || !notes.trim()}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#0C0C0C] bg-white rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-background bg-white rounded-lg hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generating ? (
                 <>
@@ -301,23 +301,23 @@ export default function OfferEnginePage() {
 
         {/* Existing proposals */}
         <div>
-          <h2 className="text-base font-semibold text-[#E5E5EA] mb-3">Saved proposals</h2>
+          <h2 className="text-base font-semibold text-foreground mb-3">Saved proposals</h2>
           {loadingList ? (
-            <p className="text-sm text-[#71757D]">Loading…</p>
+            <p className="text-sm text-subtle">Loading…</p>
           ) : proposals.length === 0 ? (
-            <p className="text-sm text-[#71757D]">No proposals yet.</p>
+            <p className="text-sm text-subtle">No proposals yet.</p>
           ) : (
             <div className="space-y-2">
               {proposals.map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-4 bg-[#181818] border border-[#2A2A2A] rounded-xl">
+                <div key={p.id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-xl">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#E5E5EA] truncate">{p.brand_name}</p>
-                    <p className="text-[11px] text-[#71757D] truncate">/proposal/{p.slug} · updated {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{p.brand_name}</p>
+                    <p className="text-[11px] text-subtle truncate">/proposal/{p.slug} · updated {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => handleCopy(proposalUrl(p.slug))}
-                      className="p-2 text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                      className="p-2 text-subtle hover:text-foreground transition-colors"
                       title="Copy link"
                     >
                       <ClipboardDocumentIcon className="size-4" />
@@ -325,14 +325,14 @@ export default function OfferEnginePage() {
                     <Link
                       href={`/proposal/${p.slug}`}
                       target="_blank"
-                      className="p-2 text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                      className="p-2 text-subtle hover:text-foreground transition-colors"
                       title="Open"
                     >
                       <ArrowTopRightOnSquareIcon className="size-4" />
                     </Link>
                     <button
                       onClick={() => handleDelete(p.slug)}
-                      className="p-2 text-[#71757D] hover:text-red-600 transition-colors"
+                      className="p-2 text-subtle hover:text-red-600 transition-colors"
                       title="Delete"
                     >
                       <TrashIcon className="size-4" />

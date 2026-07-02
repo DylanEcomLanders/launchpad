@@ -71,8 +71,8 @@ export function QuickAddComposer({ raisedBy, clients, onSubmit, onCancel }: Prop
 
   return (
     <div
-      className={`rounded-lg border bg-[#181818] p-3 shadow-sm transition-colors ${
-        dragOver ? "border-[#1A1A1A] bg-[#0C0C0C] ring-2 ring-[#1A1A1A]/10" : "border-[#1A1A1A]"
+      className={`rounded-lg border bg-surface p-3 shadow-sm transition-colors ${
+        dragOver ? "border-surface bg-background ring-2 ring-surface/10" : "border-surface"
       }`}
       onDragOver={(e) => {
         if (Array.from(e.dataTransfer.types).includes("Files")) {
@@ -104,14 +104,14 @@ export function QuickAddComposer({ raisedBy, clients, onSubmit, onCancel }: Prop
           if (e.key === "Escape") onCancel();
         }}
         placeholder="What needs triaging? (drop / paste a screenshot)"
-        className="w-full text-[13px] font-medium px-0 py-1 border-0 focus:outline-none placeholder:text-[#9CA3AF]"
+        className="w-full text-[13px] font-medium px-0 py-1 border-0 focus:outline-none placeholder:text-muted"
       />
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <select
           value={type}
           onChange={(e) => setType(e.target.value as TicketType)}
-          className="text-[10px] font-medium px-2 py-1 border border-[#2A2A2A] rounded bg-[#181818] focus:outline-none"
+          className="text-[10px] font-medium px-2 py-1 border border-border rounded bg-surface focus:outline-none"
         >
           {TICKET_TYPE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -126,7 +126,7 @@ export function QuickAddComposer({ raisedBy, clients, onSubmit, onCancel }: Prop
           value={client}
           onChange={(e) => setClient(e.target.value)}
           placeholder="Client (optional)"
-          className="text-[10px] px-2 py-1 border border-[#2A2A2A] rounded focus:outline-none w-[110px]"
+          className="text-[10px] px-2 py-1 border border-border rounded focus:outline-none w-[110px]"
         />
         <datalist id="ticket-clients">
           {clients.map((c) => (
@@ -139,13 +139,13 @@ export function QuickAddComposer({ raisedBy, clients, onSubmit, onCancel }: Prop
           value={assignedTo}
           onChange={(e) => setAssignedTo(e.target.value)}
           placeholder="Assign to (optional)"
-          className="text-[10px] px-2 py-1 border border-[#2A2A2A] rounded focus:outline-none w-[110px]"
+          className="text-[10px] px-2 py-1 border border-border rounded focus:outline-none w-[110px]"
         />
 
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 border border-[#2A2A2A] rounded text-[#71757D] hover:border-[#1A1A1A] hover:text-[#E5E5EA]"
+          className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 border border-border rounded text-subtle hover:border-surface hover:text-foreground"
           title="Attach screenshot"
         >
           <PaperClipIcon className="size-3" />
@@ -173,7 +173,7 @@ export function QuickAddComposer({ raisedBy, clients, onSubmit, onCancel }: Prop
             }
           />
           {uploading > 0 && (
-            <span className="text-[10px] text-[#71757D] italic">
+            <span className="text-[10px] text-subtle italic">
               Uploading {uploading}…
             </span>
           )}
@@ -181,14 +181,14 @@ export function QuickAddComposer({ raisedBy, clients, onSubmit, onCancel }: Prop
       )}
 
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wider">
+        <span className="text-[9px] text-muted uppercase tracking-wider">
           ⌘ + Enter to submit · Esc to cancel
         </span>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={onCancel}
-            className="px-2 py-1 text-[10px] font-semibold text-[#71757D] hover:text-[#E5E5EA]"
+            className="px-2 py-1 text-[10px] font-semibold text-subtle hover:text-foreground"
           >
             Cancel
           </button>
@@ -196,7 +196,7 @@ export function QuickAddComposer({ raisedBy, clients, onSubmit, onCancel }: Prop
             type="button"
             onClick={submit}
             disabled={!title.trim() || uploading > 0}
-            className="px-3 py-1 text-[10px] font-semibold rounded bg-white text-[#0C0C0C] disabled:opacity-40"
+            className="px-3 py-1 text-[10px] font-semibold rounded bg-white text-background disabled:opacity-40"
           >
             Add
           </button>

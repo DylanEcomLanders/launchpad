@@ -56,15 +56,15 @@ export function FigmaSyncForm({ slug, desktopCount, mobileCount, onSynced }: Pro
   };
 
   return (
-    <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-4 space-y-3">
+    <div className="bg-background border border-border rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold text-[#E5E5EA]">Sync from Figma</div>
-          <div className="text-[10px] text-[#71757D] mt-0.5">
+          <div className="text-xs font-semibold text-foreground">Sync from Figma</div>
+          <div className="text-[10px] text-subtle mt-0.5">
             Paste a frame URL — slices auto-generate. Replaces existing.
           </div>
         </div>
-        <div className="text-[10px] text-[#71757D] tabular-nums">
+        <div className="text-[10px] text-subtle tabular-nums">
           {desktopCount} desktop · {mobileCount} mobile
         </div>
       </div>
@@ -89,7 +89,7 @@ export function FigmaSyncForm({ slug, desktopCount, mobileCount, onSynced }: Pro
       </div>
 
       {progress && (
-        <div className="text-[11px] text-[#E5E5EA] bg-[#181818] border border-[#2A2A2A] rounded px-3 py-2">
+        <div className="text-[11px] text-foreground bg-surface border border-border rounded px-3 py-2">
           {progress}
         </div>
       )}
@@ -103,12 +103,12 @@ export function FigmaSyncForm({ slug, desktopCount, mobileCount, onSynced }: Pro
         type="button"
         onClick={handleSync}
         disabled={busy || !desktopUrl}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-[#0C0C0C] text-xs font-semibold rounded-lg hover:bg-[#F3F4F6] disabled:opacity-40 transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-background text-xs font-semibold rounded-lg hover:bg-foreground disabled:opacity-40 transition-colors"
       >
         <ArrowPathIcon className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
         {busy ? "Syncing…" : "Sync from Figma"}
       </button>
-      <p className="text-[10px] text-[#71757D] leading-relaxed">
+      <p className="text-[10px] text-subtle leading-relaxed">
         Right-click frame in Figma → Copy link to selection. Slices land into
         Desktop / Mobile stacks below — re-syncing replaces previous slices.
       </p>

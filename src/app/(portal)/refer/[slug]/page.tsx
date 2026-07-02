@@ -31,18 +31,18 @@ export default function ReferralPage() {
                 <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A] mb-2">Thanks, {name.split(" ")[0]}!</h1>
-            <p className="text-sm text-[#777] leading-relaxed">
+            <h1 className="text-2xl font-bold tracking-tight text-surface mb-2">Thanks, {name.split(" ")[0]}!</h1>
+            <p className="text-sm text-subtle leading-relaxed">
               We&apos;ll be in touch shortly to discuss how we can help grow your store.
             </p>
           </div>
         ) : (
           <>
             <div className="mb-8 text-center">
-              <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A] mb-2">
+              <h1 className="text-2xl font-bold tracking-tight text-surface mb-2">
                 You&apos;ve been referred
               </h1>
-              <p className="text-sm text-[#777] leading-relaxed">
+              <p className="text-sm text-subtle leading-relaxed">
                 Someone who trusts our work thought we could help you too.
                 We build high-converting Shopify pages and run CRO programmes
                 for DTC brands.
@@ -51,50 +51,50 @@ export default function ReferralPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-xs font-medium text-[#555] block mb-1.5">Your Name *</label>
+                <label className="text-xs font-medium text-subtle block mb-1.5">Your Name *</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999]"
+                  className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:border-subtle"
                   placeholder="Your name"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-[#555] block mb-1.5">Email *</label>
+                <label className="text-xs font-medium text-subtle block mb-1.5">Email *</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999]"
+                  className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:border-subtle"
                   placeholder="you@brand.com"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-[#555] block mb-1.5">Store URL (optional)</label>
+                <label className="text-xs font-medium text-subtle block mb-1.5">Store URL (optional)</label>
                 <input
                   type="url"
                   value={store}
                   onChange={(e) => setStore(e.target.value)}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999]"
+                  className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:border-subtle"
                   placeholder="https://yourstore.com"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full py-3 bg-[#1A1A1A] text-white text-sm font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+                className="w-full py-3 bg-surface text-white text-sm font-medium rounded-lg hover:bg-border transition-colors"
               >
                 Get in Touch
               </button>
             </form>
 
-            <div className="mt-8 pt-6 border-t border-[#F0F0F0] flex items-center justify-center gap-6">
-              <a href="https://wa.me/447000000000" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-[#777] hover:text-[#1A1A1A] transition-colors">
+            <div className="mt-8 pt-6 border-t border-foreground flex items-center justify-center gap-6">
+              <a href="https://wa.me/447000000000" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-subtle hover:text-surface transition-colors">
                 WhatsApp
               </a>
-              <a href="https://cal.com/ecomlanders" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-[#777] hover:text-[#1A1A1A] transition-colors">
+              <a href="https://cal.com/ecomlanders" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-subtle hover:text-surface transition-colors">
                 Book a Call
               </a>
             </div>

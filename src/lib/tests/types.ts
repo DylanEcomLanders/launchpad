@@ -55,7 +55,7 @@ export const STATUS_LABEL: Record<TestStatus, string> = {
   killed: "Killed",
 };
 export const STATUS_TINT: Record<TestStatus, string> = {
-  drafting: "bg-[#222222] text-[#9CA3AF]",
+  drafting: "bg-surface-raised text-muted",
   live: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
   paused: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
   concluded: "bg-sky-500/15 text-sky-200 ring-1 ring-sky-500/30",

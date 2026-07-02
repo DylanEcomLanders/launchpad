@@ -7,14 +7,14 @@ export function QuizProgressBar({ current, total }: { current: number; total: nu
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-subtle">
           Step {current} of {total}
         </span>
-        <span className="text-[11px] font-medium text-[#71757D] tabular-nums">{pct}%</span>
+        <span className="text-[11px] font-medium text-subtle tabular-nums">{pct}%</span>
       </div>
-      <div className="h-1 w-full bg-[#222222] rounded-full overflow-hidden">
+      <div className="h-1 w-full bg-surface-raised rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#1B1B1B] rounded-full transition-[width] duration-300 ease-out"
+          className="h-full bg-surface rounded-full transition-[width] duration-300 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>

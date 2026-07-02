@@ -19,6 +19,15 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
+  CodeBracketIcon,
+  SwatchIcon,
+  ArrowPathIcon,
+  PaperAirplaneIcon,
+  RocketLaunchIcon,
+  LightBulbIcon,
+  Squares2X2Icon,
+  AdjustmentsHorizontalIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useCurrentUser, useRole } from "@/components/auth-gate";
@@ -45,6 +54,7 @@ import {
   type TestOutcome,
   type TestResult,
 } from "@/lib/projects/preview-phases";
+import { Field, Pill, ProjectCard, Segmented } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
@@ -316,9 +326,9 @@ function phaseInternalDueDate(
 }
 
 /** Card status driven by the dated phase deadline (manual override or
- *  computed per-phase). Tightened rule:
- *    - on-track: today < deadline
- *    - approaching: today === deadline (day-of)
+ *  computed per-phase). Rule (matches the per-card dueDate rule):
+ *    - on-track: deadline is 2+ days out
+ *    - approaching: deadline is today OR tomorrow (imminent)
  *    - stuck: today > deadline (any day overdue)
  *  No buffer - day-after-due is red. */
 function deadlineStatus(
@@ -345,10 +355,9 @@ function deadlineStatus(
       : undefined;
   const due = manualDue ?? phaseInternalDueDate(phase, project);
   if (!due) return null;
-  const cmp = todayISO.localeCompare(due);
-  if (cmp < 0) return "on-track";
-  if (cmp === 0) return "approaching";
-  return "stuck";
+  if (todayISO.localeCompare(due) > 0) return "stuck";
+  if (due.localeCompare(addDaysISO(todayISO, 1)) <= 0) return "approaching";
+  return "on-track";
 }
 
 function formatShortDate(iso: string): string {
@@ -454,40 +463,49 @@ const STATUS_RANK: Record<StuckStatus, number> = {
 /* Card override for cards in launch + testing with a running test. Overrides
  * the stuck/approaching/on-track palette with a green tint so live tests pop
  * across the board without the strategist having to read the badge. */
+/* V2 calm-board treatment: cards are a neutral surface; status reads through a
+ * thin LEFT-edge accent (so a column is still scannable for amber/red at a
+ * glance) instead of a full coloured fill. `accent`/`dot` keep the hue for
+ * small status text + dots elsewhere. */
 const LIVE_STYLE = {
-  ring: "border-emerald-500/60",
-  bg: "bg-emerald-500/10",
+  ring: "border-border",
+  bg: "bg-surface",
+  edge: "border-l-emerald-500/70",
   accent: "text-emerald-400",
-  dot: "#10B981",
+  dot: "var(--color-status-ontrack)",
   label: "Live",
 };
 
 const STUCK_STYLES: Record<StuckStatus, {
   ring: string;
   bg: string;
+  edge: string;
   accent: string;
   dot: string;
   label: string;
 }> = {
   stuck: {
-    ring: "border-red-500/60",
-    bg: "bg-red-500/10",
-    accent: "text-red-400",
-    dot: "#F87171",
+    ring: "border-border",
+    bg: "bg-surface",
+    edge: "border-l-rose-500/70",
+    accent: "text-rose-400",
+    dot: "var(--color-status-late)",
     label: "Stuck",
   },
   approaching: {
-    ring: "border-amber-500/60",
-    bg: "bg-amber-500/10",
+    ring: "border-border",
+    bg: "bg-surface",
+    edge: "border-l-amber-500/70",
     accent: "text-amber-400",
-    dot: "#F59E0B",
+    dot: "var(--color-status-approaching)",
     label: "Approaching",
   },
   "on-track": {
-    ring: "border-[#2A2A2A]",
-    bg: "bg-[#181818]",
-    accent: "text-[#71757D]",
-    dot: "#4B4D52",
+    ring: "border-border",
+    bg: "bg-surface",
+    edge: "border-l-transparent",
+    accent: "text-subtle",
+    dot: "var(--color-subtle)",
     label: "On track",
   },
 };
@@ -1387,21 +1405,14 @@ export default function KanbanPage() {
     // no-op stub
   }
 
+  const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
   const headerCountLabel =
     viewMode === "results"
-      ? `${resultCards.length} test${resultCards.length === 1 ? "" : "s"}`
+      ? plural(resultCards.length, "test")
       : viewMode === "pod"
-        ? `${visibleDeliverables.length} deliverables · ${new Set(visibleDeliverables.map((d) => d.projectId)).size} projects`
-        : `${visibleDeliverables.length} deliverables · ${new Set(visibleDeliverables.map((d) => d.clientId)).size} clients`;
+        ? `${plural(visibleDeliverables.length, "deliverable")} · ${plural(new Set(visibleDeliverables.map((d) => d.projectId)).size, "project")}`
+        : `${plural(visibleDeliverables.length, "deliverable")} · ${plural(new Set(visibleDeliverables.map((d) => d.clientId)).size, "client")}`;
 
-  const viewModeLabel =
-    viewMode === "project"
-      ? "By project"
-      : viewMode === "master"
-        ? "All projects"
-        : viewMode === "pod"
-          ? "By pod"
-          : "Results Library";
 
   const activePod = pods.find((p) => p.id === podId);
 
@@ -1410,12 +1421,12 @@ export default function KanbanPage() {
       return { bold: "Results Library", light: "" };
     }
     if (viewMode === "master") {
-      return { bold: "All projects", light: "in flight" };
+      return { bold: "All projects", light: "" };
     }
     if (viewMode === "pod") {
       return {
         bold: activePod?.name ?? "Pick a pod",
-        light: "on the plate",
+        light: "",
       };
     }
     // Keep the title constant per client so switching between projects
@@ -1423,7 +1434,7 @@ export default function KanbanPage() {
     // already visible in the project tab row directly below.
     return {
       bold: activeClient?.name ?? "Pick a client",
-      light: "in flight",
+      light: "",
     };
   }
 
@@ -1435,202 +1446,141 @@ export default function KanbanPage() {
   }, [clients]);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
-      <div className="mx-auto px-4 sm:px-6 py-8">
+    <div className="h-[calc(100dvh-56px)] flex flex-col bg-background text-foreground">
+      <div className="flex-1 flex flex-col min-h-0 px-4 sm:px-6 py-8">
         {/* 2-col grid so the right cluster never wraps below the title.
             Title takes 1fr (with min-w-0 + truncate so long titles like
             longer titles shrink with ellipsis instead of pushing the
             cluster). Cluster takes auto, stays anchored at the right edge. */}
-        <div className="grid grid-cols-[1fr_auto] items-end gap-6 mb-6">
+        <div className="grid grid-cols-[1fr_auto] items-end gap-6 mb-6 shrink-0">
+          {/* LEFT ZONE - client context. The title IS the client switch
+              (no duplicate picker); project tabs sit below; the ⋯ holds the
+              client-specific actions (onboarding brief + pod assignment). */}
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
-              Mission Control · {viewModeLabel}
+            <p className="text-2xs font-medium text-subtle">
+              Mission Control
               {headerCountLabel && (
-                <span className="text-[#4B4D52] normal-case tracking-normal">
+                <span className="text-border">
                   {" · "}{headerCountLabel.toLowerCase()}
                 </span>
               )}
             </p>
-            <h1 className="mt-2 text-[28px] leading-tight truncate">
-              <span className="font-bold text-[#E5E5EA]">{title.bold}</span>{" "}
-              <span className="font-normal text-[#71757D]">{title.light}</span>
-            </h1>
+            <div className="mt-2 flex items-center gap-2 min-w-0">
+              {viewMode === "project" && clients.length > 0 ? (
+                <>
+                  <KanbanClientPicker
+                    variant="title"
+                    clients={clients}
+                    activeId={clientId}
+                    onSelect={(id) => {
+                      const c = clients.find((x) => x.id === id);
+                      setClientId(id);
+                      setProjectId(c?.projects[0]?.id ?? "");
+                    }}
+                    onDelete={(id) => deleteClient(id)}
+                    onAddClient={() => setAddClientOpen(true)}
+                  />
+                  {activeClient && activeClient.projects.length > 0 && (
+                    <>
+                      <ChevronRightIcon className="size-4 text-subtle shrink-0" />
+                      <ProjectSwitch
+                        projects={activeClient.projects}
+                        activeId={activeProject?.id ?? ""}
+                        onSelect={(id) => setProjectId(id)}
+                        onAddProject={addProject}
+                        onDelete={(pid) => deleteProject(activeClient.id, pid)}
+                        counts={Object.fromEntries(
+                          activeClient.projects.map((p) => [
+                            p.id,
+                            p.deliverables.filter((d) => !d.testResult).length,
+                          ]),
+                        )}
+                        canManage={canManage}
+                      />
+                    </>
+                  )}
+                  {activeProject &&
+                    (!!activeClient?.onboardingBrief || canManage) && (
+                      <ClientActionsMenu
+                        hasBrief={!!activeClient?.onboardingBrief}
+                        onPreviewOnboarding={() => setOnboardingPreviewOpen(true)}
+                        pods={pods}
+                        currentPodId={activeProject.podId}
+                        onAssignPod={assignPodToProject}
+                        canManage={canManage}
+                      />
+                    )}
+                </>
+              ) : viewMode === "pod" && pods.length > 0 ? (
+                <>
+                  <KanbanPodPicker
+                    variant="title"
+                    pods={pods}
+                    activeId={podId}
+                    onSelect={(id) => setPodId(id)}
+                  />
+                  {(() => {
+                    const podProjects = clients.flatMap((c) =>
+                      c.projects
+                        .filter((p) => p.podId === podId)
+                        .map((p) => ({
+                          clientId: c.id,
+                          clientName: c.name,
+                          projectId: p.id,
+                          projectName: p.name,
+                          turnaroundDays: p.turnaroundDays,
+                          openCount: p.deliverables.filter((d) => !d.testResult).length,
+                        })),
+                    );
+                    return podProjects.length > 0 ? (
+                      <>
+                        <ChevronRightIcon className="size-4 text-subtle shrink-0" />
+                        <PodProjectSwitch
+                          projects={podProjects}
+                          onSelectProject={(clientId, projectId) => {
+                            setClientId(clientId);
+                            setProjectId(projectId);
+                            setViewMode("project");
+                          }}
+                        />
+                      </>
+                    ) : null;
+                  })()}
+                </>
+              ) : (
+                <h1 className="text-[26px] font-heading font-medium tracking-tight leading-tight truncate text-foreground">
+                  {title.bold}
+                </h1>
+              )}
+            </div>
           </div>
 
-          {/* Right cluster - decluttered. Primary controls only:
-              Mine + view-mode pill + overflow menu. Search collapses
-              to an icon; Phase rules + Cosy/Glance live in the menu. */}
+          {/* RIGHT ZONE - display only. How you view the board: search,
+              view scope, and Display options. No client-specific controls. */}
           <div className="flex items-center gap-2">
             <SyncErrorToast />
-            {/* Search - icon-only by default to save header real estate.
-                Click or press / to expand into an input; Esc collapses. */}
             <SearchControl
               query={searchQuery}
               onChange={setSearchQuery}
               inputRef={searchInputRef}
             />
-            {/* Mine only - filters to cards where the signed-in user is
-                listed as designer or developer (any slot). */}
-            {meName && (
-              <button
-                onClick={() => setMineOnly((v) => !v)}
-                className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
-                  mineOnly
-                    ? "bg-emerald-500/[0.15] text-emerald-200 border border-emerald-500/40"
-                    : "text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838]"
-                }`}
-                title="Show only cards assigned to you"
-              >
-                Mine
-              </button>
-            )}
-
-            {/* + New client button — moved LEFT of the view mode pill
-                so when it disappears in non-project modes, the pill +
-                overflow stay anchored to the right edge. */}
-            {viewMode === "project" && (
-              <button
-                onClick={() => setAddClientOpen(true)}
-                className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors px-3 py-2"
-                title="Add a new client"
-              >
-                + Client
-              </button>
-            )}
-
-            {/* Client / pod selector - custom dropdown matching the
-                app's dark aesthetic (native select popover is browser-
-                styled and looks out of place). Each item shows the
-                name + a project count for clients / member count for
-                pods. */}
-            {viewMode === "project" && clients.length > 0 && (
-              <KanbanClientPicker
-                clients={clients}
-                activeId={clientId}
-                onSelect={(id) => {
-                  const c = clients.find((x) => x.id === id);
-                  setClientId(id);
-                  setProjectId(c?.projects[0]?.id ?? "");
-                }}
-                onDelete={(id) => deleteClient(id)}
-              />
-            )}
-            {viewMode === "pod" && pods.length > 0 && (
-              <KanbanPodPicker
-                pods={pods}
-                activeId={podId}
-                onSelect={(id) => setPodId(id)}
-              />
-            )}
-
-            {/* View mode pill - anchored to the right edge. Stays put
-                regardless of mode so eye-position doesn't jolt when
-                + Client + the client dropdown appear/disappear. */}
-            <div className="inline-flex p-0.5 rounded-full bg-[#222222] border border-[#2A2A2A]">
-              {(
-                [
-                  { v: "project" as const, label: "By project" },
-                  { v: "master" as const, label: "All projects" },
-                  { v: "pod" as const, label: "By pod" },
-                  { v: "results" as const, label: "Results Library" },
-                ]
-              ).map((o) => (
-                <button
-                  key={o.v}
-                  onClick={() => setViewMode(o.v)}
-                  className={`px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
-                    viewMode === o.v
-                      ? "bg-white text-[#0C0C0C]"
-                      : "text-[#71757D] hover:text-white"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Overflow menu - tertiary controls (density, phase rules).
-                Sits at the very right edge alongside the view mode pill. */}
+            <ViewModeMenu value={viewMode} onChange={setViewMode} />
             <OverflowMenu
               density={density}
               onSetDensity={setDensity}
               onOpenRules={() => setRulesOpen(true)}
+              mineOnly={mineOnly}
+              onToggleMine={() => setMineOnly((v) => !v)}
+              showMine={!!meName}
             />
           </div>
         </div>
 
-        {/* Reserve the vertical space owned by the project tabs row in every
-            view mode so toggling between project / master / results doesnt
-            shift the board up or down. min-h matches ProjectTabsRow height
-            plus its mb-5 (one row of pills at py-1.5). */}
-        <div className="min-h-[56px]">
-          {viewMode === "project" && activeClient && (
-            <ProjectTabsRow
-              client={activeClient}
-              projectId={activeProject?.id ?? ""}
-              onSelectProject={(id) => setProjectId(id)}
-              onAddProject={addProject}
-              onDeleteProject={(pid) => deleteProject(activeClient.id, pid)}
-              deliverableCounts={Object.fromEntries(
-                activeClient.projects.map((p) => [
-                  p.id,
-                  p.deliverables.filter((d) => !d.testResult).length,
-                ]),
-              )}
-              pods={pods}
-              currentPodId={activeProject?.podId}
-              onAssignPod={assignPodToProject}
-              hasBrief={!!activeClient.onboardingBrief}
-              onPreviewOnboarding={() => setOnboardingPreviewOpen(true)}
-              canManage={canManage}
-            />
-          )}
-
-          {viewMode === "master" && (
-            <ClientsRow
-              clients={clients.map((c) => ({
-                clientId: c.id,
-                clientName: c.name,
-                openCount: c.projects.reduce(
-                  (sum, p) =>
-                    sum + p.deliverables.filter((d) => !d.testResult).length,
-                  0,
-                ),
-                projectCount: c.projects.length,
-              }))}
-              onSelectClient={(clientId) => {
-                const c = clients.find((x) => x.id === clientId);
-                setClientId(clientId);
-                setProjectId(c?.projects[0]?.id ?? "");
-                setViewMode("project");
-              }}
-              onDeleteClient={(clientId) => deleteClient(clientId)}
-            />
-          )}
-
-          {viewMode === "pod" && (
-            <PodProjectsRow
-              projects={clients.flatMap((c) =>
-                c.projects
-                  .filter((p) => p.podId === podId)
-                  .map((p) => ({
-                    clientId: c.id,
-                    clientName: c.name,
-                    projectId: p.id,
-                    projectName: p.name,
-                    turnaroundDays: p.turnaroundDays,
-                    openCount: p.deliverables.filter((d) => !d.testResult)
-                      .length,
-                  })),
-              )}
-              onSelectProject={(clientId, projectId) => {
-                setClientId(clientId);
-                setProjectId(projectId);
-                setViewMode("project");
-              }}
-            />
-          )}
-
+        {/* Project / master / pod headers are all single-line now (each uses
+            an inline switch above), so they reserve no row and the board sits
+            at the same Y. Only results still carries a sub-row (its filters),
+            so only it reserves the height. */}
+        <div className={`shrink-0 ${viewMode === "results" ? "min-h-[56px]" : ""}`}>
           {viewMode === "results" && (
             <ResultsBankFilters
               outcome={bankOutcome}
@@ -1658,12 +1608,10 @@ export default function KanbanPage() {
             onOpen={(id) => setActiveId(id)}
           />
         ) : (
-          /* Viewport-fit board: columns share one fixed height (the
-           * viewport minus the dashboard header + page chrome) so the
-           * whole board never makes the page scroll. Each column
-           * scrolls its own cards independently. min-h floor keeps it
-           * usable on short windows. */
-          <div className="h-[calc(100dvh-260px)] min-h-[420px]">
+          /* Viewport-fit board: flex-fills the remaining height under the
+           * header (whatever the screen size + current header height), so the
+           * page never scrolls. Each column scrolls its own cards. */
+          <div className="flex-1 min-h-0">
           <BoardColumns
             phases={PREVIEW_PHASES}
             cards={cardsByPhase}
@@ -1771,70 +1719,15 @@ export default function KanbanPage() {
   );
 }
 
-/* Master view's equivalent of the project tabs row. Lists every active
- * client with their open deliverable + project counts. Click a pill to
- * drop into the project view of that client (first project selected). */
-interface ClientsRowProps {
-  clients: {
-    clientId: string;
-    clientName: string;
-    openCount: number;
-    projectCount: number;
-  }[];
-  onSelectClient: (clientId: string) => void;
-  onDeleteClient: (clientId: string) => void;
-}
-
-function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps) {
-  if (clients.length === 0) {
-    return (
-      <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] uppercase tracking-wider text-[#4B4D52]">
-          No active clients.
-        </span>
-      </div>
-    );
-  }
-  // overflow-x-auto so a long client list scrolls instead of wrapping
-  // vertically (wrap would push the board down and re-introduce the jolt).
-  return (
-    <div className="flex items-center gap-1.5 mb-5 overflow-x-auto scrollbar-thin pb-1">
-      {clients.map((c) => (
-        <div
-          key={c.clientId}
-          className="group inline-flex items-center rounded-full border bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
-        >
-          <button
-            onClick={() => onSelectClient(c.clientId)}
-            className="pl-3.5 pr-2 py-1.5 text-[12px] font-medium"
-            title={`${c.clientName} - ${c.projectCount} project${c.projectCount === 1 ? "" : "s"}`}
-          >
-            <span>{c.clientName}</span>
-            <span className="ml-2 tabular-nums text-[#4B4D52]">{c.openCount}</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteClient(c.clientId);
-            }}
-            className="size-6 mr-1 inline-flex items-center justify-center rounded-full text-[#4B4D52] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
-            title={`Delete ${c.clientName}`}
-          >
-            <XMarkIcon className="size-3" />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* Pod view's equivalent of the project tabs row. Lists every project the
- * active pod is working across (potentially multiple clients), each pill
- * shows the project name with the parent client as a small prefix. Click
- * a pill to drop into the project view of that project. Empty state
- * mirrors the strip height so the board doesnt shift when the pod has no
- * projects yet. */
-interface PodProjectsRowProps {
+/* ── Pod project switch (inline) ──
+ * Pod view's inline equivalent of the client › project breadcrumb: a
+ * compact dropdown of every project on the pod (across clients). Picking
+ * one drills into that project's board. Replaces the old sub-row + its
+ * odd solid-tab pill, so pod view is single-line like the others. */
+function PodProjectSwitch({
+  projects,
+  onSelectProject,
+}: {
   projects: {
     clientId: string;
     clientName: string;
@@ -1844,55 +1737,6 @@ interface PodProjectsRowProps {
     openCount: number;
   }[];
   onSelectProject: (clientId: string, projectId: string) => void;
-}
-
-function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
-  if (projects.length === 0) {
-    return (
-      <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] uppercase tracking-wider text-[#4B4D52]">
-          No projects on this pod yet.
-        </span>
-      </div>
-    );
-  }
-  /* Same single-tab + overflow pattern as ProjectTabsRow. First
-   * project shows as a prominent pill; the rest live in a "+N"
-   * dropdown to keep the row scannable when a pod has 10+ projects. */
-  const [first, ...rest] = projects;
-  return (
-    <div className="flex items-center gap-1.5 mb-5 min-w-0">
-      <button
-        onClick={() => onSelectProject(first.clientId, first.projectId)}
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-medium border bg-white text-[#0C0C0C] border-white"
-        title={`${first.clientName} · ${first.projectName}`}
-      >
-        <span className="text-[#0C0C0C]/50">{first.clientName}</span>
-        <span className="truncate max-w-[200px]">{first.projectName}</span>
-        <span className="tabular-nums text-[#0C0C0C]/50">{first.openCount}</span>
-        {first.turnaroundDays && (
-          <span className="text-[10px] uppercase tracking-wider text-[#0C0C0C]/60">
-            {first.turnaroundDays}d
-          </span>
-        )}
-      </button>
-      {rest.length > 0 && (
-        <PodProjectsOverflow projects={rest} onSelect={onSelectProject} />
-      )}
-    </div>
-  );
-}
-
-/* Dropdown of "other projects on this pod". Same visual language as
- * ProjectOverflow but scoped to pod view + no delete (these projects
- * are owned by clients elsewhere - delete happens from the project
- * view, not the pod view). */
-function PodProjectsOverflow({
-  projects,
-  onSelect,
-}: {
-  projects: PodProjectsRowProps["projects"];
-  onSelect: (clientId: string, projectId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -1907,43 +1751,33 @@ function PodProjectsOverflow({
   }, [open]);
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#9CA3AF] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
-        title={`${projects.length} more project${projects.length === 1 ? "" : "s"} on this pod`}
-      >
-        +{projects.length}
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      <Pill active={open} className="pr-2" onClick={() => setOpen((v) => !v)}>
+        Projects
+        <span className="tabular-nums text-subtle">{projects.length}</span>
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+      </Pill>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-80 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
-            Other projects ({projects.length})
+        <div className="absolute left-0 top-9 z-40 w-80 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
+            Projects on this pod ({projects.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
             {projects.map((p) => (
               <li key={p.projectId}>
                 <button
                   onClick={() => {
-                    onSelect(p.clientId, p.projectId);
+                    onSelectProject(p.clientId, p.projectId);
                     setOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors"
+                  className="w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-[#71757D] truncate shrink-0">
-                      {p.clientName}
-                    </span>
-                    <span className="text-[12px] text-[#E5E5EA] truncate flex-1 min-w-0">
-                      {p.projectName}
-                    </span>
-                    <span className="text-[10px] text-[#71757D] tabular-nums shrink-0">
-                      {p.openCount}
-                    </span>
+                    <span className="text-3xs text-subtle truncate shrink-0">{p.clientName}</span>
+                    <span className="text-2xs text-foreground truncate flex-1 min-w-0">{p.projectName}</span>
+                    <span className="text-4xs text-subtle tabular-nums shrink-0">{p.openCount}</span>
                     {p.turnaroundDays && (
-                      <span className="text-[10px] uppercase tracking-wider text-[#71757D] tabular-nums shrink-0">
-                        {p.turnaroundDays}d
-                      </span>
+                      <span className="text-4xs text-subtle tabular-nums shrink-0">{p.turnaroundDays}d</span>
                     )}
                   </div>
                 </button>
@@ -1952,249 +1786,6 @@ function PodProjectsOverflow({
           </ul>
         </div>
       )}
-    </div>
-  );
-}
-
-interface ProjectTabsRowProps {
-  client: MockClient;
-  projectId: string;
-  onSelectProject: (id: string) => void;
-  onAddProject: (input: {
-    name: string;
-    type: ProjectType;
-    turnaroundDays?: TurnaroundDays;
-    engagementDays?: EngagementDays;
-  }) => void;
-  onDeleteProject: (projectId: string) => void;
-  deliverableCounts: Record<string, number>;
-  pods: MockPod[];
-  currentPodId: string | undefined;
-  onAssignPod: (podId: string) => void;
-  // Brief is structured Q&A now (see OnboardingBrief in mock-data); the row
-  // just opens the popup. Editing happens upstream in the onboarding flow.
-  hasBrief: boolean;
-  onPreviewOnboarding: () => void;
-  canManage: boolean;
-}
-
-function ProjectTabsRow(props: ProjectTabsRowProps) {
-  const [addingProject, setAddingProject] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [typeDraft, setTypeDraft] = useState<ProjectType>("build");
-  const [turnaroundDraft, setTurnaroundDraft] = useState<TurnaroundDays>(15);
-  const [engagementDraft, setEngagementDraft] = useState<EngagementDays>(30);
-
-  function submitNewProject() {
-    props.onAddProject({
-      name: draft,
-      type: typeDraft,
-      turnaroundDays: typeDraft === "build" ? turnaroundDraft : undefined,
-      engagementDays: typeDraft === "retainer" ? engagementDraft : undefined,
-    });
-    setDraft("");
-    setTypeDraft("build");
-    setTurnaroundDraft(15);
-    setEngagementDraft(30);
-    setAddingProject(false);
-  }
-
-  /* Render only the ACTIVE project tab + a "+N" overflow chip that
-   * pops a dropdown listing the rest (with per-project delete).
-   * Dramatically declutters when a client has 6+ projects. */
-  const active = props.client.projects.find((p) => p.id === props.projectId);
-  const others = props.client.projects.filter((p) => p.id !== props.projectId);
-  return (
-    <div className="flex items-center justify-between gap-3 mb-5">
-      <div className="flex items-center gap-1.5 min-w-0">
-        {active && (
-          <ActiveProjectTab
-            project={active}
-            count={props.deliverableCounts[active.id] ?? 0}
-            onDelete={() => props.onDeleteProject(active.id)}
-            canManage={props.canManage}
-          />
-        )}
-        {others.length > 0 && (
-          <ProjectOverflow
-            projects={others}
-            counts={props.deliverableCounts}
-            onSelect={(id) => props.onSelectProject(id)}
-            onDelete={(id) => props.onDeleteProject(id)}
-            canManage={props.canManage}
-          />
-        )}
-        {/* Legacy map kept gone — only the active tab + overflow render now.
-            The block below is the inline "+ New project" form that was
-            already here; preserved as the trailing add affordance. */}
-        {false && props.client.projects.map((p) => {
-          const isActive = p.id === props.projectId;
-          const count = props.deliverableCounts[p.id] ?? 0;
-          return (
-            <button
-              key={p.id}
-              onClick={() => props.onSelectProject(p.id)}
-              className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
-                isActive
-                  ? p.type === "retainer"
-                    ? "bg-teal-500 text-[#0C0C0C] border-teal-500"
-                    : "bg-white text-[#0C0C0C] border-white"
-                  : p.type === "retainer"
-                    ? "bg-teal-500/10 text-teal-300 border-teal-500/40 hover:text-teal-200 hover:border-teal-400/60"
-                    : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-white hover:border-[#383838]"
-              }`}
-              title={
-                p.type === "retainer" && p.engagementDays
-                  ? `Retainer engagement (${p.engagementDays} days)`
-                  : p.turnaroundDays
-                    ? `Build scoped for a ${p.turnaroundDays}-day turnaround`
-                    : undefined
-              }
-            >
-              <span>{p.name}</span>
-              <span
-                className={`ml-2 tabular-nums ${isActive ? "text-[#0C0C0C]/50" : "text-[#4B4D52]"}`}
-              >
-                {count}
-              </span>
-              {(p.turnaroundDays || p.engagementDays) && (
-                <span
-                  className={`ml-2 text-[10px] tabular-nums uppercase tracking-wider ${
-                    isActive
-                      ? "text-[#0C0C0C]/60"
-                      : p.type === "retainer"
-                        ? "text-teal-300/80"
-                        : "text-[#E5E5EA]/60"
-                  }`}
-                >
-                  {p.type === "retainer"
-                    ? `${p.engagementDays}d retainer`
-                    : `${p.turnaroundDays}d`}
-                </span>
-              )}
-            </button>
-          );
-        })}
-        {props.canManage && (addingProject ? (
-          <div className="flex items-center gap-1.5 rounded-full bg-[#0C0C0C] border border-[#383838] pl-1.5 pr-1.5 py-1">
-            {/* Type toggle - Build vs Retainer. Drives which duration toggle
-                renders to the right (15/20/25 vs 30/60/90). */}
-            <div className="flex items-center gap-0.5 bg-[#181818] rounded-full p-0.5 border border-[#2A2A2A]">
-              {(["build", "retainer"] as ProjectType[]).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTypeDraft(t)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors ${
-                    typeDraft === t
-                      ? t === "retainer"
-                        ? "bg-teal-500 text-[#0C0C0C]"
-                        : "bg-white text-[#0C0C0C]"
-                      : "text-[#71757D] hover:text-white"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-            <input
-              autoFocus
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") submitNewProject();
-                if (e.key === "Escape") {
-                  setDraft("");
-                  setTypeDraft("build");
-                  setTurnaroundDraft(15);
-                  setEngagementDraft(30);
-                  setAddingProject(false);
-                }
-              }}
-              placeholder={
-                typeDraft === "retainer" ? "Retainer name" : "Project name"
-              }
-              className="bg-transparent text-[12px] text-[#E5E5EA] focus:outline-none w-32 placeholder:text-[#4B4D52]"
-            />
-            <div className="flex items-center gap-0.5 bg-[#181818] rounded-full p-0.5 border border-[#2A2A2A]">
-              {typeDraft === "retainer"
-                ? ENGAGEMENT_OPTIONS.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setEngagementDraft(t)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors ${
-                        engagementDraft === t
-                          ? "bg-teal-500 text-[#0C0C0C]"
-                          : "text-[#71757D] hover:text-white"
-                      }`}
-                      title={`${ENGAGEMENT_TIER_LABEL[t]} retainer (${t}-day cadence)`}
-                    >
-                      {ENGAGEMENT_TIER_SHORT[t]}
-                    </button>
-                  ))
-                : TURNAROUND_OPTIONS.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setTurnaroundDraft(t)}
-                      className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider tabular-nums transition-colors ${
-                        turnaroundDraft === t
-                          ? "bg-white text-[#0C0C0C]"
-                          : "text-[#71757D] hover:text-white"
-                      }`}
-                      title={`${t}-day turnaround`}
-                    >
-                      {t}d
-                    </button>
-                  ))}
-            </div>
-            <button
-              onClick={submitNewProject}
-              className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white px-2"
-            >
-              Add
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setAddingProject(true)}
-            className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-[#71757D] border border-dashed border-[#2A2A2A] hover:text-white hover:border-[#383838] inline-flex items-center gap-1.5"
-          >
-            <PlusIcon className="size-3.5" />
-            New project
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2 shrink-0">
-        {/* Custom-styled pod-assignment dropdown. Management only -
-         * members can't reassign a project's pod. */}
-        {props.canManage && (
-        <ProjectPodPicker
-          pods={props.pods}
-          currentPodId={props.currentPodId}
-          onAssign={props.onAssignPod}
-        />
-        )}
-
-        {props.hasBrief ? (
-          <button
-            onClick={props.onPreviewOnboarding}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] hover:border-[#383838] hover:text-white transition-colors"
-            title="Open the client's onboarding brief"
-          >
-            Onboarding brief
-          </button>
-        ) : (
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-transparent text-[#4B4D52] border border-dashed border-[#2A2A2A] cursor-default"
-            title="Brief lands here once the client completes onboarding"
-          >
-            No brief yet
-          </span>
-        )}
-      </div>
     </div>
   );
 }
@@ -2250,19 +1841,9 @@ function BoardColumns(props: BoardColumnsProps) {
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
   return (
-    <div className="grid gap-3 grid-flow-col auto-cols-[minmax(280px,1fr)] overflow-x-auto pb-2 h-full">
+    <div className="flex gap-0.5 justify-start overflow-x-auto pb-2 h-full">
       {props.phases.map((phase) => {
         const cards = props.cards[phase.value] ?? [];
-        const isDropTarget =
-          props.dragOverCol === phase.value && props.draggingId !== null;
-        // Scale the column header expectation to the active project's
-        // turnaround. Master / pod / results modes mix projects, so fall
-        // back to the baseline.
-        const expected =
-          props.viewMode === "project"
-            ? formatScaledExpected(phase.value, props.activeTurnaround)
-            : formatExpected(phase.value);
-
         return (
           <div
             key={phase.value}
@@ -2297,25 +1878,17 @@ function BoardColumns(props: BoardColumnsProps) {
               props.onSetDragOverCol(null);
               props.onSetDraggingId(null);
             }}
-            className={`rounded-xl flex flex-col transition-colors h-full overflow-hidden ${
-              isDropTarget
-                ? "bg-[#222222] border-2 border-dashed border-[#9CA3AF]"
-                : "bg-[#181818] border border-[#2A2A2A]"
-            }`}
+            className="w-[312px] shrink-0 rounded-xl flex flex-col h-full overflow-hidden"
           >
-            <div className="px-3 py-3 border-b border-[#2A2A2A] shrink-0">
+            <div className="px-2 py-2.5 shrink-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="shrink-0 size-2 rounded-full"
-                    style={{ background: phase.color }}
-                  />
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#E5E5EA] truncate">
+                  <span className="text-[12.5px] font-medium text-foreground truncate">
                     {phase.label}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[11px] font-medium text-[#71757D] tabular-nums">
+                  <span className="text-3xs font-medium text-subtle tabular-nums">
                     {cards.length}
                   </span>
                   {/* Quick-add: only in project mode (the add input
@@ -2336,7 +1909,7 @@ function BoardColumns(props: BoardColumnsProps) {
                           form?.scrollIntoView({ behavior: "smooth", block: "end" });
                         }, 50);
                       }}
-                      className="size-5 inline-flex items-center justify-center rounded-md text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.06] transition-colors"
+                      className="size-5 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-white/[0.06] transition-colors"
                       title={`Add card to ${phase.label}`}
                     >
                       <PlusIcon className="size-3.5" />
@@ -2344,22 +1917,11 @@ function BoardColumns(props: BoardColumnsProps) {
                   )}
                 </div>
               </div>
-              {/* Always render the expected line so column header heights
-                  match. Not Started has no SLA; render an invisible spacer
-                  so the bottom border lines up across every column. */}
-              <p
-                className={`mt-1 text-[10px] tabular-nums ${
-                  expected ? "text-[#4B4D52]" : "invisible select-none"
-                }`}
-                aria-hidden={!expected}
-              >
-                {expected || "placeholder"}
-              </p>
             </div>
 
-            <div className={`${props.density === "glance" ? "p-1 space-y-1" : "p-2 space-y-2"} flex-1 min-h-0 overflow-y-auto scrollbar-thin`}>
+            <div className={`${props.density === "glance" ? "p-1 flex flex-col gap-1" : "px-1 py-1 flex flex-col gap-2"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}>
               {cards.length === 0 ? (
-                <p className="text-[11px] text-[#4B4D52] text-center py-6">
+                <p className="text-3xs text-border text-center py-6">
                   -
                 </p>
               ) : (
@@ -2382,13 +1944,21 @@ function BoardColumns(props: BoardColumnsProps) {
                 ))
               )}
 
+              {/* Ghost drop-slot: shows where the card will land when hovering
+                  a different column (not the card's own source column). */}
+              {props.dragOverCol === phase.value &&
+                props.draggingId !== null &&
+                !cards.some((c) => c.id === props.draggingId) && (
+                  <div className="rounded-[6px] border border-dashed border-white/[0.16] bg-white/[0.03] h-[92px]" />
+                )}
+
               {props.viewMode === "project" && props.canManage && (
                 <div className="pt-1" data-add-form-phase={phase.value}>
                   {props.addingToPhase === phase.value ? (
                     phase.value === "tickets" ? (
                       // Category picker + title input, only on the Tickets
                       // column. Other phases get the plain title input below.
-                      <div className="flex flex-col gap-1.5 rounded-md bg-[#0C0C0C] border border-[#383838] p-1.5" data-add-form="true">
+                      <div className="flex flex-col gap-1.5 rounded-md bg-background border border-border p-1.5" data-add-form="true">
                         <div className="flex items-center gap-1">
                           {TICKET_CATEGORIES.map((c) => {
                             const Icon = c.icon;
@@ -2401,10 +1971,10 @@ function BoardColumns(props: BoardColumnsProps) {
                                 onClick={() =>
                                   props.onSetNewCategoryDraft(c.value)
                                 }
-                                className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+                                className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-4xs font-semibold transition-colors ${
                                   active
-                                    ? "bg-white text-[#0C0C0C]"
-                                    : `${c.tone} hover:bg-[#181818]`
+                                    ? "bg-white text-background"
+                                    : `${c.tone} hover:bg-surface`
                                 }`}
                               >
                                 <Icon className="size-3" />
@@ -2433,14 +2003,14 @@ function BoardColumns(props: BoardColumnsProps) {
                             }
                           }}
                           placeholder={`New ${props.newCategoryDraft}`}
-                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-[#E5E5EA] focus:outline-none placeholder:text-[#4B4D52]"
+                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-border"
                         />
                       </div>
                     ) : (
                       // Non-tickets columns: deliverable category select +
                       // title input. Category is optional - blank just means
                       // an uncategorised card.
-                      <div className="flex flex-col gap-1.5 rounded-md bg-[#0C0C0C] border border-[#383838] p-1.5" data-add-form="true">
+                      <div className="flex flex-col gap-1.5 rounded-md bg-background border border-border p-1.5" data-add-form="true">
                         <div className="relative">
                           <select
                             value={props.newDeliverableCategoryDraft}
@@ -2449,7 +2019,7 @@ function BoardColumns(props: BoardColumnsProps) {
                                 e.target.value,
                               )
                             }
-                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-[11px] font-semibold uppercase tracking-wider bg-transparent text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] cursor-pointer"
+                            className="appearance-none w-full px-2 pr-7 py-1 rounded text-3xs font-semibold bg-transparent text-foreground border border-border focus:outline-none focus:border-border cursor-pointer"
                           >
                             <option value="">No category</option>
                             {DELIVERABLE_CATEGORIES.map((c) => (
@@ -2458,7 +2028,7 @@ function BoardColumns(props: BoardColumnsProps) {
                               </option>
                             ))}
                           </select>
-                          <ChevronDownIcon className="size-3 text-[#71757D] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <ChevronDownIcon className="size-3 text-subtle absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
                         <input
                           autoFocus
@@ -2484,14 +2054,14 @@ function BoardColumns(props: BoardColumnsProps) {
                               ? `New ${props.newDeliverableCategoryDraft}`
                               : "New deliverable"
                           }
-                          className="w-full px-2 py-1 rounded text-[12px] bg-transparent text-[#E5E5EA] focus:outline-none placeholder:text-[#4B4D52]"
+                          className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-border"
                         />
                       </div>
                     )
                   ) : (
                     <button
                       onClick={() => props.onSetAddingToPhase(phase.value)}
-                      className="w-full px-2.5 py-1.5 rounded-md text-[11px] font-medium text-[#71757D] hover:text-white hover:bg-[#222222] inline-flex items-center justify-center gap-1.5 transition-colors"
+                      className="w-full px-2.5 py-1.5 rounded-md text-3xs font-medium text-subtle hover:text-white hover:bg-surface-raised inline-flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <PlusIcon className="size-3.5" />
                       Add
@@ -2517,6 +2087,23 @@ interface CardProps {
   onOpen: () => void;
   onUpdate: (patch: Partial<MockDeliverable>) => void;
   canManage: boolean;
+}
+
+/* Leading icon per deliverable type, so a card reads at a glance (Linear
+ * style). Ticket categories keep their own icon; everything else maps by
+ * phase. */
+function phaseIcon(phase: string | undefined) {
+  const p = (phase ?? "").toLowerCase();
+  if (p.includes("internal")) return ArrowPathIcon;
+  if (p.includes("external")) return PaperAirplaneIcon;
+  if (p.includes("design")) return SwatchIcon;
+  if (p.includes("develop") || p === "dev" || p.includes("build")) return CodeBracketIcon;
+  if (p.includes("copy")) return PencilSquareIcon;
+  if (p.includes("doc")) return DocumentTextIcon;
+  if (p.includes("launch") || p.includes("test")) return RocketLaunchIcon;
+  if (p.includes("strateg")) return LightBulbIcon;
+  if (p.includes("qa")) return CheckCircleIcon;
+  return Squares2X2Icon;
 }
 
 function Card({
@@ -2556,15 +2143,15 @@ function Card({
       : null;
   /* Per-card dueDate takes top priority - if the card has an explicit
    * due date, the colour reflects that against today's clock per
-   * Dylan's rule: today<due=green, today===due=amber, today>due=red.
-   * Falls through to the phase-specific engine below when no dueDate
-   * is set. */
+   * Dylan's rule: overdue=red, due today OR tomorrow=amber (imminent),
+   * further out=green. Falls through to the phase-specific engine below
+   * when no dueDate is set. */
   const cardDueStatus: StuckStatus | null = d.dueDate
     ? (() => {
-        const cmp = MOCK_TODAY.localeCompare(d.dueDate);
-        if (cmp < 0) return "on-track";
-        if (cmp === 0) return "approaching";
-        return "stuck";
+        if (MOCK_TODAY.localeCompare(d.dueDate) > 0) return "stuck";
+        if (d.dueDate.localeCompare(addDaysISO(MOCK_TODAY, 1)) <= 0)
+          return "approaching";
+        return "on-track";
       })()
     : null;
   const status: StuckStatus =
@@ -2585,7 +2172,18 @@ function Card({
   // the primary designer knows it's signed off and needs sending to the
   // client. Once moved to External Rev (sent), green clears.
   const approved = d.phase === "internal-revisions" && !!d.approvedAt;
-  const style = live || approved ? LIVE_STYLE : STUCK_STYLES[status];
+  // The one small colour on the card — a Linear-style health mark. Muted
+  // tones: green on-track/live, amber approaching, muted red when late.
+  const statusDot =
+    live || approved
+      ? "var(--color-status-ontrack)"
+      : status === "stuck"
+        ? "var(--color-status-late)"
+        : status === "approaching"
+          ? "var(--color-status-approaching)"
+          : "var(--color-status-ontrack)";
+  const LeadIcon = categoryMeta?.icon ?? phaseIcon(d.phase);
+  const isOverdue = status === "stuck" && !live && !approved;
   const rounds = revisionRoundCount(d.phaseHistory);
   const limbo = limboStatusFor(rounds);
   const ready =
@@ -2597,8 +2195,6 @@ function Card({
     daysLive >= INTERIM_NUDGE_DAYS &&
     !(d.metrics ?? []).some(isMetricLogged);
 
-  const headerLabel =
-    viewMode === "master" ? d.clientName : d.category ?? d.projectName;
   const subhead =
     viewMode === "master"
       ? `${d.projectName}${d.category ? ` · ${d.category}` : ""}`
@@ -2616,89 +2212,72 @@ function Card({
    * the column for amber/reds in one look). Click to open the
    * full card; drag still works. Falls through to the full card
    * render below for cosy. */
+  const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
+    if (!canManage) return;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", d.id);
+    onDragStart();
+  };
+
   if (density === "glance") {
     return (
-      <div
+      <ProjectCard
+        variant="compact"
         draggable={canManage}
-        onDragStart={(e) => {
-          if (!canManage) return;
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", d.id);
-          onDragStart();
-        }}
+        onDragStart={handleDragStart}
         onDragEnd={onDragEnd}
         onClick={onOpen}
-        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border rounded ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-[#383838] transition-all ${
-          isDragging ? "opacity-40 scale-[0.98]" : ""
-        }`}
-        title={`${d.title}${role ? ` · ${role}` : ""}`}
-      >
-        {categoryMeta && (
-          <categoryMeta.icon className={`size-3 shrink-0 ${categoryMeta.tone}`} />
-        )}
-        {d.projectType === "retainer" && (
-          <StarSolid
-            className="size-3 shrink-0 text-amber-400"
-            title="Retainer (priority)"
-          />
-        )}
-        <span className="text-[12px] text-[#E5E5EA] truncate flex-1 min-w-0">
-          {d.title}
-        </span>
-        {(needsConclude || needsInterim || limbo) && (
-          <span
-            className="size-1.5 rounded-full shrink-0"
-            style={{
-              background: needsConclude
-                ? "#F97066"
-                : needsInterim
-                  ? "#F5A623"
-                  : "#5B8DEF",
-            }}
-            aria-label={needsConclude ? "Conclude" : needsInterim ? "Interim due" : "Many rounds"}
-          />
-        )}
-      </div>
+        dragging={isDragging}
+        live={!!live}
+        tooltip={`${d.title}${role ? ` · ${role}` : ""}`}
+        icon={
+          <>
+            {categoryMeta && (
+              <categoryMeta.icon className="size-3 shrink-0 text-subtle" />
+            )}
+            {d.projectType === "retainer" && (
+              <StarSolid
+                className="size-3 shrink-0 text-subtle"
+                title="Retainer (priority)"
+              />
+            )}
+          </>
+        }
+        title={d.title}
+        cluster={
+          needsConclude || needsInterim || limbo ? (
+            <span
+              className="size-1.5 rounded-full shrink-0 bg-subtle"
+              aria-label={needsConclude ? "Conclude" : needsInterim ? "Interim due" : "Many rounds"}
+            />
+          ) : null
+        }
+      />
     );
   }
 
   return (
-    <div
+    <ProjectCard
       draggable={canManage}
-      onDragStart={(e) => {
-        if (!canManage) return;
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", d.id);
-        onDragStart();
-      }}
+      onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      className={`p-3 border rounded-lg ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-[#383838] transition-all ${
-        isDragging ? "opacity-40 scale-[0.98]" : ""
-      }`}
-    >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          {categoryMeta && (
-            <categoryMeta.icon
-              className={`size-3.5 shrink-0 ${categoryMeta.tone}`}
-              title={categoryMeta.label}
-            />
-          )}
-          {d.projectType === "retainer" && (
-            <StarSolid
-              className="size-3.5 shrink-0 text-amber-400"
-              title="Retainer (priority)"
-            />
-          )}
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#E5E5EA] truncate">
-            {headerLabel}
-          </span>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
+      dragging={isDragging}
+      overdue={isOverdue}
+      live={!!live}
+      icon={<LeadIcon className="size-4 shrink-0 mt-px text-muted" title={categoryMeta?.label} />}
+      title={d.title}
+      description={subhead || undefined}
+      cluster={
+        <>
+          <span
+            className="size-2 rounded-full shrink-0"
+            style={{ background: statusDot }}
+            title={status === "stuck" ? "Late" : status === "approaching" ? "Approaching" : "On track"}
+          />
           {d.revisionRequested && (
             <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-rose-500/15 text-rose-400"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted"
               title="Bounced back; needs revisions"
             >
               <ArrowUturnLeftIcon className="size-2.5" />
@@ -2706,110 +2285,102 @@ function Card({
             </span>
           )}
           {limbo !== "none" && (
-            <span
-              className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded ${
-                limbo === "limbo"
-                  ? "bg-red-500/15 text-red-400"
-                  : "bg-amber-500/15 text-amber-400"
-              }`}
-            >
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               R{rounds}
             </span>
           )}
           {ready && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-[#A78BFA]/15 text-[#A78BFA]">
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               Ready
             </span>
           )}
           {live && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-emerald-500/15 text-emerald-400">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-status-ontrack">
               <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                <span className="relative inline-flex rounded-full size-1.5 bg-emerald-400" />
+                <span className="absolute inline-flex h-full w-full rounded-full bg-status-ontrack opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full size-1.5 bg-status-ontrack" />
               </span>
               Live
             </span>
           )}
           {needsConclude && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-amber-500/15 text-amber-400">
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               Conclude
             </span>
           )}
           {needsInterim && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-[#0EA5E9]/15 text-[#0EA5E9]">
+            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
               Log result
             </span>
           )}
-        </div>
-      </div>
-
-      {subhead && (
-        <p className="text-[10px] text-[#71757D] truncate mb-1.5">{subhead}</p>
-      )}
-
-      <p className="text-[14px] font-semibold leading-tight text-[#E5E5EA]">
-        {d.title}
-      </p>
-
-      {/* Set Live + Conclude controls live inside the detail modal now (the
-          Test setup section). Card stays a quiet display surface; the badges
-          in the header strip (Ready / Live / Conclude / Log result) signal
-          what the strategist needs to act on. */}
-
-      <div className="mt-3 flex items-center justify-between gap-2 text-[11px]">
-        <span className="text-[#9CA3AF] truncate min-w-0">
-          {d.phase === "launch-testing" ? (
-            <>
-              {LAUNCH_TESTING_TESTER}
-              <span className="text-[#4B4D52] mx-1">·</span>
-              {LAUNCH_TESTING_DEV}
-            </>
-          ) : d.phase === "strategy" ? (
-            <>{STRATEGY_OWNER}</>
-          ) : approved ? (
-            // Approved-in-internal-rev cards flip to the primary designer -
-            // they own the "send it to the client" action.
-            <>{d.designer || role.name}</>
-          ) : (
-            <>
-              {role.name}
-              {role.isSecondary && (
-                <span className="text-[#4B4D52] ml-1">(2nd)</span>
-              )}
-            </>
-          )}
-        </span>
-        <span className={`tabular-nums font-medium shrink-0 ${style.accent}`}>
-          {(() => {
-            // Documents column has per-card dueDates from the retainer
-            // preload (or manual override on builds).
-            if (d.phase === "documents" && d.dueDate)
-              return formatShortDate(d.dueDate);
-            // External Rev shows the 48h client clock target.
-            if (d.phase === "external-revisions" && d.sentToClientAt)
-              return formatShortDate(
-                addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS),
-              );
-            // Builds use the project-derived phase due date everywhere else.
-            const due =
-              d.projectType === "build"
-                ? phaseInternalDueDate(d.phase, {
-                    type: d.projectType,
-                    turnaroundDays: d.turnaroundDays,
-                    startDate: d.projectStartDate,
-                    clientApprovedAt: d.projectClientApprovedAt,
-                  })
-                : null;
-            if (due) return formatShortDate(due);
-            // Last fallback - per-card dueDate (legacy / manual override),
-            // then a TBD if there's literally no date anchor anywhere.
-            if (d.dueDate) return formatShortDate(d.dueDate);
-            if (d.phase === "not-started") return "TBD";
-            return formatHours(d.hoursInPhase);
-          })()}
-        </span>
-      </div>
-    </div>
+        </>
+      }
+      footer={
+        <>
+          <span className="text-subtle truncate min-w-0">
+            {d.phase === "launch-testing" ? (
+              <>
+                {LAUNCH_TESTING_TESTER}
+                <span className="text-border mx-1">·</span>
+                {LAUNCH_TESTING_DEV}
+              </>
+            ) : d.phase === "strategy" ? (
+              <>{STRATEGY_OWNER}</>
+            ) : approved ? (
+              // Approved-in-internal-rev cards flip to the primary designer -
+              // they own the "send it to the client" action.
+              <>{d.designer || role.name}</>
+            ) : (
+              <>
+                {role.name}
+                {role.isSecondary && (
+                  <span className="text-border ml-1">(2nd)</span>
+                )}
+              </>
+            )}
+          </span>
+          <span
+            className={`tabular-nums font-medium shrink-0 ${
+              live || approved
+                ? "text-subtle"
+                : status === "stuck"
+                  ? "text-status-late"
+                  : status === "approaching"
+                    ? "text-status-approaching"
+                    : "text-subtle"
+            }`}
+          >
+            {(() => {
+              // Documents column has per-card dueDates from the retainer
+              // preload (or manual override on builds).
+              if (d.phase === "documents" && d.dueDate)
+                return formatShortDate(d.dueDate);
+              // External Rev shows the 48h client clock target.
+              if (d.phase === "external-revisions" && d.sentToClientAt)
+                return formatShortDate(
+                  addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS),
+                );
+              // Builds use the project-derived phase due date everywhere else.
+              const due =
+                d.projectType === "build"
+                  ? phaseInternalDueDate(d.phase, {
+                      type: d.projectType,
+                      turnaroundDays: d.turnaroundDays,
+                      startDate: d.projectStartDate,
+                      clientApprovedAt: d.projectClientApprovedAt,
+                    })
+                  : null;
+              if (due) return formatShortDate(due);
+              // Last fallback - per-card dueDate (legacy / manual override),
+              // then a TBD if there's literally no date anchor anywhere.
+              if (d.dueDate) return formatShortDate(d.dueDate);
+              if (d.phase === "not-started") return "TBD";
+              return formatHours(d.hoursInPhase);
+            })()}
+          </span>
+        </>
+      }
+    />
   );
 }
 
@@ -2824,64 +2395,92 @@ interface ResultsBankFiltersProps {
   onChangeMetric: (v: string) => void;
 }
 
+/* Compact single-select for the Results filters (client / metric), matching
+ * the app's custom dark dropdowns instead of a browser-styled <select>. */
+function FilterSelect({
+  value,
+  onChange,
+  options,
+  allLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  allLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const all = [{ value: "all", label: allLabel }, ...options];
+  const active = all.find((o) => o.value === value) ?? all[0];
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <Pill active={open} className="pr-2 max-w-[200px]" onClick={() => setOpen((v) => !v)}>
+        <span className="truncate min-w-0">{active.label}</span>
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+      </Pill>
+      {open && (
+        <div className="absolute left-0 top-9 z-40 w-52 max-h-72 overflow-y-auto bg-background rounded-lg ring-1 ring-panel-line shadow-popover py-1">
+          {all.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => {
+                onChange(o.value);
+                setOpen(false);
+              }}
+              className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-2xs transition-colors hover:bg-surface-hover ${
+                o.value === value ? "text-foreground" : "text-muted"
+              }`}
+            >
+              <span className="truncate min-w-0">{o.label}</span>
+              {o.value === value && <CheckIcon className="size-3.5 text-foreground shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ResultsBankFilters(props: ResultsBankFiltersProps) {
-  const outcomes: { v: TestOutcome | "all"; label: string }[] = [
-    { v: "all", label: "All" },
-    { v: "winner", label: "Winners" },
-    { v: "loser", label: "Losers" },
-    { v: "inconclusive", label: "Inconclusive" },
-    { v: "shipped", label: "Shipped" },
+  const outcomes: { label: string; value: TestOutcome | "all" }[] = [
+    { label: "All", value: "all" },
+    { label: "Winners", value: "winner" },
+    { label: "Losers", value: "loser" },
+    { label: "Inconclusive", value: "inconclusive" },
+    { label: "Shipped", value: "shipped" },
   ];
   return (
     <div className="flex items-center gap-2 flex-wrap mb-5">
-      <div className="inline-flex p-0.5 rounded-full bg-[#222222] border border-[#2A2A2A]">
-        {outcomes.map((o) => (
-          <button
-            key={o.v}
-            onClick={() => props.onChangeOutcome(o.v)}
-            className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
-              props.outcome === o.v
-                ? "bg-white text-[#0C0C0C]"
-                : "text-[#71757D] hover:text-white"
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="relative">
-        <select
-          value={props.client}
-          onChange={(e) => props.onChangeClient(e.target.value)}
-          className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
-        >
-          <option value="all">All clients</option>
-          {props.clientOptions.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-      </div>
-
+      <Segmented
+        variant="ghost"
+        value={props.outcome}
+        onChange={props.onChangeOutcome}
+        options={outcomes}
+      />
+      <FilterSelect
+        value={props.client}
+        onChange={props.onChangeClient}
+        options={props.clientOptions.map((c) => ({ value: c.id, label: c.name }))}
+        allLabel="All clients"
+      />
       {props.metricOptions.length > 0 && (
-        <div className="relative">
-          <select
-            value={props.metric}
-            onChange={(e) => props.onChangeMetric(e.target.value)}
-            className="appearance-none text-sm font-medium pl-3 pr-9 py-2 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
-          >
-            <option value="all">All metrics</option>
-            {props.metricOptions.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon className="size-3.5 text-[#71757D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
+        <FilterSelect
+          value={props.metric}
+          onChange={props.onChangeMetric}
+          options={props.metricOptions.map((m) => ({ value: m, label: m }))}
+          allLabel="All metrics"
+        />
       )}
     </div>
   );
@@ -2895,9 +2494,9 @@ interface ResultsBankGridProps {
 function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
   if (cards.length === 0) {
     return (
-      <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] px-6 py-16 text-center">
-        <p className="text-sm font-semibold text-[#E5E5EA]">No tests yet</p>
-        <p className="mt-1 text-xs text-[#71757D]">
+      <div className="rounded-lg border border-border bg-surface px-6 py-16 text-center">
+        <p className="text-sm font-semibold text-foreground">No tests yet</p>
+        <p className="mt-1 text-xs text-subtle">
           Conclude a launch-testing deliverable to build the bank.
         </p>
       </div>
@@ -2912,44 +2511,44 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
           <button
             key={d.id}
             onClick={() => onOpen(d.id)}
-            className="text-left p-4 rounded-xl border border-[#2A2A2A] bg-[#181818] hover:border-[#383838] hover:bg-[#1E1E1E] transition-colors"
+            className="text-left p-4 rounded-lg border border-border bg-surface hover:bg-surface-raised hover:border-white/[0.09] transition-colors"
           >
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] truncate">
+              <span className="text-3xs font-medium text-subtle truncate">
                 {d.clientName} · {d.projectName}
               </span>
               <span
-                className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded shrink-0"
+                className="px-1.5 py-0.5 text-5xs font-bold rounded shrink-0"
                 style={{ background: meta.bg, color: meta.color }}
               >
                 {meta.label}
               </span>
             </div>
-            <p className="text-[14px] font-semibold text-[#E5E5EA] leading-tight">
+            <p className="text-sm font-semibold text-foreground leading-tight">
               {d.title}
             </p>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+            <div className="mt-3 grid grid-cols-3 gap-2 text-3xs">
               <div>
-                <p className="text-[#4B4D52] uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border text-5xs font-bold">
                   Metric
                 </p>
-                <p className="mt-0.5 text-[#E5E5EA] truncate">
+                <p className="mt-0.5 text-foreground truncate">
                   {r.metric ?? "-"}
                 </p>
               </div>
               <div>
-                <p className="text-[#4B4D52] uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border text-5xs font-bold">
                   Uplift
                 </p>
                 <p
                   className={`mt-0.5 tabular-nums font-semibold ${
                     r.upliftPct == null
-                      ? "text-[#71757D]"
+                      ? "text-subtle"
                       : r.upliftPct > 0
-                        ? "text-emerald-400"
+                        ? "text-status-ontrack"
                         : r.upliftPct < 0
-                          ? "text-red-400"
-                          : "text-[#E5E5EA]"
+                          ? "text-status-late"
+                          : "text-foreground"
                   }`}
                 >
                   {r.upliftPct == null
@@ -2958,15 +2557,15 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
                 </p>
               </div>
               <div>
-                <p className="text-[#4B4D52] uppercase tracking-wider text-[9px] font-bold">
+                <p className="text-border text-5xs font-bold">
                   Confidence
                 </p>
-                <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                <p className="mt-0.5 text-foreground tabular-nums">
                   {r.confidencePct != null ? `${r.confidencePct}%` : "-"}
                 </p>
               </div>
             </div>
-            <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-[#71757D]">
+            <div className="mt-3 flex items-center justify-between gap-2 text-4xs text-subtle">
               <span className="inline-flex items-center gap-1.5">
                 <CalendarIcon className="size-3" />
                 {formatDueDate(r.concludedAt)}
@@ -3047,20 +2646,20 @@ function OnboardingPreviewModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[85vh] rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] flex flex-col overflow-hidden"
+        className="w-full max-w-3xl max-h-[85vh] rounded-xl border border-border bg-background flex flex-col overflow-hidden"
       >
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#2A2A2A] shrink-0">
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border shrink-0">
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+            <p className="text-3xs font-medium text-subtle">
               Onboarding brief
             </p>
-            <p className="text-sm font-medium text-[#E5E5EA] truncate">
+            <p className="text-sm font-medium text-foreground truncate">
               {clientName}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="size-8 inline-flex items-center justify-center rounded-full text-[#71757D] hover:text-white hover:bg-[#181818] transition-colors"
+            className="size-8 inline-flex items-center justify-center rounded-full text-subtle hover:text-white hover:bg-surface transition-colors"
             aria-label="Close brief"
           >
             <XMarkIcon className="size-4" />
@@ -3073,16 +2672,16 @@ function OnboardingPreviewModal({
             if (populated.length === 0) return null;
             return (
               <section key={section.title}>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-3">
+                <h3 className="text-3xs font-medium text-subtle mb-3">
                   {section.title}
                 </h3>
                 <dl className="space-y-3">
                   {populated.map((item) => (
                     <div key={item.label}>
-                      <dt className="text-[11px] font-medium uppercase tracking-wider text-[#71757D] mb-0.5">
+                      <dt className="text-3xs font-medium text-subtle mb-0.5">
                         {item.label}
                       </dt>
-                      <dd className="text-sm text-[#E5E5EA] whitespace-pre-wrap leading-relaxed">
+                      <dd className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                         {item.value}
                       </dd>
                     </div>
@@ -3122,23 +2721,23 @@ function DarkConfirm({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+        className="w-full max-w-md rounded-xl border border-border bg-background p-5 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
       >
-        <h3 className="text-base font-semibold text-[#E5E5EA] mb-2">{title}</h3>
-        <p className="text-sm text-[#9CA3AF] leading-relaxed mb-5">{message}</p>
+        <h3 className="text-base font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-sm text-muted leading-relaxed mb-5">{message}</p>
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+            className="px-3 py-1.5 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+            className={`px-4 py-1.5 rounded-md text-3xs font-semibold transition-colors ${
               destructive
                 ? "bg-rose-500 text-white hover:bg-rose-400"
-                : "bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+                : "bg-white text-background hover:bg-foreground"
             }`}
           >
             {confirmLabel}
@@ -3157,33 +2756,33 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl rounded-2xl bg-[#0C0C0C] border border-[#2A2A2A] p-6"
+        className="w-full max-w-2xl rounded-2xl bg-background border border-border p-6"
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+            <p className="text-3xs font-medium text-subtle">
               Mission Control
             </p>
-            <h2 className="text-xl font-bold text-[#E5E5EA] mt-1">
+            <h2 className="text-xl font-bold text-foreground mt-1">
               Phase rules
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="size-8 rounded-full bg-[#181818] border border-[#2A2A2A] text-[#71757D] hover:text-white flex items-center justify-center"
+            className="size-8 rounded-full bg-surface border border-border text-subtle hover:text-white flex items-center justify-center"
           >
             <XMarkIcon className="size-4" />
           </button>
         </div>
 
-        <p className="text-sm text-[#9CA3AF] mb-4">
+        <p className="text-sm text-muted mb-4">
           Expected vs stuck thresholds are measured in UK working hours (Mon-Fri,
           9-5 Europe/London, excl bank holidays). 1 day = {WORKING_HOURS_PER_DAY}{" "}
           working hours.
         </p>
 
-        <div className="rounded-lg border border-[#2A2A2A] divide-y divide-[#2A2A2A]">
-          <div className="grid grid-cols-3 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+        <div className="rounded-lg border border-border divide-y divide-border">
+          <div className="grid grid-cols-3 px-4 py-2.5 text-3xs font-medium text-subtle">
             <span>Phase</span>
             <span className="text-right">Expected (internal)</span>
             <span className="text-right">Stuck (client-facing)</span>
@@ -3193,19 +2792,19 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
             return (
               <div
                 key={p.value}
-                className="grid grid-cols-3 px-4 py-2.5 text-[12px]"
+                className="grid grid-cols-3 px-4 py-2.5 text-2xs"
               >
-                <span className="inline-flex items-center gap-2 text-[#E5E5EA]">
+                <span className="inline-flex items-center gap-2 text-foreground">
                   <span
                     className="size-2 rounded-full"
                     style={{ background: p.color }}
                   />
                   {p.label}
                 </span>
-                <span className="text-right tabular-nums text-[#9CA3AF]">
+                <span className="text-right tabular-nums text-muted">
                   {t.expectedHours === 0 ? "-" : formatHours(t.expectedHours)}
                 </span>
-                <span className="text-right tabular-nums text-[#9CA3AF]">
+                <span className="text-right tabular-nums text-muted">
                   {t.stuckHours === 0 ? "-" : formatHours(t.stuckHours)}
                 </span>
               </div>
@@ -3213,34 +2812,34 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
           })}
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-3 text-[11px]">
-          <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-[#71757D]">
+        <div className="mt-4 grid grid-cols-3 gap-3 text-3xs">
+          <div className="rounded-lg border border-border bg-surface p-3">
+            <p className="font-bold text-4xs text-subtle">
               On track
             </p>
-            <p className="mt-1 text-[#9CA3AF]">
+            <p className="mt-1 text-muted">
               Below the internal deadline. Neutral border.
             </p>
           </div>
           <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-amber-400">
+            <p className="font-bold text-4xs text-amber-400">
               Approaching
             </p>
-            <p className="mt-1 text-[#9CA3AF]">
+            <p className="mt-1 text-muted">
               Past internal deadline, before the client knows. Window to unblock.
             </p>
           </div>
           <div className="rounded-lg border border-red-500/40 bg-red-500/5 p-3">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-red-400">
+            <p className="font-bold text-4xs text-red-400">
               Stuck
             </p>
-            <p className="mt-1 text-[#9CA3AF]">
+            <p className="mt-1 text-muted">
               Past the client-facing deadline. Surface and escalate.
             </p>
           </div>
         </div>
 
-        <p className="mt-4 text-[11px] text-[#71757D]">
+        <p className="mt-4 text-3xs text-subtle">
           Limbo / revision-round badges fire at R3 (heating) and R4+ (limbo) by
           counting how many times a deliverable has bounced through
           internal-revisions or external-revisions.
@@ -3358,12 +2957,12 @@ function DarkDatePicker({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full inline-flex items-center gap-2 px-3 py-2 rounded-md bg-[#181818] border border-[#2A2A2A] hover:border-[#383838] text-sm transition-colors"
+        className="w-full inline-flex items-center gap-2 px-3 py-2 rounded-md bg-surface border border-border hover:border-border text-sm transition-colors"
       >
-        <CalendarIcon className="size-4 text-[#71757D] shrink-0" />
+        <CalendarIcon className="size-4 text-subtle shrink-0" />
         <span
           className={`flex-1 text-left tabular-nums ${
-            value ? "text-[#E5E5EA]" : "text-[#4B4D52]"
+            value ? "text-foreground" : "text-border"
           }`}
         >
           {value ? formatDueDate(value) : placeholder}
@@ -3383,7 +2982,7 @@ function DarkDatePicker({
                 onChange(undefined);
               }
             }}
-            className="text-[#4B4D52] hover:text-[#9CA3AF] transition-colors shrink-0 cursor-pointer"
+            className="text-border hover:text-muted transition-colors shrink-0 cursor-pointer"
             aria-label="Clear date"
           >
             <XMarkIcon className="size-3.5" />
@@ -3395,25 +2994,25 @@ function DarkDatePicker({
         <div
           ref={popRef}
           style={{ position: "fixed", top: popPos.top, left: popPos.left }}
-          className="z-[60] w-72 rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] shadow-[0_8px_32px_rgba(0,0,0,0.6)] p-3"
+          className="z-[60] w-72 rounded-xl border border-border bg-background shadow-[0_8px_32px_rgba(0,0,0,0.6)] p-3"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-3">
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
-              className="size-7 inline-flex items-center justify-center rounded-md text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818] transition-colors"
+              className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
               aria-label="Previous month"
             >
               <ChevronLeftIcon className="size-3.5" />
             </button>
-            <span className="text-sm font-semibold text-[#E5E5EA] tabular-nums">
+            <span className="text-sm font-semibold text-foreground tabular-nums">
               {monthLabel}
             </span>
             <button
               type="button"
               onClick={() => shiftMonth(1)}
-              className="size-7 inline-flex items-center justify-center rounded-md text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818] transition-colors"
+              className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
               aria-label="Next month"
             >
               <ChevronRightIcon className="size-3.5" />
@@ -3423,7 +3022,7 @@ function DarkDatePicker({
             {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
               <div
                 key={d}
-                className="text-[10px] uppercase tracking-wider text-[#4B4D52] text-center py-1"
+                className="text-4xs text-border text-center py-1"
               >
                 {d}
               </div>
@@ -3440,12 +3039,12 @@ function DarkDatePicker({
                   key={i}
                   type="button"
                   onClick={() => pickDay(day)}
-                  className={`size-8 inline-flex items-center justify-center rounded-md text-[12px] tabular-nums transition-colors ${
+                  className={`size-8 inline-flex items-center justify-center rounded-md text-2xs tabular-nums transition-colors ${
                     isSelected
-                      ? "bg-white text-[#0C0C0C] font-semibold"
+                      ? "bg-white text-background font-semibold"
                       : isToday
-                        ? "bg-[#181818] text-[#E5E5EA] ring-1 ring-[#383838] hover:bg-[#222222]"
-                        : "text-[#9CA3AF] hover:bg-[#181818] hover:text-white"
+                        ? "bg-surface text-foreground ring-1 ring-border hover:bg-surface-raised"
+                        : "text-muted hover:bg-surface hover:text-white"
                   }`}
                 >
                   {day}
@@ -3453,7 +3052,7 @@ function DarkDatePicker({
               );
             })}
           </div>
-          <div className="mt-3 pt-3 border-t border-[#2A2A2A] flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
             <button
               type="button"
               onClick={() => {
@@ -3462,7 +3061,7 @@ function DarkDatePicker({
                 setViewYM({ year: y, month: m - 1 });
                 setOpen(false);
               }}
-              className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+              className="text-3xs font-semibold text-subtle hover:text-white transition-colors"
             >
               Today
             </button>
@@ -3473,7 +3072,7 @@ function DarkDatePicker({
                   onChange(undefined);
                   setOpen(false);
                 }}
-                className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-rose-400 transition-colors"
+                className="text-3xs font-semibold text-subtle hover:text-rose-400 transition-colors"
               >
                 Clear
               </button>
@@ -3529,6 +3128,14 @@ function DetailModal({
 }: DetailModalProps) {
   const status = statusForHoursInPhase(d.phase, d.hoursInPhase);
   const style = STUCK_STYLES[status];
+  // Status value colour: green on-track, amber approaching, red late (the
+  // STUCK_STYLES on-track dot is intentionally grey, so map it explicitly).
+  const statusColor =
+    status === "stuck"
+      ? "var(--color-status-late)"
+      : status === "approaching"
+        ? "var(--color-status-approaching)"
+        : "var(--color-status-ontrack)";
   const rounds = revisionRoundCount(d.phaseHistory);
   const calDays = calendarDaysInCurrentPhase(d.phaseHistory);
   const live = d.phase === "launch-testing" && d.liveStartedAt && !d.testResult;
@@ -3547,6 +3154,7 @@ function DetailModal({
     ? parseFloat(primaryMetric.interim.replace(/[^-0-9.]/g, ""))
     : NaN;
 
+  const [tab, setTab] = useState<"status" | "info">("status");
   const [concluding, setConcluding] = useState(false);
   const [outcomeDraft, setOutcomeDraft] = useState<TestOutcome>("winner");
   const [metricDraft, setMetricDraft] = useState<string>(
@@ -3675,51 +3283,123 @@ function DetailModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#0C0C0C] border border-[#2A2A2A]"
+        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-border"
       >
-        <div className="px-6 py-5 border-b border-[#2A2A2A] flex items-start justify-between gap-4">
+        <div className="px-6 pt-5 pb-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+            <p className="text-3xs font-medium text-subtle">
               {d.clientName} · {d.projectName}
               {d.category ? ` · ${d.category}` : ""}
             </p>
-            <h2 className="mt-1 text-xl font-bold text-[#E5E5EA] leading-tight">
+            <h2 className="mt-1.5 font-heading text-xl font-medium tracking-tight text-foreground leading-tight">
               {d.title}
             </h2>
-            <div className="mt-3 flex items-center gap-2 flex-wrap">
-              <span
-                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${style.bg} ${style.accent}`}
-              >
-                <span
-                  className="size-1.5 rounded-full"
-                  style={{ background: style.dot }}
-                />
-                {style.label}
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#181818] text-[#9CA3AF]">
-                {formatHours(d.hoursInPhase)} in phase
-              </span>
-              {calDays > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#181818] text-[#9CA3AF]">
-                  {calDays}d calendar
-                </span>
-              )}
-              {rounds > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#181818] text-[#9CA3AF]">
-                  R{rounds} revisions
-                </span>
-              )}
-            </div>
           </div>
           <button
             onClick={onClose}
-            className="size-8 rounded-full bg-[#181818] border border-[#2A2A2A] text-[#71757D] hover:text-white flex items-center justify-center shrink-0"
+            className="size-8 rounded-md text-subtle hover:text-foreground hover:bg-surface flex items-center justify-center shrink-0 transition-colors"
           >
             <XMarkIcon className="size-4" />
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-6">
+        <div className="px-6 pb-6 flex items-end justify-between gap-6 flex-wrap">
+          <div className="flex items-start gap-10 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 text-2xs text-muted mb-2">
+                <span className="size-2 rounded-[3px]" style={{ background: statusColor }} />
+                Status
+              </div>
+              <div className="text-xl font-medium leading-none" style={{ color: statusColor }}>
+                {style.label}
+              </div>
+            </div>
+            <div>
+              <div className="text-2xs text-muted mb-2">In phase</div>
+              <div className="text-xl font-medium text-foreground leading-none tabular-nums">
+                {formatHours(d.hoursInPhase)}
+              </div>
+            </div>
+            {calDays > 0 && (
+              <div>
+                <div className="text-2xs text-muted mb-2">Calendar</div>
+                <div className="text-xl font-medium text-foreground leading-none tabular-nums">
+                  {calDays}d
+                </div>
+              </div>
+            )}
+            {rounds > 0 && (
+              <div>
+                <div className="text-2xs text-muted mb-2">Revisions</div>
+                <div className="text-xl font-medium text-foreground leading-none tabular-nums">
+                  R{rounds}
+                </div>
+              </div>
+            )}
+          </div>
+          <Segmented
+            variant="ghost"
+            value={tab}
+            onChange={setTab}
+            options={[
+              { label: "Status", value: "status" },
+              { label: "Info", value: "info" },
+            ]}
+            className="shrink-0"
+          />
+        </div>
+
+        <div className="px-6 pb-6 space-y-6">
+          {tab === "status" && (
+            <>
+          {/* Phase progress - the hero. Shows where the deliverable sits in
+              the build pipeline: done phases filled, current bright, future
+              hatched. Build-with-schedule cards get the dated version below
+              instead, so this is skipped for them. */}
+          {(() => {
+            const hasBuildSchedule =
+              d.projectType === "build" && !!d.projectStartDate && !!d.turnaroundDays;
+            if (hasBuildSchedule) return null;
+            const PIPELINE: PreviewPhase[] = [
+              ...PHASE_1_ORDER,
+              "external-revisions",
+              ...PHASE_2_ORDER,
+            ];
+            const currentIdx = PIPELINE.indexOf(d.phase);
+            if (currentIdx < 0) return null;
+            return (
+              <section>
+                <div className="flex items-baseline justify-between mb-3">
+                  <h3 className="text-3xs font-medium text-subtle">Progress</h3>
+                  <span className="text-4xs text-subtle">
+                    {previewPhaseMeta(d.phase)?.label ?? d.phase}
+                  </span>
+                </div>
+                <div className="flex gap-1 h-2">
+                  {PIPELINE.map((p, i) => (
+                    <div
+                      key={p}
+                      title={previewPhaseMeta(p)?.label ?? p}
+                      className={`flex-1 rounded-sm ${
+                        i === currentIdx
+                          ? "bg-foreground"
+                          : i < currentIdx
+                            ? "bg-white/25"
+                            : "border border-white/[0.05] bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.05)_3px,rgba(255,255,255,0.05)_6px)]"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="mt-2 flex items-center justify-between text-4xs text-subtle">
+                  <span>{previewPhaseMeta(PIPELINE[0])?.label ?? PIPELINE[0]}</span>
+                  <span>
+                    {previewPhaseMeta(PIPELINE[PIPELINE.length - 1])?.label ??
+                      PIPELINE[PIPELINE.length - 1]}
+                  </span>
+                </div>
+              </section>
+            );
+          })()}
           {/* Build schedule - the full Phase 1 + Phase 2 internal due dates
               for this project. Phase 2 reads "TBC" until the client approves
               the design (first card moves Ext Rev -> Dev). External client
@@ -3787,69 +3467,77 @@ function DetailModal({
                 })),
               ];
               return (
-                <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
-                  <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
-                      Build schedule
-                    </h3>
-                    <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
-                      {d.turnaroundDays}d project
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 text-xs">
-                    {scheduleCells.map(({ phase, due, isCurrent }) => {
-                      const meta = previewPhaseMeta(phase);
-                      return (
-                        <div
-                          key={phase}
-                          className={`rounded-md p-2 border ${
-                            isCurrent
-                              ? "border-[#383838] bg-[#181818]"
-                              : "border-[#2A2A2A]"
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span
-                              className="size-1.5 rounded-full"
-                              style={{ background: meta?.color ?? "#71757D" }}
-                            />
-                            <span className="text-[10px] uppercase tracking-wider text-[#9CA3AF] truncate">
-                              {meta?.label ?? phase}
-                            </span>
-                          </div>
-                          <span
-                            className={`text-[12px] tabular-nums ${
-                              due
-                                ? isCurrent
-                                  ? "text-white font-medium"
-                                  : "text-[#E5E5EA]"
-                                : "text-[#4B4D52]"
-                            }`}
-                          >
-                            {due ? formatShortDate(due) : "TBC"}
-                          </span>
+                <section className="border-t border-white/[0.05] pt-6">
+                  {(() => {
+                    const currentIdx = scheduleCells.findIndex((c) => c.isCurrent);
+                    const first = scheduleCells[0];
+                    const last = scheduleCells[scheduleCells.length - 1];
+                    const currentCell = currentIdx >= 0 ? scheduleCells[currentIdx] : null;
+                    return (
+                      <>
+                        <div className="flex items-baseline justify-between mb-3">
+                          <h3 className="text-3xs font-medium text-subtle">Progress</h3>
+                          <span className="text-4xs text-subtle">{d.turnaroundDays}d build</span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="flex gap-1 h-2">
+                          {scheduleCells.map((c, i) => {
+                            const done = currentIdx >= 0 && i < currentIdx;
+                            return (
+                              <div
+                                key={c.phase}
+                                title={`${previewPhaseMeta(c.phase)?.label ?? c.phase}${c.due ? ` · ${formatShortDate(c.due)}` : ""}`}
+                                className={`flex-1 rounded-sm ${
+                                  c.isCurrent
+                                    ? "bg-foreground"
+                                    : done
+                                      ? "bg-white/25"
+                                      : "border border-white/[0.05] bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.05)_3px,rgba(255,255,255,0.05)_6px)]"
+                                }`}
+                              />
+                            );
+                          })}
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-4xs text-subtle">
+                          <span>{previewPhaseMeta(first.phase)?.label ?? first.phase}</span>
+                          <span>{previewPhaseMeta(last.phase)?.label ?? last.phase}</span>
+                        </div>
+                        {currentCell && (
+                          <p className="mt-3 text-2xs text-muted">
+                            Currently in{" "}
+                            <span className="text-foreground font-medium">
+                              {previewPhaseMeta(currentCell.phase)?.label ?? currentCell.phase}
+                            </span>
+                            {currentCell.due && (
+                              <>
+                                {" · due "}
+                                <span className="text-foreground tabular-nums">
+                                  {formatShortDate(currentCell.due)}
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                   {isLate && (
-                    <div className="mt-3 px-3 py-2 rounded-md bg-rose-500/10 border border-rose-500/30 text-[11px] text-rose-300">
+                    <div className="mt-3 px-3 py-2 rounded-md bg-rose-500/10 border border-rose-500/30 text-3xs text-rose-300">
                       External revisions ran long: Launch & Testing now lands
                       after the client deadline. Escalate or rescope.
                     </div>
                   )}
                   {canManage && (
-                  <div className="mt-3 pt-3 border-t border-[#2A2A2A] space-y-2 text-[11px]">
+                  <div className="mt-3 pt-3 border-t border-border space-y-2 text-3xs">
                     {/* These two anchors drive the auto-computed per-phase
                       * due dates in the schedule grid above. They're a
                       * fallback - if Phase 1 / Phase 2 deadlines are set
                       * directly in the Client deadlines section, those
                       * take precedence for stuck/approaching/on-track. */}
-                    <p className="text-[10px] text-[#4B4D52] italic pb-1">
+                    <p className="text-4xs text-border italic pb-1">
                       Schedule anchors (used when no manual deadlines set)
                     </p>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                      <span className="text-subtle shrink-0">
                         Project start
                       </span>
                       <div className="min-w-0 flex-1 max-w-[180px]">
@@ -3861,7 +3549,7 @@ function DetailModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                      <span className="text-subtle shrink-0">
                         Client approved
                       </span>
                       <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
@@ -3875,7 +3563,7 @@ function DetailModal({
                         {d.projectClientApprovedAt && (
                           <button
                             onClick={onResetClientApproval}
-                            className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-rose-400 transition-colors shrink-0"
+                            className="text-4xs text-subtle hover:text-rose-400 transition-colors shrink-0"
                             title="Reset client approval - Phase 2 dates go back to TBC"
                           >
                             Reset
@@ -3884,12 +3572,12 @@ function DetailModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[#71757D] uppercase tracking-wider">
+                      <span className="text-subtle">
                         Client deadline
                       </span>
                       <span
                         className={`tabular-nums ${
-                          isLate ? "text-rose-300" : "text-[#E5E5EA]"
+                          isLate ? "text-rose-300" : "text-foreground"
                         }`}
                       >
                         {formatShortDate(clientDeadlineISO)}
@@ -3909,34 +3597,26 @@ function DetailModal({
             * dates for stuck/approaching/on-track on every card in
             * that bucket; Phase 2 also becomes the client deadline. */}
           {canManage && (
-          <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-3">
+          <section className="border-t border-white/[0.05] pt-6">
+            <h3 className="text-3xs font-medium text-subtle mb-3">
               Client deadlines
             </h3>
-            <div className="space-y-2 text-[11px]">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[#71757D] uppercase tracking-wider shrink-0">
-                  Phase 1 deadline
-                </span>
-                <div className="min-w-0 flex-1 max-w-[180px]">
-                  <DarkDatePicker
-                    value={d.projectPhase1Deadline}
-                    onChange={(v) => onSetPhase1Deadline(v)}
-                    placeholder="Set Phase 1 due"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-3xs text-subtle mb-1.5">Phase 1 deadline</div>
+                <DarkDatePicker
+                  value={d.projectPhase1Deadline}
+                  onChange={(v) => onSetPhase1Deadline(v)}
+                  placeholder="Set Phase 1 due"
+                />
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[#71757D] uppercase tracking-wider shrink-0">
-                  Phase 2 deadline
-                </span>
-                <div className="min-w-0 flex-1 max-w-[180px]">
-                  <DarkDatePicker
-                    value={d.projectPhase2Deadline}
-                    onChange={(v) => onSetPhase2Deadline(v)}
-                    placeholder="Set Phase 2 due"
-                  />
-                </div>
+              <div>
+                <div className="text-3xs text-subtle mb-1.5">Phase 2 deadline</div>
+                <DarkDatePicker
+                  value={d.projectPhase2Deadline}
+                  onChange={(v) => onSetPhase2Deadline(v)}
+                  placeholder="Set Phase 2 due"
+                />
               </div>
             </div>
           </section>
@@ -3959,19 +3639,19 @@ function DetailModal({
               className={`rounded-xl border p-4 ${
                 d.completedAt
                   ? "border-emerald-500/40 bg-emerald-500/5"
-                  : "border-[#2A2A2A] bg-[#0C0C0C]"
+                  : "border-border bg-background"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
-                    className={`text-[11px] font-bold uppercase tracking-wider ${
-                      d.completedAt ? "text-emerald-400" : "text-[#71757D]"
+                    className={`text-3xs font-bold ${
+                      d.completedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
                     {d.completedAt ? "Completed" : "Ticket status"}
                   </p>
-                  <p className="text-sm text-[#E5E5EA] mt-0.5">
+                  <p className="text-sm text-foreground mt-0.5">
                     {d.completedAt
                       ? `Marked done ${formatShortDate(d.completedAt)}. No longer on the board.`
                       : "Mark this ticket as resolved to clear it from the board."}
@@ -3981,7 +3661,7 @@ function DetailModal({
                   {d.completedAt ? (
                     <button
                       onClick={onUncompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-[#181818] text-[#9CA3AF] border border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Reopen
@@ -3989,7 +3669,7 @@ function DetailModal({
                   ) : (
                     <button
                       onClick={onCompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Complete
@@ -4001,23 +3681,17 @@ function DetailModal({
           )}
 
           {canManage && d.phase === "internal-revisions" && !d.testResult && (
-            <section
-              className={`rounded-xl border p-4 ${
-                d.approvedAt
-                  ? "border-emerald-500/40 bg-emerald-500/5"
-                  : "border-[#2A2A2A] bg-[#0C0C0C]"
-              }`}
-            >
+            <section className="border-t border-white/[0.05] pt-6">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p
-                    className={`text-[11px] font-bold uppercase tracking-wider ${
-                      d.approvedAt ? "text-emerald-400" : "text-[#71757D]"
+                    className={`text-3xs font-medium ${
+                      d.approvedAt ? "text-emerald-400" : "text-subtle"
                     }`}
                   >
                     {d.approvedAt ? "Approved - send to client" : "Internal sign-off"}
                   </p>
-                  <p className="text-sm text-[#E5E5EA] mt-0.5">
+                  <p className="text-sm text-foreground mt-0.5">
                     {d.approvedAt
                       ? `Signed off ${formatShortDate(d.approvedAt)}. Drag the card to External Revisions once you have sent it.`
                       : "Approve and hand to the primary designer to send, or bounce back to Design."}
@@ -4026,7 +3700,7 @@ function DetailModal({
                 {d.approvedAt ? (
                   <button
                     onClick={onUndoApprove}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-[#181818] text-[#9CA3AF] border border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Undo
@@ -4035,14 +3709,14 @@ function DetailModal({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={onRequestRevisions}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Request revisions
                     </button>
                     <button
                       onClick={onApproveInternal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Approve
@@ -4057,13 +3731,13 @@ function DetailModal({
               Launch & Testing; Send back bounces to Dev with the Revisions
               tag (the move handler auto-flags backward moves). */}
           {canManage && d.phase === "qa" && !d.testResult && (
-            <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
+            <section className="border-t border-white/[0.05] pt-6">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#71757D]">
+                  <p className="text-3xs font-bold text-subtle">
                     QA sign-off
                   </p>
-                  <p className="text-sm text-[#E5E5EA] mt-0.5">
+                  <p className="text-sm text-foreground mt-0.5">
                     Approve to push to Launch & Testing, or send back to Dev
                     if anything broke.
                   </p>
@@ -4071,14 +3745,14 @@ function DetailModal({
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={onKickbackFromQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Send back
                   </button>
                   <button
                     onClick={onApproveQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                   >
                     <CheckCircleIcon className="size-3.5" />
                     Approve
@@ -4090,37 +3764,37 @@ function DetailModal({
 
           <section className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-2">
+              <h3 className="text-3xs font-medium text-subtle mb-2">
                 Active assignee
               </h3>
               {d.phase === "launch-testing" ? (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {LAUNCH_TESTING_TESTER}
-                  <span className="text-[#4B4D52] mx-1.5">·</span>
+                  <span className="text-border mx-1.5">·</span>
                   {LAUNCH_TESTING_DEV}
-                  <span className="block text-[10px] text-[#71757D] mt-1 uppercase tracking-wider">
+                  <span className="block text-4xs text-subtle mt-1">
                     Test / Dev
                   </span>
                 </p>
               ) : d.phase === "strategy" ? (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {STRATEGY_OWNER}
-                  <span className="block text-[10px] text-[#71757D] mt-1 uppercase tracking-wider">
+                  <span className="block text-4xs text-subtle mt-1">
                     Strategy owner
                   </span>
                 </p>
               ) : d.phase === "internal-revisions" && d.approvedAt ? (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {d.designer || role.name}
-                  <span className="block text-[10px] text-emerald-400 mt-1 uppercase tracking-wider">
+                  <span className="block text-4xs text-emerald-400 mt-1">
                     Approved - send to client
                   </span>
                 </p>
               ) : (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {role.name}
                   {role.isSecondary && (
-                    <span className="text-[#71757D] ml-2 text-xs">
+                    <span className="text-subtle ml-2 text-xs">
                       (secondary)
                     </span>
                   )}
@@ -4128,7 +3802,7 @@ function DetailModal({
               )}
             </div>
             <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-2">
+              <h3 className="text-3xs font-medium text-subtle mb-2">
                 Due
               </h3>
               {canManage ? (
@@ -4137,16 +3811,20 @@ function DetailModal({
                   onChange={(v) => onUpdate({ dueDate: v })}
                 />
               ) : (
-                <p className="text-sm text-[#E5E5EA]">
+                <p className="text-sm text-foreground">
                   {d.dueDate ? formatShortDate(d.dueDate) : "Not set"}
                 </p>
               )}
             </div>
           </section>
+            </>
+          )}
 
+          {tab === "info" && (
+            <>
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+              <h3 className="text-3xs font-medium text-subtle">
                 Strategy brief
               </h3>
               {d.brief && !editingBrief && (
@@ -4156,7 +3834,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(true);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#71757D] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-3xs font-medium text-subtle hover:text-white transition-colors"
                 >
                   <PencilSquareIcon className="size-3" />
                   Edit
@@ -4180,7 +3858,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste brief URL (Google Doc, Notion, SharePoint, etc.)"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-[#0C0C0C] border border-[#383838] text-sm text-[#E5E5EA] focus:outline-none focus:border-[#525252] placeholder:text-[#4B4D52]"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-border"
                 />
                 <button
                   type="button"
@@ -4188,7 +3866,7 @@ function DetailModal({
                     onUpdate({ brief: briefDraft.trim() || undefined });
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-[#0C0C0C] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#E5E5EA] transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4198,7 +3876,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4208,7 +3886,7 @@ function DetailModal({
                 href={d.brief}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-[#E5E5EA] hover:text-white underline-offset-4 hover:underline break-all"
+                className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-white underline-offset-4 hover:underline break-all"
               >
                 <DocumentTextIcon className="size-3.5 shrink-0" />
                 {d.brief}
@@ -4221,7 +3899,7 @@ function DetailModal({
                   setBriefDraft("");
                   setEditingBrief(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-[#2A2A2A] text-sm text-[#71757D] hover:text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Attach brief URL
@@ -4234,7 +3912,7 @@ function DetailModal({
               QA for spec check). Same edit-on-pencil pattern as brief. */}
           <section>
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+              <h3 className="text-3xs font-medium text-subtle">
                 Figma
               </h3>
               {d.figmaUrl && !editingFigma && (
@@ -4244,7 +3922,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(true);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#71757D] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-3xs font-medium text-subtle hover:text-white transition-colors"
                 >
                   <PencilSquareIcon className="size-3" />
                   Edit
@@ -4268,7 +3946,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste Figma file or frame URL"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-[#0C0C0C] border border-[#383838] text-sm text-[#E5E5EA] focus:outline-none focus:border-[#525252] placeholder:text-[#4B4D52]"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-border"
                 />
                 <button
                   type="button"
@@ -4276,7 +3954,7 @@ function DetailModal({
                     onUpdate({ figmaUrl: figmaDraft.trim() || undefined });
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-[#0C0C0C] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#E5E5EA] transition-colors"
+                  className="px-3 py-2 rounded-md bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -4286,7 +3964,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -4296,7 +3974,7 @@ function DetailModal({
                 href={d.figmaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-[#E5E5EA] hover:text-white underline-offset-4 hover:underline break-all"
+                className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-white underline-offset-4 hover:underline break-all"
               >
                 <PuzzlePieceIcon className="size-3.5 shrink-0" />
                 {d.figmaUrl}
@@ -4309,7 +3987,7 @@ function DetailModal({
                   setFigmaDraft("");
                   setEditingFigma(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-[#2A2A2A] text-sm text-[#71757D] hover:text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Attach Figma URL
@@ -4318,7 +3996,7 @@ function DetailModal({
           </section>
 
           <section>
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-2">
+            <h3 className="text-3xs font-medium text-subtle mb-2">
               Notes
             </h3>
             <textarea
@@ -4332,10 +4010,14 @@ function DetailModal({
               }}
               placeholder="Context, edge cases, blockers - anything that doesn't fit the structured fields."
               rows={3}
-              className="w-full px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52] leading-relaxed"
+              className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border leading-relaxed"
             />
           </section>
+            </>
+          )}
 
+          {tab === "status" && (
+            <>
           {/* Phase history is collapsed by default at the bottom of the modal. */}
 
           {/* Nudge banner only. The actual Conclude button lives in the
@@ -4343,10 +4025,10 @@ function DetailModal({
               identical buttons. */}
           {needsConclude && !d.testResult && !concluding && (
             <section className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+              <p className="text-3xs font-bold text-amber-400">
                 Time to conclude
               </p>
-              <p className="mt-1 text-sm text-[#E5E5EA]">
+              <p className="mt-1 text-sm text-foreground">
                 Test has been live {daysLive} days. Use the Conclude test
                 button above to lock in the result.
               </p>
@@ -4354,11 +4036,11 @@ function DetailModal({
           )}
 
           {needsInterim && !concluding && (
-            <section className="rounded-lg border border-[#0EA5E9]/40 bg-[#0EA5E9]/5 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#0EA5E9]">
+            <section className="rounded-lg border border-info/40 bg-info/5 p-4">
+              <p className="text-3xs font-medium text-info">
                 Log an interim result
               </p>
-              <p className="mt-1 text-sm text-[#E5E5EA]">
+              <p className="mt-1 text-sm text-foreground">
                 Live for {daysLive} days with no interim numbers recorded. Drop
                 running figures into the metrics rows below to keep the kanban
                 honest.
@@ -4369,14 +4051,14 @@ function DetailModal({
                 onBlur={saveInterim}
                 placeholder="Interim notes"
                 rows={2}
-                className="mt-3 w-full px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                className="mt-3 w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
               />
             </section>
           )}
 
           {concluding && (
-            <section className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-4 space-y-3">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#71757D]">
+            <section className="rounded-lg border border-border bg-surface p-4 space-y-3">
+              <p className="text-3xs font-bold text-subtle">
                 Conclude test
               </p>
 
@@ -4386,10 +4068,10 @@ function DetailModal({
                     <button
                       key={o}
                       onClick={() => setOutcomeDraft(o)}
-                      className={`px-2.5 py-2 rounded-md text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                      className={`px-2.5 py-2 rounded-md text-3xs font-bold transition-colors ${
                         outcomeDraft === o
-                          ? "text-[#0C0C0C]"
-                          : "bg-[#0C0C0C] text-[#9CA3AF] border border-[#2A2A2A] hover:text-white"
+                          ? "text-background"
+                          : "bg-background text-muted border border-border hover:text-white"
                       }`}
                       style={
                         outcomeDraft === o
@@ -4408,7 +4090,7 @@ function DetailModal({
                   value={metricDraft}
                   onChange={(e) => setMetricDraft(e.target.value)}
                   placeholder="Metric"
-                  className="px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
                 <input
                   type="number"
@@ -4416,7 +4098,7 @@ function DetailModal({
                   value={upliftDraft}
                   onChange={(e) => setUpliftDraft(e.target.value)}
                   placeholder="Uplift %"
-                  className="px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
                 <input
                   type="number"
@@ -4424,7 +4106,7 @@ function DetailModal({
                   value={confidenceDraft}
                   onChange={(e) => setConfidenceDraft(e.target.value)}
                   placeholder="Confidence %"
-                  className="px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
               </div>
 
@@ -4433,19 +4115,19 @@ function DetailModal({
                 onChange={(e) => setNotesDraft(e.target.value)}
                 placeholder="Notes"
                 rows={3}
-                className="w-full px-3 py-2 rounded-md text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#383838] focus:outline-none focus:border-[#4B4D52]"
+                className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
               />
 
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setConcluding(false)}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitConclude}
-                  className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+                  className="px-3 py-2 rounded-md text-3xs font-semibold bg-white text-background hover:bg-foreground"
                 >
                   Save result
                 </button>
@@ -4454,13 +4136,13 @@ function DetailModal({
           )}
 
           {d.testResult && (
-            <section className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-4">
+            <section className="rounded-lg border border-border bg-surface p-4">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#71757D]">
+                <p className="text-3xs font-bold text-subtle">
                   Result
                 </p>
                 <span
-                  className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider"
+                  className="px-2 py-1 rounded text-4xs font-bold"
                   style={{
                     background: OUTCOME_META[d.testResult.outcome].bg,
                     color: OUTCOME_META[d.testResult.outcome].color,
@@ -4471,38 +4153,38 @@ function DetailModal({
               </div>
               <div className="grid grid-cols-4 gap-3 text-sm">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-4xs font-bold text-border">
                     Metric
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA]">
+                  <p className="mt-0.5 text-foreground">
                     {d.testResult.metric ?? "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-4xs font-bold text-border">
                     Uplift
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                  <p className="mt-0.5 text-foreground tabular-nums">
                     {d.testResult.upliftPct == null
                       ? "-"
                       : `${d.testResult.upliftPct > 0 ? "+" : ""}${d.testResult.upliftPct}%`}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-4xs font-bold text-border">
                     Confidence
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                  <p className="mt-0.5 text-foreground tabular-nums">
                     {d.testResult.confidencePct != null
                       ? `${d.testResult.confidencePct}%`
                       : "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4B4D52]">
+                  <p className="text-4xs font-bold text-border">
                     Duration
                   </p>
-                  <p className="mt-0.5 text-[#E5E5EA] tabular-nums">
+                  <p className="mt-0.5 text-foreground tabular-nums">
                     {d.testResult.durationDays != null
                       ? `${d.testResult.durationDays}d`
                       : "-"}
@@ -4510,7 +4192,7 @@ function DetailModal({
                 </div>
               </div>
               {d.testResult.notes && (
-                <p className="mt-3 text-sm text-[#9CA3AF] leading-relaxed">
+                <p className="mt-3 text-sm text-muted leading-relaxed">
                   {d.testResult.notes}
                 </p>
               )}
@@ -4524,10 +4206,10 @@ function DetailModal({
                 onClick={() => setHistoryOpen((v) => !v)}
                 className="w-full flex items-center justify-between gap-2 mb-2 group"
               >
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] group-hover:text-[#9CA3AF] transition-colors">
+                <h3 className="text-3xs font-medium text-subtle group-hover:text-muted transition-colors">
                   Phase history
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#71757D] group-hover:text-[#9CA3AF] transition-colors">
+                <span className="inline-flex items-center gap-1 text-4xs text-subtle group-hover:text-muted transition-colors">
                   {d.phaseHistory.length} steps
                   <ChevronDownIcon
                     className={`size-3 transition-transform ${historyOpen ? "rotate-180" : ""}`}
@@ -4543,14 +4225,14 @@ function DetailModal({
                         key={`${h.phase}-${i}`}
                         className="flex items-center justify-between gap-3 text-xs"
                       >
-                        <span className="inline-flex items-center gap-2 text-[#E5E5EA]">
+                        <span className="inline-flex items-center gap-2 text-foreground">
                           <span
                             className="size-1.5 rounded-full"
-                            style={{ background: meta?.color ?? "#71757D" }}
+                            style={{ background: meta?.color ?? "var(--color-subtle)" }}
                           />
                           {meta?.label ?? h.phase}
                         </span>
-                        <span className="text-[#71757D] tabular-nums">
+                        <span className="text-subtle tabular-nums">
                           {formatDueDate(h.enteredAt)}
                         </span>
                       </div>
@@ -4562,9 +4244,9 @@ function DetailModal({
           )}
 
           {d.phase === "launch-testing" && (
-            <section className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 space-y-3">
+            <section className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D]">
+                <h3 className="text-3xs font-medium text-subtle">
                   Test setup
                 </h3>
                 <div className="flex items-center gap-2">
@@ -4573,7 +4255,7 @@ function DetailModal({
                       href={d.liveTestUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-4xs font-semibold text-subtle hover:text-white transition-colors"
                     >
                       Open live
                       <ArrowTopRightOnSquareIcon className="size-3" />
@@ -4588,9 +4270,9 @@ function DetailModal({
                       onClick={() =>
                         onUpdate({ liveStartedAt: MOCK_TODAY })
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-[#0C0C0C] hover:bg-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
-                      <span className="size-1.5 rounded-full bg-[#0C0C0C]" />
+                      <span className="size-1.5 rounded-full bg-background" />
                       Set live
                     </button>
                   )}
@@ -4598,7 +4280,7 @@ function DetailModal({
                     <button
                       type="button"
                       onClick={() => setConcluding(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-amber-500 text-[#0C0C0C] hover:bg-amber-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-amber-500 text-background hover:bg-amber-400 transition-colors"
                     >
                       Conclude test
                     </button>
@@ -4607,7 +4289,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5 block">
+                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
                   Test URL
                 </label>
                 <input
@@ -4620,7 +4302,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="https://..."
-                  className="w-full px-3 py-2 rounded-md text-sm bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52]"
+                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
                 />
               </div>
 
@@ -4629,10 +4311,10 @@ function DetailModal({
                   row is treated as primary by the conclude form. */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                  <label className="text-4xs font-semibold text-subtle">
                     Metrics
                   </label>
-                  <span className="text-[10px] text-[#4B4D52] uppercase tracking-wider">
+                  <span className="text-4xs text-border">
                     Before / After
                   </span>
                 </div>
@@ -4646,7 +4328,7 @@ function DetailModal({
                       onChange={(e) => updateMetric(i, { name: e.target.value })}
                       onBlur={blurCommit}
                       placeholder="Metric"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52]"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
                     />
                     <input
                       value={m.baseline ?? ""}
@@ -4655,7 +4337,7 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Baseline"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52] tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
                     />
                     <input
                       value={m.interim ?? ""}
@@ -4664,12 +4346,12 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Interim"
-                      className="px-2.5 py-1.5 rounded-md text-[13px] bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52] tabular-nums"
+                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border tabular-nums"
                     />
                     <button
                       type="button"
                       onClick={() => removeMetric(i)}
-                      className="size-7 inline-flex items-center justify-center rounded-md text-[#4B4D52] hover:text-[#9CA3AF] hover:bg-[#181818] transition-colors"
+                      className="size-7 inline-flex items-center justify-center rounded-md text-border hover:text-muted hover:bg-surface transition-colors"
                       title="Remove metric"
                       aria-label="Remove metric"
                     >
@@ -4680,7 +4362,7 @@ function DetailModal({
                 <button
                   type="button"
                   onClick={addMetric}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-[#2A2A2A] text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-3xs font-semibold text-subtle hover:text-foreground hover:border-border transition-colors"
                 >
                   <PlusIcon className="size-3" />
                   Add metric
@@ -4688,7 +4370,7 @@ function DetailModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5 block">
+                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
                   Interim notes
                 </label>
                 <textarea
@@ -4702,7 +4384,7 @@ function DetailModal({
                   }}
                   placeholder="What the running data is telling you."
                   rows={2}
-                  className="w-full px-3 py-2 rounded-md text-sm bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] focus:outline-none focus:border-[#383838] placeholder:text-[#4B4D52]"
+                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-border"
                 />
               </div>
 
@@ -4710,11 +4392,11 @@ function DetailModal({
                   drops the live variant proof in the same place as the URL +
                   metric inputs. */}
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5 block">
+                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
                   Screenshot
                 </label>
                 {d.screenshot ? (
-                  <div className="relative rounded-lg overflow-hidden border border-[#2A2A2A]">
+                  <div className="relative rounded-lg overflow-hidden border border-border">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={d.screenshot}
@@ -4732,7 +4414,7 @@ function DetailModal({
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingScreenshot}
-                    className="w-full px-4 py-6 rounded-lg border border-dashed border-[#2A2A2A] bg-[#181818] text-sm text-[#71757D] hover:border-[#383838] hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
+                    className="w-full px-4 py-6 rounded-lg border border-dashed border-border bg-surface text-sm text-subtle hover:border-border hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
                   >
                     {uploadingScreenshot ? "Uploading..." : "Upload a screenshot"}
                   </button>
@@ -4755,12 +4437,14 @@ function DetailModal({
           <section className="pt-2">
             <button
               onClick={onDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-rose-400 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-semibold text-subtle hover:text-rose-400 transition-colors"
             >
               <XMarkIcon className="size-3.5" />
               Delete card
             </button>
           </section>
+          )}
+            </>
           )}
         </div>
       </div>
@@ -4792,9 +4476,9 @@ function SyncErrorToast() {
 
   if (!error) return null;
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg bg-rose-500/[0.95] text-white text-[13px] font-medium shadow-[0_20px_60px_rgba(0,0,0,0.4)] max-w-md">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg bg-rose-500/[0.95] text-white text-xs font-medium shadow-[0_20px_60px_rgba(0,0,0,0.4)] max-w-md">
       <div className="font-semibold mb-0.5">Cloud save failed</div>
-      <div className="text-[12px] opacity-90 break-all">{error}</div>
+      <div className="text-2xs opacity-90 break-all">{error}</div>
     </div>
   );
 }
@@ -4829,16 +4513,16 @@ function SearchControl({
           window.setTimeout(() => inputRef.current?.focus(), 0);
         }}
         title="Search cards (/)"
-        className="size-7 inline-flex items-center justify-center rounded-full text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838] transition-colors"
+        className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
       >
-        <MagnifyingGlassIcon className="size-3.5" />
+        <MagnifyingGlassIcon className="size-4" />
       </button>
     );
   }
 
   return (
     <div className="relative">
-      <MagnifyingGlassIcon className="size-3.5 text-[#71757D] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      <MagnifyingGlassIcon className="size-3.5 text-subtle absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
       <input
         ref={inputRef}
         value={query}
@@ -4847,7 +4531,7 @@ function SearchControl({
           if (!query) setExpanded(false);
         }}
         placeholder="Search cards…"
-        className="h-7 pl-7 pr-7 w-56 text-[11px] bg-[#0F0F10] border border-[#2A2A2A] rounded-full text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:border-[#383838] transition-all"
+        className="h-7 pl-7 pr-7 w-56 text-3xs bg-background border border-border rounded-full text-foreground placeholder:text-subtle focus:outline-none focus:border-border transition-all"
       />
       {query ? (
         <button
@@ -4855,13 +4539,13 @@ function SearchControl({
             onChange("");
             setExpanded(false);
           }}
-          className="absolute right-1 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-[#71757D] hover:text-[#E5E5EA] rounded-full"
+          className="absolute right-1 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-subtle hover:text-foreground rounded-full"
           title="Clear (Esc)"
         >
           <XMarkIcon className="size-3" />
         </button>
       ) : (
-        <kbd className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-[#71757D]">
+        <kbd className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 text-5xs font-mono text-subtle">
           /
         </kbd>
       )}
@@ -4869,167 +4553,218 @@ function SearchControl({
   );
 }
 
-/* ── Active project tab ──
- * Single pill showing the currently-selected project. Hover →
- * shows a delete (x) action so admin can drop the project with one
- * click + confirm. */
-function ActiveProjectTab({
-  project: p,
-  count,
-  onDelete,
-  canManage,
-}: {
-  project: MockProject;
-  count: number;
-  onDelete: () => void;
-  canManage: boolean;
-}) {
-  const isRetainer = p.type === "retainer";
-  return (
-    <div
-      className={`group inline-flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-full text-[12px] font-medium border ${
-        isRetainer
-          ? "bg-teal-500 text-[#0C0C0C] border-teal-500"
-          : "bg-white text-[#0C0C0C] border-white"
-      }`}
-      title={
-        isRetainer && p.engagementDays
-          ? `${ENGAGEMENT_TIER_LABEL[p.engagementDays as EngagementDays]} retainer (${p.engagementDays}-day cadence)`
-          : p.turnaroundDays
-            ? `Build · ${p.turnaroundDays}d turnaround`
-            : undefined
-      }
-    >
-      <span className="truncate max-w-[260px]">{p.name}</span>
-      <span className="tabular-nums text-[#0C0C0C]/50">{count}</span>
-      {(p.turnaroundDays || p.engagementDays) && (
-        <span className="text-[10px] uppercase tracking-wider text-[#0C0C0C]/60">
-          {p.type === "retainer" && p.engagementDays
-            ? `${ENGAGEMENT_TIER_SHORT[p.engagementDays as EngagementDays]}/mo`
-            : `${p.turnaroundDays}d`}
-        </span>
-      )}
-      {canManage && (
-        <button
-          onClick={onDelete}
-          className="size-5 inline-flex items-center justify-center rounded-full text-[#0C0C0C]/60 hover:text-rose-700 hover:bg-black/[0.08] opacity-0 group-hover:opacity-100 transition-opacity"
-          title="Delete this project"
-        >
-          <XMarkIcon className="size-3" />
-        </button>
-      )}
-    </div>
-  );
-}
-
-/* ── Project overflow chip ──
- * "+N" chip that opens a dropdown listing every project on this
- * client EXCEPT the active one. Each row = click name to switch,
- * trash icon to delete. */
-function ProjectOverflow({
+/* ── Project switch (inline breadcrumb) ──
+ * The project sits one level under the client, so it reads as an inline
+ * `client › project` breadcrumb rather than a separate tab strip below the
+ * header (which made the board jump between views). The project list, the
+ * +N overflow, and the new-project form all fold into this one dropdown. */
+function ProjectSwitch({
   projects,
-  counts,
+  activeId,
   onSelect,
+  onAddProject,
   onDelete,
+  counts,
   canManage,
 }: {
   projects: MockProject[];
-  counts: Record<string, number>;
+  activeId: string;
   onSelect: (id: string) => void;
+  onAddProject: (input: {
+    name: string;
+    type: ProjectType;
+    turnaroundDays?: TurnaroundDays;
+    engagementDays?: EngagementDays;
+  }) => void;
   onDelete: (id: string) => void;
+  counts: Record<string, number>;
   canManage: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [typeDraft, setTypeDraft] = useState<ProjectType>("build");
+  const [turnaroundDraft, setTurnaroundDraft] = useState<TurnaroundDays>(15);
+  const [engagementDraft, setEngagementDraft] = useState<EngagementDays>(30);
   const ref = useRef<HTMLDivElement | null>(null);
+  const active = projects.find((p) => p.id === activeId);
 
   useEffect(() => {
     if (!open) return;
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
+        setAdding(false);
       }
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  function reset() {
+    setDraft("");
+    setTypeDraft("build");
+    setTurnaroundDraft(15);
+    setEngagementDraft(30);
+    setAdding(false);
+  }
+  function submit() {
+    if (!draft.trim()) return;
+    onAddProject({
+      name: draft.trim(),
+      type: typeDraft,
+      turnaroundDays: typeDraft === "build" ? turnaroundDraft : undefined,
+      engagementDays: typeDraft === "retainer" ? engagementDraft : undefined,
+    });
+    reset();
+    setOpen(false);
+  }
+
+  const Check = () => (
+    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+    </svg>
+  );
+
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#9CA3AF] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
-        title={`${projects.length} more project${projects.length === 1 ? "" : "s"}`}
-      >
-        +{projects.length}
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      <Pill active={open} className="pr-2 max-w-[180px]" onClick={() => setOpen((v) => !v)}>
+        <span className="truncate min-w-0">{active?.name ?? "Project"}</span>
+        <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+      </Pill>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
-            Other projects ({projects.length})
-          </div>
-          <ul className="max-h-80 overflow-y-auto py-1">
-            {projects.map((p) => {
-              const count = counts[p.id] ?? 0;
-              return (
-                <li key={p.id} className="group flex items-center">
-                  <button
-                    onClick={() => {
-                      onSelect(p.id);
-                      setOpen(false);
-                    }}
-                    className="flex-1 min-w-0 text-left px-3 py-2 hover:bg-white/[0.04] transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`shrink-0 size-1.5 rounded-full ${p.type === "retainer" ? "bg-teal-400" : "bg-white"}`}
-                      />
-                      <span className="text-[12px] text-[#E5E5EA] truncate">
-                        {p.name}
-                      </span>
-                      <span className="text-[10px] text-[#71757D] tabular-nums shrink-0">
-                        {count}
-                      </span>
-                    </div>
-                  </button>
-                  {canManage && (
-                    <button
-                      onClick={() => {
-                        setOpen(false);
-                        onDelete(p.id);
-                      }}
-                      className="size-7 mr-1.5 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
-                      title={`Delete ${p.name}`}
-                    >
-                      <XMarkIcon className="size-3.5" />
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+        <div className="absolute left-0 top-9 z-40 w-64 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          {!adding ? (
+            <>
+              <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
+                Projects ({projects.length})
+              </div>
+              <ul className="max-h-72 overflow-y-auto py-1">
+                {projects.map((p) => {
+                  const isActive = p.id === activeId;
+                  return (
+                    <li key={p.id} className="group flex items-center gap-1 pr-1.5">
+                      <button
+                        onClick={() => {
+                          onSelect(p.id);
+                          setOpen(false);
+                        }}
+                        className={`flex-1 min-w-0 text-left pl-3 pr-2 py-2 hover:bg-surface-hover transition-colors ${
+                          isActive ? "bg-surface-hover" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isActive ? <Check /> : <span className="size-3.5 shrink-0" />}
+                          <span className="text-xs text-foreground truncate flex-1 min-w-0">{p.name}</span>
+                          <span className="text-4xs text-subtle tabular-nums shrink-0 pl-2">{counts[p.id] ?? 0}</span>
+                        </div>
+                      </button>
+                      {canManage && (
+                        <button
+                          onClick={() => {
+                            setOpen(false);
+                            onDelete(p.id);
+                          }}
+                          className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                          title={`Delete ${p.name}`}
+                        >
+                          <XMarkIcon className="size-3.5" />
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              {canManage && (
+                <button
+                  onClick={() => setAdding(true)}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-2xs text-muted hover:text-foreground hover:bg-surface-hover border-t border-border-faint transition-colors"
+                >
+                  <PlusIcon className="size-3.5" />
+                  New project
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="p-3 space-y-2.5">
+              <Segmented
+                variant="ghost"
+                className="w-full [&>button]:flex-1"
+                value={typeDraft}
+                onChange={setTypeDraft}
+                options={[
+                  { label: "Build", value: "build" },
+                  { label: "Retainer", value: "retainer" },
+                ]}
+              />
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submit();
+                  if (e.key === "Escape") reset();
+                }}
+                placeholder={typeDraft === "retainer" ? "Retainer name" : "Project name"}
+                className="w-full h-8 px-2.5 rounded-md bg-surface border border-border text-2xs text-foreground focus:outline-none focus:border-subtle placeholder:text-subtle"
+              />
+              <Segmented
+                variant="ghost"
+                className="w-full [&>button]:flex-1"
+                value={String(typeDraft === "retainer" ? engagementDraft : turnaroundDraft)}
+                onChange={(v) => {
+                  if (typeDraft === "retainer") setEngagementDraft(Number(v) as EngagementDays);
+                  else setTurnaroundDraft(Number(v) as TurnaroundDays);
+                }}
+                options={
+                  typeDraft === "retainer"
+                    ? ENGAGEMENT_OPTIONS.map((t) => ({ label: ENGAGEMENT_TIER_SHORT[t], value: String(t) }))
+                    : TURNAROUND_OPTIONS.map((t) => ({ label: `${t}d`, value: String(t) }))
+                }
+              />
+              <div className="flex items-center gap-2 pt-0.5">
+                <button
+                  onClick={submit}
+                  className="flex-1 h-7 rounded-md bg-foreground text-background text-3xs font-semibold hover:opacity-90 transition-opacity"
+                >
+                  Add project
+                </button>
+                <button
+                  onClick={reset}
+                  className="h-7 px-3 rounded-md text-3xs font-medium text-muted hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-/* ── Project pod-assignment picker ──
- * Custom dropdown for the "assign pod to this project" control in
- * the project tabs row. Was a native <select> which clashed with
- * the dark aesthetic. Includes a "No pod" option so admin can
- * unassign. */
-function ProjectPodPicker({
+/* ── Client actions menu (⋯) ──
+ * Lean home for the low-frequency, client-specific actions that used to
+ * clutter the header: open the onboarding brief + reassign this project's
+ * pod. Lives in the client zone, next to the title switch. */
+function ClientActionsMenu({
+  hasBrief,
+  onPreviewOnboarding,
   pods,
   currentPodId,
-  onAssign,
+  onAssignPod,
+  canManage,
 }: {
+  hasBrief: boolean;
+  onPreviewOnboarding: () => void;
   pods: MockPod[];
   currentPodId: string | undefined;
-  onAssign: (podId: string) => void;
+  onAssignPod: (podId: string) => void;
+  canManage: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
-  const active = pods.find((p) => p.id === currentPodId);
 
   useEffect(() => {
     if (!open) return;
@@ -5040,73 +4775,87 @@ function ProjectPodPicker({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  const Check = () => (
+    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+    </svg>
+  );
+
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative shrink-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 text-[12px] font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+        title="Client actions"
+        className={`size-7 inline-flex items-center justify-center rounded-md border border-border transition-colors ${
+          open ? "text-foreground bg-surface" : "text-subtle hover:text-foreground hover:bg-surface"
+        }`}
       >
-        <span className="truncate max-w-[140px]">{active?.name ?? "No pod"}</span>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+        <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
+          <circle cx="5" cy="12" r="1.5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="19" cy="12" r="1.5" />
+        </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
-            Assign pod
-          </div>
-          <ul className="max-h-72 overflow-y-auto py-1">
-            <li>
-              <button
-                onClick={() => {
-                  onAssign("");
-                  setOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
-                  !currentPodId ? "bg-white/[0.04]" : ""
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {!currentPodId ? (
-                    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <span className="size-3.5 shrink-0" />
-                  )}
-                  <span className="text-[13px] text-[#71757D] italic">No pod</span>
-                </div>
-              </button>
-            </li>
-            {pods.map((p) => {
-              const isActive = p.id === currentPodId;
-              return (
-                <li key={p.id}>
+        <div className="absolute left-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          {hasBrief && (
+            <button
+              onClick={() => {
+                setOpen(false);
+                onPreviewOnboarding();
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors"
+            >
+              <DocumentTextIcon className="size-3.5 text-subtle" />
+              Onboarding brief
+            </button>
+          )}
+          {canManage && (
+            <div className={hasBrief ? "border-t border-border-faint" : ""}>
+              <div className="px-3 pt-2 pb-1 text-4xs text-subtle font-semibold">
+                Assign pod
+              </div>
+              <ul className="max-h-60 overflow-y-auto pb-1">
+                <li>
                   <button
                     onClick={() => {
-                      onAssign(p.id);
+                      onAssignPod("");
                       setOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
-                      isActive ? "bg-white/[0.04]" : ""
+                    className={`w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors ${
+                      !currentPodId ? "bg-surface-hover" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      {isActive ? (
-                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <span className="size-3.5 shrink-0" />
-                      )}
-                      <span className="text-[13px] text-[#E5E5EA] truncate">
-                        {p.name}
-                      </span>
+                      {!currentPodId ? <Check /> : <span className="size-3.5 shrink-0" />}
+                      <span className="text-xs text-subtle italic">No pod</span>
                     </div>
                   </button>
                 </li>
-              );
-            })}
-          </ul>
+                {pods.map((p) => {
+                  const isActive = p.id === currentPodId;
+                  return (
+                    <li key={p.id}>
+                      <button
+                        onClick={() => {
+                          onAssignPod(p.id);
+                          setOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors ${
+                          isActive ? "bg-surface-hover" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isActive ? <Check /> : <span className="size-3.5 shrink-0" />}
+                          <span className="text-xs text-foreground truncate">{p.name}</span>
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -5123,11 +4872,17 @@ function KanbanClientPicker({
   activeId,
   onSelect,
   onDelete,
+  onAddClient,
+  variant = "pill",
 }: {
   clients: MockClient[];
   activeId: string;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  onAddClient: () => void;
+  /** "title" renders the trigger as the page H1 (the client IS the title,
+   *  so it doubles as the switcher — no duplicate picker). */
+  variant?: "pill" | "title";
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -5143,17 +4898,30 @@ function KanbanClientPicker({
   }, [open]);
 
   return (
-    <div ref={ref} className="relative w-[180px] shrink-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
-      >
-        <span className="truncate">{active?.name ?? "Pick a client"}</span>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      {variant === "title" ? (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="group inline-flex items-center gap-2 max-w-full"
+        >
+          <span className="text-[26px] font-heading font-medium tracking-tight leading-tight text-foreground truncate">
+            {active?.name ?? "Pick a client"}
+          </span>
+          <ChevronDownIcon className="size-5 text-subtle group-hover:text-foreground transition-colors shrink-0" />
+        </button>
+      ) : (
+        <Pill active={open} className="pr-2 max-w-[200px]" onClick={() => setOpen((v) => !v)}>
+          <span className="truncate min-w-0">{active?.name ?? "Pick a client"}</span>
+          <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+        </Pill>
+      )}
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div
+          className={`absolute z-40 w-72 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden ${
+            variant === "title" ? "left-0 top-12" : "right-0 top-9"
+          }`}
+        >
+          <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
             Clients ({clients.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5167,8 +4935,8 @@ function KanbanClientPicker({
                       onSelect(c.id);
                       setOpen(false);
                     }}
-                    className={`flex-1 min-w-0 text-left pl-3 pr-2 py-2 hover:bg-white/[0.04] transition-colors ${
-                      isActive ? "bg-white/[0.04]" : ""
+                    className={`flex-1 min-w-0 text-left pl-3 pr-2 py-2 hover:bg-surface-hover transition-colors ${
+                      isActive ? "bg-surface-hover" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -5179,10 +4947,10 @@ function KanbanClientPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-[#E5E5EA] truncate flex-1 min-w-0">
+                      <span className="text-xs text-foreground truncate flex-1 min-w-0">
                         {c.name}
                       </span>
-                      <span className="text-[10px] text-[#71757D] tabular-nums shrink-0 pl-2">
+                      <span className="text-4xs text-subtle tabular-nums shrink-0 pl-2">
                         {projectCount} proj
                       </span>
                     </div>
@@ -5192,7 +4960,7 @@ function KanbanClientPicker({
                       setOpen(false);
                       onDelete(c.id);
                     }}
-                    className="size-7 shrink-0 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
                     title={`Delete ${c.name}`}
                   >
                     <XMarkIcon className="size-3.5" />
@@ -5201,6 +4969,16 @@ function KanbanClientPicker({
               );
             })}
           </ul>
+          <button
+            onClick={() => {
+              setOpen(false);
+              onAddClient();
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-2xs text-muted hover:text-foreground hover:bg-surface-hover border-t border-border-faint transition-colors"
+          >
+            <PlusIcon className="size-3.5" />
+            Add client
+          </button>
         </div>
       )}
     </div>
@@ -5215,10 +4993,13 @@ function KanbanPodPicker({
   pods,
   activeId,
   onSelect,
+  variant = "pill",
 }: {
   pods: MockPod[];
   activeId: string;
   onSelect: (id: string) => void;
+  /** "title" renders the trigger as the page H1 (pod-scope mode). */
+  variant?: "pill" | "title";
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -5234,17 +5015,30 @@ function KanbanPodPicker({
   }, [open]);
 
   return (
-    <div ref={ref} className="relative w-[180px] shrink-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
-      >
-        <span className="truncate">{active?.name ?? "Pick a pod"}</span>
-        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      {variant === "title" ? (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="group inline-flex items-center gap-2 max-w-full"
+        >
+          <span className="text-[26px] font-heading font-medium tracking-tight leading-tight text-foreground truncate">
+            {active?.name ?? "Pick a pod"}
+          </span>
+          <ChevronDownIcon className="size-5 text-subtle group-hover:text-foreground transition-colors shrink-0" />
+        </button>
+      ) : (
+        <Pill active={open} className="pr-2 max-w-[200px]" onClick={() => setOpen((v) => !v)}>
+          <span className="truncate min-w-0">{active?.name ?? "Pick a pod"}</span>
+          <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
+        </Pill>
+      )}
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+        <div
+          className={`absolute z-40 w-72 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden ${
+            variant === "title" ? "left-0 top-12" : "right-0 top-9"
+          }`}
+        >
+          <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
             Pods ({pods.length})
           </div>
           <ul className="max-h-80 overflow-y-auto py-1">
@@ -5257,8 +5051,8 @@ function KanbanPodPicker({
                       onSelect(p.id);
                       setOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
-                      isActive ? "bg-white/[0.04]" : ""
+                    className={`w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors ${
+                      isActive ? "bg-surface-hover" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -5269,7 +5063,7 @@ function KanbanPodPicker({
                       ) : (
                         <span className="size-3.5 shrink-0" />
                       )}
-                      <span className="text-[13px] text-[#E5E5EA] truncate">
+                      <span className="text-xs text-foreground truncate">
                         {p.name}
                       </span>
                     </div>
@@ -5322,13 +5116,13 @@ function NewClientModal({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+        className="bg-background rounded-2xl ring-1 ring-panel-line shadow-popover w-full max-w-md p-6"
       >
-        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-1">Add client</h2>
-        <p className="text-xs text-[#71757D] mb-5">
+        <h2 className="text-lg font-semibold text-foreground mb-1">Add client</h2>
+        <p className="text-xs text-subtle mb-5">
           Creates a new client on the kanban. Add projects + cards once it's in.
         </p>
-        <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">
+        <label className="block text-4xs text-subtle mb-1.5">
           Client name
         </label>
         <input
@@ -5336,20 +5130,20 @@ function NewClientModal({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Acme Skincare"
-          className="w-full h-10 px-3 bg-black/40 rounded-md text-[14px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+          className="w-full h-10 px-3 bg-black/40 rounded-md text-sm text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
         />
         <div className="flex justify-end gap-2 mt-6">
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+            className="px-3 py-2 text-sm text-subtle hover:text-foreground"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={!name.trim()}
-            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-lg hover:bg-[#E5E5EA] disabled:opacity-40"
+            className="px-3 py-2 bg-white text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-40"
           >
             Add client
           </button>
@@ -5362,14 +5156,84 @@ function NewClientModal({
 /* ── Overflow menu (…) ──
  * Tertiary controls that aren't worth always-visible header room:
  * card density (Cosy / Glance), Phase rules, room to grow. */
+/* View scope selector — collapses the old 4-wide segmented pill into a
+   single dropdown (By project / All projects / By pod / Results Library).
+   Reclaims header width and drops the heaviest box, Linear-style. */
+const VIEW_MODE_OPTIONS = [
+  { v: "project", label: "By project" },
+  { v: "master", label: "All projects" },
+  { v: "pod", label: "By pod" },
+  { v: "results", label: "Results Library" },
+] as const;
+
+function ViewModeMenu({
+  value,
+  onChange,
+}: {
+  value: ViewMode;
+  onChange: (v: ViewMode) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const active = VIEW_MODE_OPTIONS.find((o) => o.v === value);
+
+  return (
+    <div ref={ref} className="relative">
+      <Pill active={open} className="pr-2" onClick={() => setOpen((v) => !v)}>
+        {active?.label ?? "View"}
+        <ChevronDownIcon className="size-3.5 text-subtle" />
+      </Pill>
+      {open && (
+        <div className="absolute right-0 top-9 z-40 w-44 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden py-1">
+          {VIEW_MODE_OPTIONS.map((o) => (
+            <button
+              key={o.v}
+              onClick={() => {
+                onChange(o.v);
+                setOpen(false);
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2 text-2xs transition-colors hover:bg-surface-hover ${
+                o.v === value ? "text-foreground" : "text-muted"
+              }`}
+            >
+              {o.label}
+              {o.v === value && <CheckIcon className="size-3.5 text-foreground" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OverflowMenu({
   density,
   onSetDensity,
   onOpenRules,
+  mineOnly,
+  onToggleMine,
+  showMine,
 }: {
   density: "cosy" | "glance";
   onSetDensity: (d: "cosy" | "glance") => void;
   onOpenRules: () => void;
+  /** "Mine only" filter — a filter, so it lives in the Display menu. */
+  mineOnly: boolean;
+  onToggleMine: () => void;
+  /** Hide the Mine row when there's no signed-in name to filter by. */
+  showMine: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -5386,51 +5250,64 @@ function OverflowMenu({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  /* Active when any non-default view/filter is set, so the pill signals
+     "something is on" at a glance (Linear-style). */
+  const isActive = mineOnly;
+
   return (
     <div ref={ref} className="relative">
-      <button
+      <Pill
+        tone="action"
+        active={open || isActive}
+        className="pl-2 pr-2.5"
+        title="Display options"
         onClick={() => setOpen((v) => !v)}
-        title="More"
-        className={`size-7 inline-flex items-center justify-center rounded-full transition-colors ${
-          open
-            ? "text-white border border-[#383838] bg-[#1A1A1A]"
-            : "text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838]"
-        }`}
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
-          <circle cx="5" cy="12" r="1.5" />
-          <circle cx="12" cy="12" r="1.5" />
-          <circle cx="19" cy="12" r="1.5" />
-        </svg>
-      </button>
+        <AdjustmentsHorizontalIcon className="size-3.5" />
+        Display
+      </Pill>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          <div className="p-2 border-b border-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold px-2 mb-2">
+        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+          {showMine && (
+            <button
+              onClick={onToggleMine}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors border-b border-border-faint"
+            >
+              <span>Mine only</span>
+              <span
+                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+                  mineOnly ? "bg-foreground" : "bg-white/[0.12]"
+                }`}
+              >
+                <span
+                  className={`inline-block size-3 rounded-full bg-background transition-transform ${
+                    mineOnly ? "translate-x-3.5" : "translate-x-0.5"
+                  }`}
+                />
+              </span>
+            </button>
+          )}
+          <div className="p-2 border-b border-border-faint">
+            <div className="text-4xs text-subtle font-semibold px-2 mb-2">
               Card density
             </div>
-            <div className="inline-flex w-full p-0.5 rounded-md bg-[#141414] ring-1 ring-white/[0.04]">
-              {(["cosy", "glance"] as const).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => onSetDensity(d)}
-                  className={`flex-1 px-2 py-1 rounded text-[11px] font-semibold uppercase tracking-wider transition-colors ${
-                    density === d
-                      ? "bg-[#E5E5EA] text-[#0C0C0C]"
-                      : "text-[#71757D] hover:text-[#E5E5EA]"
-                  }`}
-                >
-                  {d === "cosy" ? "Cosy" : "Glance"}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              variant="ghost"
+              className="w-full [&>button]:flex-1"
+              value={density}
+              onChange={onSetDensity}
+              options={[
+                { label: "Cosy", value: "cosy" },
+                { label: "Glance", value: "glance" },
+              ]}
+            />
           </div>
           <button
             onClick={() => {
               setOpen(false);
               onOpenRules();
             }}
-            className="w-full text-left px-4 py-2.5 text-[12px] text-[#E5E5EA] hover:bg-white/[0.04] transition-colors"
+            className="w-full text-left px-4 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors"
           >
             Phase rules
           </button>

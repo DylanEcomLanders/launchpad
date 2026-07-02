@@ -198,15 +198,15 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
-        <div className="size-6 border-2 border-[#A0A0A0] border-t-[#1B1B1B] rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-surface-raised">
+        <div className="size-6 border-2 border-muted border-t-[#1B1B1B] rounded-full animate-spin" />
       </div>
     );
   }
 
   if (loadError || !study) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+      <div className="min-h-screen flex items-center justify-center bg-surface-raised">
         <div className="text-sm text-red-600">{loadError || "Failed to load."}</div>
       </div>
     );
@@ -215,20 +215,20 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
   const otherStudies = allStudies.filter((s) => s.id !== study.id);
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-[#EDEDEF]">
+    <div className="min-h-screen bg-surface-raised">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-border">
         <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center gap-4">
           <Link
             href="/sales-engine/case-studies"
-            className="flex items-center gap-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+            className="flex items-center gap-1.5 text-xs text-subtle hover:text-foreground transition-colors"
           >
             <ArrowLeftIcon className="size-3.5" />
             All case studies
           </Link>
-          <div className="h-5 w-px bg-[#EDEDEF]" />
+          <div className="h-5 w-px bg-border" />
           <div className="flex-1 min-w-0">
             <input
-              className="w-full text-sm font-semibold text-[#1B1B1B] bg-transparent border-0 focus:outline-none placeholder:text-[#A0A0A0]"
+              className="w-full text-sm font-semibold text-foreground bg-transparent border-0 focus:outline-none placeholder:text-muted"
               value={study.meta.brandName}
               onChange={(e) =>
                 updateStudy((prev) => ({
@@ -239,13 +239,13 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
               placeholder="Brand name"
             />
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-[#A0A0A0] font-mono">
+              <span className="text-[10px] text-muted font-mono">
                 {PUBLIC_BASE}/{study.slug}
               </span>
               <button
                 type="button"
                 onClick={copyShareUrl}
-                className="text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                className="text-muted hover:text-foreground transition-colors"
                 title="Copy public URL"
               >
                 <ClipboardIcon className="size-3" />
@@ -259,7 +259,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
           <Link
             href={`/case-studies/${study.slug}${study.settings.published ? "" : "?draft=1"}`}
             target="_blank"
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#1B1B1B] px-3 py-1.5 border border-[#E5E5EA] rounded-lg hover:bg-[#F3F3F5] transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-foreground px-3 py-1.5 border border-foreground rounded-lg hover:bg-surface-raised transition-colors"
           >
             <EyeIcon className="size-3.5" />
             View
@@ -271,7 +271,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
             className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
               study.settings.published
                 ? "bg-green-100 text-green-700 hover:bg-green-200"
-                : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+                : "bg-surface text-white hover:bg-border"
             }`}
           >
             {study.settings.published ? "Published" : "Publish"}
@@ -566,7 +566,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                       ],
                     }))
                   }
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-[#E5E5EA] rounded-lg text-xs font-semibold text-[#7A7A7A] hover:border-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-foreground rounded-lg text-xs font-semibold text-subtle hover:border-muted hover:text-foreground transition-colors"
                 >
                   <PlusIcon className="size-4" />
                   Add stat
@@ -615,7 +615,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[#7A7A7A]">Pull quotes</span>
+                  <span className="text-xs font-semibold text-subtle">Pull quotes</span>
                   <button
                     type="button"
                     onClick={() =>
@@ -630,14 +630,14 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                         },
                       }))
                     }
-                    className="flex items-center gap-1 text-xs font-semibold text-[#1B1B1B] hover:underline"
+                    className="flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
                   >
                     <PlusIcon className="size-3" />
                     Add quote
                   </button>
                 </div>
                 {study.challenge.pullQuotes.map((q: PullQuote) => (
-                  <div key={q.id} className="bg-[#FAFAFB] border border-[#EDEDEF] rounded-lg p-3 space-y-2">
+                  <div key={q.id} className="bg-surface-raised border border-border rounded-lg p-3 space-y-2">
                     <div className="flex items-start gap-2">
                       <textarea
                         rows={2}
@@ -667,7 +667,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                             },
                           }))
                         }
-                        className="text-[#A0A0A0] hover:text-red-600 p-1 mt-1"
+                        className="text-muted hover:text-red-600 p-1 mt-1"
                       >
                         <TrashIcon className="size-4" />
                       </button>
@@ -770,7 +770,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                       },
                     }))
                   }
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-[#E5E5EA] rounded-lg text-xs font-semibold text-[#7A7A7A] hover:border-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-foreground rounded-lg text-xs font-semibold text-subtle hover:border-muted hover:text-foreground transition-colors"
                 >
                   <PlusIcon className="size-4" />
                   Add card
@@ -858,7 +858,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                     ],
                   }))
                 }
-                className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-[#E5E5EA] rounded-lg text-xs font-semibold text-[#7A7A7A] hover:border-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-foreground rounded-lg text-xs font-semibold text-subtle hover:border-muted hover:text-foreground transition-colors"
               >
                 <PlusIcon className="size-4" />
                 Add metric
@@ -1064,7 +1064,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                         techStack: prev.techStack.filter((x) => x !== t),
                       }))
                     }
-                    className="text-xs font-semibold px-3 py-1 bg-[#1B1B1B] text-white rounded-full hover:bg-[#2D2D2D] transition-colors"
+                    className="text-xs font-semibold px-3 py-1 bg-surface text-white rounded-full hover:bg-border transition-colors"
                   >
                     {t} ×
                   </button>
@@ -1081,7 +1081,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                         techStack: [...prev.techStack, o],
                       }))
                     }
-                    className="text-xs px-3 py-1 bg-[#F3F3F5] text-[#7A7A7A] rounded-full hover:bg-[#EDEDEF] hover:text-[#1B1B1B] transition-colors"
+                    className="text-xs px-3 py-1 bg-surface-raised text-subtle rounded-full hover:bg-border hover:text-foreground transition-colors"
                   >
                     + {o}
                   </button>
@@ -1098,7 +1098,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
             defaultOpen={false}
           >
             {otherStudies.length === 0 ? (
-              <p className="text-xs text-[#7A7A7A]">No other case studies yet.</p>
+              <p className="text-xs text-subtle">No other case studies yet.</p>
             ) : (
               <div className="space-y-1.5">
                 {otherStudies.map((other) => {
@@ -1106,7 +1106,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                   return (
                     <label
                       key={other.id}
-                      className="flex items-center gap-2 px-3 py-2 bg-[#FAFAFB] border border-[#EDEDEF] rounded-lg cursor-pointer hover:bg-[#F3F3F5]"
+                      className="flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border rounded-lg cursor-pointer hover:bg-surface-raised"
                     >
                       <input
                         type="checkbox"
@@ -1121,10 +1121,10 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                         }
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-[#1B1B1B] truncate">
+                        <div className="text-sm font-semibold text-foreground truncate">
                           {other.meta.brandName || other.slug}
                         </div>
-                        <div className="text-[10px] text-[#A0A0A0] truncate">
+                        <div className="text-[10px] text-muted truncate">
                           {other.hero.headline}
                         </div>
                       </div>
@@ -1180,7 +1180,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                     },
                   }))
                 }
-                className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-[#E5E5EA] rounded-lg text-xs font-semibold text-[#7A7A7A] hover:border-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-foreground rounded-lg text-xs font-semibold text-subtle hover:border-muted hover:text-foreground transition-colors"
               >
                 <PlusIcon className="size-4" />
                 Add test
@@ -1207,7 +1207,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                     type="button"
                     onClick={commitSlug}
                     disabled={!slugDirty || study.slug === routeSlug || !slugAvailable}
-                    className="px-4 py-2 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] disabled:opacity-40 transition-colors whitespace-nowrap"
+                    className="px-4 py-2 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border disabled:opacity-40 transition-colors whitespace-nowrap"
                   >
                     Apply
                   </button>
@@ -1215,7 +1215,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                 {!slugAvailable && (
                   <p className="text-[11px] text-red-600 mt-1">Slug already taken</p>
                 )}
-                <p className="text-[10px] text-[#A0A0A0] mt-1">
+                <p className="text-[10px] text-muted mt-1">
                   Public URL: {PUBLIC_BASE}/{study.slug}
                 </p>
               </div>
@@ -1224,7 +1224,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
-                    className="size-10 rounded-lg border border-[#E5E5EA] cursor-pointer"
+                    className="size-10 rounded-lg border border-foreground cursor-pointer"
                     value={study.settings.brandColor || "#E04A2F"}
                     onChange={(e) =>
                       updateStudy((prev) => ({
@@ -1245,16 +1245,16 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                     placeholder="#E04A2F"
                   />
                 </div>
-                <p className="text-[10px] text-[#A0A0A0] mt-1">
+                <p className="text-[10px] text-muted mt-1">
                   Used on eyebrow labels. Default coral matches Ecom Landers&apos; accent.
                 </p>
               </div>
-              <div className="flex items-center justify-between bg-[#FAFAFB] border border-[#EDEDEF] rounded-lg px-4 py-3">
+              <div className="flex items-center justify-between bg-surface-raised border border-border rounded-lg px-4 py-3">
                 <div>
-                  <div className="text-sm font-semibold text-[#1B1B1B]">
+                  <div className="text-sm font-semibold text-foreground">
                     {study.settings.published ? "Published" : "Draft"}
                   </div>
-                  <div className="text-[11px] text-[#7A7A7A]">
+                  <div className="text-[11px] text-subtle">
                     {study.settings.published
                       ? "Live at the public URL"
                       : "Add ?draft=1 to preview"}
@@ -1265,8 +1265,8 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                   onClick={togglePublish}
                   className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
                     study.settings.published
-                      ? "bg-white text-[#1B1B1B] border border-[#E5E5EA] hover:bg-[#F3F3F5]"
-                      : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+                      ? "bg-white text-foreground border border-foreground hover:bg-surface-raised"
+                      : "bg-surface text-white hover:bg-border"
                   }`}
                 >
                   {study.settings.published ? "Unpublish" : "Publish"}
@@ -1277,8 +1277,8 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
         </div>
 
         <aside className="lg:sticky lg:top-[68px] self-start space-y-4">
-          <div className="bg-white border border-[#EDEDEF] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
+          <div className="bg-white border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">
               At a glance
             </div>
             <div className="space-y-3">
@@ -1291,11 +1291,11 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
             </div>
           </div>
 
-          <div className="bg-white border border-[#EDEDEF] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
+          <div className="bg-white border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">
               Public preview
             </div>
-            <div className="aspect-[4/3] rounded-lg overflow-hidden border border-[#EDEDEF] bg-white">
+            <div className="aspect-[4/3] rounded-lg overflow-hidden border border-border bg-white">
               <iframe
                 src={`/case-studies/${study.slug}?draft=1`}
                 title="Public preview"
@@ -1306,15 +1306,15 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
             <Link
               href={`/case-studies/${study.slug}${study.settings.published ? "" : "?draft=1"}`}
               target="_blank"
-              className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#F3F3F5] text-[#1B1B1B] text-xs font-semibold rounded-lg hover:bg-[#EDEDEF] transition-colors"
+              className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 bg-surface-raised text-foreground text-xs font-semibold rounded-lg hover:bg-border transition-colors"
             >
               <EyeIcon className="size-3.5" />
               Open full preview
             </Link>
           </div>
 
-          <div className="bg-white border border-[#EDEDEF] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
+          <div className="bg-white border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">
               Duplicate as new
             </div>
             <DuplicateButton study={study} router={router} />
@@ -1343,8 +1343,8 @@ function makeEmptyTest(): IntelligemsTest {
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-[#7A7A7A]">{label}</span>
-      <span className="text-sm font-semibold text-[#1B1B1B] tabular-nums">{value}</span>
+      <span className="text-xs text-subtle">{label}</span>
+      <span className="text-sm font-semibold text-foreground tabular-nums">{value}</span>
     </div>
   );
 }
@@ -1352,8 +1352,8 @@ function Stat({ label, value }: { label: string; value: number }) {
 function SaveStatePill({ state, error }: { state: SaveState; error: string | null }) {
   if (state === "saving") {
     return (
-      <div className="flex items-center gap-1.5 text-[11px] text-[#7A7A7A]">
-        <div className="size-3 border-2 border-[#A0A0A0] border-t-[#1B1B1B] rounded-full animate-spin" />
+      <div className="flex items-center gap-1.5 text-[11px] text-subtle">
+        <div className="size-3 border-2 border-muted border-t-[#1B1B1B] rounded-full animate-spin" />
         Saving…
       </div>
     );
@@ -1402,7 +1402,7 @@ function DuplicateButton({
       type="button"
       onClick={handle}
       disabled={busy}
-      className="w-full text-xs font-semibold px-3 py-2 bg-[#F3F3F5] text-[#1B1B1B] rounded-lg hover:bg-[#EDEDEF] transition-colors disabled:opacity-50"
+      className="w-full text-xs font-semibold px-3 py-2 bg-surface-raised text-foreground rounded-lg hover:bg-border transition-colors disabled:opacity-50"
     >
       {busy ? "Duplicating…" : "Duplicate from this study"}
     </button>

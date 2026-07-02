@@ -117,32 +117,32 @@ export function PasscodeGate({
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0C0C0C]">
-        <div className="w-5 h-5 border-2 border-[#2A2A2A] border-t-white rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-5 h-5 border-2 border-border border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!authed) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0C0C0C] px-6">
+      <div className="min-h-screen flex items-center justify-center bg-background px-6">
         <div className="w-full max-w-[340px]">
           {/* Eyebrow with lock chip + bold title — Well chrome pattern */}
           <div className="text-center mb-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#71757D] mb-3 inline-flex items-center gap-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle mb-3 inline-flex items-center gap-1.5">
               <LockClosedIcon className="size-2.5" />
               Ecomlanders
             </p>
-            <h1 className="text-2xl font-bold text-[#E5E5EA]">
+            <h1 className="text-2xl font-bold text-foreground">
               {title}
             </h1>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="bg-[#181818] border border-[#2A2A2A] rounded-md p-5"
+            className="bg-surface border border-border rounded-md p-5"
           >
-            <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[#71757D] mb-2">
+            <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle mb-2">
               Passcode
             </label>
             <div className={shaking ? "animate-[shake_0.4s_ease-in-out]" : ""}>
@@ -155,10 +155,10 @@ export function PasscodeGate({
                 }}
                 placeholder="Enter to unlock"
                 autoFocus
-                className={`w-full px-3 py-2.5 bg-[#0C0C0C] border rounded-md text-sm text-[#E5E5EA] focus:outline-none transition-colors placeholder:text-[#4B4D52] ${
+                className={`w-full px-3 py-2.5 bg-background border rounded-md text-sm text-foreground focus:outline-none transition-colors placeholder:text-border ${
                   error
                     ? "border-red-500/60 focus:border-red-500"
-                    : "border-[#2A2A2A] focus:border-[#383838]"
+                    : "border-border focus:border-border"
                 }`}
               />
             </div>
@@ -174,7 +174,7 @@ export function PasscodeGate({
           </form>
 
           {idleTimeoutMs ? (
-            <p className="text-[10px] text-[#71757D] mt-4 text-center uppercase tracking-[0.08em]">
+            <p className="text-[10px] text-subtle mt-4 text-center uppercase tracking-[0.08em]">
               Auto-locks after {Math.floor(idleTimeoutMs / 60000)} minutes idle
             </p>
           ) : null}

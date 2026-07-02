@@ -9,21 +9,21 @@ export const metadata = {
 
 export default function CaseStudySamplePage() {
   return (
-    <div className="min-h-screen bg-white text-[#1B1B1B] font-body">
+    <div className="min-h-screen bg-white text-foreground font-body">
       {/* Header */}
-      <header className="border-b border-[#EDEDEF]">
+      <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
-          <Link href="/" className="text-[#1B1B1B]">
+          <Link href="/" className="text-foreground">
             <Logo height={22} />
           </Link>
-          <nav className="hidden md:flex items-center gap-10 text-sm text-[#1B1B1B]">
+          <nav className="hidden md:flex items-center gap-10 text-sm text-foreground">
             <Link href="/about" className="hover:opacity-70">About us</Link>
             <Link href="/case-studies" className="hover:opacity-70">Case Studies</Link>
             <Link href="/services" className="hover:opacity-70">Services</Link>
           </nav>
           <Link
             href="/audit"
-            className="text-xs md:text-sm font-semibold px-4 py-2 bg-[#1B1B1B] text-white rounded-full hover:bg-[#2D2D2D] transition-colors inline-flex items-center gap-1.5"
+            className="text-xs md:text-sm font-semibold px-4 py-2 bg-surface text-white rounded-full hover:bg-border transition-colors inline-flex items-center gap-1.5"
           >
             Get In Touch
             <span className="text-[#D1FF4C]">↗</span>
@@ -33,7 +33,7 @@ export default function CaseStudySamplePage() {
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-12 md:pt-16 pb-12">
-        <div className="text-xs uppercase tracking-[0.2em] text-[#A0A0A0] mb-6">
+        <div className="text-xs uppercase tracking-[0.2em] text-muted mb-6">
           Case Study
         </div>
 
@@ -42,7 +42,7 @@ export default function CaseStudySamplePage() {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.02]">
               Gymshark scales to <span className="bg-[#D1FF4C] px-2">+125% MRR</span> in 6 months.
             </h1>
-            <p className="text-lg md:text-xl text-[#5A5A5A] mt-8 max-w-xl leading-relaxed">
+            <p className="text-lg md:text-xl text-subtle mt-8 max-w-xl leading-relaxed">
               A ground-up rebuild of their core landing page funnel — backed by 14 winning A/B tests and a Shopify theme refactor that cut load time in half.
             </p>
 
@@ -50,7 +50,7 @@ export default function CaseStudySamplePage() {
               {["CRO", "Development", "Funnel Strategy", "Theme Build", "A/B Testing"].map((t) => (
                 <span
                   key={t}
-                  className="text-xs font-semibold px-3 py-1.5 bg-[#F3F3F5] text-[#1B1B1B] rounded-full border border-[#EDEDEF]"
+                  className="text-xs font-semibold px-3 py-1.5 bg-surface-raised text-foreground rounded-full border border-border"
                 >
                   {t}
                 </span>
@@ -59,7 +59,7 @@ export default function CaseStudySamplePage() {
           </div>
 
           <div className="md:col-span-5">
-            <div className="aspect-[4/3] rounded-2xl bg-[#F3F3F5] border border-[#EDEDEF] flex items-center justify-center text-[#A0A0A0] text-sm">
+            <div className="aspect-[4/3] rounded-2xl bg-surface-raised border border-border flex items-center justify-center text-muted text-sm">
               {/* Hero image placeholder */}
               [ Hero image — store screenshot or shoot ]
             </div>
@@ -68,9 +68,9 @@ export default function CaseStudySamplePage() {
       </section>
 
       {/* Topline metrics */}
-      <section className="border-y border-[#EDEDEF] bg-[#FAFAFB]">
+      <section className="border-y border-border bg-surface-raised">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-12 md:py-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#EDEDEF] rounded-2xl overflow-hidden border border-[#EDEDEF]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden border border-border">
             {[
               { value: "+125%", label: "Monthly recurring revenue" },
               { value: "+38%", label: "Conversion rate" },
@@ -79,7 +79,7 @@ export default function CaseStudySamplePage() {
             ].map((m) => (
               <div key={m.label} className="bg-white p-6 md:p-8">
                 <div className="text-3xl md:text-5xl font-semibold tracking-tight">{m.value}</div>
-                <div className="text-xs md:text-sm text-[#7A7A7A] mt-2 leading-snug">
+                <div className="text-xs md:text-sm text-subtle mt-2 leading-snug">
                   {m.label}
                 </div>
               </div>
@@ -98,7 +98,7 @@ export default function CaseStudySamplePage() {
             { label: "Services", value: "CRO + Theme" },
           ].map((d) => (
             <div key={d.label}>
-              <div className="text-xs uppercase tracking-[0.18em] text-[#A0A0A0] mb-2">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
                 {d.label}
               </div>
               <div className="text-base md:text-lg font-semibold">{d.value}</div>
@@ -108,10 +108,10 @@ export default function CaseStudySamplePage() {
       </section>
 
       {/* Challenge */}
-      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-[#EDEDEF]">
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-border">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16">
           <div className="md:col-span-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-[#A0A0A0] mb-4">
+            <div className="text-xs uppercase tracking-[0.2em] text-muted mb-4">
               The Challenge
             </div>
             <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
@@ -130,8 +130,8 @@ export default function CaseStudySamplePage() {
       </section>
 
       {/* Approach */}
-      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-[#EDEDEF]">
-        <div className="text-xs uppercase tracking-[0.2em] text-[#A0A0A0] mb-4">
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-border">
+        <div className="text-xs uppercase tracking-[0.2em] text-muted mb-4">
           The Approach
         </div>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-tight max-w-3xl">
@@ -158,13 +158,13 @@ export default function CaseStudySamplePage() {
           ].map((step) => (
             <div
               key={step.n}
-              className="rounded-2xl border border-[#EDEDEF] bg-white p-6 md:p-8"
+              className="rounded-2xl border border-border bg-white p-6 md:p-8"
             >
-              <div className="text-xs font-semibold tracking-wider text-[#A0A0A0]">
+              <div className="text-xs font-semibold tracking-wider text-muted">
                 {step.n}
               </div>
               <h3 className="text-xl font-semibold mt-4">{step.title}</h3>
-              <p className="text-sm md:text-base text-[#5A5A5A] leading-relaxed mt-3">
+              <p className="text-sm md:text-base text-subtle leading-relaxed mt-3">
                 {step.body}
               </p>
             </div>
@@ -173,8 +173,8 @@ export default function CaseStudySamplePage() {
       </section>
 
       {/* Before / After visual */}
-      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-[#EDEDEF]">
-        <div className="text-xs uppercase tracking-[0.2em] text-[#A0A0A0] mb-4">
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-border">
+        <div className="text-xs uppercase tracking-[0.2em] text-muted mb-4">
           Before &rarr; After
         </div>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-tight max-w-3xl mb-12">
@@ -182,14 +182,14 @@ export default function CaseStudySamplePage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <div className="text-xs uppercase tracking-wider text-[#A0A0A0] mb-3">Before</div>
-            <div className="aspect-[4/5] rounded-2xl bg-[#F3F3F5] border border-[#EDEDEF] flex items-center justify-center text-[#A0A0A0] text-sm">
+            <div className="text-xs uppercase tracking-wider text-muted mb-3">Before</div>
+            <div className="aspect-[4/5] rounded-2xl bg-surface-raised border border-border flex items-center justify-center text-muted text-sm">
               [ Before screenshot ]
             </div>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wider text-[#A0A0A0] mb-3">After</div>
-            <div className="aspect-[4/5] rounded-2xl bg-[#1B1B1B] border border-[#1B1B1B] flex items-center justify-center text-white/40 text-sm">
+            <div className="text-xs uppercase tracking-wider text-muted mb-3">After</div>
+            <div className="aspect-[4/5] rounded-2xl bg-surface border border-surface flex items-center justify-center text-white/40 text-sm">
               [ After screenshot ]
             </div>
           </div>
@@ -197,8 +197,8 @@ export default function CaseStudySamplePage() {
       </section>
 
       {/* Detailed results */}
-      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-[#EDEDEF]">
-        <div className="text-xs uppercase tracking-[0.2em] text-[#A0A0A0] mb-4">
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-20 border-t border-border">
+        <div className="text-xs uppercase tracking-[0.2em] text-muted mb-4">
           The Results
         </div>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-tight max-w-3xl mb-12">
@@ -238,49 +238,49 @@ export default function CaseStudySamplePage() {
           ].map((r) => (
             <div
               key={r.kpi}
-              className="rounded-2xl border border-[#EDEDEF] bg-white p-6 md:p-8"
+              className="rounded-2xl border border-border bg-white p-6 md:p-8"
             >
-              <div className="text-xs uppercase tracking-wider text-[#A0A0A0] mb-3">
+              <div className="text-xs uppercase tracking-wider text-muted mb-3">
                 {r.kpi}
               </div>
               <div className="flex items-end gap-4 flex-wrap">
                 <div>
-                  <div className="text-xs text-[#A0A0A0] mb-0.5">From</div>
-                  <div className="text-2xl font-semibold text-[#7A7A7A] line-through decoration-[#D4D4D4]">
+                  <div className="text-xs text-muted mb-0.5">From</div>
+                  <div className="text-2xl font-semibold text-subtle line-through decoration-muted">
                     {r.from}
                   </div>
                 </div>
-                <div className="text-2xl text-[#A0A0A0]">→</div>
+                <div className="text-2xl text-muted">→</div>
                 <div>
-                  <div className="text-xs text-[#A0A0A0] mb-0.5">After</div>
+                  <div className="text-xs text-muted mb-0.5">After</div>
                   <div className="text-2xl md:text-3xl font-semibold">{r.to}</div>
                 </div>
                 <div className="ml-auto">
-                  <span className="inline-flex items-center text-sm font-semibold px-3 py-1.5 bg-[#D1FF4C] text-[#1B1B1B] rounded-full">
+                  <span className="inline-flex items-center text-sm font-semibold px-3 py-1.5 bg-[#D1FF4C] text-foreground rounded-full">
                     ↑ {r.delta}
                   </span>
                 </div>
               </div>
-              <p className="text-sm text-[#5A5A5A] leading-relaxed mt-5">{r.note}</p>
+              <p className="text-sm text-subtle leading-relaxed mt-5">{r.note}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Testimonial */}
-      <section className="border-y border-[#EDEDEF] bg-[#FAFAFB]">
+      <section className="border-y border-border bg-surface-raised">
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-20 md:py-28 text-center">
-          <div className="text-xs uppercase tracking-[0.2em] text-[#A0A0A0] mb-8">
+          <div className="text-xs uppercase tracking-[0.2em] text-muted mb-8">
             What the client said
           </div>
           <blockquote className="text-2xl md:text-4xl font-semibold tracking-tight leading-tight">
             &ldquo;Ecomlanders didn&rsquo;t just redesign our pages — they rebuilt how we think about paid traffic. Six months in, our blended ROAS is up nearly 2x.&rdquo;
           </blockquote>
           <div className="flex items-center justify-center gap-3 mt-10">
-            <div className="size-12 rounded-full bg-[#1B1B1B]" />
+            <div className="size-12 rounded-full bg-surface" />
             <div className="text-left">
               <div className="font-semibold text-sm">Sarah Whitman</div>
-              <div className="text-xs text-[#7A7A7A]">Head of Growth, Gymshark</div>
+              <div className="text-xs text-subtle">Head of Growth, Gymshark</div>
             </div>
           </div>
         </div>
@@ -291,12 +291,12 @@ export default function CaseStudySamplePage() {
         <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
           Want results like this?
         </h2>
-        <p className="text-base md:text-lg text-[#5A5A5A] mt-6 max-w-xl mx-auto">
+        <p className="text-base md:text-lg text-subtle mt-6 max-w-xl mx-auto">
           Get a free, no-bullshit audit of your store. We&rsquo;ll show you exactly what&rsquo;s leaking money — and what we&rsquo;d test first.
         </p>
         <Link
           href="/audit"
-          className="inline-flex items-center gap-2 mt-10 px-8 py-4 bg-[#1B1B1B] text-white font-semibold rounded-full hover:bg-[#2D2D2D] transition-colors"
+          className="inline-flex items-center gap-2 mt-10 px-8 py-4 bg-surface text-white font-semibold rounded-full hover:bg-border transition-colors"
         >
           Get a free audit
           <span className="text-[#D1FF4C]">↗</span>
@@ -304,10 +304,10 @@ export default function CaseStudySamplePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#EDEDEF]">
+      <footer className="border-t border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <Logo height={20} className="text-[#1B1B1B]" />
-          <div className="text-xs text-[#A0A0A0]">
+          <Logo height={20} className="text-foreground" />
+          <div className="text-xs text-muted">
             © {new Date().getFullYear()} Ecomlanders. All rights reserved.
           </div>
         </div>

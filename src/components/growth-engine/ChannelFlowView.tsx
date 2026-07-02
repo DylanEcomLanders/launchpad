@@ -60,7 +60,7 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
       {/* Header */}
-      <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-[#E5E5EA] mb-6 transition-colors">
+      <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-muted hover:text-foreground mb-6 transition-colors">
         ← Back to Overview
       </button>
 
@@ -68,7 +68,7 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
         <span className="text-2xl" style={{ color: channelConfig.color }}>{channelConfig.icon}</span>
         <div>
           <h1 className="text-xl font-bold">{channelConfig.label} Funnel</h1>
-          <p className="text-xs text-[#71757D]">Map your journey from content to conversion</p>
+          <p className="text-xs text-subtle">Map your journey from content to conversion</p>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
               {/* Connector line */}
               {stageIdx > 0 && (
                 <div className="flex justify-center py-2">
-                  <div className="w-px h-8 bg-[#2A2A2A]" />
+                  <div className="w-px h-8 bg-border" />
                 </div>
               )}
 
@@ -94,11 +94,11 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
                   {stageIdx + 1}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#E5E5EA]">{stage.label}</p>
-                  <p className="text-[10px] text-[#9CA3AF]">{stage.warmth} traffic</p>
+                  <p className="text-sm font-semibold text-foreground">{stage.label}</p>
+                  <p className="text-[10px] text-muted">{stage.warmth} traffic</p>
                 </div>
                 {!isGap && (
-                  <span className="text-[10px] text-[#9CA3AF] ml-auto">{stageItems.length} item{stageItems.length !== 1 ? "s" : ""}</span>
+                  <span className="text-[10px] text-muted ml-auto">{stageItems.length} item{stageItems.length !== 1 ? "s" : ""}</span>
                 )}
               </div>
 
@@ -118,36 +118,36 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
                             <span className={`size-2 rounded-full shrink-0 ${colors.dot}`} />
-                            <p className="text-sm font-medium text-[#E5E5EA] truncate">{item.label}</p>
+                            <p className="text-sm font-medium text-foreground truncate">{item.label}</p>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded ${colors.text} ${colors.bg}`}>
                               {item.status}
                             </span>
-                            <svg className={`size-3.5 text-[#C7C9CD] transition-transform ${isExpanded ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor">
+                            <svg className={`size-3.5 text-muted transition-transform ${isExpanded ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                             </svg>
                           </div>
                         </div>
                         {item.description && !isExpanded && (
-                          <p className="text-[10px] text-[#71757D] mt-0.5 truncate">{item.description}</p>
+                          <p className="text-[10px] text-subtle mt-0.5 truncate">{item.description}</p>
                         )}
                       </button>
 
                       {/* Expanded detail */}
                       {isExpanded && (
-                        <div className="px-4 py-3 bg-[#181818] border-t border-[#2A2A2A] space-y-3">
+                        <div className="px-4 py-3 bg-surface border-t border-border space-y-3">
                           {item.description && (
-                            <p className="text-xs text-[#9CA3AF] leading-relaxed">{item.description}</p>
+                            <p className="text-xs text-muted leading-relaxed">{item.description}</p>
                           )}
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="text-[9px] uppercase text-[#9CA3AF] font-semibold block mb-1">Status</label>
+                              <label className="text-[9px] uppercase text-muted font-semibold block mb-1">Status</label>
                               <select
                                 value={item.status}
                                 onChange={(e) => onUpdateItem(item.id, { status: e.target.value as GrowthItemStatus })}
-                                className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
+                                className="w-full text-xs px-2 py-1.5 border border-border rounded"
                               >
                                 <option value="planned">Planned</option>
                                 <option value="in-progress">In Progress</option>
@@ -155,58 +155,58 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
                               </select>
                             </div>
                             <div>
-                              <label className="text-[9px] uppercase text-[#9CA3AF] font-semibold block mb-1">Type</label>
-                              <p className="text-xs text-[#9CA3AF] py-1.5">{ITEM_TYPES.find((t) => t.key === item.itemType)?.label || item.itemType}</p>
+                              <label className="text-[9px] uppercase text-muted font-semibold block mb-1">Type</label>
+                              <p className="text-xs text-muted py-1.5">{ITEM_TYPES.find((t) => t.key === item.itemType)?.label || item.itemType}</p>
                             </div>
                           </div>
 
                           {/* URL */}
                           <div>
-                            <label className="text-[9px] uppercase text-[#9CA3AF] font-semibold block mb-1">URL</label>
+                            <label className="text-[9px] uppercase text-muted font-semibold block mb-1">URL</label>
                             <input
                               type="url"
                               value={item.url || ""}
                               onChange={(e) => onUpdateItem(item.id, { url: e.target.value || undefined })}
-                              className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
+                              className="w-full text-xs px-2 py-1.5 border border-border rounded"
                               placeholder="https://..."
                             />
                           </div>
 
                           {/* Notes */}
                           <div>
-                            <label className="text-[9px] uppercase text-[#9CA3AF] font-semibold block mb-1">Notes</label>
+                            <label className="text-[9px] uppercase text-muted font-semibold block mb-1">Notes</label>
                             <textarea
                               value={item.notes || ""}
                               onChange={(e) => onUpdateItem(item.id, { notes: e.target.value || undefined })}
-                              className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded min-h-[60px]"
+                              className="w-full text-xs px-2 py-1.5 border border-border rounded min-h-[60px]"
                               placeholder="Strategy notes, ideas, next steps..."
                             />
                           </div>
 
                           {/* Metrics */}
                           {item.metrics && (
-                            <div className="grid grid-cols-4 gap-2 pt-2 border-t border-[#2A2A2A]">
+                            <div className="grid grid-cols-4 gap-2 pt-2 border-t border-border">
                               {item.metrics.impressions !== undefined && (
                                 <div>
-                                  <p className="text-[8px] uppercase text-[#9CA3AF]">Impressions</p>
+                                  <p className="text-[8px] uppercase text-muted">Impressions</p>
                                   <p className="text-xs font-semibold">{item.metrics.impressions.toLocaleString()}</p>
                                 </div>
                               )}
                               {item.metrics.clicks !== undefined && (
                                 <div>
-                                  <p className="text-[8px] uppercase text-[#9CA3AF]">Clicks</p>
+                                  <p className="text-[8px] uppercase text-muted">Clicks</p>
                                   <p className="text-xs font-semibold">{item.metrics.clicks.toLocaleString()}</p>
                                 </div>
                               )}
                               {item.metrics.leads !== undefined && (
                                 <div>
-                                  <p className="text-[8px] uppercase text-[#9CA3AF]">Leads</p>
+                                  <p className="text-[8px] uppercase text-muted">Leads</p>
                                   <p className="text-xs font-semibold">{item.metrics.leads.toLocaleString()}</p>
                                 </div>
                               )}
                               {item.metrics.conversions !== undefined && (
                                 <div>
-                                  <p className="text-[8px] uppercase text-[#9CA3AF]">Conversions</p>
+                                  <p className="text-[8px] uppercase text-muted">Conversions</p>
                                   <p className="text-xs font-semibold">{item.metrics.conversions.toLocaleString()}</p>
                                 </div>
                               )}
@@ -214,14 +214,14 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
                           )}
 
                           {/* Delete */}
-                          <div className="flex justify-end pt-2 border-t border-[#2A2A2A]">
+                          <div className="flex justify-end pt-2 border-t border-border">
                             {confirmDelete === item.id ? (
                               <div className="flex items-center gap-2">
                                 <button onClick={() => { onRemoveItem(item.id); setConfirmDelete(null); setExpandedItem(null); }} className="text-[10px] font-medium text-white bg-red-500 px-2.5 py-1 rounded">Confirm</button>
-                                <button onClick={() => setConfirmDelete(null)} className="text-[10px] text-[#9CA3AF]">Cancel</button>
+                                <button onClick={() => setConfirmDelete(null)} className="text-[10px] text-muted">Cancel</button>
                               </div>
                             ) : (
-                              <button onClick={() => setConfirmDelete(item.id)} className="text-[10px] text-[#C7C9CD] hover:text-red-500">Remove</button>
+                              <button onClick={() => setConfirmDelete(item.id)} className="text-[10px] text-muted hover:text-red-500">Remove</button>
                             )}
                           </div>
                         </div>
@@ -253,7 +253,7 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
                       const stageTypes = ITEM_TYPES.filter((t) => t.stages.includes(stage.key));
                       if (stageTypes.length > 0) setNewType(stageTypes[0].key);
                     }}
-                    className="w-full border border-dashed border-[#2A2A2A] rounded-lg py-2.5 text-[10px] text-[#9CA3AF] hover:border-[#999] hover:text-[#9CA3AF] transition-colors"
+                    className="w-full border border-dashed border-border rounded-lg py-2.5 text-[10px] text-muted hover:border-subtle hover:text-muted transition-colors"
                   >
                     + Add item
                   </button>
@@ -261,7 +261,7 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
 
                 {/* Add form */}
                 {addingToStage === stage.key && (
-                  <div className="border border-[#2A2A2A] rounded-xl p-4 bg-[#0C0C0C] space-y-3">
+                  <div className="border border-border rounded-xl p-4 bg-background space-y-3">
                     <div>
                       <label className={labelClass}>Label *</label>
                       <input type="text" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} className={inputClass} placeholder={`e.g. ${stage.key === "content" ? "Twitter thread about CRO" : stage.key === "capture" ? "Free CRO audit template" : stage.key === "nurture" ? "5-email welcome sequence" : "Discovery call booking"}`} autoFocus />
@@ -297,8 +297,8 @@ export default function ChannelFlowView({ channel, items, onAddItem, onUpdateIte
                       <textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} className={inputClass + " min-h-[40px]"} placeholder="Strategy, ideas..." />
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={handleAdd} disabled={!newLabel.trim()} className="px-4 py-2 text-xs font-medium bg-white text-[#0C0C0C] rounded-lg disabled:opacity-30">Add</button>
-                      <button onClick={resetForm} className="px-3 py-2 text-xs text-[#71757D]">Cancel</button>
+                      <button onClick={handleAdd} disabled={!newLabel.trim()} className="px-4 py-2 text-xs font-medium bg-white text-background rounded-lg disabled:opacity-30">Add</button>
+                      <button onClick={resetForm} className="px-3 py-2 text-xs text-subtle">Cancel</button>
                     </div>
                   </div>
                 )}

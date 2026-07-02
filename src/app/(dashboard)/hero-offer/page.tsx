@@ -191,13 +191,13 @@ export default function TheOfferPage() {
     <div className="space-y-10">
       {/* ── Hero ────────────────────────────────────────────────── */}
       <section className="pt-2">
-        <div className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#71757D] mb-4">
+        <div className="text-[10px] uppercase tracking-[0.3em] font-mono text-subtle mb-4">
           The Conversion Engine
         </div>
         <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.02em] leading-[1.05] mb-4 bg-gradient-to-r from-white via-emerald-100 to-cyan-100 bg-clip-text text-transparent">
           We turn the traffic you already pay for into revenue.
         </h2>
-        <p className="text-sm md:text-base text-[#9CA3AF] leading-relaxed max-w-2xl">
+        <p className="text-sm md:text-base text-muted leading-relaxed max-w-2xl">
           One programme. A full conversion team (design, dev, copy, CRO) embedded inside your business on a monthly system. Not consultancy, not vendor: a partnership built to compound.
         </p>
       </section>
@@ -212,7 +212,7 @@ export default function TheOfferPage() {
                 key={tier.name}
                 className={
                   featured
-                    ? "rounded-3xl bg-[#FAFAF7] text-[#1A1A17] p-7 md:p-8 shadow-xl shadow-black/30"
+                    ? "rounded-3xl bg-surface-raised text-surface p-7 md:p-8 shadow-xl shadow-black/30"
                     : "rounded-3xl ring-1 ring-white/[0.08] bg-white/[0.025] p-7 md:p-8"
                 }
               >
@@ -221,7 +221,7 @@ export default function TheOfferPage() {
                     {tier.name}
                   </h3>
                   {featured && tier.badge && (
-                    <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-[#1A1A17] text-[#FAFAF7]">
+                    <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-surface text-surface-raised">
                       {tier.badge}
                     </span>
                   )}
@@ -230,18 +230,18 @@ export default function TheOfferPage() {
                   <span className={`text-5xl font-semibold tracking-[-0.03em] tabular-nums ${featured ? "" : "text-white/90"}`}>
                     {fmtK(tier.monthly)}
                   </span>
-                  <span className={`text-sm ${featured ? "text-[#1A1A17]/45" : "text-white/40"}`}>
+                  <span className={`text-sm ${featured ? "text-surface/45" : "text-white/40"}`}>
                     /mo
                   </span>
                 </div>
-                <p className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-[#1A1A17]/60" : "text-white/50"}`}>
+                <p className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-surface/60" : "text-white/50"}`}>
                   {tier.blurb}
                 </p>
-                <div className={`h-px mb-6 ${featured ? "bg-[#1A1A17]/10" : "bg-white/10"}`} />
+                <div className={`h-px mb-6 ${featured ? "bg-surface/10" : "bg-white/10"}`} />
                 <ul className="space-y-3">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5">
-                      <CheckIcon className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-[#1A1A17]" : "text-white/35"}`} />
+                      <CheckIcon className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-surface" : "text-white/35"}`} />
                       <span className={`text-sm leading-snug ${featured ? "" : "text-white/70"}`}>
                         {f}
                       </span>
@@ -259,12 +259,12 @@ export default function TheOfferPage() {
 
       {/* ── North Star · Guarantee · Who it's for ──────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="rounded-2xl bg-[#0F0F10] ring-1 ring-white/[0.04] p-5">
+        <div className="rounded-2xl bg-background ring-1 ring-white/[0.04] p-5">
           <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
             North Star
           </div>
-          <div className="text-base font-semibold text-[#E5E5EA] mb-1">Conversion rate.</div>
-          <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+          <div className="text-base font-semibold text-foreground mb-1">Conversion rate.</div>
+          <p className="text-[12px] text-muted leading-relaxed">
             The one metric we measure ourselves on. CR up = revenue up at the same ad spend.
           </p>
         </div>
@@ -272,21 +272,21 @@ export default function TheOfferPage() {
           <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
             The guarantee
           </div>
-          <div className="text-base font-semibold text-[#E5E5EA] mb-1">
+          <div className="text-base font-semibold text-foreground mb-1">
             Measurable CR lift in 90 days, or we keep working free.
           </div>
-          <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+          <p className="text-[12px] text-muted leading-relaxed">
             You ship what we recommend. We hit the number.
           </p>
         </div>
-        <div className="rounded-2xl bg-[#0F0F10] ring-1 ring-white/[0.04] p-5">
+        <div className="rounded-2xl bg-background ring-1 ring-white/[0.04] p-5">
           <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
             Who it&apos;s for
           </div>
-          <div className="text-base font-semibold text-[#E5E5EA] mb-1">
+          <div className="text-base font-semibold text-foreground mb-1">
             Shopify brands at £200k/mo+
           </div>
-          <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+          <p className="text-[12px] text-muted leading-relaxed">
             Paid-traffic dependent. Founders or CMOs with conversion ambition and the bandwidth to ship what we recommend.
           </p>
         </div>
@@ -294,7 +294,7 @@ export default function TheOfferPage() {
 
       {/* ── Stage links ────────────────────────────────────────── */}
       <section>
-        <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+        <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
           Jump to a stage
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -304,7 +304,7 @@ export default function TheOfferPage() {
               <Link
                 key={s.href}
                 href={s.href}
-                className="group block bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] transition-all"
+                className="group block bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] transition-all"
                 style={{ ["--glow" as string]: s.glow }}
               >
                 <div
@@ -312,10 +312,10 @@ export default function TheOfferPage() {
                 >
                   <Icon className="size-5 text-white" />
                 </div>
-                <div className="text-[11px] uppercase tracking-wider font-semibold text-[#71757D] mb-1">
+                <div className="text-[11px] uppercase tracking-wider font-semibold text-subtle mb-1">
                   {s.label}
                 </div>
-                <p className="text-sm text-[#E5E5EA] leading-relaxed">{s.sub}</p>
+                <p className="text-sm text-foreground leading-relaxed">{s.sub}</p>
               </Link>
             );
           })}
@@ -324,20 +324,20 @@ export default function TheOfferPage() {
 
       {/* ── Playbook guide ─────────────────────────────────────── */}
       <section>
-        <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+        <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
           How the playbook works
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {PLAYBOOK_GUIDE.map((g) => (
             <div
               key={g.eyebrow}
-              className="rounded-2xl bg-[#0F0F10] ring-1 ring-white/[0.04] p-5"
+              className="rounded-2xl bg-background ring-1 ring-white/[0.04] p-5"
             >
               <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
                 {g.eyebrow}
               </div>
-              <div className="text-base font-semibold text-[#E5E5EA] mb-1.5">{g.title}</div>
-              <p className="text-[13px] text-[#9CA3AF] leading-relaxed">{g.body}</p>
+              <div className="text-base font-semibold text-foreground mb-1.5">{g.title}</div>
+              <p className="text-[13px] text-muted leading-relaxed">{g.body}</p>
             </div>
           ))}
         </div>
@@ -357,11 +357,11 @@ export default function TheOfferPage() {
               <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-0.5">
                 Operations
               </div>
-              <div className="text-sm text-[#E5E5EA]">
+              <div className="text-sm text-foreground">
                 Every operational tool the playbook turns into: pipeline, briefs, tests, reports, onboarding, lifecycle, cadence, brain library.
               </div>
             </div>
-            <ArrowTopRightOnSquareIcon className="size-4 text-[#71757D] group-hover:text-emerald-300 transition-colors shrink-0" />
+            <ArrowTopRightOnSquareIcon className="size-4 text-subtle group-hover:text-emerald-300 transition-colors shrink-0" />
           </div>
         </Link>
       )}
@@ -371,31 +371,31 @@ export default function TheOfferPage() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <ChatBubbleLeftRightIcon className="size-4 text-cyan-400" />
-            <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+            <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
               Objection library
             </div>
           </div>
           {isAdmin && (
             <button
               onClick={addObjection}
-              className="text-[11px] uppercase tracking-wider font-semibold text-[#71757D] hover:text-cyan-300 transition-colors"
+              className="text-[11px] uppercase tracking-wider font-semibold text-subtle hover:text-cyan-300 transition-colors"
             >
               + Add objection
             </button>
           )}
         </div>
-        <p className="text-[12px] text-[#71757D] mb-4 max-w-2xl">
+        <p className="text-[12px] text-subtle mb-4 max-w-2xl">
           Every objection we hear + the response that lands. Build this up over time. Searchable mid-call.
         </p>
         {!hydrated ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />
+              <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />
             ))}
           </div>
         ) : objections.length === 0 ? (
-          <div className="bg-[#0F0F10] rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
-            <p className="text-sm text-[#71757D]">
+          <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+            <p className="text-sm text-subtle">
               {isAdmin
                 ? "Capture every objection you hear and the response that lands. Click + Add objection above."
                 : "Nothing here yet."}
@@ -453,7 +453,7 @@ function ObjectionCard({
 
   if (editing) {
     return (
-      <div className="bg-[#0F0F10] rounded-2xl p-5 space-y-3 ring-1 ring-cyan-500/30">
+      <div className="bg-background rounded-2xl p-5 space-y-3 ring-1 ring-cyan-500/30">
         <input
           value={qDraft}
           onChange={(e) => setQDraft(e.target.value)}
@@ -471,14 +471,14 @@ function ObjectionCard({
         <div className="flex items-center justify-between">
           <button
             onClick={onDelete}
-            className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
+            className="text-[11px] uppercase tracking-wider text-subtle hover:text-rose-400"
           >
             Delete
           </button>
           <div className="flex items-center gap-2">
             <button
               onClick={onCancel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white"
             >
               <XMarkIcon className="size-3.5" />
               Cancel
@@ -490,7 +490,7 @@ function ObjectionCard({
                   response: aDraft,
                 })
               }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
             >
               <CheckIcon className="size-3.5" />
               Save
@@ -502,24 +502,24 @@ function ObjectionCard({
   }
 
   return (
-    <div className="bg-[#0F0F10] rounded-2xl p-5 group ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
+    <div className="bg-background rounded-2xl p-5 group ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
       <div className="flex items-start justify-between gap-3 mb-2">
-        <div className="font-semibold text-[#E5E5EA] text-sm">
+        <div className="font-semibold text-foreground text-sm">
           &ldquo;{objection.objection}&rdquo;
         </div>
         {isAdmin && (
           <button
             onClick={onEdit}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-[#E5E5EA] shrink-0"
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-subtle hover:text-foreground shrink-0"
             title="Edit objection"
           >
             <PencilSquareIcon className="size-4" />
           </button>
         )}
       </div>
-      <p className="text-sm text-[#9CA3AF] whitespace-pre-wrap">
+      <p className="text-sm text-muted whitespace-pre-wrap">
         {objection.response || (
-          <span className="italic text-[#71757D]">No response yet.</span>
+          <span className="italic text-subtle">No response yet.</span>
         )}
       </p>
     </div>

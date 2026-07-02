@@ -111,7 +111,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
         onChange={(e) => setTitle(e.target.value)}
         onBlur={() => onUpdate("title", title)}
         placeholder="Task description..."
-        className="text-sm px-2 py-1 border border-transparent hover:border-[#2A2A2A] focus:border-[#999] rounded focus:outline-none"
+        className="text-sm px-2 py-1 border border-transparent hover:border-border focus:border-subtle rounded focus:outline-none"
       />
       <input
         type="text"
@@ -119,13 +119,13 @@ const TaskEditorRow = memo(function TaskEditorRow({
         onChange={(e) => setClient(e.target.value)}
         onBlur={() => onUpdate("client", client)}
         placeholder="Client"
-        className="text-xs px-2 py-1 border border-transparent hover:border-[#2A2A2A] focus:border-[#999] rounded focus:outline-none"
+        className="text-xs px-2 py-1 border border-transparent hover:border-border focus:border-subtle rounded focus:outline-none"
       />
       <button
         type="button"
         onClick={onOpenDetail}
         title="Set designer / developer in drawer"
-        className={`text-xs px-2 py-1 rounded text-left truncate hover:bg-[#222222] ${assignee ? "text-[#E5E5EA]" : "text-[#9CA3AF]"}`}
+        className={`text-xs px-2 py-1 rounded text-left truncate hover:bg-surface-raised ${assignee ? "text-foreground" : "text-muted"}`}
       >
         {assignee || "Unassigned"}
       </button>
@@ -133,7 +133,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
         <select
           value={task.phase || ""}
           onChange={(e) => onUpdate("phase", e.target.value)}
-          className="text-xs px-1 py-1 border border-transparent hover:border-[#2A2A2A] focus:border-[#999] rounded focus:outline-none truncate"
+          className="text-xs px-1 py-1 border border-transparent hover:border-border focus:border-subtle rounded focus:outline-none truncate"
           style={meta ? { color: meta.color } : undefined}
         >
           <option value="">—</option>
@@ -160,14 +160,14 @@ const TaskEditorRow = memo(function TaskEditorRow({
             {formatDeadline(relevantDue)}
           </span>
         ) : (
-          <span className="text-[11px] text-[#C7C9CD]">—</span>
+          <span className="text-[11px] text-muted">—</span>
         )}
-        <span className="text-[9px] uppercase tracking-wider text-[#9CA3AF] leading-none">{deadlineShortLabel}</span>
+        <span className="text-[9px] uppercase tracking-wider text-muted leading-none">{deadlineShortLabel}</span>
       </div>
       <select
         value={task.status}
         onChange={(e) => onUpdate("status", e.target.value)}
-        className="text-xs px-1 py-1 border border-transparent hover:border-[#2A2A2A] focus:border-[#999] rounded focus:outline-none"
+        className="text-xs px-1 py-1 border border-transparent hover:border-border focus:border-subtle rounded focus:outline-none"
       >
         <option value="todo">To Do</option>
         <option value="in-progress">In Progress</option>
@@ -176,7 +176,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
       <button
         onClick={onOpenDetail}
         title={hasDeadline ? "View deadlines & timeline" : "Set deadlines & view timeline"}
-        className={`p-1 rounded hover:bg-[#222222] ${hasDeadline ? "text-[#9CA3AF]" : "text-[#C7C9CD]"} hover:text-[#E5E5EA]`}
+        className={`p-1 rounded hover:bg-surface-raised ${hasDeadline ? "text-muted" : "text-muted"} hover:text-foreground`}
       >
         <CalendarIcon className="size-3.5" />
       </button>
@@ -186,7 +186,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
         className={`p-1 rounded transition-colors ${
           confirmDelete
             ? "bg-red-50 text-red-600 ring-1 ring-red-400"
-            : "text-[#C7C9CD] hover:text-red-400"
+            : "text-muted hover:text-red-400"
         }`}
       >
         <TrashIcon className="size-3.5" />
@@ -403,7 +403,7 @@ export default function TaskBoardAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin size-6 border-2 border-[#2A2A2A] border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
@@ -423,19 +423,19 @@ export default function TaskBoardAdminPage() {
       <div className="flex-1 min-w-0 max-w-[1100px]">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">Task Board</h1>
-          <p className="text-xs text-[#71757D] mt-1">
+          <h1 className="text-[28px] leading-tight font-bold text-foreground">Task Board</h1>
+          <p className="text-xs text-subtle mt-1">
             Manage design and dev tasks. Team views at{" "}
             <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-[#2563EB] underline">/tasks</a>
           </p>
         </div>
-        <button onClick={save} disabled={saving} className="px-5 py-2.5 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] disabled:opacity-50">
+        <button onClick={save} disabled={saving} className="px-5 py-2.5 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground disabled:opacity-50">
           {saved ? "Saved" : saving ? "Saving..." : "Save & Publish"}
         </button>
       </div>
 
       {/* Tab filter — All / Research / Design / Development */}
-      <div className="inline-flex items-center p-1 bg-[#222222] rounded-lg mb-4">
+      <div className="inline-flex items-center p-1 bg-surface-raised rounded-lg mb-4">
         {([
           { value: "all", label: "All", color: "#1A1A1A" },
           { value: "research", label: "Research", color: "#0891B2" },
@@ -446,12 +446,12 @@ export default function TaskBoardAdminPage() {
             key={t.value}
             onClick={() => { setTabFilter(t.value); setFilterAssignee(""); }}
             className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
-              tabFilter === t.value ? "bg-[#181818] text-[#E5E5EA] shadow-sm" : "text-[#9CA3AF] hover:text-[#E5E5EA]"
+              tabFilter === t.value ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
             {t.value !== "all" && <span className="size-1.5 rounded-full" style={{ background: t.color }} />}
             {t.label}
-            <span className={`text-[10px] font-medium ${tabFilter === t.value ? "text-[#9CA3AF]" : "text-[#9CA3AF]"}`}>
+            <span className={`text-[10px] font-medium ${tabFilter === t.value ? "text-muted" : "text-muted"}`}>
               {tabCounts[t.value]}
             </span>
           </button>
@@ -460,13 +460,13 @@ export default function TaskBoardAdminPage() {
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
-        <div className="inline-flex items-center p-0.5 bg-[#222222] rounded-lg">
+        <div className="inline-flex items-center p-0.5 bg-surface-raised rounded-lg">
           {(["client", "phase"] as const).map((g) => (
             <button
               key={g}
               onClick={() => setGroupBy(g)}
               className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-colors ${
-                groupBy === g ? "bg-[#181818] text-[#E5E5EA] shadow-sm" : "text-[#9CA3AF] hover:text-[#E5E5EA]"
+                groupBy === g ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"
               }`}
             >
               By {g}
@@ -476,7 +476,7 @@ export default function TaskBoardAdminPage() {
         <select
           value={filterAssignee}
           onChange={(e) => setFilterAssignee(e.target.value)}
-          className="text-xs px-3 py-1.5 border border-[#2A2A2A] rounded-lg bg-[#181818] focus:outline-none"
+          className="text-xs px-3 py-1.5 border border-border rounded-lg bg-surface focus:outline-none"
         >
           <option value="">All Assignees</option>
           {visibleAssignees.map((a) => <option key={a} value={a}>{a}</option>)}
@@ -487,7 +487,7 @@ export default function TaskBoardAdminPage() {
               key={f}
               onClick={() => setFilterDate(f)}
               className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
-                filterDate === f ? "bg-white text-[#0C0C0C]" : "bg-[#222222] text-[#9CA3AF] hover:bg-[#2A2A2A]"
+                filterDate === f ? "bg-white text-background" : "bg-surface-raised text-muted hover:bg-border"
               }`}
             >
               {f === "all" ? "All Dates" : f === "overdue" ? "Overdue" : f === "today" ? "Today" : "This Week"}
@@ -495,37 +495,37 @@ export default function TaskBoardAdminPage() {
           ))}
         </div>
         {(filterAssignee || filterDate !== "all") && (
-          <button onClick={() => { setFilterAssignee(""); setFilterDate("all"); }} className="text-[11px] text-[#9CA3AF] hover:text-[#E5E5EA]">Clear</button>
+          <button onClick={() => { setFilterAssignee(""); setFilterDate("all"); }} className="text-[11px] text-muted hover:text-foreground">Clear</button>
         )}
       </div>
 
       {/* Summary + add */}
       <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">
           {tabFilter === "all" ? "All tasks" : tabFilter === "research" ? "Research" : tabFilter === "design" ? "Design" : "Development"}
         </h2>
-        <span className="text-[10px] text-[#9CA3AF]">{filteredTasks.length} of {tabCounts[tabFilter]}</span>
+        <span className="text-[10px] text-muted">{filteredTasks.length} of {tabCounts[tabFilter]}</span>
         <button
           onClick={() => addTask(tabFilter === "dev" ? "dev" : "design")}
-          className="ml-auto flex items-center gap-1 text-[11px] text-[#9CA3AF] hover:text-[#E5E5EA]"
+          className="ml-auto flex items-center gap-1 text-[11px] text-muted hover:text-foreground"
         >
           <PlusIcon className="size-3" /> Add task
         </button>
       </div>
 
       {filteredTasks.length === 0 ? (
-        <div className="border border-[#2A2A2A] rounded-xl bg-[#181818]">
-          <p className="text-xs text-[#C7C9CD] text-center py-10">No tasks match current filters</p>
+        <div className="border border-border rounded-xl bg-surface">
+          <p className="text-xs text-muted text-center py-10">No tasks match current filters</p>
         </div>
       ) : (
-        <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] overflow-hidden">
-          <div className="grid grid-cols-[1.3fr_130px_130px_170px_120px_110px_32px_32px] gap-2 px-4 py-2 bg-[#0C0C0C] border-b border-[#2A2A2A]">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Task</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Client</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Assignee</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Phase</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Deadline</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Status</span>
+        <div className="border border-border rounded-xl bg-surface overflow-hidden">
+          <div className="grid grid-cols-[1.3fr_130px_130px_170px_120px_110px_32px_32px] gap-2 px-4 py-2 bg-background border-b border-border">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Task</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Client</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Assignee</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Phase</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Deadline</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Status</span>
             <span />
             <span />
           </div>
@@ -549,7 +549,7 @@ export default function TaskBoardAdminPage() {
 
             return (
               <div key={group.key}>
-                <div className={`flex items-center gap-2 px-4 pb-2 ${i === 0 ? "pt-4" : "pt-10 border-t border-[#2A2A2A] mt-4"}`}>
+                <div className={`flex items-center gap-2 px-4 pb-2 ${i === 0 ? "pt-4" : "pt-10 border-t border-border mt-4"}`}>
                   {group.mode === "phase" && group.color ? (
                     <span
                       className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -558,17 +558,17 @@ export default function TaskBoardAdminPage() {
                       {group.label}
                     </span>
                   ) : (
-                    <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-[#9CA3AF] italic" : "text-[#E5E5EA]"}`}>
+                    <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-muted italic" : "text-foreground"}`}>
                       {group.label.toUpperCase()}
                     </h3>
                   )}
-                  <span className="text-[10px] font-medium text-[#9CA3AF]">
+                  <span className="text-[10px] font-medium text-muted">
                     {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
                   </span>
                   {(isLaunchPhaseGroup || launchedInClient.length > 0) && (
                     <button
                       onClick={() => toggleReveal(group.key)}
-                      className="text-[10px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] uppercase tracking-wider"
+                      className="text-[10px] font-medium text-muted hover:text-foreground uppercase tracking-wider"
                     >
                       {revealed ? "Hide launched" : `Show ${hiddenLaunchCount} launched`}
                     </button>
@@ -576,7 +576,7 @@ export default function TaskBoardAdminPage() {
                   {group.mode === "client" && (
                     <button
                       onClick={() => addTask(tabFilter === "dev" ? "dev" : "design", undefined, group.key === "__unassigned__" ? "" : group.label)}
-                      className="flex items-center gap-1 text-[11px] text-[#9CA3AF] hover:text-[#E5E5EA] ml-auto"
+                      className="flex items-center gap-1 text-[11px] text-muted hover:text-foreground ml-auto"
                       title={group.key === "__unassigned__" ? "Add task" : `Add deliverable for ${group.label}`}
                     >
                       <PlusIcon className="size-3" /> Add

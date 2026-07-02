@@ -27,14 +27,14 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
   }, [slug]);
 
   if (loading) {
-    return (<div className="min-h-screen bg-[#080808] flex items-center justify-center"><div className="size-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" /></div>);
+    return (<div className="min-h-screen bg-background flex items-center justify-center"><div className="size-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" /></div>);
   }
   if (!proposal) {
-    return (<div className="min-h-screen bg-[#080808] flex items-center justify-center px-4"><div className="text-center max-w-md"><h1 className="text-2xl font-semibold text-[#E5E5EA] mb-3">Proposal not found</h1><p className="text-sm text-[#9CA3AF]">This link may have moved. Reach out and we&apos;ll send a new one.</p></div></div>);
+    return (<div className="min-h-screen bg-background flex items-center justify-center px-4"><div className="text-center max-w-md"><h1 className="text-2xl font-semibold text-foreground mb-3">Proposal not found</h1><p className="text-sm text-muted">This link may have moved. Reach out and we&apos;ll send a new one.</p></div></div>);
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-10 opacity-50" style={{ backgroundImage: "radial-gradient(circle at 20% 0%, rgba(16,185,129,0.12) 0%, transparent 50%), radial-gradient(circle at 80% 100%, rgba(14,165,233,0.10) 0%, transparent 50%)" }} />
 
       <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-end print:hidden">
@@ -51,14 +51,14 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
             <DocumentTextIcon className="size-3.5" />
             {proposal.is_renewal ? "Renewal proposal" : "Proposal"} · Ecom Landers
           </div>
-          <p className="text-sm text-[#9CA3AF] mb-2">
+          <p className="text-sm text-muted mb-2">
             For {proposal.contact_name || proposal.brand_name}
           </p>
           <h1 className="text-4xl md:text-5xl font-semibold bg-gradient-to-br from-white via-emerald-100 to-cyan-200 bg-clip-text text-transparent leading-[1.05] mb-4">
             {proposal.brand_name}
           </h1>
-          <p className="text-lg text-[#9CA3AF]">
-            {proposal.is_renewal ? "Continuation of the Conversion Engine" : "The Conversion Engine"} · <span className="text-[#E5E5EA]">{proposal.tier} tier</span>
+          <p className="text-lg text-muted">
+            {proposal.is_renewal ? "Continuation of the Conversion Engine" : "The Conversion Engine"} · <span className="text-foreground">{proposal.tier} tier</span>
           </p>
           {proposal.is_renewal && (
             <p className="text-sm text-emerald-300/80 mt-2">
@@ -76,16 +76,16 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
             <span className="text-5xl font-semibold bg-gradient-to-br from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
               {formatMoney(proposal.monthly_fee, proposal.fee_currency)}
             </span>
-            <span className="text-lg text-[#9CA3AF]">/ month</span>
+            <span className="text-lg text-muted">/ month</span>
           </div>
-          <div className="text-sm text-[#9CA3AF]">
+          <div className="text-sm text-muted">
             {proposal.term_months}-month minimum term · {formatMoney(quotedTotal(proposal), proposal.fee_currency)} total
             {proposal.prepay && (
               <span className="text-emerald-300"> (incl. {proposal.prepay_discount_pct}% prepay discount)</span>
             )}
           </div>
           {proposal.kickoff_date && (
-            <div className="text-[11px] text-[#71757D] mt-3">
+            <div className="text-[11px] text-subtle mt-3">
               Proposed kickoff: {new Date(proposal.kickoff_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
             </div>
           )}
@@ -93,22 +93,22 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
 
         {/* What's included */}
         <section>
-          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-[#E5E5EA] mb-4">
+          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground mb-4">
             What you get, every month
           </h2>
           <ul className="space-y-2">
             {proposal.scope_items.filter((s) => s.label.trim()).map((s) => (
-              <li key={s.id} className="flex items-start gap-3 bg-[#0F0F10] rounded-xl p-3 ring-1 ring-white/[0.04]">
+              <li key={s.id} className="flex items-start gap-3 bg-background rounded-xl p-3 ring-1 ring-white/[0.04]">
                 <CheckCircleIcon className="size-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-sm text-[#E5E5EA]">{s.label}</div>
-                  {s.detail && <div className="text-[12px] text-[#71757D] mt-0.5">{s.detail}</div>}
+                  <div className="text-sm text-foreground">{s.label}</div>
+                  {s.detail && <div className="text-[12px] text-subtle mt-0.5">{s.detail}</div>}
                 </div>
               </li>
             ))}
           </ul>
           {proposal.custom_scope_notes.trim() && (
-            <div className="mt-4 prose prose-invert prose-sm max-w-none prose-p:text-[#9CA3AF] prose-li:text-[#9CA3AF] prose-strong:text-[#E5E5EA]">
+            <div className="mt-4 prose prose-invert prose-sm max-w-none prose-p:text-muted prose-li:text-muted prose-strong:text-foreground">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposal.custom_scope_notes}</ReactMarkdown>
             </div>
           )}
@@ -117,14 +117,14 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
         {/* Guarantee */}
         {proposal.guarantee_text.trim() && (
           <section>
-            <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-emerald-500/30 p-6">
+            <div className="bg-background rounded-2xl ring-1 ring-emerald-500/30 p-6">
               <div className="flex items-center gap-2 mb-3">
                 <ShieldCheckIcon className="size-5 text-emerald-400" />
                 <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-emerald-300">
                   The guarantee
                 </h2>
               </div>
-              <div className="prose prose-invert prose-sm max-w-none prose-p:text-[#E5E5EA]">
+              <div className="prose prose-invert prose-sm max-w-none prose-p:text-foreground">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposal.guarantee_text}</ReactMarkdown>
               </div>
             </div>
@@ -133,8 +133,8 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
 
         {/* Terms */}
         <section>
-          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-[#E5E5EA] mb-3">Terms</h2>
-          <ul className="text-[13px] text-[#9CA3AF] space-y-1.5">
+          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-foreground mb-3">Terms</h2>
+          <ul className="text-[13px] text-muted space-y-1.5">
             <li>· {proposal.term_months}-month minimum term, then rolls month to month</li>
             <li>· {proposal.prepay ? `Prepaid: ${formatMoney(quotedTotal(proposal), proposal.fee_currency)} for the term, ${proposal.prepay_discount_pct}% saved` : `Monthly: ${formatMoney(proposal.monthly_fee, proposal.fee_currency)} per month`}</li>
             <li>· Payment via {proposal.payment_method}</li>
@@ -143,13 +143,13 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
         </section>
 
         <footer className="pt-8 pb-4 text-center border-t border-white/[0.04]">
-          <p className="text-[11px] text-[#71757D]">
+          <p className="text-[11px] text-subtle">
             Built by Ecom Landers · Conversion engine for Shopify brands
           </p>
           {proposal.prepared_by && (
-            <p className="text-[11px] text-[#71757D] mt-1">Prepared by {proposal.prepared_by}</p>
+            <p className="text-[11px] text-subtle mt-1">Prepared by {proposal.prepared_by}</p>
           )}
-          <Link href="/" className="text-[11px] text-[#71757D] hover:text-emerald-300 transition-colors">
+          <Link href="/" className="text-[11px] text-subtle hover:text-emerald-300 transition-colors">
             ecomlanders.app
           </Link>
         </footer>

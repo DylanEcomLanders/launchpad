@@ -201,14 +201,14 @@ export function QuickAddAgreementModal({
         onClick={onClose}
       >
         <div
-          className="bg-[#181818] rounded-2xl w-full max-w-md shadow-xl"
+          className="bg-surface rounded-2xl w-full max-w-md shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between">
-            <h2 className="font-semibold text-[#E5E5EA]">New team agreement</h2>
+          <div className="border-b border-border px-6 py-4 flex items-center justify-between">
+            <h2 className="font-semibold text-foreground">New team agreement</h2>
             <button
               onClick={onClose}
-              className="text-[#71757D] hover:text-[#E5E5EA] text-xl leading-none"
+              className="text-subtle hover:text-foreground text-xl leading-none"
             >
               ×
             </button>
@@ -257,10 +257,10 @@ export function QuickAddAgreementModal({
                   );
                 })}
               </select>
-              <p className="text-[10px] text-[#71757D] mt-1 leading-relaxed">
+              <p className="text-[10px] text-subtle mt-1 leading-relaxed">
                 Pick the contract template. Each role has its own master
                 clauses (Leadership, Designer, Developer, Custom). Edit them
-                at <span className="text-[#E5E5EA]">Templates</span> above.
+                at <span className="text-foreground">Templates</span> above.
               </p>
             </div>
 
@@ -313,8 +313,8 @@ export function QuickAddAgreementModal({
             {/* Defaults summary — what gets quietly applied behind the
                 scenes, surfaced so Dylan never wonders why a row shows
                 up with values he didn't pick. */}
-            <div className="px-3 py-2.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg text-[11px] text-[#71757D] leading-relaxed">
-              <strong className="text-[#E5E5EA] font-medium">Defaults applied:</strong>{" "}
+            <div className="px-3 py-2.5 bg-background border border-border rounded-lg text-[11px] text-subtle leading-relaxed">
+              <strong className="text-foreground font-medium">Defaults applied:</strong>{" "}
               contractor · start date today · generate both NDA and contract.{" "}
               {matchedPerson
                 ? "Person row is reused."
@@ -323,7 +323,7 @@ export function QuickAddAgreementModal({
             </div>
 
             {error && (
-              <div className="px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-[#B22B2B]">
+              <div className="px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-danger">
                 {error}
               </div>
             )}
@@ -331,7 +331,7 @@ export function QuickAddAgreementModal({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                className="px-3 py-1.5 text-[13px] text-subtle hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
@@ -344,7 +344,7 @@ export function QuickAddAgreementModal({
                   !compAmount ||
                   matchedHasContract
                 }
-                className="px-3 py-1.5 bg-[#222222] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-surface-raised text-foreground text-[13px] font-medium rounded-lg hover:bg-border transition-colors disabled:opacity-40"
               >
                 {submitting ? "Creating..." : "Create and draft"}
               </button>

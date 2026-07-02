@@ -57,7 +57,7 @@ export default function ThroughputPage() {
     return counts;
   }, [rows]);
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
@@ -70,7 +70,7 @@ export default function ThroughputPage() {
             Throughput
           </h1>
         </div>
-        <p className="text-sm text-[#9CA3AF] max-w-2xl">
+        <p className="text-sm text-muted max-w-2xl">
           Per-client month-to-date pages shipped + tests live vs tier targets (Entry 2/2, Core 4/4, VIP 6/12).
         </p>
       </header>
@@ -83,16 +83,16 @@ export default function ThroughputPage() {
       </div>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />)}</div>
       ) : rows.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">
             No active clients yet (no signed proposals). Sign a proposal first to start tracking throughput.
           </p>
         </div>
       ) : (
-        <div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
-          <div className="grid grid-cols-[1fr_80px_160px_160px_100px] gap-3 px-5 py-3 border-b border-white/[0.04] text-[10px] uppercase tracking-wider font-semibold text-[#71757D]">
+        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
+          <div className="grid grid-cols-[1fr_80px_160px_160px_100px] gap-3 px-5 py-3 border-b border-white/[0.04] text-[10px] uppercase tracking-wider font-semibold text-subtle">
             <div>Client</div>
             <div>Tier</div>
             <div>Pages this month</div>
@@ -102,8 +102,8 @@ export default function ThroughputPage() {
           <ul>
             {rows.map((r) => (
               <li key={r.client_name} className="grid grid-cols-[1fr_80px_160px_160px_100px] gap-3 px-5 py-3 border-b border-white/[0.04] items-center text-[13px] hover:bg-white/[0.02] transition-colors">
-                <div className="text-[#E5E5EA] font-medium truncate">{r.client_name}</div>
-                <div className="text-[#9CA3AF]">{r.tier}</div>
+                <div className="text-foreground font-medium truncate">{r.client_name}</div>
+                <div className="text-muted">{r.tier}</div>
                 <ProgressCell actual={r.pages_shipped} target={r.pages_target} risk={r.pages_risk} />
                 <ProgressCell actual={r.tests_live} target={r.tests_target} risk={r.tests_risk} />
                 <RiskPill risk={r.worst_risk} />
@@ -125,13 +125,13 @@ function SummaryTile({ label, value, risk }: { label: string; value: number; ris
     critical: "from-rose-500 to-red-600 shadow-[0_8px_24px_rgba(244,63,94,0.3)]",
   };
   return (
-    <div className="bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
+    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
       <div className={`size-9 rounded-lg bg-gradient-to-br ${gradient[risk]} flex items-center justify-center shrink-0`}>
         <Icon className="size-4 text-white" />
       </div>
       <div>
-        <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">{label}</div>
-        <div className="text-2xl font-semibold text-[#E5E5EA]">{value}</div>
+        <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">{label}</div>
+        <div className="text-2xl font-semibold text-foreground">{value}</div>
       </div>
     </div>
   );
@@ -146,11 +146,11 @@ function ProgressCell({ actual, target, risk }: { actual: number; target: number
   };
   return (
     <div>
-      <div className="text-[11px] text-[#9CA3AF] mb-1">
+      <div className="text-[11px] text-muted mb-1">
         <span className="font-mono">{actual}</span>
-        <span className="text-[#71757D]"> / {target}</span>
+        <span className="text-subtle"> / {target}</span>
       </div>
-      <div className="h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+      <div className="h-1.5 bg-surface rounded-full overflow-hidden">
         <div className={`h-full bg-gradient-to-r ${barTint[risk]} rounded-full transition-all`} style={{ width: `${pct}%` }} />
       </div>
     </div>

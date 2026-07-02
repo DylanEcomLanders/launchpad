@@ -156,9 +156,9 @@ export default function QuizStepClient({ step }: { step: string }) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <nav className="w-full border-b border-[#F0F0F0] bg-white">
+      <nav className="w-full border-b border-foreground bg-white">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
-          <Logo height={18} className="text-[#1B1B1B]" />
+          <Logo height={18} className="text-foreground" />
         </div>
       </nav>
 
@@ -232,9 +232,9 @@ function NotFound() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6">
       <div className="max-w-md text-center">
-        <h1 className="text-2xl font-bold text-[#1B1B1B]">That step doesn&apos;t exist</h1>
-        <p className="mt-2 text-sm text-[#666]">
-          Head back to <a href="/quiz" className="text-[#1B1B1B] underline">the start</a>.
+        <h1 className="text-2xl font-bold text-foreground">That step doesn&apos;t exist</h1>
+        <p className="mt-2 text-sm text-subtle">
+          Head back to <a href="/quiz" className="text-foreground underline">the start</a>.
         </p>
       </div>
     </div>

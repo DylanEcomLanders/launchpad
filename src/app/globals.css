@@ -1,22 +1,104 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ──────────────────────────────────────────────────────────────────────────
+   SEMANTIC COLOUR TOKENS  (single source of truth)
+   Raw values live on :root (DARK = the current app look, so merging this is a
+   zero-visual-change diff) and are overridden under [data-theme="light"].
+   @theme inline below maps Tailwind colour names → these vars, so the entire
+   app re-themes by swapping ~12 variables instead of editing 16k classes.
+   To flip the whole app light: add data-theme="light" to <html>.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+  --background: #0A0A0C;                  /* canvas */
+  --surface: #0E0E11;                     /* flat cards/panels — barely above canvas */
+  --surface-raised: #1A1A1E;              /* floating only: dropdowns, ⌘K, modals, hover */
+  --border: rgba(255, 255, 255, 0.085);   /* hairlines — defines flat cards */
+  --foreground: #EDEEF0;                  /* primary text */
+  --muted: #8A8F98;                       /* secondary text */
+  --subtle: #5E616B;                      /* tertiary / labels */
+  --accent: #EDEEF0;                      /* mono primary action */
+  --accent-foreground: #09090B;
+  --success: #4CB782;
+  --warning: #E5A33D;
+  --danger: #E5484D;
+  --ring: #5E6AD2;                        /* Linear periwinkle — focus/active/select ONLY */
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #FCFCFC;
+  --surface: #FFFFFF;
+  --surface-raised: #F6F6F7;
+  --border: rgba(0, 0, 0, 0.08);
+  --foreground: #1A1A1C;
+  --muted: #6B6F76;
+  --subtle: #9A9DA4;
+  --accent: #1A1A1C;
+  --accent-foreground: #FFFFFF;
+  --success: #398E5C;
+  --warning: #C2820F;
+  --danger: #D5474C;
+  --ring: #5E6AD2;
+}
+
 @theme inline {
-  /* Dark mode palette — pure greyscale, no blue cast. Sidebar deepest, canvas
-     one step up, cards one more. Text primary near white, then steps down. */
-  --color-background: #0C0C0C;
-  --color-foreground: #E5E5EA;
-  --color-surface: #181818;
-  --color-surface-light: #222222;
-  --color-border: #2A2A2A;
-  --color-muted: #9CA3AF;
-  --color-hover: #222222;
-  --color-accent: #FFFFFF;
-  --color-accent-hover: #F3F4F6;
-  --color-accent-light: #222222;
-  --color-accent-muted: #71757D;
-  --color-sidebar-bg: #0C0C0C;
-  --color-card-bg: #181818;
+  /* colour names → runtime vars (the `inline` keyword keeps the var() ref so
+     overrides under [data-theme] cascade at runtime) */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-ring: var(--ring);
+  /* Category data-viz hues — the ONE sanctioned fixed palette (Badge tones,
+     ProjectCard clusters). Never inline hex for these elsewhere. */
+  --color-cat-dev: #6366F1;
+  --color-cat-design: #EC4899;
+  /* Muted status palette — softer than the solid success/warning/danger,
+     for status dots + overdue emphasis (Linear-calm). */
+  --color-status-ontrack: #3FA372;
+  --color-status-approaching: #C99A4D;
+  --color-status-late: #C56B6B;
+  --color-info: #0EA5E9;
+  /* Floating-surface chrome — the faint white washes on dropdowns/menus.
+     Distinct (fainter) from --border, which is the flat-card hairline. */
+  --color-surface-hover: rgba(255, 255, 255, 0.04);  /* menu row hover / active wash */
+  --color-border-faint:  rgba(255, 255, 255, 0.04);  /* faint internal divider       */
+  --color-panel-line:    rgba(255, 255, 255, 0.08);  /* floating panel hairline ring  */
+  /* back-compat aliases (2 stray usages) — remove after sweep */
+  --color-accent-hover: var(--surface-raised);
+  --color-accent-light: var(--surface-raised);
+
+  /* TYPE SCALE — Linear calibration: nudged up for "comfortable, not cramped".
+     3xs–5xs are the dense "micro tier" below the body scale (badges, chips,
+     meta) — formalised so the board's small text tracks one scale. */
+  --text-5xs: 0.5625rem;  /* 9px  — dense micro badges      */
+  --text-4xs: 0.625rem;   /* 10px — micro meta              */
+  --text-3xs: 0.6875rem;  /* 11px — small labels / chips    */
+  --text-2xs: 0.75rem;    /* 12px — micro-labels            */
+  --text-xs:  0.8125rem;  /* 13px — table cells, captions   */
+  --text-sm:  0.875rem;   /* 14px — body baseline           */
+  --text-base:0.9375rem;  /* 15px — body                    */
+  --text-lg:  1.0625rem;  /* 17px — card titles             */
+  --text-xl:  1.375rem;   /* 22px — section headers         */
+  --text-2xl: 1.75rem;    /* 28px — page titles             */
+  --text-3xl: 1.875rem;   /* 30px — display / big stat      */
+
+  /* RADIUS — tight, concentric scale (premium = restrained + concentric). */
+  --radius-sm: 6px;       /* chips, badges, kbd          */
+  --radius-md: 8px;       /* buttons, inputs, segmented  */
+  --radius-lg: 10px;      /* cards, panels, tiles        */
+  --radius-xl: 14px;      /* app frame / modals only     */
+
   --font-heading: var(--font-inter-tight), var(--font-inter), "Inter Tight", "Inter", system-ui, sans-serif;
   --font-body: var(--font-articulat), var(--font-inter), "Articulat CF", system-ui, sans-serif;
   --font-mono: var(--font-mono), "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, monospace;
@@ -24,6 +106,18 @@
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
   --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
   --shadow-nav-active: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0.5px 1.5px rgba(0, 0, 0, 0.04);
+  --shadow-popover: 0 20px 60px rgba(0, 0, 0, 0.6);  /* dropdown / menu panels */
+}
+
+:root {
+  /* Card-state tints — the whisper gradient behind overdue / live cards.
+     Derived from the status palette via color-mix so they track
+     --color-status-* automatically (no hardcoded rgba). Borders use the
+     Tailwind opacity modifier on the same tokens (border-status-late/20). */
+  --card-overdue: linear-gradient(180deg, color-mix(in srgb, var(--color-status-late) 6%, transparent), color-mix(in srgb, var(--color-status-late) 1.5%, transparent));
+  --card-overdue-hover: linear-gradient(180deg, color-mix(in srgb, var(--color-status-late) 9%, transparent), color-mix(in srgb, var(--color-status-late) 2%, transparent));
+  --card-live: linear-gradient(180deg, color-mix(in srgb, var(--color-status-ontrack) 6%, transparent), color-mix(in srgb, var(--color-status-ontrack) 1.5%, transparent));
+  --card-live-hover: linear-gradient(180deg, color-mix(in srgb, var(--color-status-ontrack) 9%, transparent), color-mix(in srgb, var(--color-status-ontrack) 2%, transparent));
 }
 
 html, body {
@@ -35,20 +129,21 @@ html, body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #D4D4D4 transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
 }
 *::-webkit-scrollbar {
-  width: 2px;
+  width: 6px;
+  height: 6px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #D4D4D4;
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #A0A0A0;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 body {
@@ -127,29 +222,12 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-.animate-fadeInUp {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-.animate-fadeInUp-d1 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
-}
-
-.animate-fadeInUp-d2 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both;
-}
-
-.animate-fadeInUp-d3 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
-}
-
-.animate-fadeInUp-d4 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s both;
-}
-
-.animate-fadeInUp-d5 {
-  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both;
-}
+.animate-fadeInUp    { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) both; }
+.animate-fadeInUp-d1 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.03s both; }
+.animate-fadeInUp-d2 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.06s both; }
+.animate-fadeInUp-d3 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.09s both; }
+.animate-fadeInUp-d4 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.12s both; }
+.animate-fadeInUp-d5 { animation: fadeInUp 0.18s cubic-bezier(0.25,0.46,0.45,0.94) 0.15s both; }
 
 /* Scale fade for cards / modals */
 @keyframes scaleFadeIn {

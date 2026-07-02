@@ -40,22 +40,22 @@ export function RevenueProjectorWidget({ retainer = 8000 }: { retainer?: number 
   const retainerLabel = `£${(retainer / 1000).toFixed(retainer % 1000 === 0 ? 0 : 1)}K`;
 
   return (
-    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-5 h-full flex flex-col">
+    <div className="rounded-lg border border-border bg-surface p-5 h-full flex flex-col">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Live widget · Revenue Projector
           </p>
-          <h3 className="text-sm font-semibold text-[#E5E5EA] mt-1 leading-tight">
+          <h3 className="text-sm font-semibold text-foreground mt-1 leading-tight">
             What they&rsquo;re leaving on the table
           </h3>
-          <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+          <p className="text-[11px] text-muted mt-0.5">
             Drag to model the prospect&rsquo;s numbers — quote it live on the call.
           </p>
         </div>
         <button
           onClick={() => setInputs(DEFAULT_CALC)}
-          className="text-[10px] text-[#71757D] hover:text-[#E5E5EA] flex items-center gap-1 shrink-0"
+          className="text-[10px] text-subtle hover:text-foreground flex items-center gap-1 shrink-0"
           aria-label="Reset"
         >
           <ArrowPathIcon className="size-3" />
@@ -106,15 +106,15 @@ export function RevenueProjectorWidget({ retainer = 8000 }: { retainer?: number 
 
         {/* Output */}
         <div className="md:col-span-2 flex flex-col gap-2">
-          <div className="rounded-md border border-[#2A2A2A] bg-[#0C0C0C] p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <div className="rounded-md border border-border bg-background p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Monthly recovered
             </p>
-            <p className="text-lg font-semibold text-[#E5E5EA] tabular-nums mt-1 leading-none">
+            <p className="text-lg font-semibold text-foreground tabular-nums mt-1 leading-none">
               {formatGBP(monthly)}
             </p>
           </div>
-          <div className="rounded-md border border-white bg-white text-[#0C0C0C] p-3 flex-1 flex flex-col justify-center">
+          <div className="rounded-md border border-white bg-white text-background p-3 flex-1 flex flex-col justify-center">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50">
               Annual opportunity
             </p>
@@ -122,11 +122,11 @@ export function RevenueProjectorWidget({ retainer = 8000 }: { retainer?: number 
               {formatGBP(annual)}
             </p>
           </div>
-          <div className="rounded-md border border-[#2A2A2A] bg-[#181818] p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <div className="rounded-md border border-border bg-surface p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
               ROI vs {retainerLabel} retainer
             </p>
-            <p className="text-lg font-semibold text-[#E5E5EA] tabular-nums mt-1 leading-none">
+            <p className="text-lg font-semibold text-foreground tabular-nums mt-1 leading-none">
               {ratio > 0 ? `${ratio.toFixed(1)}×` : "—"}
             </p>
           </div>
@@ -157,8 +157,8 @@ function SliderRow({
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1">
-        <span className="text-[11px] font-medium text-[#9CA3AF]">{label}</span>
-        <span className="text-[12px] font-semibold text-[#E5E5EA] tabular-nums">
+        <span className="text-[11px] font-medium text-muted">{label}</span>
+        <span className="text-[12px] font-semibold text-foreground tabular-nums">
           {format(value)}
         </span>
       </div>

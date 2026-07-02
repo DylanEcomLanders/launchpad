@@ -10,7 +10,7 @@ export default function TeamPortalsPage() {
           <h1 className="text-2xl md:text-3xl font-bold mb-1">
             Client Portals
           </h1>
-          <p className="text-sm text-[#71757D]">
+          <p className="text-sm text-subtle">
             Every active portal. Click through for the team view.
           </p>
         </div>

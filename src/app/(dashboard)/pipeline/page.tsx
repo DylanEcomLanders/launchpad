@@ -109,8 +109,8 @@ export default function PipelinePage() {
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">
             Pipeline is for admin / CRO. Closers don&apos;t see other closers&apos;
             leads (yet - per-owner views coming in a later phase).
           </p>
@@ -132,13 +132,13 @@ export default function PipelinePage() {
               Pipeline
             </h1>
           </div>
-          <p className="text-sm text-[#9CA3AF] max-w-2xl">
+          <p className="text-sm text-muted max-w-2xl">
             The three paths in (upsell, warm, cold via audit). Every lead carries a stage, next action, and a date. Anything without those three is a leak.
           </p>
         </div>
         <button
           onClick={createNew}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0"
         >
           <PlusIcon className="size-4" />
           New lead
@@ -155,12 +155,12 @@ export default function PipelinePage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 max-w-[1600px] mx-auto w-full">
         <div className="relative flex-1 max-w-sm">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D]" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search lead, brand, owner, source"
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-[#0F0F10] ring-1 ring-white/[0.06] text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-emerald-500/40"
+            className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40"
           />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -170,8 +170,8 @@ export default function PipelinePage() {
               onClick={() => setPathFilter(f.value)}
               className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                 pathFilter === f.value
-                  ? "bg-white text-[#0C0C0C]"
-                  : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"
+                  ? "bg-white text-background"
+                  : "bg-surface text-muted hover:bg-surface-raised"
               }`}
             >
               {f.label}
@@ -182,7 +182,7 @@ export default function PipelinePage() {
             className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
               showNurture
                 ? "bg-zinc-500/30 text-zinc-100 ring-1 ring-zinc-400/40"
-                : "bg-[#1A1A1A] text-[#9CA3AF] hover:bg-[#222222]"
+                : "bg-surface text-muted hover:bg-surface-raised"
             }`}
           >
             {showNurture ? "Hide" : "Show"} nurture
@@ -194,12 +194,12 @@ export default function PipelinePage() {
       {!hydrated ? (
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 max-w-[1600px] mx-auto w-full">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-96 bg-[#0C0C0C] rounded-xl animate-pulse" />
+            <div key={i} className="h-96 bg-background rounded-xl animate-pulse" />
           ))}
         </div>
       ) : visibleLeads.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04] max-w-[1600px] mx-auto">
-          <p className="text-sm text-[#71757D] mb-4">
+        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04] max-w-[1600px] mx-auto">
+          <p className="text-sm text-subtle mb-4">
             {leads.length === 0
               ? "No leads yet. Spin one up to start the pipeline."
               : "No leads match the current filter."}
@@ -214,17 +214,17 @@ export default function PipelinePage() {
                 <div
                   className={`bg-gradient-to-br ${STAGE_ACCENT[stage]} rounded-xl ring-1 px-3 py-2 mb-2 flex items-center justify-between`}
                 >
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#E5E5EA]">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-foreground">
                     {STAGE_LABEL[stage]}
                   </span>
-                  <span className="text-[10px] text-[#9CA3AF] font-mono">
+                  <span className="text-[10px] text-muted font-mono">
                     {stageLeads.length}
                   </span>
                 </div>
                 <div className="space-y-2 flex-1">
                   {stageLeads.length === 0 ? (
-                    <div className="bg-[#0F0F10]/60 rounded-xl p-3 ring-1 ring-white/[0.03]">
-                      <p className="text-[10px] italic text-[#71757D] text-center">
+                    <div className="bg-background/60 rounded-xl p-3 ring-1 ring-white/[0.03]">
+                      <p className="text-[10px] italic text-subtle text-center">
                         Empty
                       </p>
                     </div>
@@ -256,17 +256,17 @@ function StatTile({
     sky: "from-sky-500 to-blue-600 shadow-[0_8px_24px_rgba(14,165,233,0.3)]",
   };
   return (
-    <div className="bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
+    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
       <div
         className={`size-9 rounded-lg bg-gradient-to-br ${colour[accent]} flex items-center justify-center shrink-0`}
       >
         <ChartBarSquareIcon className="size-4 text-white" />
       </div>
       <div>
-        <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+        <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">
           {label}
         </div>
-        <div className="text-2xl font-semibold text-[#E5E5EA]">{value}</div>
+        <div className="text-2xl font-semibold text-foreground">{value}</div>
       </div>
     </div>
   );
@@ -279,10 +279,10 @@ function LeadCard({ lead }: { lead: Lead }) {
   return (
     <Link
       href={`/pipeline/${lead.id}`}
-      className="block bg-[#0F0F10] rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all group"
+      className="block bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all group"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <span className="text-[13px] font-semibold text-[#E5E5EA] truncate group-hover:text-emerald-200">
+        <span className="text-[13px] font-semibold text-foreground truncate group-hover:text-emerald-200">
           {lead.brand_name || lead.full_name || "Untitled"}
         </span>
         {topRisk && (
@@ -298,31 +298,31 @@ function LeadCard({ lead }: { lead: Lead }) {
           </span>
         )}
       </div>
-      <div className="text-[11px] text-[#71757D] truncate">
+      <div className="text-[11px] text-subtle truncate">
         {lead.full_name && lead.brand_name ? lead.full_name : ""}
         {lead.revenue_band && (
           <span> {lead.full_name && lead.brand_name ? "· " : ""}{lead.revenue_band}</span>
         )}
       </div>
       <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#1A1A1A] text-[#9CA3AF]">
+        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface text-muted">
           {PATH_LABEL[lead.path]}
         </span>
         {lead.owner && (
-          <span className="text-[9px] uppercase tracking-wider text-[#71757D]">
+          <span className="text-[9px] uppercase tracking-wider text-subtle">
             {lead.owner}
           </span>
         )}
       </div>
       {lead.next_action && (
         <div className="mt-2 pt-2 border-t border-white/[0.04]">
-          <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-0.5">
+          <div className="text-[10px] uppercase tracking-wider text-subtle mb-0.5">
             Next
           </div>
-          <div className="text-[11px] text-[#E5E5EA] line-clamp-2">
+          <div className="text-[11px] text-foreground line-clamp-2">
             {lead.next_action}
             {lead.next_action_date && (
-              <span className="text-[#71757D]"> · {new Date(lead.next_action_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+              <span className="text-subtle"> · {new Date(lead.next_action_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
             )}
           </div>
         </div>

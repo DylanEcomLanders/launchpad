@@ -26,7 +26,7 @@ import { SignaturePad } from "@/components/signature-pad";
  * inputClass in /lib/form-styles is dark-mode (white-on-black for
  * the dashboard); on a white signing page it'd look broken. */
 const lightInputClass =
-  "w-full px-3.5 py-2.5 bg-white border border-[#D5D5D5] rounded-lg text-[14px] text-[#111] placeholder:text-[#999] focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/20 transition-all";
+  "w-full px-3.5 py-2.5 bg-white border border-[#D5D5D5] rounded-lg text-[14px] text-[#111] placeholder:text-subtle focus:outline-none focus:border-surface focus:ring-1 focus:ring-surface/20 transition-all";
 
 export default function PublicAgreementPage() {
   const params = useParams();
@@ -80,7 +80,7 @@ export default function PublicAgreementPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-sm text-[#7A7A7A]">Loading agreement...</div>
+        <div className="text-sm text-subtle">Loading agreement...</div>
       </div>
     );
   }
@@ -88,10 +88,10 @@ export default function PublicAgreementPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md text-center">
-          <h1 className="text-xl font-semibold text-[#1B1B1B] mb-2">
+          <h1 className="text-xl font-semibold text-foreground mb-2">
             Agreement not found
           </h1>
-          <p className="text-[13px] text-[#7A7A7A]">
+          <p className="text-[13px] text-subtle">
             This link may have expired or been deleted. Check with the person
             who shared it.
           </p>
@@ -135,13 +135,13 @@ export default function PublicAgreementPage() {
       <div className="max-w-[940px] mx-auto px-4 md:px-8 py-10 pb-32">
         {/* Pre-amble - kept tight so the document is the hero. */}
         <div className="mb-8 max-w-[820px] mx-auto">
-          <h1 className="text-[22px] font-semibold text-[#1B1B1B] tracking-tight mb-1.5">
+          <h1 className="text-[22px] font-semibold text-foreground tracking-tight mb-1.5">
             {AGREEMENT_KIND_LABEL[agreement.kind]} to sign
           </h1>
-          <p className="text-[13px] text-[#5A5A5A] leading-relaxed">
+          <p className="text-[13px] text-subtle leading-relaxed">
             Take your time and read it through. Sign at the bottom when
             you&apos;re ready. If anything looks off, message{" "}
-            <span className="text-[#1B1B1B] font-medium">Dylan</span> before
+            <span className="text-foreground font-medium">Dylan</span> before
             signing.
           </p>
         </div>
@@ -163,16 +163,16 @@ export default function PublicAgreementPage() {
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-0.5 accent-[#1B1B1B] size-4"
+              className="mt-0.5 accent-surface size-4"
             />
-            <span className="text-[13px] text-[#333] leading-relaxed">
+            <span className="text-[13px] text-border leading-relaxed">
               I have read and agree to be bound by the terms of this{" "}
               {AGREEMENT_KIND_LABEL[agreement.kind]}.
             </span>
           </label>
 
           <div className="mb-4">
-            <label className="block text-[12px] font-semibold text-[#1B1B1B] mb-2 uppercase tracking-wider">
+            <label className="block text-[12px] font-semibold text-foreground mb-2 uppercase tracking-wider">
               Your full name
             </label>
             <input
@@ -184,21 +184,21 @@ export default function PublicAgreementPage() {
           </div>
 
           <div className="mb-5">
-            <label className="block text-[12px] font-semibold text-[#1B1B1B] mb-2 uppercase tracking-wider">
+            <label className="block text-[12px] font-semibold text-foreground mb-2 uppercase tracking-wider">
               Your signature
             </label>
             <SignaturePad value={signature} onChange={setSignature} label="" />
             <button
               type="button"
               onClick={() => setSignature("")}
-              className="text-[11px] text-[#7A7A7A] hover:underline mt-1.5"
+              className="text-[11px] text-subtle hover:underline mt-1.5"
             >
               Clear signature
             </button>
           </div>
 
           {error && (
-            <div className="mb-4 px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-[#B22B2B]">
+            <div className="mb-4 px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-danger">
               {error}
             </div>
           )}
@@ -206,12 +206,12 @@ export default function PublicAgreementPage() {
           <button
             onClick={sign}
             disabled={submitting || !agreed || !signerName.trim() || !signature}
-            className="w-full py-3.5 bg-[#1B1B1B] text-white text-[14px] font-semibold rounded-lg hover:bg-[#000] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-3.5 bg-surface text-white text-[14px] font-semibold rounded-lg hover:bg-background transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? "Signing..." : "Sign and submit"}
           </button>
 
-          <p className="text-[11px] text-[#7A7A7A] mt-3 text-center leading-relaxed">
+          <p className="text-[11px] text-subtle mt-3 text-center leading-relaxed">
             By submitting you confirm this is your legally binding electronic
             signature. Ecom Landers will counter-sign + send you the final
             executed copy.
@@ -230,8 +230,8 @@ function Header({ kind }: { kind: Agreement["kind"] }) {
   return (
     <div className="bg-white border-b border-[#D5D5D5]">
       <div className="max-w-[940px] mx-auto px-4 md:px-8 py-5 flex items-center justify-between">
-        <Logo height={22} className="text-[#1B1B1B]" />
-        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-full bg-[#F3F3F5] text-[#1B1B1B] border border-[#E5E5EA]">
+        <Logo height={22} className="text-foreground" />
+        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-full bg-surface-raised text-foreground border border-foreground">
           {AGREEMENT_KIND_LABEL[kind]}
         </span>
       </div>

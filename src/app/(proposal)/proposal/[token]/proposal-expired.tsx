@@ -36,13 +36,13 @@ export function ProposalExpired({
 
   return (
     <div className="flex flex-col items-center justify-center py-24 md:py-32 px-6 text-center">
-      <div className="mb-6 p-4 bg-[#F3F3F5] rounded-full">
-        <LogoMark size={32} className="text-[#C5C5C5]" />
+      <div className="mb-6 p-4 bg-surface-raised rounded-full">
+        <LogoMark size={32} className="text-muted" />
       </div>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-3 text-[#1B1B1B]">
+      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-3 text-foreground">
         {title}
       </h1>
-      <p className="text-base text-[#7A7A7A] max-w-md leading-relaxed">
+      <p className="text-base text-subtle max-w-md leading-relaxed">
         {description(clientName)}
       </p>
       <a

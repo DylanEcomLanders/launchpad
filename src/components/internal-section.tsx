@@ -51,7 +51,7 @@ export function GateStatusPills({ project }: { project: PortalProject }) {
             className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
               isSubmitted
                 ? "bg-emerald-50 text-emerald-600"
-                : "bg-[#222222] text-[#9CA3AF]"
+                : "bg-surface-raised text-muted"
             }`}
           >
             {label} {isSubmitted ? "✓" : "—"}
@@ -66,7 +66,7 @@ export function GateStatusPills({ project }: { project: PortalProject }) {
 function ModalShell({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#181818] rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>
@@ -76,15 +76,15 @@ function ModalShell({ onClose, children }: { onClose: () => void; children: Reac
 function ModalHeader({ gateKey, onClose }: { gateKey: string; onClose: () => void }) {
   const config = GATE_CONFIG[gateKey];
   return (
-    <div className="sticky top-0 bg-[#181818] rounded-t-2xl border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between z-10">
+    <div className="sticky top-0 bg-surface rounded-t-2xl border-b border-border px-6 py-4 flex items-center justify-between z-10">
       <div className="flex items-center gap-3">
         <span className="size-3 rounded-full" style={{ backgroundColor: config.color }} />
         <div>
-          <h2 className="text-sm font-bold text-[#E5E5EA]">{config.title}</h2>
-          <p className="text-[10px] text-[#9CA3AF]">{config.role}</p>
+          <h2 className="text-sm font-bold text-foreground">{config.title}</h2>
+          <p className="text-[10px] text-muted">{config.role}</p>
         </div>
       </div>
-      <button onClick={onClose} className="text-[#C7C9CD] hover:text-[#9CA3AF]">
+      <button onClick={onClose} className="text-muted hover:text-muted">
         <XMarkIcon className="size-5" />
       </button>
     </div>
@@ -128,10 +128,10 @@ function ChecklistGateModal({
       {/* Progress bar */}
       <div className="px-6 pt-4">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] text-[#9CA3AF]">Progress</span>
-          <span className="text-[10px] font-medium text-[#9CA3AF]">{progress.checked}/{progress.total}</span>
+          <span className="text-[10px] text-muted">Progress</span>
+          <span className="text-[10px] font-medium text-muted">{progress.checked}/{progress.total}</span>
         </div>
-        <div className="h-1.5 bg-[#222222] rounded-full overflow-hidden">
+        <div className="h-1.5 bg-surface-raised rounded-full overflow-hidden">
           <div className="h-full rounded-full transition-all duration-300" style={{ width: `${(progress.checked / progress.total) * 100}%`, backgroundColor: config.color }} />
         </div>
       </div>
@@ -142,7 +142,7 @@ function ChecklistGateModal({
           <label
             key={i}
             className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-              item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#2A2A2A] hover:border-[#383838]"
+              item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-border hover:border-border"
             } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
           >
             <input
@@ -153,32 +153,32 @@ function ChecklistGateModal({
                 if (isSubmitted) return;
                 onUpdate({ ...gate, items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it) });
               }}
-              className="size-4 mt-0.5 rounded border-[#383838] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+              className="size-4 mt-0.5 rounded border-border text-emerald-600 focus:ring-0 focus:ring-offset-0"
             />
-            <span className={`text-sm ${item.checked ? "text-[#E5E5EA]" : "text-[#9CA3AF]"}`}>{item.label}</span>
+            <span className={`text-sm ${item.checked ? "text-foreground" : "text-muted"}`}>{item.label}</span>
           </label>
         ))}
       </div>
 
       {/* Notes */}
       <div className="px-6 pb-4">
-        <label className="text-[10px] text-[#9CA3AF] block mb-1.5">Notes / Additional Context</label>
+        <label className="text-[10px] text-muted block mb-1.5">Notes / Additional Context</label>
         <textarea
           value={gate.notes}
           onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, notes: e.target.value }); }}
           disabled={isSubmitted}
           placeholder="Add links, context, or notes for the next person..."
-          className="w-full text-sm px-3 py-2.5 border border-[#2A2A2A] rounded-lg min-h-[80px] resize-y focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD] disabled:opacity-50"
+          className="w-full text-sm px-3 py-2.5 border border-border rounded-lg min-h-[80px] resize-y focus:outline-none focus:border-subtle placeholder:text-muted disabled:opacity-50"
         />
       </div>
 
       {/* Footer */}
-      <div className="sticky bottom-0 bg-[#181818] rounded-b-2xl border-t border-[#2A2A2A] px-6 py-4">
+      <div className="sticky bottom-0 bg-surface rounded-b-2xl border-t border-border px-6 py-4">
         {isSubmitted ? (
           <SubmittedBanner gate={gate} />
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-[#9CA3AF]">
+            <p className="text-[10px] text-muted">
               {complete ? "All items checked — ready to submit" : `${progress.total - progress.checked} items remaining`}
             </p>
             <button
@@ -213,8 +213,8 @@ function DesignHandoffFormModal({
   const isSubmitted = gate.status === "submitted";
   const ready = isDesignHandoffComplete(gate);
 
-  const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD] disabled:opacity-50 disabled:bg-[#0C0C0C]";
-  const labelClass = "text-[11px] font-medium text-[#C7C9CD] block mb-1.5";
+  const fieldClass = "w-full text-sm px-3 py-2.5 border border-border rounded-lg focus:outline-none focus:border-subtle placeholder:text-muted disabled:opacity-50 disabled:bg-background";
+  const labelClass = "text-[11px] font-medium text-muted block mb-1.5";
   const requiredDot = <span className="text-red-400 ml-0.5">*</span>;
 
   // Count how many fields are filled for progress
@@ -233,10 +233,10 @@ function DesignHandoffFormModal({
       {/* Progress */}
       <div className="px-6 pt-4">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] text-[#9CA3AF]">Completion</span>
-          <span className="text-[10px] font-medium text-[#9CA3AF]">{progressPct}%</span>
+          <span className="text-[10px] text-muted">Completion</span>
+          <span className="text-[10px] font-medium text-muted">{progressPct}%</span>
         </div>
-        <div className="h-1.5 bg-[#222222] rounded-full overflow-hidden">
+        <div className="h-1.5 bg-surface-raised rounded-full overflow-hidden">
           <div className="h-full rounded-full transition-all duration-300 bg-[#7C3AED]" style={{ width: `${progressPct}%` }} />
         </div>
       </div>
@@ -253,7 +253,7 @@ function DesignHandoffFormModal({
             placeholder="https://www.figma.com/file/..."
             className={fieldClass}
           />
-          <p className="text-[10px] text-[#9CA3AF] mt-1">Link to the final design file</p>
+          <p className="text-[10px] text-muted mt-1">Link to the final design file</p>
         </div>
 
         {/* Loom Video */}
@@ -267,7 +267,7 @@ function DesignHandoffFormModal({
             placeholder="https://www.loom.com/share/..."
             className={fieldClass}
           />
-          <p className="text-[10px] text-[#9CA3AF] mt-1">Walk the developer through the design</p>
+          <p className="text-[10px] text-muted mt-1">Walk the developer through the design</p>
         </div>
 
         {/* Extra Assets */}
@@ -302,7 +302,7 @@ function DesignHandoffFormModal({
               <label
                 key={i}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#2A2A2A] hover:border-[#383838]"
+                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-border hover:border-border"
                 } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
               >
                 <input
@@ -313,9 +313,9 @@ function DesignHandoffFormModal({
                     if (isSubmitted) return;
                     onUpdate({ ...gate, items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it) });
                   }}
-                  className="size-4 mt-0.5 rounded border-[#383838] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                  className="size-4 mt-0.5 rounded border-border text-emerald-600 focus:ring-0 focus:ring-offset-0"
                 />
-                <span className={`text-sm ${item.checked ? "text-[#E5E5EA]" : "text-[#9CA3AF]"}`}>{item.label}</span>
+                <span className={`text-sm ${item.checked ? "text-foreground" : "text-muted"}`}>{item.label}</span>
               </label>
             ))}
           </div>
@@ -335,12 +335,12 @@ function DesignHandoffFormModal({
       </div>
 
       {/* Footer */}
-      <div className="sticky bottom-0 bg-[#181818] rounded-b-2xl border-t border-[#2A2A2A] px-6 py-4">
+      <div className="sticky bottom-0 bg-surface rounded-b-2xl border-t border-border px-6 py-4">
         {isSubmitted ? (
           <SubmittedBanner gate={gate} />
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-[#9CA3AF]">
+            <p className="text-[10px] text-muted">
               {ready ? "Ready to submit" : !gate.figma_url?.trim() ? "Figma link required" : !gate.loom_url?.trim() ? "Loom video required" : "Complete all checkboxes"}
             </p>
             <button
@@ -386,15 +386,15 @@ function GateOverviewCard({
       disabled={locked}
       className={`flex-1 min-w-0 border rounded-xl p-4 text-left transition-all ${
         locked
-          ? "opacity-40 cursor-not-allowed border-[#2A2A2A]"
+          ? "opacity-40 cursor-not-allowed border-border"
           : isSubmitted
             ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
-            : "border-[#2A2A2A] hover:border-[#383838] cursor-pointer"
+            : "border-border hover:border-border cursor-pointer"
       }`}
     >
       <div className="flex items-center gap-2 mb-2">
         <span className="size-2.5 rounded-full" style={{ backgroundColor: isSubmitted ? "#059669" : config.color }} />
-        <span className="text-[10px] font-semibold text-[#E5E5EA] truncate">{config.title}</span>
+        <span className="text-[10px] font-semibold text-foreground truncate">{config.title}</span>
       </div>
 
       {isSubmitted ? (
@@ -403,16 +403,16 @@ function GateOverviewCard({
             <CheckIcon className="size-3.5 text-emerald-600" />
             <span className="text-xs font-semibold text-emerald-600">Submitted</span>
           </div>
-          <p className="text-[9px] text-[#9CA3AF]">
+          <p className="text-[9px] text-muted">
             {gate.submitted_at && new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </p>
         </>
       ) : (
         <>
-          <div className="h-1 bg-[#222222] rounded-full overflow-hidden mb-1.5">
+          <div className="h-1 bg-surface-raised rounded-full overflow-hidden mb-1.5">
             <div className="h-full rounded-full transition-all" style={{ width: `${(progress.checked / progress.total) * 100}%`, backgroundColor: config.color }} />
           </div>
-          <p className="text-[10px] text-[#9CA3AF]">{progress.checked}/{progress.total} items</p>
+          <p className="text-[10px] text-muted">{progress.checked}/{progress.total} items</p>
         </>
       )}
 
@@ -567,21 +567,21 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       {/* ── QA Gates ── */}
       {!hideGates && <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold text-[#E5E5EA]">QA Gates</h3>
+          <h3 className="text-xs font-semibold text-foreground">QA Gates</h3>
         </div>
 
         {/* CRO Brief Toggle */}
         {!readOnly && (
-          <div className="flex items-center justify-between mb-3 px-4 py-2.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg">
+          <div className="flex items-center justify-between mb-3 px-4 py-2.5 bg-background border border-border rounded-lg">
             <div>
-              <p className="text-xs font-medium text-[#E5E5EA]">CRO Pre-Design Brief</p>
-              <p className="text-[10px] text-[#9CA3AF]">Toggle on when Dan is involved in the project</p>
+              <p className="text-xs font-medium text-foreground">CRO Pre-Design Brief</p>
+              <p className="text-[10px] text-muted">Toggle on when Dan is involved in the project</p>
             </div>
             <button
               onClick={toggleCroBrief}
-              className={`relative w-10 h-5 rounded-full transition-colors ${gates.cro_brief_enabled ? "bg-emerald-400" : "bg-[#D4D4D4]"}`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${gates.cro_brief_enabled ? "bg-emerald-400" : "bg-muted"}`}
             >
-              <span className={`absolute top-0.5 left-0.5 size-4 bg-[#181818] rounded-full shadow transition-transform ${gates.cro_brief_enabled ? "translate-x-5" : ""}`} />
+              <span className={`absolute top-0.5 left-0.5 size-4 bg-surface rounded-full shadow transition-transform ${gates.cro_brief_enabled ? "translate-x-5" : ""}`} />
             </button>
           </div>
         )}
@@ -631,42 +631,42 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       {/* ── Project Context ── */}
       {!gatesOnly && <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold text-[#E5E5EA]">Project Context</h3>
+          <h3 className="text-xs font-semibold text-foreground">Project Context</h3>
           {!readOnly && (
-            <button onClick={() => setShowContextForm(!showContextForm)} className="text-[11px] text-[#9CA3AF] hover:text-[#E5E5EA]">
+            <button onClick={() => setShowContextForm(!showContextForm)} className="text-[11px] text-muted hover:text-foreground">
               {showContextForm ? "Cancel" : "+ Add Context"}
             </button>
           )}
         </div>
 
         {showContextForm && (
-          <div className="border border-[#2A2A2A] rounded-xl p-4 mb-4 space-y-3">
+          <div className="border border-border rounded-xl p-4 mb-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] text-[#9CA3AF] block mb-1">Source</label>
-                <input type="text" value={contextSource} onChange={(e) => setContextSource(e.target.value)} placeholder="e.g. AJ voice note" className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded" />
+                <label className="text-[10px] text-muted block mb-1">Source</label>
+                <input type="text" value={contextSource} onChange={(e) => setContextSource(e.target.value)} placeholder="e.g. AJ voice note" className="w-full text-xs px-2 py-1.5 border border-border rounded" />
               </div>
               <div>
-                <label className="text-[10px] text-[#9CA3AF] block mb-1">Date</label>
-                <input type="date" value={contextDate} onChange={(e) => setContextDate(e.target.value)} className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded" />
+                <label className="text-[10px] text-muted block mb-1">Date</label>
+                <input type="date" value={contextDate} onChange={(e) => setContextDate(e.target.value)} className="w-full text-xs px-2 py-1.5 border border-border rounded" />
               </div>
             </div>
             <div>
-              <label className="text-[10px] text-[#9CA3AF] block mb-1">Raw Transcript</label>
-              <textarea value={rawTranscript} onChange={(e) => setRawTranscript(e.target.value)} placeholder="Paste the voice note transcript here..." className="w-full text-xs px-3 py-2 border border-[#2A2A2A] rounded-lg min-h-[120px] resize-y" />
+              <label className="text-[10px] text-muted block mb-1">Raw Transcript</label>
+              <textarea value={rawTranscript} onChange={(e) => setRawTranscript(e.target.value)} placeholder="Paste the voice note transcript here..." className="w-full text-xs px-3 py-2 border border-border rounded-lg min-h-[120px] resize-y" />
             </div>
             <button
               onClick={handleCleanTranscript}
               disabled={!rawTranscript.trim() || cleaning}
-              className="px-3 py-1.5 text-[11px] font-medium text-[#9CA3AF] border border-[#2A2A2A] rounded-lg hover:bg-[#222222] disabled:opacity-30"
+              className="px-3 py-1.5 text-[11px] font-medium text-muted border border-border rounded-lg hover:bg-surface-raised disabled:opacity-30"
             >
               {cleaning ? "Cleaning..." : "Clean with AI"}
             </button>
             {cleanVersion && (
               <div>
-                <label className="text-[10px] text-[#9CA3AF] block mb-1">Clean Version (editable)</label>
-                <textarea value={cleanVersion} onChange={(e) => setCleanVersion(e.target.value)} className="w-full text-xs px-3 py-2 border border-[#2A2A2A] rounded-lg min-h-[120px] resize-y" />
-                <button onClick={saveContext} className="mt-2 px-4 py-2 text-xs font-medium bg-[#222222] text-[#E5E5EA] rounded-lg hover:bg-[#2A2A2A]">
+                <label className="text-[10px] text-muted block mb-1">Clean Version (editable)</label>
+                <textarea value={cleanVersion} onChange={(e) => setCleanVersion(e.target.value)} className="w-full text-xs px-3 py-2 border border-border rounded-lg min-h-[120px] resize-y" />
+                <button onClick={saveContext} className="mt-2 px-4 py-2 text-xs font-medium bg-surface-raised text-foreground rounded-lg hover:bg-border">
                   Save Context
                 </button>
               </div>
@@ -675,26 +675,26 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
         )}
 
         {(project.context_entries || []).length === 0 && !showContextForm && (
-          <p className="text-xs text-[#C7C9CD]">No context entries yet</p>
+          <p className="text-xs text-muted">No context entries yet</p>
         )}
 
         {(project.context_entries || []).map((entry) => (
-          <div key={entry.id} className="border border-[#2A2A2A] rounded-lg p-4 mb-2">
+          <div key={entry.id} className="border border-border rounded-lg p-4 mb-2">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-medium text-[#E5E5EA]">{entry.source}</span>
-                <span className="text-[10px] text-[#9CA3AF]">{new Date(entry.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                <span className="text-[10px] font-medium text-foreground">{entry.source}</span>
+                <span className="text-[10px] text-muted">{new Date(entry.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
               </div>
               {!readOnly && (
-                <button onClick={() => deleteContext(entry.id)} className="text-[#C7C9CD] hover:text-red-400">
+                <button onClick={() => deleteContext(entry.id)} className="text-muted hover:text-red-400">
                   <TrashIcon className="size-3" />
                 </button>
               )}
             </div>
-            <div className="text-xs text-[#C7C9CD] leading-relaxed whitespace-pre-wrap">{entry.cleanVersion}</div>
+            <div className="text-xs text-muted leading-relaxed whitespace-pre-wrap">{entry.cleanVersion}</div>
             <details className="mt-2">
-              <summary className="text-[10px] text-[#C7C9CD] cursor-pointer hover:text-[#71757D]">Raw transcript</summary>
-              <p className="text-[10px] text-[#9CA3AF] mt-1 whitespace-pre-wrap">{entry.rawTranscript}</p>
+              <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle">Raw transcript</summary>
+              <p className="text-[10px] text-muted mt-1 whitespace-pre-wrap">{entry.rawTranscript}</p>
             </details>
           </div>
         ))}
@@ -703,30 +703,30 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       {/* ── Weekly Loop (retainer only) ── */}
       {!gatesOnly && isRetainer && (
         <div>
-          <h3 className="text-xs font-semibold text-[#E5E5EA] mb-4">Weekly Deliverables</h3>
+          <h3 className="text-xs font-semibold text-foreground mb-4">Weekly Deliverables</h3>
 
           {/* Current week */}
           {currentWeek && (
-            <div className="border border-[#2A2A2A] rounded-xl p-4 mb-4">
-              <p className="text-sm font-semibold text-[#E5E5EA] mb-3">{getWeekLabel(currentWeek.weekStart)}</p>
+            <div className="border border-border rounded-xl p-4 mb-4">
+              <p className="text-sm font-semibold text-foreground mb-3">{getWeekLabel(currentWeek.weekStart)}</p>
 
               {/* Mission Statement */}
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`size-2 rounded-full ${currentWeek.missionStatement ? "bg-emerald-500" : isMissionStatementDue(currentWeek) ? "bg-red-500 animate-pulse" : "bg-[#DDD]"}`} />
-                  <span className="text-xs font-medium text-[#E5E5EA]">Mission Statement</span>
+                  <span className={`size-2 rounded-full ${currentWeek.missionStatement ? "bg-emerald-500" : isMissionStatementDue(currentWeek) ? "bg-red-500 animate-pulse" : "bg-muted"}`} />
+                  <span className="text-xs font-medium text-foreground">Mission Statement</span>
                   {isMissionStatementDue(currentWeek) && <span className="text-[9px] text-red-500 font-medium">Due today</span>}
                 </div>
                 {currentWeek.missionStatement ? (
-                  <div className="bg-[#0C0C0C] rounded-lg p-3">
-                    <p className="text-xs text-[#C7C9CD] whitespace-pre-wrap">{currentWeek.missionStatement}</p>
-                    <p className="text-[9px] text-[#C7C9CD] mt-1">Uploaded {currentWeek.missionStatementDate}</p>
+                  <div className="bg-background rounded-lg p-3">
+                    <p className="text-xs text-muted whitespace-pre-wrap">{currentWeek.missionStatement}</p>
+                    <p className="text-[9px] text-muted mt-1">Uploaded {currentWeek.missionStatementDate}</p>
                   </div>
                 ) : !readOnly ? (
                   <div>
                     <textarea
                       placeholder="Paste or type mission statement..."
-                      className="w-full text-xs px-3 py-2 border border-[#2A2A2A] rounded-lg min-h-[80px] resize-y"
+                      className="w-full text-xs px-3 py-2 border border-border rounded-lg min-h-[80px] resize-y"
                       onBlur={(e) => {
                         if (e.target.value.trim()) {
                           updateWeekly(currentWeek.weekStart, {
@@ -738,24 +738,24 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-[#C7C9CD]">Not uploaded yet</p>
+                  <p className="text-xs text-muted">Not uploaded yet</p>
                 )}
               </div>
 
               {/* Weekly Report */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`size-2 rounded-full ${currentWeek.weeklyReport ? "bg-emerald-500" : isWeeklyReportDue(currentWeek) ? "bg-red-500 animate-pulse" : "bg-[#DDD]"}`} />
-                  <span className="text-xs font-medium text-[#E5E5EA]">Weekly Report</span>
+                  <span className={`size-2 rounded-full ${currentWeek.weeklyReport ? "bg-emerald-500" : isWeeklyReportDue(currentWeek) ? "bg-red-500 animate-pulse" : "bg-muted"}`} />
+                  <span className="text-xs font-medium text-foreground">Weekly Report</span>
                   {isWeeklyReportDue(currentWeek) && <span className="text-[9px] text-red-500 font-medium">Due today</span>}
                 </div>
                 {currentWeek.weeklyReport ? (
-                  <div className="bg-[#0C0C0C] rounded-lg p-3">
-                    <p className="text-xs font-medium text-[#E5E5EA]">{currentWeek.weeklyReport.title}</p>
-                    <p className="text-[9px] text-[#C7C9CD] mt-1">Uploaded {currentWeek.weeklyReportDate}</p>
+                  <div className="bg-background rounded-lg p-3">
+                    <p className="text-xs font-medium text-foreground">{currentWeek.weeklyReport.title}</p>
+                    <p className="text-[9px] text-muted mt-1">Uploaded {currentWeek.weeklyReportDate}</p>
                   </div>
                 ) : (
-                  <p className="text-xs text-[#C7C9CD]">Not uploaded yet — use Reports tab to upload</p>
+                  <p className="text-xs text-muted">Not uploaded yet — use Reports tab to upload</p>
                 )}
               </div>
             </div>
@@ -764,16 +764,16 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
           {/* History */}
           {weeklyDeliverables.length > 1 && (
             <details>
-              <summary className="text-[10px] text-[#C7C9CD] cursor-pointer hover:text-[#71757D] mb-2">
+              <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle mb-2">
                 Previous weeks ({weeklyDeliverables.length - 1})
               </summary>
               <div className="space-y-2">
                 {weeklyDeliverables.slice(1).map((w) => (
-                  <div key={w.weekStart} className="flex items-center justify-between px-3 py-2 border border-[#2A2A2A] rounded-lg">
-                    <span className="text-xs text-[#9CA3AF]">{getWeekLabel(w.weekStart)}</span>
+                  <div key={w.weekStart} className="flex items-center justify-between px-3 py-2 border border-border rounded-lg">
+                    <span className="text-xs text-muted">{getWeekLabel(w.weekStart)}</span>
                     <div className="flex items-center gap-3">
-                      <span className={`size-1.5 rounded-full ${w.missionStatement ? "bg-emerald-500" : "bg-[#DDD]"}`} title="Mission statement" />
-                      <span className={`size-1.5 rounded-full ${w.weeklyReport ? "bg-emerald-500" : "bg-[#DDD]"}`} title="Weekly report" />
+                      <span className={`size-1.5 rounded-full ${w.missionStatement ? "bg-emerald-500" : "bg-muted"}`} title="Mission statement" />
+                      <span className={`size-1.5 rounded-full ${w.weeklyReport ? "bg-emerald-500" : "bg-muted"}`} title="Weekly report" />
                     </div>
                   </div>
                 ))}

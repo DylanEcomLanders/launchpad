@@ -41,7 +41,7 @@ function PrimaryCTA({ className = "" }: { className?: string }) {
   return (
     <Link
       href={CTA_HREF}
-      className={`inline-flex items-center justify-center gap-[14px] px-[80px] py-[24px] bg-black rounded-[5.6px] text-white font-body font-medium text-[24px] tracking-[-0.28px] hover:bg-[#1B1B1B] transition-colors ${className}`}
+      className={`inline-flex items-center justify-center gap-[14px] px-[80px] py-[24px] bg-black rounded-[5.6px] text-white font-body font-medium text-[24px] tracking-[-0.28px] hover:bg-surface transition-colors ${className}`}
     >
       <span>START WITH YOUR FREE AUDIT</span>
       <Arrow />
@@ -82,13 +82,13 @@ const EYEBROW =
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-white text-[#1B1B1B] font-body">
+    <div className="min-h-screen bg-white text-foreground font-body">
       <div className="mx-auto max-w-[1328px] border-x border-black/20">
         {/* ============ NAV ============ */}
         <nav className="flex items-center justify-between px-[40px] h-[118px] border-b border-black/20">
           <div className="flex items-center gap-[10px]">
             {/* Logo mark */}
-            <div className="w-[38px] h-[38px] bg-[#1B1B1B] rounded-[7.25px] flex items-center justify-center">
+            <div className="w-[38px] h-[38px] bg-surface rounded-[7.25px] flex items-center justify-center">
               <div className="w-3 h-3 bg-[#F2FF00] rounded-full" />
             </div>
             <span className="font-heading font-semibold text-[24px] tracking-[-0.5px]">
@@ -145,7 +145,7 @@ export default function Page() {
           </div>
 
           {/* Sub copy */}
-          <p className="max-w-[800px] mx-auto text-center font-body text-[24px] leading-[33px] tracking-[-0.26px] text-[#1B1B1B] mt-[120px]">
+          <p className="max-w-[800px] mx-auto text-center font-body text-[24px] leading-[33px] tracking-[-0.26px] text-foreground mt-[120px]">
             Over 500 Shopify brands have used our exact methodology to scale
             their brands beyond their revenue targets without spending an extra
             penny on ads.
@@ -229,7 +229,7 @@ export default function Page() {
           <p className="text-center font-body text-[24px] text-black/60 tracking-[-0.26px] mb-[40px]">
             Success Stories
           </p>
-          <h2 className={`${HEADING} text-center text-[#6E6E6E] max-w-[922px] mx-auto px-[40px]`}>
+          <h2 className={`${HEADING} text-center text-subtle max-w-[922px] mx-auto px-[40px]`}>
             Trusted by leading e-commerce brands doing £250k+/m
           </h2>
 
@@ -376,7 +376,7 @@ export default function Page() {
           <p className="text-center font-body text-[24px] text-black/60 tracking-[-0.26px] mb-[40px]">
             How We Transform Your Brand
           </p>
-          <h2 className={`${HEADING} text-center text-[#6E6E6E] max-w-[922px] mx-auto mb-[80px]`}>
+          <h2 className={`${HEADING} text-center text-subtle max-w-[922px] mx-auto mb-[80px]`}>
             90 Days of compounded wins
           </h2>
 
@@ -438,7 +438,7 @@ export default function Page() {
           <p className="text-center font-body text-[24px] text-black/60 tracking-[-0.26px] mb-[40px]">
             Real Brands - Real Results
           </p>
-          <h2 className={`${HEADING} text-center text-[#1B1B1B] max-w-[922px] mx-auto mb-[60px]`}>
+          <h2 className={`${HEADING} text-center text-foreground max-w-[922px] mx-auto mb-[60px]`}>
             We Skyrocket 8 & 9 Figure Brands beyond their KPIs
           </h2>
 
@@ -454,7 +454,7 @@ export default function Page() {
           <p className="text-center font-body text-[24px] text-black/60 tracking-[-0.26px] mb-[40px]">
             The Best Part?
           </p>
-          <h2 className={`${HEADING} text-center text-[#6E6E6E] max-w-[1050px] mx-auto`}>
+          <h2 className={`${HEADING} text-center text-subtle max-w-[1050px] mx-auto`}>
             not only do they perform - our pages Transform Your Brand Identity
           </h2>
 
@@ -473,7 +473,7 @@ export default function Page() {
                   key={t.label}
                   className={`flex-1 h-[60px] px-[20px] border-r border-black/20 last:border-r-0 font-body text-[24px] tracking-[-0.26px] ${
                     t.active
-                      ? "bg-[#1B1B1B] text-white"
+                      ? "bg-surface text-white"
                       : "bg-[#FDFDFD] text-black/60"
                   }`}
                 >
@@ -504,7 +504,7 @@ export default function Page() {
           <p className="text-center font-body text-[24px] text-black/60 tracking-[-0.26px] mb-[40px]">
             FAQs
           </p>
-          <h2 className={`${HEADING} text-center text-[#6E6E6E] max-w-[1050px] mx-auto mb-[80px]`}>
+          <h2 className={`${HEADING} text-center text-subtle max-w-[1050px] mx-auto mb-[80px]`}>
             Got Questions? We&apos;ve Got Answers
           </h2>
 
@@ -526,7 +526,7 @@ export default function Page() {
                 <span className="font-body font-medium text-[24px] tracking-[-0.2px]">
                   {q}
                 </span>
-                <span className="text-[#6E6E6E] text-[20px]">+</span>
+                <span className="text-subtle text-[20px]">+</span>
               </div>
             ))}
           </div>
@@ -536,7 +536,7 @@ export default function Page() {
         <CTABlock />
 
         {/* ============ FOOTER ============ */}
-        <footer className="bg-[#1B1B1B] text-white">
+        <footer className="bg-surface text-white">
           <div className="px-[40px] py-[80px]">
             <div className="flex items-start justify-between mb-[60px]">
               <div className="flex items-center gap-[12px]">
@@ -714,7 +714,7 @@ function CTABlock() {
             <p className="font-body text-[12px] font-semibold uppercase tracking-[1.6px] text-black/50 mb-[14px]">
               Book a call
             </p>
-            <h3 className="font-heading font-semibold text-[44px] leading-[1.05] tracking-[-1.5px] text-[#1B1B1B] mb-[18px]">
+            <h3 className="font-heading font-semibold text-[44px] leading-[1.05] tracking-[-1.5px] text-foreground mb-[18px]">
               Let&apos;s talk about your funnel
             </h3>
             <p className="font-body text-[16px] leading-[1.65] tracking-[-0.2px] text-black/65 max-w-[460px]">
@@ -730,12 +730,12 @@ function CTABlock() {
                 <div className="w-[40px] h-[40px] rounded-full bg-[#D9D9D9] border-2 border-white" />
                 <div className="w-[40px] h-[40px] rounded-full bg-[#C4C4C4] border-2 border-white" />
               </div>
-              <span className="font-heading text-[15px] font-medium text-[#1B1B1B]">
+              <span className="font-heading text-[15px] font-medium text-foreground">
                 Ajay &amp; Dylan, founders
               </span>
             </div>
 
-            <p className="font-heading text-[19px] font-medium tracking-[-0.015em] text-[#1B1B1B] mb-[18px]">
+            <p className="font-heading text-[19px] font-medium tracking-[-0.015em] text-foreground mb-[18px]">
               Pick whatever&apos;s easiest.
             </p>
 
@@ -752,7 +752,7 @@ function CTABlock() {
             <div className="flex flex-wrap gap-x-[24px] gap-y-[12px] mt-[18px]">
               <Link
                 href={CTA_HREF}
-                className="inline-flex items-center gap-[7px] font-heading text-[14px] font-medium text-[#1B1B1B] hover:text-black/60 transition-colors"
+                className="inline-flex items-center gap-[7px] font-heading text-[14px] font-medium text-foreground hover:text-black/60 transition-colors"
               >
                 <span>Book a call</span>
                 <svg
@@ -772,7 +772,7 @@ function CTABlock() {
               </Link>
               <Link
                 href="mailto:hello@ecomlanders.co"
-                className="inline-flex items-center gap-[7px] font-heading text-[14px] font-medium text-[#1B1B1B] hover:text-black/60 transition-colors"
+                className="inline-flex items-center gap-[7px] font-heading text-[14px] font-medium text-foreground hover:text-black/60 transition-colors"
               >
                 <span>Email us</span>
                 <svg

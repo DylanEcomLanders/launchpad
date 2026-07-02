@@ -78,15 +78,15 @@ function IaBox({
 }) {
   const cls =
     tone === "accent"
-      ? "border-white bg-white text-[#0C0C0C]"
+      ? "border-white bg-white text-background"
       : tone === "muted"
-        ? "border-dashed border-[#D5D5DA] bg-[#0C0C0C] text-[#71757D]"
-        : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA]";
+        ? "border-dashed border-[#D5D5DA] bg-background text-subtle"
+        : "border-border bg-surface text-foreground";
   return (
     <div className={`rounded-lg border px-3 py-2 text-center shadow-[var(--shadow-soft)] ${cls}`}>
       <div className="text-[13px] font-semibold leading-tight">{title}</div>
       {subtitle && (
-        <div className={`mt-0.5 text-[10px] ${tone === "accent" ? "text-white/70" : "text-[#71757D]"}`}>
+        <div className={`mt-0.5 text-[10px] ${tone === "accent" ? "text-white/70" : "text-subtle"}`}>
           {subtitle}
         </div>
       )}
@@ -97,8 +97,8 @@ function IaBox({
 export default function PodsPreviewHub() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 md:px-10">
-      <h1 className="text-2xl font-semibold text-[#E5E5EA]">Pod System V2</h1>
-      <p className="mt-1 max-w-2xl text-sm text-[#71757D]">
+      <h1 className="text-2xl font-semibold text-foreground">Pod System V2</h1>
+      <p className="mt-1 max-w-2xl text-sm text-subtle">
         A holistic redesign of the pod delivery engine. Same data, calmer surfaces, three new roles
         seated without bolting them on. This is a clickable preview — react before we build.
       </p>
@@ -118,84 +118,84 @@ export default function PodsPreviewHub() {
       </div>
 
       {/* IA map */}
-      <section className="mb-8 rounded-xl border border-[#2A2A2A] bg-[#181818] p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+      <section className="mb-8 rounded-xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">
           Revised information architecture
         </h2>
-        <p className="mt-1 text-[13px] text-[#71757D]">
+        <p className="mt-1 text-[13px] text-subtle">
           One delivery workspace with role-lensed views over the same data — replacing the flat
           Overview / Pipeline / Strategy tab bar.
         </p>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {/* Delivery */}
-          <div className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
-            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <div className="rounded-xl border border-border bg-background p-4">
+            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">
               <RectangleStackIcon className="size-4" /> Delivery
             </div>
             <IaBox title="Pods" subtitle="Overview · Pipeline · Strategy tabs" />
             <div className="my-2 flex justify-center">
-              <ArrowRightIcon className="size-4 rotate-90 text-[#C5C5C5]" />
+              <ArrowRightIcon className="size-4 rotate-90 text-muted" />
             </div>
             <div className="space-y-2">
               <IaBox title="Strategy tab" subtitle="Lead Strategist · Briefs + Results" tone="accent" />
               <IaBox title="Per-pod view" subtitle="the team's working board" />
               <IaBox title="Timeline & KPIs" subtitle="time-in-stage · bottlenecks" />
             </div>
-            <div className="mt-2 text-center text-[10px] text-[#71757D]">3 pods · 40 pts/mo each</div>
+            <div className="mt-2 text-center text-[10px] text-subtle">3 pods · 40 pts/mo each</div>
           </div>
 
           {/* Clients */}
-          <div className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
-            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <div className="rounded-xl border border-border bg-background p-4">
+            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">
               <HeartIcon className="size-4" /> Clients
             </div>
             <IaBox title="Engagements" subtitle="existing area" tone="muted" />
             <div className="my-2 flex justify-center">
-              <ArrowRightIcon className="size-4 rotate-90 text-[#C5C5C5]" />
+              <ArrowRightIcon className="size-4 rotate-90 text-muted" />
             </div>
             <IaBox title="Relationship Health" subtitle="CSM · scored from delivery signals" tone="accent" />
-            <div className="mt-2 text-center text-[10px] text-[#71757D]">
+            <div className="mt-2 text-center text-[10px] text-subtle">
               fed by delay attribution + onboarding notes
             </div>
           </div>
 
           {/* Acquisition */}
-          <div className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
-            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <div className="rounded-xl border border-border bg-background p-4">
+            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">
               <RocketLaunchIcon className="size-4" /> Acquisition
             </div>
             <IaBox title="Growth Pipeline" subtitle="BDM · leads table + CSV" tone="accent" />
             <div className="my-2 flex justify-center">
-              <ScaleIcon className="size-4 text-[#C5C5C5]" />
+              <ScaleIcon className="size-4 text-muted" />
             </div>
             <IaBox title="Capacity bridge" subtitle="pod headroom → outbound pacing" />
             <div className="my-2 flex justify-center">
-              <ArrowRightIcon className="size-4 rotate-90 text-[#C5C5C5]" />
+              <ArrowRightIcon className="size-4 rotate-90 text-muted" />
             </div>
             <IaBox title="Won → Intake" subtitle="hands off to Monday Protocol" tone="muted" />
           </div>
         </div>
 
         {/* role legend */}
-        <div className="mt-5 flex flex-wrap gap-2 border-t border-[#2A2A2A] pt-4 text-[11px]">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#2A2A2A] bg-[#181818] px-2.5 py-1 text-[#71757D]">
+        <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4 text-[11px]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-subtle">
             <UserGroupIcon className="size-3.5" /> Pod members → Pod Board
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#2A2A2A] bg-[#181818] px-2.5 py-1 text-[#71757D]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-subtle">
             <Squares2X2Icon className="size-3.5" /> Lead Strategist → Pods · Strategy tab
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#2A2A2A] bg-[#181818] px-2.5 py-1 text-[#71757D]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-subtle">
             <HeartIcon className="size-3.5" /> CSM → Client Health
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#2A2A2A] bg-[#181818] px-2.5 py-1 text-[#71757D]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-subtle">
             <RocketLaunchIcon className="size-3.5" /> BDM → Growth Pipeline + Capacity
           </span>
         </div>
       </section>
 
       {/* Screen cards */}
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-subtle">
         The screens
       </h2>
       <div className="grid gap-4 md:grid-cols-2">
@@ -203,18 +203,18 @@ export default function PodsPreviewHub() {
           <Link
             key={s.href}
             href={s.href}
-            className="group rounded-xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
+            className="group rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-muted hover:shadow-[var(--shadow-card)]"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="grid size-9 place-items-center rounded-lg bg-[#222222] text-[#E5E5EA]">
+                <span className="grid size-9 place-items-center rounded-lg bg-surface-raised text-foreground">
                   <s.icon className="size-5" />
                 </span>
-                <span className="text-base font-semibold text-[#E5E5EA]">{s.title}</span>
+                <span className="text-base font-semibold text-foreground">{s.title}</span>
               </div>
-              <ArrowRightIcon className="size-4 text-[#C5C5C5] transition-transform group-hover:translate-x-0.5 group-hover:text-[#E5E5EA]" />
+              <ArrowRightIcon className="size-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
             </div>
-            <p className="mt-3 text-[13px] leading-relaxed text-[#71757D]">{s.changed}</p>
+            <p className="mt-3 text-[13px] leading-relaxed text-subtle">{s.changed}</p>
           </Link>
         ))}
       </div>

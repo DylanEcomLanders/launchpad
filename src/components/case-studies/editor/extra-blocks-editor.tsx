@@ -122,7 +122,7 @@ export function ExtraBlocksEditor({ slug, extraBlocks, onChange }: Props) {
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-[#71757D] leading-relaxed">
+      <p className="text-xs text-subtle leading-relaxed">
         Slot extra screenshot collages or prose blocks between the fixed sections of the
         case study. Drag within an anchor to reorder; use the &ldquo;Move to&rdquo; menu to send a
         block to a different anchor.
@@ -135,14 +135,14 @@ export function ExtraBlocksEditor({ slug, extraBlocks, onChange }: Props) {
         return (
           <div
             key={anchor.id}
-            className="border border-[#2A2A2A] rounded-lg p-4 bg-[#0C0C0C]"
+            className="border border-border rounded-lg p-4 bg-background"
           >
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
                   {anchor.label}
                 </p>
-                <p className="text-[10px] text-[#71757D] mt-0.5">
+                <p className="text-[10px] text-subtle mt-0.5">
                   {blocks.length} {blocks.length === 1 ? "block" : "blocks"}
                 </p>
               </div>
@@ -182,7 +182,7 @@ function AddBlockMenu({ onAdd }: { onAdd: (type: ExtraBlockType) => void }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-white bg-white text-[#0C0C0C] rounded-md hover:bg-[#F3F4F6] transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-white bg-white text-background rounded-md hover:bg-foreground transition-colors"
       >
         <PlusIcon className="size-3.5" />
         Add block
@@ -190,7 +190,7 @@ function AddBlockMenu({ onAdd }: { onAdd: (type: ExtraBlockType) => void }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-1.5 w-72 bg-[#181818] border border-[#2A2A2A] rounded-md shadow-lg z-20 overflow-hidden">
+          <div className="absolute right-0 mt-1.5 w-72 bg-surface border border-border rounded-md shadow-lg z-20 overflow-hidden">
             {EXTRA_BLOCK_TYPES.map((t) => (
               <button
                 key={t.id}
@@ -199,10 +199,10 @@ function AddBlockMenu({ onAdd }: { onAdd: (type: ExtraBlockType) => void }) {
                   onAdd(t.id);
                   setOpen(false);
                 }}
-                className="w-full text-left px-3 py-2.5 hover:bg-[#0C0C0C] border-b border-[#F3F3F5] last:border-b-0"
+                className="w-full text-left px-3 py-2.5 hover:bg-background border-b border-surface-raised last:border-b-0"
               >
-                <p className="text-xs font-semibold text-[#E5E5EA]">{t.label}</p>
-                <p className="text-[10px] text-[#71757D] mt-0.5 leading-relaxed">
+                <p className="text-xs font-semibold text-foreground">{t.label}</p>
+                <p className="text-[10px] text-subtle mt-0.5 leading-relaxed">
                   {t.description}
                 </p>
               </button>
@@ -247,30 +247,30 @@ function BlockCard({
       onDragEnd={onDragEnd}
       onDragOver={(e) => {
         e.preventDefault();
-        e.currentTarget.classList.add("ring-2", "ring-[#1B1B1B]/20");
+        e.currentTarget.classList.add("ring-2", "ring-surface/20");
       }}
       onDragLeave={(e) => {
-        e.currentTarget.classList.remove("ring-2", "ring-[#1B1B1B]/20");
+        e.currentTarget.classList.remove("ring-2", "ring-surface/20");
       }}
       onDrop={(e) => {
         e.preventDefault();
-        e.currentTarget.classList.remove("ring-2", "ring-[#1B1B1B]/20");
+        e.currentTarget.classList.remove("ring-2", "ring-surface/20");
         onDrop();
       }}
-      className={`bg-[#181818] border border-[#2A2A2A] rounded-md p-3 transition-opacity ${
+      className={`bg-surface border border-border rounded-md p-3 transition-opacity ${
         isDragging ? "opacity-40" : ""
       }`}
     >
       <div className="flex items-center gap-2 mb-3">
-        <Bars3Icon className="size-4 text-[#71757D] cursor-grab active:cursor-grabbing flex-shrink-0" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <Bars3Icon className="size-4 text-subtle cursor-grab active:cursor-grabbing flex-shrink-0" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
           {block.type === "screenshot-collage" ? "Screenshot collage" : "Prose block"}
         </span>
         <div className="flex-1" />
         <select
           value={block.anchor}
           onChange={(e) => onMoveTo(e.target.value as ExtraBlockAnchor)}
-          className="text-[10px] border border-[#2A2A2A] rounded px-2 py-1 bg-[#181818]"
+          className="text-[10px] border border-border rounded px-2 py-1 bg-surface"
           title="Move to anchor"
         >
           {EXTRA_BLOCK_ANCHORS.map((a) => (
@@ -282,7 +282,7 @@ function BlockCard({
         <button
           type="button"
           onClick={onDelete}
-          className="p-1 text-[#71757D] hover:text-red-500 transition-colors"
+          className="p-1 text-subtle hover:text-red-500 transition-colors"
           title="Delete block"
         >
           <TrashIcon className="size-4" />

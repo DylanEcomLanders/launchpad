@@ -59,18 +59,18 @@ function buildWeekGrid(today: string, weeks: number): string[][] {
 }
 
 const PHASE_DOT: Record<TaskPhase, string> = {
-  onboarding: "bg-[#9CA3AF]",
+  onboarding: "bg-muted",
   research: "bg-[#0891B2]",
-  wireframe: "bg-[#F59E0B]",
+  wireframe: "bg-warning",
   design: "bg-[#7C3AED]",
   "internal-design-qa": "bg-[#9333EA]",
   "external-design-review": "bg-[#DB2777]",
   "design-revision": "bg-[#EA580C]",
-  development: "bg-[#059669]",
+  development: "bg-success",
   "development-qa": "bg-[#047857]",
-  "external-dev-review": "bg-[#DC2626]",
-  "dev-revision": "bg-[#D97706]",
-  launch: "bg-[#1A1A1A]",
+  "external-dev-review": "bg-danger",
+  "dev-revision": "bg-warning",
+  launch: "bg-surface",
 };
 
 const DISCIPLINE_BADGE: Record<TaskDiscipline, string> = {
@@ -170,10 +170,10 @@ function MemberCalendar({
   }
 
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
-      <div className="flex items-center justify-between gap-3 border-b border-[#2A2A2A] px-4 py-3">
+    <div className="rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <MemberRow member={member} />
-        <div className="flex items-center gap-2 text-[11px] text-[#71757D]">
+        <div className="flex items-center gap-2 text-[11px] text-subtle">
           <span className="tabular-nums">{tasks.length}</span>
           <span>open</span>
           {earlier.length > 0 && (
@@ -184,17 +184,17 @@ function MemberCalendar({
         </div>
       </div>
 
-      <div className="grid grid-cols-5 border-b border-[#2A2A2A] bg-[#0C0C0C]">
+      <div className="grid grid-cols-5 border-b border-border bg-background">
         {DOW_LABELS.map((label) => (
           <div
             key={label}
-            className="px-2 py-1.5 text-[9px] font-semibold uppercase tracking-wider text-[#71757D]"
+            className="px-2 py-1.5 text-[9px] font-semibold uppercase tracking-wider text-subtle"
           >
             {label}
           </div>
         ))}
       </div>
-      <div className="divide-y divide-[#2A2A2A]">
+      <div className="divide-y divide-border">
         {grid.map((week) => (
           <div key={week[0]} className="grid grid-cols-5">
             {week.map((dayYMD) => {
@@ -204,24 +204,24 @@ function MemberCalendar({
               return (
                 <div
                   key={dayYMD}
-                  className={`min-h-[80px] border-r border-[#2A2A2A] p-1.5 last:border-r-0 ${
-                    isToday ? "bg-[#FFFCEF]" : "bg-[#181818]"
+                  className={`min-h-[80px] border-r border-border p-1.5 last:border-r-0 ${
+                    isToday ? "bg-[#FFFCEF]" : "bg-surface"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-[10px] tabular-nums ${
                         isToday
-                          ? "font-semibold text-[#E5E5EA]"
+                          ? "font-semibold text-foreground"
                           : isThu
-                            ? "text-[#E5E5EA]"
-                            : "text-[#71757D]"
+                            ? "text-foreground"
+                            : "text-subtle"
                       }`}
                     >
                       {formatDayMonth(dayYMD)}
                     </span>
                     {dayTasks.length > 1 && (
-                      <span className="rounded bg-[#222222] px-1 text-[9px] tabular-nums text-[#71757D]">
+                      <span className="rounded bg-surface-raised px-1 text-[9px] tabular-nums text-subtle">
                         {dayTasks.length}
                       </span>
                     )}
@@ -250,7 +250,7 @@ function MemberCalendar({
       </div>
 
       {(earlier.length > 0 || later.length > 0) && (
-        <div className="border-t border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2 text-[10px] text-[#71757D]">
+        <div className="border-t border-border bg-background px-3 py-2 text-[10px] text-subtle">
           {earlier.length > 0 && (
             <span className="mr-3 text-rose-700">
               {earlier.length} earlier overdue
@@ -277,7 +277,7 @@ function MemberTaskTile({
   const phase = task.phase;
   return (
     <div
-      className={`rounded border bg-[#181818] px-1.5 py-1 text-[10px] ${DISCIPLINE_BADGE[task.discipline]}`}
+      className={`rounded border bg-surface px-1.5 py-1 text-[10px] ${DISCIPLINE_BADGE[task.discipline]}`}
       title={`${task.title}${
         project ? ` · ${project.name}` : ""
       }${client ? ` · ${client.name}` : ""}${

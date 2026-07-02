@@ -56,25 +56,25 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
       content: (
         <SlideBody eyebrow="The shape" title="One month. Four weeks. One sprint cadence.">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">
-            <div className="bg-[#FAFAF7] rounded-xl p-4 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Week 1</div>
-              <div className="text-[#0E0D0B] font-semibold text-sm mb-1">Plan</div>
-              <p className="text-[12px] text-[#6E6E6E]">Roadmap kickoff. Brief the work. Lock test hypotheses.</p>
+            <div className="bg-surface-raised rounded-xl p-4 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Week 1</div>
+              <div className="text-background font-semibold text-sm mb-1">Plan</div>
+              <p className="text-[12px] text-subtle">Roadmap kickoff. Brief the work. Lock test hypotheses.</p>
             </div>
-            <div className="bg-[#FAFAF7] rounded-xl p-4 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Week 2</div>
-              <div className="text-[#0E0D0B] font-semibold text-sm mb-1">Design</div>
-              <p className="text-[12px] text-[#6E6E6E]">Design ships. Dev starts the build.</p>
+            <div className="bg-surface-raised rounded-xl p-4 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Week 2</div>
+              <div className="text-background font-semibold text-sm mb-1">Design</div>
+              <p className="text-[12px] text-subtle">Design ships. Dev starts the build.</p>
             </div>
-            <div className="bg-[#FAFAF7] rounded-xl p-4 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Week 3</div>
-              <div className="text-[#0E0D0B] font-semibold text-sm mb-1">Build + QA</div>
-              <p className="text-[12px] text-[#6E6E6E]">Development complete. QA pass. Tests go live.</p>
+            <div className="bg-surface-raised rounded-xl p-4 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Week 3</div>
+              <div className="text-background font-semibold text-sm mb-1">Build + QA</div>
+              <p className="text-[12px] text-subtle">Development complete. QA pass. Tests go live.</p>
             </div>
-            <div className="bg-[#FAFAF7] rounded-xl p-4 ring-1 ring-[#E5E5E5]">
-              <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Week 4</div>
-              <div className="text-[#0E0D0B] font-semibold text-sm mb-1">Ship + Review</div>
-              <p className="text-[12px] text-[#6E6E6E]">Pages live. Results in. Next month shaped.</p>
+            <div className="bg-surface-raised rounded-xl p-4 ring-1 ring-foreground">
+              <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Week 4</div>
+              <div className="text-background font-semibold text-sm mb-1">Ship + Review</div>
+              <p className="text-[12px] text-subtle">Pages live. Results in. Next month shaped.</p>
             </div>
           </div>
         </SlideBody>
@@ -90,8 +90,8 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
           <ul className="space-y-2 text-base">
             {Array.from({ length: t.pages }).map((_, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="size-6 rounded-md bg-cyan-500/15 ring-1 ring-cyan-500/30 flex items-center justify-center text-[11px] font-bold text-[#6E6E6E] shrink-0 mt-0.5">{i + 1}</div>
-                <span className="text-[#444]">Page {i + 1} — <span className="italic text-[#6E6E6E]">replace with actual page name</span></span>
+                <div className="size-6 rounded-md bg-cyan-500/15 ring-1 ring-cyan-500/30 flex items-center justify-center text-[11px] font-bold text-subtle shrink-0 mt-0.5">{i + 1}</div>
+                <span className="text-border">Page {i + 1} — <span className="italic text-subtle">replace with actual page name</span></span>
               </li>
             ))}
           </ul>
@@ -108,12 +108,12 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
           <ul className="space-y-2 text-base">
             {Array.from({ length: Math.min(t.tests, 6) }).map((_, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="size-6 rounded-md bg-cyan-500/15 ring-1 ring-cyan-500/30 flex items-center justify-center text-[11px] font-bold text-[#6E6E6E] shrink-0 mt-0.5">T{i + 1}</div>
-                <span className="text-[#444]">Test {i + 1} — <span className="italic text-[#6E6E6E]">hypothesis + variant</span></span>
+                <div className="size-6 rounded-md bg-cyan-500/15 ring-1 ring-cyan-500/30 flex items-center justify-center text-[11px] font-bold text-subtle shrink-0 mt-0.5">T{i + 1}</div>
+                <span className="text-border">Test {i + 1} — <span className="italic text-subtle">hypothesis + variant</span></span>
               </li>
             ))}
             {t.tests > 6 && (
-              <li className="text-[12px] text-[#6E6E6E] italic ml-9">+ {t.tests - 6} more tests; scoped weekly as wins surface.</li>
+              <li className="text-[12px] text-subtle italic ml-9">+ {t.tests - 6} more tests; scoped weekly as wins surface.</li>
             )}
           </ul>
         </SlideBody>
@@ -124,10 +124,10 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
       content: (
         <SlideBody eyebrow="Cadence" title="How we stay in sync.">
           <ul className="space-y-3 text-base">
-            <li><strong className="text-[#0E0D0B]">{t.strategyCadence}.</strong> 30-minute strategist + founder sync. Roadmap status, blockers, next week.</li>
-            <li><strong className="text-[#0E0D0B]">{t.reportingCadence}.</strong> What shipped, what tested, CR delta, plan for next.</li>
-            <li><strong className="text-[#0E0D0B]">Dedicated Slack channel.</strong> Async questions, designs for review, day-to-day comms.</li>
-            <li><strong className="text-[#0E0D0B]">Monthly review (Week 4).</strong> Results recap, lessons, next month roadmap shaped together.</li>
+            <li><strong className="text-background">{t.strategyCadence}.</strong> 30-minute strategist + founder sync. Roadmap status, blockers, next week.</li>
+            <li><strong className="text-background">{t.reportingCadence}.</strong> What shipped, what tested, CR delta, plan for next.</li>
+            <li><strong className="text-background">Dedicated Slack channel.</strong> Async questions, designs for review, day-to-day comms.</li>
+            <li><strong className="text-background">Monthly review (Week 4).</strong> Results recap, lessons, next month roadmap shaped together.</li>
           </ul>
         </SlideBody>
       ),
@@ -137,9 +137,9 @@ function buildSlides(tier: Tier, brand: string, monthLabel: string) {
       content: (
         <SlideBody eyebrow="North Star" title="Conversion rate up, revenue up.">
           <p className="text-lg">
-            One metric. Everything we ship this month traces back to <strong className="text-[#0E0D0B]">your site&apos;s conversion rate</strong> going up.
+            One metric. Everything we ship this month traces back to <strong className="text-background">your site&apos;s conversion rate</strong> going up.
           </p>
-          <p className="text-base text-[#444]">
+          <p className="text-base text-border">
             CR up = revenue up at the same ad spend. That&apos;s the game.
           </p>
         </SlideBody>
@@ -213,8 +213,8 @@ export default function RoadmapPage() {
       icon={<MapIcon className="size-4" />}
     >
       {!isPresent && (
-        <section className="bg-[#0F0F10] rounded-2xl ring-1 ring-[#E5E5E5] p-5 mb-4">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-[#6E6E6E] mb-3">
+        <section className="bg-background rounded-2xl ring-1 ring-foreground p-5 mb-4">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle mb-3">
             Setup
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -228,14 +228,14 @@ export default function RoadmapPage() {
                     className={`px-2 py-2 rounded-md text-[11px] uppercase tracking-wider font-semibold transition-all ${
                       tier === t
                         ? "bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-[0_4px_16px_rgba(6,182,212,0.3)]"
-                        : "bg-[#1A1A1A] text-[#6E6E6E] hover:text-white"
+                        : "bg-surface text-subtle hover:text-white"
                     }`}
                   >
                     {TIER_META[t].label}
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-[#6E6E6E] mt-1.5">
+              <p className="text-[10px] text-subtle mt-1.5">
                 {TIER_META[tier].pages} pages · {TIER_META[tier].tests} tests · {TIER_META[tier].price}
               </p>
             </div>

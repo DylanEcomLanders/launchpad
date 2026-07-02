@@ -164,16 +164,16 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
 
   if (engagement === undefined) {
     return (
-      <main className="min-h-screen bg-[#F7F8FA] text-[#1B1B1B] flex items-center justify-center">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-[#7A7A7A]">Loading</p>
+      <main className="min-h-screen bg-surface-raised text-foreground flex items-center justify-center">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-subtle">Loading</p>
       </main>
     );
   }
   if (engagement === null) {
     return (
-      <main className="min-h-screen bg-[#F7F8FA] text-[#1B1B1B] flex items-center justify-center">
+      <main className="min-h-screen bg-surface-raised text-foreground flex items-center justify-center">
         <div className="text-center max-w-md px-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#7A7A7A] mb-3">Roadmap</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-subtle mb-3">Roadmap</p>
           <p className="text-[18px] font-medium tracking-tight">This engagement is no longer available.</p>
         </div>
       </main>
@@ -185,36 +185,36 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
   const deliveryDate = launchMilestone?.date ?? milestones[milestones.length - 1]?.date ?? "";
 
   return (
-    <main className="min-h-screen bg-[#F7F8FA] text-[#1B1B1B]">
+    <main className="min-h-screen bg-surface-raised text-foreground">
       <div className="max-w-[1040px] mx-auto px-6 md:px-10 py-10 md:py-14">
 
         {/* Header */}
         <header className="mb-6 md:mb-8 flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A7A7A]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-subtle">
               Project roadmap
             </p>
-            <h1 className="mt-2 text-[36px] md:text-[44px] font-medium leading-[1.05] tracking-tight text-[#1B1B1B]">
+            <h1 className="mt-2 text-[36px] md:text-[44px] font-medium leading-[1.05] tracking-tight text-foreground">
               {engagement.brand}
             </h1>
-            <p className="mt-2 text-[15px] text-[#7A7A7A] max-w-[640px] leading-relaxed">
+            <p className="mt-2 text-[15px] text-subtle max-w-[640px] leading-relaxed">
               Two-week build cadence. Mondays kick off, Thursdays ship.
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7A7A7A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle">
               Kickoff
             </p>
-            <p className="mt-1 text-[18px] text-[#1B1B1B] font-medium tabular-nums">
+            <p className="mt-1 text-[18px] text-foreground font-medium tabular-nums">
               {formatLongDate(kickoff)}
             </p>
           </div>
         </header>
 
         {/* Key dates — card containing 3 stat tiles */}
-        <section className="mb-5 rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
+        <section className="mb-5 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
           <div className="flex items-baseline justify-between mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
               Key dates
             </p>
             <span className="text-[13px] text-[#9A9A9A]">
@@ -237,9 +237,9 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         </section>
 
         {/* How the cycle runs — card with 4 rhythm tiles + slippage callout */}
-        <section className="mb-5 rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
+        <section className="mb-5 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
           <div className="flex items-baseline justify-between mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
               How the cycle runs
             </p>
             <span className="text-[13px] text-[#9A9A9A]">Mon to Thu, week over week</span>
@@ -267,12 +267,12 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
             />
           </div>
           <div className="flex items-stretch rounded-lg border border-[#FFE0B2] bg-[#FFF8EE] overflow-hidden">
-            <div className="w-[5px] bg-[#E65100] shrink-0" aria-hidden />
+            <div className="w-[5px] bg-warning shrink-0" aria-hidden />
             <div className="px-4 md:px-5 py-3 md:py-4 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E65100]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-warning">
                 If revisions slip
               </p>
-              <p className="mt-1.5 text-[14px] tracking-tight text-[#1B1B1B] font-medium leading-snug">
+              <p className="mt-1.5 text-[14px] tracking-tight text-foreground font-medium leading-snug">
                 Past Monday or multiple rounds means the build moves to the following Thursday.
               </p>
               <p className="mt-0.5 text-[14px] text-[#7A4A00] leading-relaxed">
@@ -286,17 +286,17 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
          * the heading anchors a footnote (below the card) clarifying
          * that these dates assume client-side requirements come back
          * on time. */}
-        <section className="mb-3 rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
+        <section className="mb-3 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
           <div className="flex items-baseline justify-between mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A]">
-              Roadmap <sup className="text-[#E65100] font-bold">*</sup>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
+              Roadmap <sup className="text-warning font-bold">*</sup>
             </p>
             <span className="text-[13px] text-[#9A9A9A] tabular-nums">
               {milestones.length} {milestones.length === 1 ? "milestone" : "milestones"}
             </span>
           </div>
           {milestones.length > 0 ? (
-            <ol className="rounded-lg border border-[#EDEDEF] overflow-hidden divide-y divide-[#EDEDEF]">
+            <ol className="rounded-lg border border-border overflow-hidden divide-y divide-border">
               {milestones.map((m, i) => {
                 const meta = KIND_META[m.kind];
                 return (
@@ -323,7 +323,7 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
                           {meta.tag}
                         </span>
                       </div>
-                      <p className="mt-1.5 text-[14px] md:text-[15px] leading-snug text-[#1B1B1B] max-w-[640px]">
+                      <p className="mt-1.5 text-[14px] md:text-[15px] leading-snug text-foreground max-w-[640px]">
                         {m.body}
                       </p>
                     </div>
@@ -332,45 +332,45 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
               })}
             </ol>
           ) : (
-            <p className="text-[14px] text-[#7A7A7A] italic">Roadmap dates lock in at kickoff.</p>
+            <p className="text-[14px] text-subtle italic">Roadmap dates lock in at kickoff.</p>
           )}
         </section>
 
         {/* Footnote attached to the Roadmap asterisk. Sets expectations
          * that the timeline depends on client-side inputs landing on
          * time; otherwise the slippage rules upstream kick in. */}
-        <p className="mb-5 px-1 text-[13px] text-[#7A7A7A] leading-relaxed">
-          <sup className="text-[#E65100] font-bold mr-1">*</sup>
+        <p className="mb-5 px-1 text-[13px] text-subtle leading-relaxed">
+          <sup className="text-warning font-bold mr-1">*</sup>
           Timeline assumes Shopify access, brand assets, and any other requested inputs are returned on time. If client-side requirements come back late, the slippage rules above apply and delivery dates shift to the following Thursday.
         </p>
 
         {/* After launch — generic post-launch summary, no dates. We
          * follow performance + capture test wins as they come in, plus
          * the 30-day support reminder. */}
-        <section className="mb-5 rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A] mb-4">
+        <section className="mb-5 rounded-2xl border border-foreground bg-white p-5 shadow-[var(--shadow-soft)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle mb-4">
             After launch
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="rounded-lg border border-[#EDEDEF] bg-[#FAFBFC] p-4">
+            <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="size-1.5 rounded-full bg-[#1B1B1B]" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1B1B1B]">
+                <span className="size-1.5 rounded-full bg-surface" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground">
                   We watch the numbers
                 </span>
               </div>
-              <p className="text-[14px] leading-snug text-[#444]">
+              <p className="text-[14px] leading-snug text-border">
                 Performance tracked from go-live. Test wins captured as they come in. A readout call once there's enough signal to act on.
               </p>
             </div>
-            <div className="rounded-lg border border-[#EDEDEF] bg-[#FAFBFC] p-4">
+            <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="size-1.5 rounded-full bg-[#7A7A7A]" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#7A7A7A]">
+                <span className="size-1.5 rounded-full bg-subtle" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-subtle">
                   30-day support window
                 </span>
               </div>
-              <p className="text-[14px] leading-snug text-[#444]">
+              <p className="text-[14px] leading-snug text-border">
                 Bug fixes, tweaks, and monitoring stay on us for 30 days post-launch. Anything new after that gets scoped separately.
               </p>
             </div>
@@ -378,7 +378,7 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         </section>
 
         {/* Working together — dark card */}
-        <section className="mb-5 rounded-2xl bg-[#1B1B1B] text-white p-6 md:p-7 shadow-[var(--shadow-card)]">
+        <section className="mb-5 rounded-2xl bg-surface text-white p-6 md:p-7 shadow-[var(--shadow-card)]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/55">
             Working together
           </p>
@@ -394,9 +394,9 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
         </section>
 
         {/* Footer */}
-        <footer className="rounded-2xl border border-[#E5E5EA] bg-white p-5 md:p-6 shadow-[var(--shadow-soft)] grid grid-cols-1 md:grid-cols-3 gap-6">
+        <footer className="rounded-2xl border border-foreground bg-white p-5 md:p-6 shadow-[var(--shadow-soft)] grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <p className="text-[18px] font-semibold tracking-tight text-[#1B1B1B]">
+            <p className="text-[18px] font-semibold tracking-tight text-foreground">
               Ecomlanders
             </p>
             <p className="mt-0.5 text-[13px] text-[#9A9A9A]">
@@ -404,18 +404,18 @@ export default function RoadmapDeck({ engagementId }: { engagementId: string }) 
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
               Document
             </p>
-            <p className="mt-2 text-[14px] text-[#1B1B1B]">
+            <p className="mt-2 text-[14px] text-foreground">
               {engagement.brand} project roadmap
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
               Questions
             </p>
-            <p className="mt-2 text-[14px] font-medium text-[#1B1B1B]">
+            <p className="mt-2 text-[14px] font-medium text-foreground">
               Reply on Slack
             </p>
             <p className="mt-0.5 text-[13px] text-[#9A9A9A]">
@@ -438,14 +438,14 @@ function KeyDateTile({
   secondary: string;
 }) {
   return (
-    <div className="rounded-lg border border-[#EDEDEF] bg-[#FAFBFC] p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A]">
+    <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
         {label}
       </p>
-      <p className="mt-2 text-[22px] md:text-[24px] font-medium leading-none tracking-tight tabular-nums text-[#1B1B1B]">
+      <p className="mt-2 text-[22px] md:text-[24px] font-medium leading-none tracking-tight tabular-nums text-foreground">
         {primary}
       </p>
-      <p className="mt-1.5 text-[14px] text-[#7A7A7A]">{secondary}</p>
+      <p className="mt-1.5 text-[14px] text-subtle">{secondary}</p>
     </div>
   );
 }
@@ -460,14 +460,14 @@ function RhythmTile({
   body: string;
 }) {
   return (
-    <div className="rounded-lg border border-[#EDEDEF] bg-[#FAFBFC] p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A]">
+    <div className="rounded-lg border border-border bg-[#FAFBFC] p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
         {day}
       </p>
-      <p className="mt-2 text-[15px] md:text-[16px] font-semibold tracking-tight text-[#1B1B1B]">
+      <p className="mt-2 text-[15px] md:text-[16px] font-semibold tracking-tight text-foreground">
         {stage}
       </p>
-      <p className="mt-1.5 text-[14px] leading-snug text-[#666] max-w-[240px]">
+      <p className="mt-1.5 text-[14px] leading-snug text-subtle max-w-[240px]">
         {body}
       </p>
     </div>

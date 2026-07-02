@@ -53,8 +53,8 @@ export default function ImportPage() {
   return (
     <div className="max-w-3xl space-y-8">
       <div>
-        <h2 className="text-xl font-semibold text-[#E5E5EA] mb-1">Bulk import</h2>
-        <p className="text-sm text-[#71757D]">
+        <h2 className="text-xl font-semibold text-foreground mb-1">Bulk import</h2>
+        <p className="text-sm text-subtle">
           Four-stage CSV import. Run masters first (clients, suppliers) so the transactional imports (invoices, expenses) can match by name. All four endpoints are idempotent on the natural key.
         </p>
       </div>
@@ -62,7 +62,7 @@ export default function ImportPage() {
       <ImportSection
         title="Stage 1: Clients"
         subtitle="Upload clients_master.csv. Skipped on duplicate name."
-        icon={<UsersIcon className="size-5 text-[#71757D]" />}
+        icon={<UsersIcon className="size-5 text-subtle" />}
         endpoint="/api/finance/import-clients"
         headerReference={CLIENT_HEADER}
         ResultRenderer={ClientResult}
@@ -71,7 +71,7 @@ export default function ImportPage() {
       <ImportSection
         title="Stage 2: Invoices"
         subtitle="Upload invoices_master.csv. Blank invoice_numbers are auto-assigned (EL-YYYY-NNN, counter resets per UK tax year). Skipped on duplicate invoice_number."
-        icon={<DocumentTextIcon className="size-5 text-[#71757D]" />}
+        icon={<DocumentTextIcon className="size-5 text-subtle" />}
         endpoint="/api/finance/import-invoices"
         headerReference={INVOICE_HEADER}
         ResultRenderer={InvoiceResult}
@@ -80,7 +80,7 @@ export default function ImportPage() {
       <ImportSection
         title="Stage 3: Suppliers"
         subtitle="Upload suppliers_master.csv. Skipped on duplicate name. Run this before expenses so the expense import can match suppliers by name."
-        icon={<BuildingStorefrontIcon className="size-5 text-[#71757D]" />}
+        icon={<BuildingStorefrontIcon className="size-5 text-subtle" />}
         endpoint="/api/finance/import-suppliers"
         headerReference={SUPPLIER_HEADER}
         ResultRenderer={SupplierResult}
@@ -89,7 +89,7 @@ export default function ImportPage() {
       <ImportSection
         title="Stage 4: Expenses"
         subtitle="Upload expenses_master_clean.csv. Blank expense_numbers are auto-assigned (EXP-YYYY-NNN, counter resets per UK tax year). Skipped on duplicate expense_number."
-        icon={<BanknotesIcon className="size-5 text-[#71757D]" />}
+        icon={<BanknotesIcon className="size-5 text-subtle" />}
         endpoint="/api/finance/import-expenses"
         headerReference={EXPENSE_HEADER}
         ResultRenderer={ExpenseResult}
@@ -138,12 +138,12 @@ function ImportSection<R extends { errors: string[] }>({
   }
 
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
+    <div className="bg-surface border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
       <div className="flex items-start gap-3 mb-4">
         {icon}
         <div>
-          <h3 className="text-sm font-semibold text-[#E5E5EA]">{title}</h3>
-          <p className="text-[12px] text-[#71757D] mt-0.5">{subtitle}</p>
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          <p className="text-[12px] text-subtle mt-0.5">{subtitle}</p>
         </div>
       </div>
 
@@ -155,10 +155,10 @@ function ImportSection<R extends { errors: string[] }>({
             setFile(e.target.files?.[0] || null);
             setResult(null);
           }}
-          className="block w-full text-sm text-[#E5E5EA] file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#1B1B1B] file:text-white hover:file:opacity-90"
+          className="block w-full text-sm text-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-surface file:text-white hover:file:opacity-90"
         />
         {file && (
-          <p className="text-xs text-[#71757D]">
+          <p className="text-xs text-subtle">
             {file.name} ({(file.size / 1024).toFixed(1)} KB)
           </p>
         )}
@@ -166,7 +166,7 @@ function ImportSection<R extends { errors: string[] }>({
         <button
           onClick={handleImport}
           disabled={!file || importing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {importing ? (
             <ArrowPathIcon className="size-4 animate-spin" />
@@ -177,15 +177,15 @@ function ImportSection<R extends { errors: string[] }>({
         </button>
 
         {error && (
-          <div className="px-3 py-2 bg-[#7F1D1D]/20 border border-[#991B1B] rounded-md text-xs text-[#FCA5A5]">
+          <div className="px-3 py-2 bg-[#7F1D1D]/20 border border-danger rounded-md text-xs text-[#FCA5A5]">
             {error}
           </div>
         )}
         {result && <ResultRenderer result={result} />}
 
-        <details className="text-xs text-[#71757D]">
+        <details className="text-xs text-subtle">
           <summary className="cursor-pointer">CSV header reference</summary>
-          <code className="block bg-[#0C0C0C] px-3 py-2 rounded text-[10px] mt-2 overflow-x-auto">
+          <code className="block bg-background px-3 py-2 rounded text-[10px] mt-2 overflow-x-auto">
             {headerReference}
           </code>
         </details>

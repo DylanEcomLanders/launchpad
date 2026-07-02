@@ -74,18 +74,18 @@ function buildSlides(i: Inputs) {
     content: (
       <SlideBody eyebrow="The numbers" title="Where we started vs where we are.">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-          <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Conversion rate</div>
+          <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Conversion rate</div>
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-[#6E6E6E] line-through tabular-nums">{i.crStart.trim() || "—"}</span>
-              <span className="text-4xl font-bold text-[#0E0D0B] tabular-nums">→ {i.crNow.trim() || "—"}</span>
+              <span className="text-3xl font-bold text-subtle line-through tabular-nums">{i.crStart.trim() || "—"}</span>
+              <span className="text-4xl font-bold text-background tabular-nums">→ {i.crNow.trim() || "—"}</span>
             </div>
           </div>
-          <div className="bg-[#FAFAF7] rounded-xl p-5 ring-1 ring-[#E5E5E5]">
-            <div className="text-[#6E6E6E] text-xs uppercase tracking-wider font-semibold mb-2">Monthly revenue</div>
+          <div className="bg-surface-raised rounded-xl p-5 ring-1 ring-foreground">
+            <div className="text-subtle text-xs uppercase tracking-wider font-semibold mb-2">Monthly revenue</div>
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-[#6E6E6E] line-through tabular-nums">{i.revStart.trim() || "—"}</span>
-              <span className="text-4xl font-bold text-[#0E0D0B] tabular-nums">→ {i.revNow.trim() || "—"}</span>
+              <span className="text-3xl font-bold text-subtle line-through tabular-nums">{i.revStart.trim() || "—"}</span>
+              <span className="text-4xl font-bold text-background tabular-nums">→ {i.revNow.trim() || "—"}</span>
             </div>
           </div>
         </div>
@@ -100,11 +100,11 @@ function buildSlides(i: Inputs) {
         {i.highlights.trim() ? (
           <ul className="space-y-2 text-base">
             {bulletize(i.highlights).map((l, idx) => (
-              <li key={idx} className="text-[#444]">• {l}</li>
+              <li key={idx} className="text-border">• {l}</li>
             ))}
           </ul>
         ) : (
-          <p className="text-base text-[#6E6E6E] italic">Capture the top 5-8 things we shipped this period.</p>
+          <p className="text-base text-subtle italic">Capture the top 5-8 things we shipped this period.</p>
         )}
       </SlideBody>
     ),
@@ -118,9 +118,9 @@ function buildSlides(i: Inputs) {
       content: (
         <SlideBody eyebrow="Lessons" title="First-month learnings.">
           <ul className="space-y-3 text-base">
-            <li><strong className="text-[#0E0D0B]">What the data is telling us.</strong> Patterns from the first month of tests + analytics.</li>
-            <li><strong className="text-[#0E0D0B]">What we&apos;re doubling down on.</strong> Hypotheses that earned more attention.</li>
-            <li><strong className="text-[#0E0D0B]">What we&apos;re killing.</strong> Tests that lost; we move on.</li>
+            <li><strong className="text-background">What the data is telling us.</strong> Patterns from the first month of tests + analytics.</li>
+            <li><strong className="text-background">What we&apos;re doubling down on.</strong> Hypotheses that earned more attention.</li>
+            <li><strong className="text-background">What we&apos;re killing.</strong> Tests that lost; we move on.</li>
           </ul>
         </SlideBody>
       ),
@@ -133,7 +133,7 @@ function buildSlides(i: Inputs) {
           <p className="text-lg leading-relaxed">
             We said measurable CR lift in 90 days or we keep working free. Look at the numbers. Lift achieved.
           </p>
-          <p className="text-base text-[#444]">
+          <p className="text-base text-border">
             This is the moment most agencies overpromise and underdeliver. We&apos;ve delivered. The system is working.
           </p>
         </SlideBody>
@@ -145,8 +145,8 @@ function buildSlides(i: Inputs) {
       content: (
         <SlideBody eyebrow="The ask" title="Two things.">
           <ul className="space-y-3 text-base">
-            <li><strong className="text-[#0E0D0B]">A short case study.</strong> Can we write up your story? Same template, your name + numbers + a quote.</li>
-            <li><strong className="text-[#0E0D0B]">A referral.</strong> Know another brand that&apos;d benefit from this? We&apos;ll comp your next month if they sign.</li>
+            <li><strong className="text-background">A short case study.</strong> Can we write up your story? Same template, your name + numbers + a quote.</li>
+            <li><strong className="text-background">A referral.</strong> Know another brand that&apos;d benefit from this? We&apos;ll comp your next month if they sign.</li>
           </ul>
         </SlideBody>
       ),
@@ -159,7 +159,7 @@ function buildSlides(i: Inputs) {
           <p className="text-lg leading-relaxed">
             A year ago, your site was converting at one number. Today, it&apos;s at another. Every month, every test, every page made the system smarter.
           </p>
-          <p className="text-base text-[#444]">
+          <p className="text-base text-border">
             That&apos;s what the Conversion Engine does. It compounds.
           </p>
         </SlideBody>
@@ -174,11 +174,11 @@ function buildSlides(i: Inputs) {
         {i.nextPhase.trim() ? (
           <ul className="space-y-2 text-base">
             {bulletize(i.nextPhase).map((l, idx) => (
-              <li key={idx} className="text-[#444]">• {l}</li>
+              <li key={idx} className="text-border">• {l}</li>
             ))}
           </ul>
         ) : (
-          <p className="text-base text-[#6E6E6E] italic">Outline the next phase: bigger bets, new surfaces, scope expansion.</p>
+          <p className="text-base text-subtle italic">Outline the next phase: bigger bets, new surfaces, scope expansion.</p>
         )}
       </SlideBody>
     ),
@@ -191,7 +191,7 @@ function buildSlides(i: Inputs) {
         <p className="text-lg leading-relaxed">
           The hardest part of CRO is showing up every month. We&apos;ve shown up. The numbers show it. Let&apos;s keep going.
         </p>
-        <p className="text-base text-[#444] mt-4">— The {safeBrand} pod at Ecom Landers</p>
+        <p className="text-base text-border mt-4">— The {safeBrand} pod at Ecom Landers</p>
       </SlideBody>
     ),
   };
@@ -271,8 +271,8 @@ export default function MilestoneDeckPage() {
       icon={<FlagIcon className="size-4" />}
     >
       {!isPresent && (
-        <section className="bg-[#0F0F10] rounded-2xl ring-1 ring-[#E5E5E5] p-5 mb-4 space-y-4">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-[#6E6E6E]">
+        <section className="bg-background rounded-2xl ring-1 ring-foreground p-5 mb-4 space-y-4">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle">
             Setup
           </div>
           <div>
@@ -285,14 +285,14 @@ export default function MilestoneDeckPage() {
                   className={`px-2 py-2 rounded-md text-[11px] uppercase tracking-wider font-semibold transition-all ${
                     inputs.day === d
                       ? "bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-[0_4px_16px_rgba(14,165,233,0.3)]"
-                      : "bg-[#1A1A1A] text-[#6E6E6E] hover:text-white"
+                      : "bg-surface text-subtle hover:text-white"
                   }`}
                 >
                   Day {d}
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-[#6E6E6E] mt-1.5 italic">
+            <p className="text-[10px] text-subtle mt-1.5 italic">
               {DAY_META[inputs.day].tone}
             </p>
           </div>

@@ -88,17 +88,17 @@ export default function SocialAnalyticsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold">Social Analytics</h1>
-          <p className="text-xs text-[#AAA] mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {lastFetched ? `${fromCache ? "Cached · " : ""}Last scraped ${new Date(lastFetched).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : "Loading..."}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex gap-1 bg-[#F3F3F5] rounded-lg p-0.5">
+          <div className="flex gap-1 bg-surface-raised rounded-lg p-0.5">
             {(["dylan", "ajay"] as const).map((o) => (
-              <button key={o} onClick={() => setOwner(o)} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors capitalize ${owner === o ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777]"}`}>{o}</button>
+              <button key={o} onClick={() => setOwner(o)} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors capitalize ${owner === o ? "bg-white text-surface shadow-sm" : "text-subtle"}`}>{o}</button>
             ))}
           </div>
-          <button onClick={() => fetchData(owner, true)} disabled={loading} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5] disabled:opacity-30 whitespace-nowrap">
+          <button onClick={() => fetchData(owner, true)} disabled={loading} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-subtle border border-foreground rounded-lg hover:bg-surface-raised disabled:opacity-30 whitespace-nowrap">
             <ArrowPathIcon className={`size-3.5 shrink-0 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
@@ -106,7 +106,7 @@ export default function SocialAnalyticsPage() {
       </div>
 
       {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg"><p className="text-xs text-red-600">{error}</p></div>}
-      {loading && !profile && <div className="flex items-center justify-center py-20"><div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" /></div>}
+      {loading && !profile && <div className="flex items-center justify-center py-20"><div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" /></div>}
 
       {profile && stats && (
         <>
@@ -116,7 +116,7 @@ export default function SocialAnalyticsPage() {
               {profile.avatar && <img src={profile.avatar.replace("_normal", "_200x200")} alt="" className="size-11 rounded-full" />}
               <div>
                 <p className="text-sm font-bold">{profile.name}</p>
-                <p className="text-[10px] text-[#AAA]">@{profile.username} · {fmt(profile.followers)} followers</p>
+                <p className="text-[10px] text-muted">@{profile.username} · {fmt(profile.followers)} followers</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -126,8 +126,8 @@ export default function SocialAnalyticsPage() {
                 { label: "Eng Rate", value: `${stats.avgEngagementRate}%` },
                 { label: "Tweets (90d)", value: String(stats.totalTweets) },
               ].map((s) => (
-                <div key={s.label} className="border border-[#E8E8E8] rounded-lg px-3 py-2 min-w-[80px]">
-                  <p className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">{s.label}</p>
+                <div key={s.label} className="border border-foreground rounded-lg px-3 py-2 min-w-[80px]">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted">{s.label}</p>
                   <p className="text-lg font-bold tabular-nums">{s.value}</p>
                 </div>
               ))}
@@ -136,12 +136,12 @@ export default function SocialAnalyticsPage() {
 
           {/* Chart */}
           {stats.chartData.length > 1 && (
-            <div className="border border-[#E8E8E8] rounded-xl p-5 mb-6">
+            <div className="border border-foreground rounded-xl p-5 mb-6">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-semibold text-[#1A1A1A]">Weekly Performance</p>
+                <p className="text-xs font-semibold text-surface">Weekly Performance</p>
                 <div className="flex gap-1">
                   {(["impressions", "engagement", "likes", "tweets"] as ChartMetric[]).map((m) => (
-                    <button key={m} onClick={() => setChartMetric(m)} className={`px-2 py-1 text-[9px] font-semibold uppercase rounded transition-colors ${chartMetric === m ? "bg-[#1A1A1A] text-white" : "text-[#AAA] hover:text-[#1A1A1A]"}`}>
+                    <button key={m} onClick={() => setChartMetric(m)} className={`px-2 py-1 text-[9px] font-semibold uppercase rounded transition-colors ${chartMetric === m ? "bg-surface text-white" : "text-muted hover:text-surface"}`}>
                       {chartMetricLabels[m]}
                     </button>
                   ))}
@@ -166,55 +166,55 @@ export default function SocialAnalyticsPage() {
           {/* Insights row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Top Hooks */}
-            <div className="md:col-span-2 border border-[#E8E8E8] rounded-xl p-4">
-              <p className="text-xs font-semibold text-[#1A1A1A] mb-3">Top Hooks</p>
+            <div className="md:col-span-2 border border-foreground rounded-xl p-4">
+              <p className="text-xs font-semibold text-surface mb-3">Top Hooks</p>
               <div className="space-y-2">
                 {stats.topHooks.slice(0, 7).map((h, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="text-[10px] text-[#CCC] font-bold tabular-nums w-4 shrink-0">{i + 1}</span>
-                    <p className="text-xs text-[#333] flex-1 truncate">{h.hook}</p>
-                    <span className={`text-[10px] font-semibold tabular-nums shrink-0 ${h.engagementRate >= 5 ? "text-emerald-600" : h.engagementRate >= 2 ? "text-amber-600" : "text-[#AAA]"}`}>
+                    <span className="text-[10px] text-muted font-bold tabular-nums w-4 shrink-0">{i + 1}</span>
+                    <p className="text-xs text-border flex-1 truncate">{h.hook}</p>
+                    <span className={`text-[10px] font-semibold tabular-nums shrink-0 ${h.engagementRate >= 5 ? "text-emerald-600" : h.engagementRate >= 2 ? "text-amber-600" : "text-muted"}`}>
                       {h.engagementRate.toFixed(1)}%
                     </span>
-                    <span className="text-[10px] text-[#CCC] tabular-nums shrink-0">{fmt(h.impressions)} views</span>
+                    <span className="text-[10px] text-muted tabular-nums shrink-0">{fmt(h.impressions)} views</span>
                   </div>
                 ))}
-                {stats.topHooks.length === 0 && <p className="text-xs text-[#CCC]">Not enough data yet</p>}
+                {stats.topHooks.length === 0 && <p className="text-xs text-muted">Not enough data yet</p>}
               </div>
             </div>
 
             {/* Posting Pattern */}
-            <div className="border border-[#E8E8E8] rounded-xl p-4">
-              <p className="text-xs font-semibold text-[#1A1A1A] mb-3">Best Days</p>
+            <div className="border border-foreground rounded-xl p-4">
+              <p className="text-xs font-semibold text-surface mb-3">Best Days</p>
               <div className="space-y-1.5">
                 {stats.postingPattern.sort((a, b) => b.avgEngagement - a.avgEngagement).map((d) => (
                   <div key={d.day} className="flex items-center justify-between">
-                    <span className="text-xs text-[#555] w-8">{d.day}</span>
-                    <div className="flex-1 mx-2 h-2 bg-[#F5F5F5] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#1A1A1A] rounded-full" style={{ width: `${Math.min(100, (d.avgEngagement / Math.max(...stats.postingPattern.map(p => p.avgEngagement), 1)) * 100)}%` }} />
+                    <span className="text-xs text-subtle w-8">{d.day}</span>
+                    <div className="flex-1 mx-2 h-2 bg-surface-raised rounded-full overflow-hidden">
+                      <div className="h-full bg-surface rounded-full" style={{ width: `${Math.min(100, (d.avgEngagement / Math.max(...stats.postingPattern.map(p => p.avgEngagement), 1)) * 100)}%` }} />
                     </div>
-                    <span className="text-[10px] text-[#AAA] tabular-nums w-10 text-right">{d.avgEngagement}%</span>
+                    <span className="text-[10px] text-muted tabular-nums w-10 text-right">{d.avgEngagement}%</span>
                   </div>
                 ))}
               </div>
               {stats.bestHour && (
-                <div className="mt-3 pt-3 border-t border-[#F0F0F0]">
-                  <p className="text-[10px] text-[#AAA]">Best time to post</p>
+                <div className="mt-3 pt-3 border-t border-foreground">
+                  <p className="text-[10px] text-muted">Best time to post</p>
                   <p className="text-sm font-bold">{stats.bestHour.hour}:00 — {stats.bestHour.hour + 1}:00</p>
-                  <p className="text-[10px] text-[#CCC]">{stats.bestHour.avgEng.toFixed(1)}% avg eng · {stats.bestHour.posts} posts</p>
+                  <p className="text-[10px] text-muted">{stats.bestHour.avgEng.toFixed(1)}% avg eng · {stats.bestHour.posts} posts</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* AI Content Analysis */}
-          <div className="border border-[#E8E8E8] rounded-xl mb-6 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0F0F0]">
-              <p className="text-xs font-semibold text-[#1A1A1A]">Content Intelligence</p>
+          <div className="border border-foreground rounded-xl mb-6 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-foreground">
+              <p className="text-xs font-semibold text-surface">Content Intelligence</p>
               <button
                 onClick={runAnalysis}
                 disabled={analysing || !tweets.length}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium bg-[#1A1A1A] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium bg-surface text-white rounded-lg hover:bg-border disabled:opacity-30"
               >
                 {analysing ? (
                   <><ArrowPathIcon className="size-3 animate-spin" /> Analysing...</>
@@ -224,8 +224,8 @@ export default function SocialAnalyticsPage() {
 
             {analysing && (
               <div className="px-4 py-8 text-center">
-                <div className="animate-spin size-5 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full mx-auto mb-2" />
-                <p className="text-xs text-[#AAA]">Analysing {tweets.length} tweets...</p>
+                <div className="animate-spin size-5 border-2 border-foreground border-t-[#1A1A1A] rounded-full mx-auto mb-2" />
+                <p className="text-xs text-muted">Analysing {tweets.length} tweets...</p>
               </div>
             )}
 
@@ -233,25 +233,25 @@ export default function SocialAnalyticsPage() {
               <div className="p-4 space-y-5">
                 {/* Key Insight */}
                 {analysis.keyInsight && (
-                  <div className="bg-[#FAFAFA] rounded-lg px-4 py-3">
-                    <p className="text-xs font-semibold text-[#1A1A1A] mb-1">Key Insight</p>
-                    <p className="text-sm text-[#555] leading-relaxed">{analysis.keyInsight}</p>
+                  <div className="bg-surface-raised rounded-lg px-4 py-3">
+                    <p className="text-xs font-semibold text-surface mb-1">Key Insight</p>
+                    <p className="text-sm text-subtle leading-relaxed">{analysis.keyInsight}</p>
                   </div>
                 )}
 
                 {/* Content Themes */}
                 {analysis.themes?.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Themes</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">Content Themes</p>
                     <div className="space-y-2">
                       {analysis.themes.map((t: any, i: number) => (
-                        <div key={i} className="flex items-center justify-between py-2 border-b border-[#F5F5F5] last:border-0">
+                        <div key={i} className="flex items-center justify-between py-2 border-b border-surface-raised last:border-0">
                           <div className="flex items-center gap-3">
-                            <span className="text-xs font-medium text-[#1A1A1A]">{t.theme}</span>
-                            <span className="text-[9px] text-[#CCC]">{t.count} posts</span>
+                            <span className="text-xs font-medium text-surface">{t.theme}</span>
+                            <span className="text-[9px] text-muted">{t.count} posts</span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className={`text-[10px] font-semibold ${t.avgEngagement >= 4 ? "text-emerald-600" : t.avgEngagement >= 2 ? "text-amber-600" : "text-[#AAA]"}`}>
+                            <span className={`text-[10px] font-semibold ${t.avgEngagement >= 4 ? "text-emerald-600" : t.avgEngagement >= 2 ? "text-amber-600" : "text-muted"}`}>
                               {typeof t.avgEngagement === "number" ? `${t.avgEngagement.toFixed(1)}%` : t.avgEngagement}
                             </span>
                             <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full ${
@@ -269,16 +269,16 @@ export default function SocialAnalyticsPage() {
                 {/* Hook Patterns */}
                 {analysis.hookPatterns?.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Hook Patterns That Work</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">Hook Patterns That Work</p>
                     <div className="space-y-2">
                       {analysis.hookPatterns.map((h: any, i: number) => (
-                        <div key={i} className="bg-[#FAFAFA] rounded-lg px-3 py-2.5">
+                        <div key={i} className="bg-surface-raised rounded-lg px-3 py-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-xs font-semibold text-[#1A1A1A]">{h.pattern}</p>
+                            <p className="text-xs font-semibold text-surface">{h.pattern}</p>
                             <span className="text-[10px] text-emerald-600 font-semibold">{typeof h.avgEngagement === "number" ? `${h.avgEngagement.toFixed(1)}%` : h.avgEngagement}</span>
                           </div>
-                          <p className="text-[10px] text-[#777] italic mb-1">&ldquo;{h.example}&rdquo;</p>
-                          <p className="text-[10px] text-[#AAA]">{h.tip}</p>
+                          <p className="text-[10px] text-subtle italic mb-1">&ldquo;{h.example}&rdquo;</p>
+                          <p className="text-[10px] text-muted">{h.tip}</p>
                         </div>
                       ))}
                     </div>
@@ -289,12 +289,12 @@ export default function SocialAnalyticsPage() {
                   {/* Content Gaps */}
                   {analysis.contentGaps?.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Gaps</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">Content Gaps</p>
                       <div className="space-y-1.5">
                         {analysis.contentGaps.map((g: string, i: number) => (
                           <div key={i} className="flex items-start gap-2">
                             <span className="text-amber-500 text-xs mt-0.5">○</span>
-                            <p className="text-xs text-[#555]">{g}</p>
+                            <p className="text-xs text-subtle">{g}</p>
                           </div>
                         ))}
                       </div>
@@ -304,12 +304,12 @@ export default function SocialAnalyticsPage() {
                   {/* Next Posts */}
                   {analysis.nextPosts?.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Post Ideas</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">Post Ideas</p>
                       <div className="space-y-1.5">
                         {analysis.nextPosts.map((p: string, i: number) => (
                           <div key={i} className="flex items-start gap-2">
                             <span className="text-emerald-500 text-xs mt-0.5">→</span>
-                            <p className="text-xs text-[#555]">{p}</p>
+                            <p className="text-xs text-subtle">{p}</p>
                           </div>
                         ))}
                       </div>
@@ -321,7 +321,7 @@ export default function SocialAnalyticsPage() {
 
             {!analysis && !analysing && (
               <div className="px-4 py-6 text-center">
-                <p className="text-xs text-[#CCC]">Hit &ldquo;Analyse Content&rdquo; to get AI-powered content strategy insights</p>
+                <p className="text-xs text-muted">Hit &ldquo;Analyse Content&rdquo; to get AI-powered content strategy insights</p>
               </div>
             )}
           </div>
@@ -329,16 +329,16 @@ export default function SocialAnalyticsPage() {
           {/* Tweet Table */}
           <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">All Tweets ({tweets.length})</h2>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="text-[10px] text-[#777] border border-[#E5E5EA] rounded px-2 py-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">All Tweets ({tweets.length})</h2>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="text-[10px] text-subtle border border-foreground rounded px-2 py-1">
                 <option value="impressions">Sort by Views</option>
                 <option value="likes">Sort by Likes</option>
                 <option value="engagementRate">Sort by Engagement</option>
                 <option value="created_at">Sort by Date</option>
               </select>
             </div>
-            <div className="border border-[#E5E5EA] rounded-xl overflow-x-auto">
-              <div className="grid grid-cols-[1fr_70px_50px_50px_60px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#AAA] min-w-[500px]">
+            <div className="border border-foreground rounded-xl overflow-x-auto">
+              <div className="grid grid-cols-[1fr_70px_50px_50px_60px] gap-2 px-4 py-2 bg-surface-raised border-b border-foreground text-[10px] font-semibold uppercase tracking-wider text-muted min-w-[500px]">
                 <span>Tweet</span>
                 <span className="text-right">Views</span>
                 <span className="text-right">Likes</span>
@@ -349,15 +349,15 @@ export default function SocialAnalyticsPage() {
                 {sortedTweets.map((t) => {
                   const date = new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
                   return (
-                    <div key={t.id} className="grid grid-cols-[1fr_70px_50px_50px_60px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center hover:bg-[#FAFAFA] min-w-[500px]">
+                    <div key={t.id} className="grid grid-cols-[1fr_70px_50px_50px_60px] gap-2 px-4 py-2.5 border-b border-border last:border-0 items-center hover:bg-surface-raised min-w-[500px]">
                       <div className="min-w-0">
-                        <p className="text-xs text-[#1A1A1A] line-clamp-1">{t.text}</p>
-                        <p className="text-[9px] text-[#CCC]">{date}</p>
+                        <p className="text-xs text-surface line-clamp-1">{t.text}</p>
+                        <p className="text-[9px] text-muted">{date}</p>
                       </div>
                       <p className="text-xs tabular-nums text-right font-medium">{fmt(t.impressions)}</p>
-                      <p className="text-xs tabular-nums text-right text-[#555]">{t.likes}</p>
-                      <p className="text-xs tabular-nums text-right text-[#555]">{t.retweets}</p>
-                      <p className={`text-xs tabular-nums text-right font-medium ${t.engagementRate >= 5 ? "text-emerald-600" : t.engagementRate >= 2 ? "text-amber-600" : "text-[#555]"}`}>
+                      <p className="text-xs tabular-nums text-right text-subtle">{t.likes}</p>
+                      <p className="text-xs tabular-nums text-right text-subtle">{t.retweets}</p>
+                      <p className={`text-xs tabular-nums text-right font-medium ${t.engagementRate >= 5 ? "text-emerald-600" : t.engagementRate >= 2 ? "text-amber-600" : "text-subtle"}`}>
                         {t.engagementRate.toFixed(1)}%
                       </p>
                     </div>

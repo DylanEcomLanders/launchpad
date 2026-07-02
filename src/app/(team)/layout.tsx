@@ -18,9 +18,9 @@ export default function TeamLayout({
 }) {
   return (
     <AuthGate>
-      <div className="flex h-screen overflow-hidden bg-[#0C0C0C]">
+      <div className="flex h-screen overflow-hidden bg-background">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin bg-[#181818] rounded-l-xl shadow-[var(--shadow-card)] my-2 mr-2 pt-14 md:pt-0">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin bg-surface rounded-l-xl shadow-[var(--shadow-card)] my-2 mr-2 pt-14 md:pt-0">
           <PageTransition>{children}</PageTransition>
         </main>
         <QuickLinks />

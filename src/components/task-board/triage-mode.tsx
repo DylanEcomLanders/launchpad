@@ -83,20 +83,20 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
     const killed = decisions.filter((d) => d.decision === "kill").length;
     return (
       <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center px-6">
-        <div className="bg-[#181818] rounded-2xl p-8 max-w-md w-full">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+        <div className="bg-surface rounded-2xl p-8 max-w-md w-full">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-2">
             Triage complete
           </p>
-          <h2 className="text-[22px] font-semibold text-[#E5E5EA] mb-6">
+          <h2 className="text-[22px] font-semibold text-foreground mb-6">
             {tickets.length === 0
               ? "No open tickets to triage."
               : "All clear."}
           </h2>
           {tickets.length > 0 && (
-            <div className="space-y-2 text-[14px] text-[#E5E5EA]">
+            <div className="space-y-2 text-[14px] text-foreground">
               <div className="flex justify-between">
                 <span>Doing today</span>
-                <span className="font-semibold tabular-nums text-[#059669]">
+                <span className="font-semibold tabular-nums text-success">
                   {did}
                 </span>
               </div>
@@ -108,7 +108,7 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
               </div>
               <div className="flex justify-between">
                 <span>Killed</span>
-                <span className="font-semibold tabular-nums text-[#DC2626]">
+                <span className="font-semibold tabular-nums text-danger">
                   {killed}
                 </span>
               </div>
@@ -117,7 +117,7 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
           <button
             type="button"
             onClick={onClose}
-            className="mt-6 w-full px-4 py-3 bg-white text-[#0C0C0C] text-[13px] font-semibold rounded-lg hover:bg-[#F3F4F6]"
+            className="mt-6 w-full px-4 py-3 bg-white text-background text-[13px] font-semibold rounded-lg hover:bg-foreground"
           >
             Done
           </button>
@@ -143,7 +143,7 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-[#181818]/10"
+          className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-surface/10"
           aria-label="Close"
         >
           <XMarkIcon className="size-5" />
@@ -152,7 +152,7 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
 
       {/* Card */}
       <div className="flex-1 flex items-center justify-center px-6">
-        <div className="bg-[#181818] rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+        <div className="bg-surface rounded-2xl p-8 max-w-xl w-full shadow-2xl">
           <div className="flex items-center gap-2 mb-3">
             <span
               className="text-[10px] font-semibold uppercase tracking-wider"
@@ -160,7 +160,7 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
             >
               {TICKET_TYPE_LABELS[current.type]}
             </span>
-            <span className="text-[10px] font-semibold tabular-nums text-[#71757D]">
+            <span className="text-[10px] font-semibold tabular-nums text-subtle">
               {ageLabel(current.raised_at)} old
             </span>
             {current.shifted_count && current.shifted_count > 0 ? (
@@ -169,15 +169,15 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
               </span>
             ) : null}
           </div>
-          <h3 className="text-[22px] font-semibold text-[#E5E5EA] mb-3 leading-tight">
+          <h3 className="text-[22px] font-semibold text-foreground mb-3 leading-tight">
             {current.title}
           </h3>
           {(current.client_id || current.raised_by || current.notes) && (
-            <div className="space-y-1 text-[12px] text-[#71757D] mb-4">
+            <div className="space-y-1 text-[12px] text-subtle mb-4">
               {current.client_id && <p>Client: {current.client_id}</p>}
               <p>Raised by {current.raised_by}</p>
               {current.notes && (
-                <p className="italic mt-2 text-[#9CA3AF]">{current.notes}</p>
+                <p className="italic mt-2 text-muted">{current.notes}</p>
               )}
             </div>
           )}
@@ -205,14 +205,14 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
                   }
                 }}
                 placeholder="Why kill this ticket?"
-                className="w-full text-[14px] px-4 py-3 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#1A1A1A]"
+                className="w-full text-[14px] px-4 py-3 border border-border rounded-lg focus:outline-none focus:border-surface"
               />
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => decide("kill", { killReason: killReason.trim() })}
                   disabled={!killReason.trim()}
-                  className="flex-1 px-4 py-3 bg-[#DC2626] text-white text-[13px] font-semibold rounded-lg disabled:opacity-40"
+                  className="flex-1 px-4 py-3 bg-danger text-white text-[13px] font-semibold rounded-lg disabled:opacity-40"
                 >
                   Confirm kill
                 </button>
@@ -222,7 +222,7 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
                     setKilling(false);
                     setKillReason("");
                   }}
-                  className="px-4 py-3 text-[13px] font-semibold text-[#71757D] hover:text-[#E5E5EA]"
+                  className="px-4 py-3 text-[13px] font-semibold text-subtle hover:text-foreground"
                 >
                   Back
                 </button>
@@ -251,7 +251,7 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
             </div>
           )}
 
-          <p className="mt-4 text-center text-[10px] uppercase tracking-wider text-[#9CA3AF]">
+          <p className="mt-4 text-center text-[10px] uppercase tracking-wider text-muted">
             Raised by {current.raised_by} · {currentUser} triaging
           </p>
         </div>
@@ -275,7 +275,7 @@ function TriageButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1 py-4 rounded-lg border-[1.5px] hover:bg-[#0C0C0C] transition-colors"
+      className="flex flex-col items-center justify-center gap-1 py-4 rounded-lg border-[1.5px] hover:bg-background transition-colors"
       style={{ borderColor: color, color }}
     >
       <span className="text-[10px] font-mono tabular-nums opacity-50">

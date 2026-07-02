@@ -27,21 +27,21 @@ export function BriefIntakePanel({
   onToggle: () => void;
 }) {
   return (
-    <section className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#181818]">
+    <section className="mb-5 rounded-lg border border-border bg-surface">
       <div className="w-full flex items-baseline justify-between px-4 py-3">
         <button
           onClick={onToggle}
           className="flex items-baseline gap-3 hover:opacity-70 transition-opacity"
         >
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Brief
           </span>
           {intake ? (
-            <span className="text-[11px] text-[#71757D]">
+            <span className="text-[11px] text-subtle">
               Intake form · submitted {new Date(intake.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </span>
           ) : brief.primaryGoal ? (
-            <span className="text-[12px] text-[#9CA3AF] truncate max-w-[600px]">
+            <span className="text-[12px] text-muted truncate max-w-[600px]">
               {brief.primaryGoal}
             </span>
           ) : null}
@@ -50,7 +50,7 @@ export function BriefIntakePanel({
           {intake && (
             <Link
               href="/tools/onboarding-inbox"
-              className="text-[11px] text-[#9CA3AF] hover:text-[#E5E5EA] inline-flex items-center gap-1"
+              className="text-[11px] text-muted hover:text-foreground inline-flex items-center gap-1"
               title="Open in inbox"
             >
               Inbox <ArrowTopRightOnSquareIcon className="size-3" />
@@ -58,7 +58,7 @@ export function BriefIntakePanel({
           )}
           <button
             onClick={onToggle}
-            className="text-[#71757D] hover:text-[#E5E5EA]"
+            className="text-subtle hover:text-foreground"
             title={open ? "Collapse" : "Expand"}
           >
             {open ? <ChevronUpIcon className="size-3.5" /> : <ChevronDownIcon className="size-3.5" />}
@@ -74,7 +74,7 @@ export function BriefIntakePanel({
 
 function IntakeBody({ intake }: { intake: OnboardingSubmission }) {
   return (
-    <div className="px-4 pb-4 pt-1 border-t border-[#2A2A2A] grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+    <div className="px-4 pb-4 pt-1 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
       <IntakeGroup title="PM checklist">
         {intake.pm_checklist ? (
           <ul className="space-y-1">
@@ -88,17 +88,17 @@ function IntakeBody({ intake }: { intake: OnboardingSubmission }) {
               const checked = (intake.pm_checklist as Record<string, boolean>)[key];
               return (
                 <li key={key} className="text-[12px] flex items-center gap-2">
-                  <span className={`inline-block size-3 rounded-full border ${checked ? "bg-[#1B5E20] border-[#1B5E20]" : "bg-[#181818] border-[#D4D4D8]"}`} />
-                  <span className={checked ? "text-[#E5E5EA]" : "text-[#71757D]"}>{label}</span>
+                  <span className={`inline-block size-3 rounded-full border ${checked ? "bg-success border-success" : "bg-surface border-[#D4D4D8]"}`} />
+                  <span className={checked ? "text-foreground" : "text-subtle"}>{label}</span>
                 </li>
               );
             })}
           </ul>
         ) : (
-          <p className="text-[12px] text-[#71757D]">No PM checklist captured.</p>
+          <p className="text-[12px] text-subtle">No PM checklist captured.</p>
         )}
         {intake.pm_notes && (
-          <p className="text-[12px] text-[#C7C9CD] mt-3 italic whitespace-pre-wrap">{intake.pm_notes}</p>
+          <p className="text-[12px] text-muted mt-3 italic whitespace-pre-wrap">{intake.pm_notes}</p>
         )}
       </IntakeGroup>
 
@@ -164,11 +164,11 @@ function IntakeBody({ intake }: { intake: OnboardingSubmission }) {
                   href={f.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded text-[12px] text-[#C7C9CD] hover:border-white transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded text-[12px] text-muted hover:border-white transition-colors"
                 >
-                  <DocumentArrowUpIcon className="size-3.5 text-[#71757D] shrink-0" />
+                  <DocumentArrowUpIcon className="size-3.5 text-subtle shrink-0" />
                   <span className="truncate flex-1">{f.originalName}</span>
-                  <ArrowTopRightOnSquareIcon className="size-3 text-[#71757D] shrink-0" />
+                  <ArrowTopRightOnSquareIcon className="size-3 text-subtle shrink-0" />
                 </a>
               </li>
             ))}
@@ -178,7 +178,7 @@ function IntakeBody({ intake }: { intake: OnboardingSubmission }) {
 
       {intake.additional_info && (
         <IntakeGroup title="Additional info" wide>
-          <p className="text-[12px] text-[#C7C9CD] whitespace-pre-wrap">{intake.additional_info}</p>
+          <p className="text-[12px] text-muted whitespace-pre-wrap">{intake.additional_info}</p>
         </IntakeGroup>
       )}
     </div>
@@ -187,7 +187,7 @@ function IntakeBody({ intake }: { intake: OnboardingSubmission }) {
 
 function BriefFallbackBody({ brief }: { brief: EngagementBrief }) {
   return (
-    <div className="px-4 pb-4 pt-1 border-t border-[#2A2A2A]">
+    <div className="px-4 pb-4 pt-1 border-t border-border">
       {(["core", "voice", "context"] as const).map((groupId) => {
         const groupFields = BRIEF_FIELDS.filter((f) => f.group === groupId);
         const groupLabel = groupId === "core" ? "Essentials" : groupId === "voice" ? "Voice + positioning" : "Context + risks";
@@ -195,7 +195,7 @@ function BriefFallbackBody({ brief }: { brief: EngagementBrief }) {
         if (populated.length === 0) return null;
         return (
           <div key={groupId} className="mt-4 first:mt-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-2">
               {groupLabel}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
@@ -204,15 +204,15 @@ function BriefFallbackBody({ brief }: { brief: EngagementBrief }) {
                 const isUrl = (field.key === "websiteUrl" || field.key === "shopifyUrl") && value;
                 return (
                   <div key={field.key}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-0.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-0.5">
                       {field.label}
                     </p>
                     {isUrl ? (
-                      <a href={value} target="_blank" rel="noopener noreferrer" className="text-[12px] text-[#E5E5EA] hover:underline break-all">
+                      <a href={value} target="_blank" rel="noopener noreferrer" className="text-[12px] text-foreground hover:underline break-all">
                         {value}
                       </a>
                     ) : (
-                      <p className="text-[12px] text-[#E5E5EA] whitespace-pre-line leading-snug">{value}</p>
+                      <p className="text-[12px] text-foreground whitespace-pre-line leading-snug">{value}</p>
                     )}
                   </div>
                 );
@@ -222,7 +222,7 @@ function BriefFallbackBody({ brief }: { brief: EngagementBrief }) {
         );
       })}
       {!brief.primaryGoal && !brief.primaryContact && (
-        <p className="text-[12px] text-[#71757D] italic mt-3">No brief captured. Link an onboarding submission to populate this panel.</p>
+        <p className="text-[12px] text-subtle italic mt-3">No brief captured. Link an onboarding submission to populate this panel.</p>
       )}
     </div>
   );
@@ -239,7 +239,7 @@ function IntakeGroup({
 }) {
   return (
     <div className={wide ? "md:col-span-2" : undefined}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-2">
         {title}
       </p>
       <div className="space-y-2">{children}</div>
@@ -259,7 +259,7 @@ function IntakeField({
   if (!value) return null;
   return (
     <div>
-      <p className="text-[10px] font-medium text-[#71757D]">{label}</p>
+      <p className="text-[10px] font-medium text-subtle">{label}</p>
       {link ? (
         <a
           href={value}
@@ -270,7 +270,7 @@ function IntakeField({
           {value}
         </a>
       ) : (
-        <p className="text-[12px] text-[#C7C9CD] whitespace-pre-wrap break-words">{value}</p>
+        <p className="text-[12px] text-muted whitespace-pre-wrap break-words">{value}</p>
       )}
     </div>
   );

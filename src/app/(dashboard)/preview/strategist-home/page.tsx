@@ -385,10 +385,10 @@ export default function StrategistHomePreview() {
             {initials(STRATEGIST.name).toUpperCase()}
           </div>
           <div>
-            <h1 className="text-2xl font-medium text-[#E5E5EA]">
+            <h1 className="text-2xl font-medium text-foreground">
               Good morning, {STRATEGIST.name.split(" ")[0]}
             </h1>
-            <p className="text-sm text-[#71757D]">
+            <p className="text-sm text-subtle">
               {STRATEGIST.today} · 6 engagements across 3 pods · {QUEUE.length} strategy slices in flight
             </p>
           </div>
@@ -440,9 +440,9 @@ export default function StrategistHomePreview() {
           title="Cross-pod client view"
           sub="Pod-agnostic. Sorted by health. Risk first, then watch, then good. This is the strategist's client lens, distinct from the pod lens."
         />
-        <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
+        <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
           <table className="min-w-full text-sm">
-            <thead className="bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <thead className="bg-background text-[10px] font-semibold uppercase tracking-wider text-subtle">
               <tr>
                 <th className="px-4 py-2.5 text-left">Client</th>
                 <th className="px-4 py-2.5 text-left">Pod</th>
@@ -453,7 +453,7 @@ export default function StrategistHomePreview() {
                 <th className="px-4 py-2.5"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A2A2A]">
+            <tbody className="divide-y divide-border">
               {[...ENGAGEMENTS]
                 .sort((a, b) => {
                   const order = { risk: 0, watch: 1, good: 2 };
@@ -492,7 +492,7 @@ export default function StrategistHomePreview() {
           {DECISIONS.map((d) => (
             <DecisionCard key={d.id} decision={d} />
           ))}
-          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#C5C5C5] bg-[#181818] px-4 py-3 text-sm font-medium text-[#4A4A4A] hover:border-white hover:text-[#E5E5EA]">
+          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-muted bg-surface px-4 py-3 text-sm font-medium text-border hover:border-white hover:text-foreground">
             <SparklesIcon className="h-4 w-4" />
             Capture a decision
           </button>
@@ -500,25 +500,25 @@ export default function StrategistHomePreview() {
       </section>
 
       {/* Footer */}
-      <div className="mt-10 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 text-xs text-[#71757D]">
-        <p className="font-semibold uppercase tracking-wider text-[#E5E5EA]">
+      <div className="mt-10 rounded-lg border border-border bg-background p-4 text-xs text-subtle">
+        <p className="font-semibold uppercase tracking-wider text-foreground">
           Workflow concepts this preview demonstrates
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
           <li>
-            <span className="font-medium text-[#E5E5EA]">Push vs pull.</span> Today section is push (system surfaces what needs you). Queue + engagements are pull (you go looking).
+            <span className="font-medium text-foreground">Push vs pull.</span> Today section is push (system surfaces what needs you). Queue + engagements are pull (you go looking).
           </li>
           <li>
-            <span className="font-medium text-[#E5E5EA]">State machine.</span> Strategy slice transitions: Drafting → In review → Approved → Handed off. Each transition is an explicit action with an explicit owner of the next step.
+            <span className="font-medium text-foreground">State machine.</span> Strategy slice transitions: Drafting → In review → Approved → Handed off. Each transition is an explicit action with an explicit owner of the next step.
           </li>
           <li>
-            <span className="font-medium text-[#E5E5EA]">Cross-pod lens.</span> Engagements table is sorted by client health, not by pod. Pod is metadata, not the primary lens.
+            <span className="font-medium text-foreground">Cross-pod lens.</span> Engagements table is sorted by client health, not by pod. Pod is metadata, not the primary lens.
           </li>
           <li>
-            <span className="font-medium text-[#E5E5EA]">Review cadence.</span> Engagements with overdue reviews surface as risk. This is what's missing today, reviews fall off the radar with nothing tracking them.
+            <span className="font-medium text-foreground">Review cadence.</span> Engagements with overdue reviews surface as risk. This is what's missing today, reviews fall off the radar with nothing tracking them.
           </li>
           <li>
-            <span className="font-medium text-[#E5E5EA]">Decision log.</span> Strategic calls captured at the moment of decision and broadcast to named recipients, instead of getting lost in DMs.
+            <span className="font-medium text-foreground">Decision log.</span> Strategic calls captured at the moment of decision and broadcast to named recipients, instead of getting lost in DMs.
           </li>
         </ul>
         <p className="mt-3">
@@ -542,11 +542,11 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
         {eyebrow}
       </div>
-      <h2 className="mt-1 text-lg font-semibold text-[#E5E5EA]">{title}</h2>
-      <p className="mt-1 max-w-3xl text-[13px] text-[#71757D]">{sub}</p>
+      <h2 className="mt-1 text-lg font-semibold text-foreground">{title}</h2>
+      <p className="mt-1 max-w-3xl text-[13px] text-subtle">{sub}</p>
     </div>
   );
 }
@@ -560,20 +560,20 @@ function AttentionCard({ attention }: { attention: Attention }) {
         <div className="shrink-0">{ATTENTION_ICON[attention.kind]}</div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#4A4A4A]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-border">
               {attention.client}
             </span>
-            <span className="text-[10px] text-[#71757D]">{attention.age}</span>
+            <span className="text-[10px] text-subtle">{attention.age}</span>
           </div>
-          <div className="mt-1 text-[13px] font-semibold leading-snug text-[#E5E5EA]">
+          <div className="mt-1 text-[13px] font-semibold leading-snug text-foreground">
             {attention.title}
           </div>
-          <p className="mt-1 text-[11px] leading-snug text-[#4A4A4A]">
+          <p className="mt-1 text-[11px] leading-snug text-border">
             {attention.detail}
           </p>
         </div>
       </div>
-      <button className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-[#1B1B1B] px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-[#F3F4F6]">
+      <button className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-surface px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-foreground">
         {attention.action_label}
         <ArrowRightIcon className="h-3 w-3" />
       </button>
@@ -584,34 +584,34 @@ function AttentionCard({ attention }: { attention: Attention }) {
 function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }) {
   const nextLabel = STATE_NEXT_LABEL[state];
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-3">
+    <div className="rounded-xl border border-border bg-background p-3">
       <div
         className={`mb-2.5 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${STATE_HEADER_CLASS[state]}`}
       >
         {STATE_LABEL[state]}
-        <span className="rounded bg-[#181818]/60 px-1 text-[10px]">
+        <span className="rounded bg-surface/60 px-1 text-[10px]">
           {items.length}
         </span>
       </div>
 
       <div className="space-y-2">
         {items.length === 0 && (
-          <div className="rounded-md border border-dashed border-[#2A2A2A] bg-[#181818] p-2 text-center text-[10px] italic text-[#71757D]">
+          <div className="rounded-md border border-dashed border-border bg-surface p-2 text-center text-[10px] italic text-subtle">
             Nothing here
           </div>
         )}
         {items.map((it) => (
           <div
             key={it.id}
-            className="rounded-md border border-[#2A2A2A] bg-[#181818] p-2.5 shadow-[var(--shadow-soft)]"
+            className="rounded-md border border-border bg-surface p-2.5 shadow-[var(--shadow-soft)]"
           >
             <div className="flex items-baseline justify-between gap-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#4A4A4A]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-border">
                 {it.client}
               </span>
-              <span className="text-[10px] text-[#71757D]">{it.age_days}d</span>
+              <span className="text-[10px] text-subtle">{it.age_days}d</span>
             </div>
-            <div className="mt-1 text-[12px] font-medium leading-snug text-[#E5E5EA]">
+            <div className="mt-1 text-[12px] font-medium leading-snug text-foreground">
               {it.deliverable}
             </div>
             {it.waiting_on && (
@@ -620,11 +620,11 @@ function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }
                 Waiting on {it.waiting_on}
               </div>
             )}
-            <p className="mt-1.5 text-[11px] leading-snug text-[#71757D]">
+            <p className="mt-1.5 text-[11px] leading-snug text-subtle">
               {it.next_action}
             </p>
             {nextLabel && (
-              <button className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[10px] font-medium text-[#E5E5EA] hover:border-white">
+              <button className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded border border-border bg-surface px-2 py-1 text-[10px] font-medium text-foreground hover:border-white">
                 {nextLabel}
                 <ChevronRightIcon className="h-3 w-3" />
               </button>
@@ -638,20 +638,20 @@ function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }
 
 function EngagementRowItem({ engagement }: { engagement: EngagementRow }) {
   return (
-    <tr className="hover:bg-[#0C0C0C]">
+    <tr className="hover:bg-background">
       <td className="px-4 py-2.5">
-        <span className="font-medium text-[#E5E5EA]">{engagement.client}</span>
+        <span className="font-medium text-foreground">{engagement.client}</span>
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-[#71757D]">
+      <td className="px-4 py-2.5 text-[12px] text-subtle">
         {engagement.pod}
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-[#71757D]">
+      <td className="px-4 py-2.5 text-[12px] text-subtle">
         {engagement.retainer}
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-[#71757D]">
+      <td className="px-4 py-2.5 text-[12px] text-subtle">
         {engagement.last_reviewed}
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-[#4A4A4A]">
+      <td className="px-4 py-2.5 text-[12px] text-border">
         {engagement.next_deliverable}
       </td>
       <td className="px-4 py-2.5">
@@ -665,7 +665,7 @@ function EngagementRowItem({ engagement }: { engagement: EngagementRow }) {
         </div>
       </td>
       <td className="px-4 py-2.5 text-right">
-        <button className="rounded p-1 text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]">
+        <button className="rounded p-1 text-subtle hover:bg-surface-raised hover:text-foreground">
           <ChevronRightIcon className="h-4 w-4" />
         </button>
       </td>
@@ -679,25 +679,25 @@ function WeekColumn({ day }: { day: (typeof WEEK)[number] }) {
       className={`rounded-xl border p-3 ${
         day.is_today
           ? "border-violet-300 bg-violet-50/40 shadow-[var(--shadow-soft)]"
-          : "border-[#2A2A2A] bg-[#181818]"
+          : "border-border bg-surface"
       }`}
     >
       <div className="mb-2 flex items-baseline justify-between">
         <span
           className={`text-[10px] font-semibold uppercase tracking-wider ${
-            day.is_today ? "text-violet-700" : "text-[#71757D]"
+            day.is_today ? "text-violet-700" : "text-subtle"
           }`}
         >
           {day.day}
           {day.is_today && " · Today"}
         </span>
-        <span className="text-sm font-semibold text-[#E5E5EA]">{day.date}</span>
+        <span className="text-sm font-semibold text-foreground">{day.date}</span>
       </div>
       <ul className="space-y-1.5">
         {day.items.map((item, i) => (
           <li
             key={i}
-            className="rounded-md border border-[#2A2A2A] bg-[#181818] p-2 text-[11px] leading-snug text-[#4A4A4A]"
+            className="rounded-md border border-border bg-surface p-2 text-[11px] leading-snug text-border"
           >
             {item}
           </li>
@@ -709,33 +709,33 @@ function WeekColumn({ day }: { day: (typeof WEEK)[number] }) {
 
 function DecisionCard({ decision }: { decision: Decision }) {
   return (
-    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3.5 shadow-[var(--shadow-soft)]">
+    <div className="rounded-lg border border-border bg-surface p-3.5 shadow-[var(--shadow-soft)]">
       <div className="flex items-baseline justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">
               {decision.client}
             </span>
-            <span className="text-[10px] text-[#71757D]">
+            <span className="text-[10px] text-subtle">
               · {decision.decided_at}
             </span>
           </div>
-          <div className="mt-1 text-sm font-semibold text-[#E5E5EA]">
+          <div className="mt-1 text-sm font-semibold text-foreground">
             {decision.title}
           </div>
-          <p className="mt-1 text-[12px] leading-snug text-[#4A4A4A]">
+          <p className="mt-1 text-[12px] leading-snug text-border">
             {decision.context}
           </p>
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-2 border-t border-[#2A2A2A] pt-2.5">
-        <PaperAirplaneIcon className="h-3.5 w-3.5 text-[#71757D]" />
-        <span className="text-[11px] text-[#71757D]">Shared with</span>
+      <div className="mt-3 flex items-center gap-2 border-t border-border pt-2.5">
+        <PaperAirplaneIcon className="h-3.5 w-3.5 text-subtle" />
+        <span className="text-[11px] text-subtle">Shared with</span>
         <div className="flex flex-wrap gap-1">
           {decision.shared_with.map((s) => (
             <span
               key={s}
-              className="inline-flex items-center rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A4A]"
+              className="inline-flex items-center rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-border"
             >
               {s}
             </span>

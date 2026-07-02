@@ -325,7 +325,7 @@ export default function InboxPanel() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -340,7 +340,7 @@ export default function InboxPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+      <div className="text-[11px] uppercase tracking-wider text-subtle">
         {totalActions === 0
           ? "Inbox clear"
           : `${totalActions} action${totalActions === 1 ? "" : "s"} waiting`}
@@ -361,7 +361,7 @@ export default function InboxPanel() {
             action={
               <Link
                 href={`/company/contracts/${a.id}`}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
               >
                 Counter-sign
               </Link>
@@ -385,7 +385,7 @@ export default function InboxPanel() {
             action={
               <Link
                 href={`/company/people/${r.person.id}?tab=scoring`}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#2A2A2A] text-[#E5E5EA] hover:bg-[#383838]"
+                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border"
               >
                 Review & lock
               </Link>
@@ -409,7 +409,7 @@ export default function InboxPanel() {
             action={
               <Link
                 href={`/company/people/${o.person.id}?tab=onboarding`}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#2A2A2A] text-[#E5E5EA] hover:bg-[#383838]"
+                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border"
               >
                 Review
               </Link>
@@ -484,21 +484,21 @@ export default function InboxPanel() {
 
       {/* Cross-cutting links - the surfaces that aren't top tabs but
           still benefit from a click target somewhere obvious. */}
-      <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-[#71757D]">
+      <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-subtle">
         <Link
           href="/company/contracts"
           className="hover:text-white transition-colors"
         >
           All contracts →
         </Link>
-        <span className="text-[#2A2A2A]">·</span>
+        <span className="text-border">·</span>
         <Link
           href="/company/bonuses"
           className="hover:text-white transition-colors"
         >
           All bonuses →
         </Link>
-        <span className="text-[#2A2A2A]">·</span>
+        <span className="text-border">·</span>
         <Link
           href="/company/invoices"
           className="hover:text-white transition-colors"
@@ -508,15 +508,15 @@ export default function InboxPanel() {
       </div>
 
       {/* Section 6 - Recent activity (log) */}
-      <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
+      <div className="bg-background ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-white/[0.04] flex items-center gap-2">
-          <SparklesIcon className="size-4 text-[#71757D]" />
-          <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+          <SparklesIcon className="size-4 text-subtle" />
+          <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
             Recent activity
           </h2>
         </div>
         {activity.length === 0 ? (
-          <div className="px-5 py-6 text-xs text-[#71757D]">
+          <div className="px-5 py-6 text-xs text-subtle">
             No recent activity.
           </div>
         ) : (
@@ -527,10 +527,10 @@ export default function InboxPanel() {
                   href={e.href}
                   className="flex items-center justify-between gap-3 text-sm group"
                 >
-                  <span className="text-[#E5E5EA] group-hover:underline">
+                  <span className="text-foreground group-hover:underline">
                     {e.text}
                   </span>
-                  <span className="text-[11px] text-[#71757D] whitespace-nowrap">
+                  <span className="text-[11px] text-subtle whitespace-nowrap">
                     {fmtDateUK(e.ts.slice(0, 10))}
                   </span>
                 </Link>
@@ -557,20 +557,20 @@ function InboxSection({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
+    <div className="bg-background ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
       <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icon className="size-4 text-[#71757D]" />
-          <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+          <Icon className="size-4 text-subtle" />
+          <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
             {title}
           </h2>
         </div>
-        <span className="text-[11px] uppercase tracking-wider text-[#71757D] tabular-nums">
+        <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
           {count === 0 ? "0" : count}
         </span>
       </div>
       {count === 0 ? (
-        <div className="px-5 py-6 text-xs text-[#71757D]">{empty}</div>
+        <div className="px-5 py-6 text-xs text-subtle">{empty}</div>
       ) : (
         <ul className="divide-y divide-white/[0.04]">{children}</ul>
       )}
@@ -590,11 +590,11 @@ function Row({
   return (
     <li className="px-5 py-3 flex items-center justify-between gap-3">
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium text-[#E5E5EA] truncate">
+        <div className="text-sm font-medium text-foreground truncate">
           {primary}
         </div>
         {secondary && (
-          <div className="text-xs text-[#71757D] mt-0.5 truncate">
+          <div className="text-xs text-subtle mt-0.5 truncate">
             {secondary}
           </div>
         )}

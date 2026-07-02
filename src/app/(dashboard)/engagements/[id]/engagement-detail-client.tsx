@@ -785,7 +785,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
       <div className="flex items-center justify-between mb-4">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted hover:text-foreground"
         >
           <ArrowLeftIcon className="size-3" />
           {inTeamRoute ? "Back to pods" : "All clients"}
@@ -797,7 +797,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               setDeleteTyped("");
               setDeleteStage("confirm-1");
             }}
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#71757D] hover:text-[#C62828] hover:bg-rose-500/15 px-2 py-1 rounded transition-colors"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-subtle hover:text-danger hover:bg-rose-500/15 px-2 py-1 rounded transition-colors"
           >
             <TrashIcon className="size-3" />
             Delete client
@@ -805,14 +805,14 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
         )}
       </div>
 
-      <header className="mb-5 pb-4 border-b border-[#2A2A2A]">
+      <header className="mb-5 pb-4 border-b border-border">
         <div className="flex items-baseline justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
               {engagement.vertical}
             </p>
             <div className="flex items-baseline gap-3 mt-1">
-              <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+              <h1 className="text-2xl font-semibold text-foreground">
                 {engagement.brand}
               </h1>
               {(() => {
@@ -825,7 +825,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
                       isBucket
                         ? "text-[#1976D2] bg-[#E3F2FD]"
-                        : "text-[#181818] bg-[#E5E5EA]"
+                        : "text-surface bg-foreground"
                     }`}
                   >
                     {isBucket ? bucketDef?.label ?? "Bucket" : "CE retainer"}
@@ -834,7 +834,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               })()}
             </div>
           </div>
-          <div className="flex items-baseline gap-3 text-[12px] text-[#9CA3AF] flex-wrap">
+          <div className="flex items-baseline gap-3 text-[12px] text-muted flex-wrap">
             {(() => {
               const isBucket = engagement.kind === "bucket";
               const bucketDef = isBucket && engagement.bucket
@@ -844,19 +844,19 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               const totalLabel = isBucket ? "wd" : "";
               return (
                 <span>
-                  Day <span className="font-semibold text-[#E5E5EA] tabular-nums">{currentDay}</span>
+                  Day <span className="font-semibold text-foreground tabular-nums">{currentDay}</span>
                   /{totalDays}{totalLabel ? ` ${totalLabel}` : ""} · W{currentWeek}
                 </span>
               );
             })()}
-            <span className="text-[#E5E5EA]">·</span>
+            <span className="text-foreground">·</span>
             <span>
-              <span className="font-semibold text-[#E5E5EA] tabular-nums">{engagement.retainer}</span>
+              <span className="font-semibold text-foreground tabular-nums">{engagement.retainer}</span>
               {engagement.kind === "retainer" ? "/mo" : ""}
             </span>
-            <span className="text-[#E5E5EA]">·</span>
-            <span>Pod <span className="font-semibold text-[#E5E5EA] tabular-nums">{engagement.podNumber}</span></span>
-            <span className="text-[#E5E5EA]">·</span>
+            <span className="text-foreground">·</span>
+            <span>Pod <span className="font-semibold text-foreground tabular-nums">{engagement.podNumber}</span></span>
+            <span className="text-foreground">·</span>
             <span className="font-semibold tabular-nums">
               {totalDone}/{totalAll} · {overallPct}%
             </span>
@@ -876,9 +876,9 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
       {engagement.podNumber === 0 && !inTeamRoute && (
         <section className="mb-5 rounded-lg border border-[#FFB300] bg-[#FFF8E1] px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-baseline gap-3">
-            <ExclamationTriangleIcon className="size-4 text-[#E65100] shrink-0" />
+            <ExclamationTriangleIcon className="size-4 text-warning shrink-0" />
             <div>
-              <p className="text-[12px] font-semibold text-[#E65100]">
+              <p className="text-[12px] font-semibold text-warning">
                 Not assigned to a pod yet
               </p>
               <p className="text-[11px] text-[#7A4A00] mt-0.5">
@@ -888,7 +888,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           </div>
           <Link
             href={podsHref}
-            className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-[#E65100] hover:bg-[#BF360C] px-3 py-1.5 rounded"
+            className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-warning hover:bg-[#BF360C] px-3 py-1.5 rounded"
           >
             Assign to pod <ArrowTopRightOnSquareIcon className="size-3" />
           </Link>
@@ -897,7 +897,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
 
       {/* Metrics strip, single-row per metric: label · baseline · current · delta% */}
       {engagement.metrics && (engagement.metrics.cvrBaseline != null || engagement.metrics.aovBaseline != null) && (
-        <section className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#181818] divide-y divide-[#2A2A2A]">
+        <section className="mb-5 rounded-lg border border-border bg-surface divide-y divide-border">
           <MetricRow
             label="Conversion rate"
             unit="%"
@@ -914,7 +914,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
             precision={0}
           />
           {engagement.metrics.metricsUpdatedAt && (
-            <div className="px-4 py-1.5 text-[10px] text-[#71757D]">
+            <div className="px-4 py-1.5 text-[10px] text-subtle">
               Updated {new Date(engagement.metrics.metricsUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             </div>
           )}
@@ -930,15 +930,15 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
       />
 
       {useTabs && (
-        <div className="mb-5 flex gap-1 border-b border-[#2A2A2A]">
+        <div className="mb-5 flex gap-1 border-b border-border">
           {(["strategy", "build", "results"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`-mb-px border-b-2 px-4 py-2 text-[13px] font-medium capitalize transition-colors ${
                 tab === t
-                  ? "border-white text-[#E5E5EA]"
-                  : "border-transparent text-[#71757D] hover:text-[#E5E5EA]"
+                  ? "border-white text-foreground"
+                  : "border-transparent text-subtle hover:text-foreground"
               }`}
             >
               {t}
@@ -973,40 +973,40 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
        * actual tasks. Once a pod is assigned, the regular cycle tables
        * render below and this preview disappears. */}
       {customDeliverables.length === 0 && (intake?.deliverables?.length ?? 0) > 0 && (
-        <section className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#181818]">
-          <div className="px-4 py-3 border-b border-[#2A2A2A] flex items-baseline justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <section className="mb-5 rounded-lg border border-border bg-surface">
+          <div className="px-4 py-3 border-b border-border flex items-baseline justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Scoped deliverables
             </span>
-            <span className="text-[10px] text-[#71757D] tabular-nums">
+            <span className="text-[10px] text-subtle tabular-nums">
               {intake!.deliverables!.length} {intake!.deliverables!.length === 1 ? "item" : "items"} · awaiting pod assignment
             </span>
           </div>
-          <ul className="divide-y divide-[#2A2A2A]">
+          <ul className="divide-y divide-border">
             {intake!.deliverables!.map((d, i) => {
               const typeLabel = PAGE_LABEL[d.type as PageType] ?? d.type;
               return (
                 <li key={d.id} className="px-4 py-2.5 flex items-baseline justify-between gap-3">
                   <div className="flex items-baseline gap-3">
-                    <span className="text-[10px] font-semibold tabular-nums text-[#71757D] w-4">
+                    <span className="text-[10px] font-semibold tabular-nums text-subtle w-4">
                       {i + 1}
                     </span>
-                    <span className="text-[13px] font-medium text-[#E5E5EA]">{typeLabel}</span>
+                    <span className="text-[13px] font-medium text-foreground">{typeLabel}</span>
                     {d.label?.trim() && (
-                      <span className="text-[12px] text-[#9CA3AF]">· {d.label.trim()}</span>
+                      <span className="text-[12px] text-muted">· {d.label.trim()}</span>
                     )}
                   </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                     Pending pod
                   </span>
                 </li>
               );
             })}
           </ul>
-          <div className="px-4 py-2.5 bg-[#0C0C0C] text-[11px] text-[#9CA3AF] flex items-baseline justify-between">
+          <div className="px-4 py-2.5 bg-background text-[11px] text-muted flex items-baseline justify-between">
             <span>Delivery dates lock in when a pod is assigned.</span>
             {!inTeamRoute && (
-              <Link href={podsHref} className="font-medium text-[#E5E5EA] hover:underline">
+              <Link href={podsHref} className="font-medium text-foreground hover:underline">
                 Open purgatory →
               </Link>
             )}
@@ -1024,24 +1024,24 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
             const isActive = state === "active";
             const isComplete = state === "complete";
             const isView = viewCycle === cycle.number;
-            const statusDot = isActive ? "bg-[#00C853]" : isComplete ? "bg-[#9E9E9E]" : "bg-[#2A2A2A]";
+            const statusDot = isActive ? "bg-success" : isComplete ? "bg-[#9E9E9E]" : "bg-border";
             return (
               <button
                 key={cycle.number}
                 onClick={() => setViewCycle(cycle.number)}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
                   isView
-                    ? "border-[#E5E5EA] bg-[#E5E5EA] text-[#181818]"
-                    : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA] hover:border-white"
+                    ? "border-foreground bg-foreground text-surface"
+                    : "border-border bg-surface text-foreground hover:border-white"
                 }`}
               >
                 <span className={`size-1.5 rounded-full ${statusDot}`} />
                 <span className="text-[12px] font-semibold">{cycle.name}</span>
-                <span className={`text-[11px] tabular-nums ${isView ? "text-white/70" : "text-[#71757D]"}`}>
+                <span className={`text-[11px] tabular-nums ${isView ? "text-white/70" : "text-subtle"}`}>
                   {done}/{total}
                 </span>
                 {blocked > 0 && (
-                  <span className={`size-1.5 rounded-full ${isView ? "bg-[#FFCDD2]" : "bg-[#C62828]"}`} title={`${blocked} blocked`} />
+                  <span className={`size-1.5 rounded-full ${isView ? "bg-[#FFCDD2]" : "bg-danger"}`} title={`${blocked} blocked`} />
                 )}
               </button>
             );
@@ -1063,25 +1063,25 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               <div key={stage.id}>
                 <div className="flex items-baseline justify-between gap-3 flex-wrap mb-2">
                   <div className="flex items-baseline gap-2">
-                    <h3 className="text-[12px] font-semibold text-[#E5E5EA] tracking-wider uppercase">
+                    <h3 className="text-[12px] font-semibold text-foreground tracking-wider uppercase">
                       {stage.name}
                     </h3>
                     {stage.id !== "test" && stage.id !== "testing" && (
-                      <span className="text-[10px] text-[#71757D]">
+                      <span className="text-[10px] text-subtle">
                         {stage.weeks.length === 1
                           ? `W${stage.weeks[0]}`
                           : `W${stage.weeks[0]}-${stage.weeks[stage.weeks.length - 1]}`}
                       </span>
                     )}
                     {isCurrentStage && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white bg-[#00C853] px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white bg-success px-1.5 py-0.5 rounded">
                         Now
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[12px] text-[#71757D] tabular-nums">
-                      <span className="font-semibold text-[#E5E5EA]">{stageDone}</span>/{stageDeliverables.length} done
+                    <span className="text-[12px] text-subtle tabular-nums">
+                      <span className="font-semibold text-foreground">{stageDone}</span>/{stageDeliverables.length} done
                     </span>
                     {canAdd && !isAddingHere && (
                       <button
@@ -1099,7 +1099,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           });
                           setAddingDeliverableIn({ cycle: viewCycle, stage: stage.id as Exclude<StageId, "audit"> });
                         }}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-muted hover:text-foreground"
                       >
                         <PlusIcon className="size-3" />
                         Add
@@ -1107,9 +1107,9 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     )}
                   </div>
                 </div>
-                <div className="rounded-md border border-[#2A2A2A] bg-[#181818] overflow-hidden">
+                <div className="rounded-md border border-border bg-surface overflow-hidden">
                   {stageDeliverables.length > 0 && (
-                    <div className="grid grid-cols-[24px_minmax(0,1.4fr)_70px_170px_minmax(0,1fr)] items-center gap-3 px-3 py-1.5 bg-[#0C0C0C] border-b border-[#2A2A2A] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                    <div className="grid grid-cols-[24px_minmax(0,1.4fr)_70px_170px_minmax(0,1fr)] items-center gap-3 px-3 py-1.5 bg-background border-b border-border text-[10px] font-semibold uppercase tracking-wider text-subtle">
                       <span></span>
                       <span>Deliverable</span>
                       <span>Owner</span>
@@ -1124,10 +1124,10 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     const due = formatDueDate(d.dueDay);
                     const meta = state.artefactUrl ? docMeta(state.artefactUrl) : null;
                     const dotStyle: Record<DeliverableStatus, string> = {
-                      done: "bg-[#00C853] border-[#00C853]",
+                      done: "bg-success border-success",
                       in_progress: "bg-[#FFB300] border-[#FFB300]",
-                      blocked: "bg-[#C62828] border-[#C62828]",
-                      todo: "bg-[#181818] border-[#999]",
+                      blocked: "bg-danger border-danger",
+                      todo: "bg-surface border-subtle",
                     };
                     const custom = customDeliverables.find((cd) => cd.id === d.id);
                     const currentPhase = custom?.phase;
@@ -1140,8 +1140,8 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                       <div key={d.id}>
                       <div
                         className={`group grid grid-cols-[24px_minmax(0,1.4fr)_70px_170px_minmax(0,1fr)] items-center gap-3 px-3 py-2 ${
-                          idx > 0 ? "border-t border-[#2A2A2A]" : ""
-                        } ${state.status === "done" ? "bg-[#0C0C0C]" : ""}`}
+                          idx > 0 ? "border-t border-border" : ""
+                        } ${state.status === "done" ? "bg-background" : ""}`}
                       >
                         {/* Status dot */}
                         <button
@@ -1155,14 +1155,14 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           <p
                             className={`text-[13px] truncate ${
                               state.status === "done"
-                                ? "text-[#71757D] line-through"
-                                : "text-[#E5E5EA] font-medium"
+                                ? "text-subtle line-through"
+                                : "text-foreground font-medium"
                             }`}
                           >
                             {d.name}
                           </p>
                           {state.status === "blocked" && state.blockerNote && (
-                            <p className="text-[11px] text-[#C62828] truncate flex items-center gap-1 mt-0.5">
+                            <p className="text-[11px] text-danger truncate flex items-center gap-1 mt-0.5">
                               <ExclamationTriangleIcon className="size-3 shrink-0" />
                               {state.blockerNote}
                             </p>
@@ -1225,7 +1225,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                             : undefined;
                           return (
                             <span
-                              className={`text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] bg-[#222222] px-1.5 py-0.5 rounded justify-self-start ${
+                              className={`text-[10px] font-semibold uppercase tracking-wider text-muted bg-surface-raised px-1.5 py-0.5 rounded justify-self-start ${
                                 assigneeName ? "cursor-help" : ""
                               }`}
                               title={tooltip}
@@ -1236,10 +1236,10 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                         })()}
 
                         {/* Due date */}
-                        <span className={`text-[12px] tabular-nums flex items-center gap-1.5 ${overdue ? "text-[#C62828] font-semibold" : "text-[#9CA3AF]"}`}>
+                        <span className={`text-[12px] tabular-nums flex items-center gap-1.5 ${overdue ? "text-danger font-semibold" : "text-muted"}`}>
                           <span className="whitespace-nowrap">{due.weekday} {due.day} {due.month}</span>
                           {overdue && (
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-white bg-[#C62828] px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-white bg-danger px-1.5 py-0.5 rounded">
                               Overdue
                             </span>
                           )}
@@ -1253,7 +1253,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                                 value={linkDraft}
                                 onChange={(e) => setLinkDraft(e.target.value)}
                                 placeholder="Paste URL..."
-                                className="flex-1 min-w-0 text-[12px] px-2 py-1 border border-white rounded focus:outline-none bg-[#181818]"
+                                className="flex-1 min-w-0 text-[12px] px-2 py-1 border border-white rounded focus:outline-none bg-surface"
                                 autoFocus
                               />
                               <button
@@ -1263,13 +1263,13 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                                   else handleMarkDone(d.id, linkDraft);
                                 }}
                                 disabled={!linkDraft.trim()}
-                                className="shrink-0 text-[11px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-2 py-1 rounded disabled:opacity-50"
+                                className="shrink-0 text-[11px] font-semibold text-surface bg-foreground hover:bg-white px-2 py-1 rounded disabled:opacity-50"
                               >
                                 {state.status === "done" ? "Save" : "Attach"}
                               </button>
                               <button
                                 onClick={() => { setAddingLinkFor(null); setLinkDraft(""); }}
-                                className="shrink-0 text-[14px] text-[#71757D] hover:text-[#E5E5EA] leading-none"
+                                className="shrink-0 text-[14px] text-subtle hover:text-foreground leading-none"
                               >
                                 ×
                               </button>
@@ -1282,12 +1282,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                               >
                                 {meta.badge}
                               </span>
-                              <span className="flex-1 min-w-0 text-[12px] text-[#9CA3AF] truncate">{meta.hostname}</span>
+                              <span className="flex-1 min-w-0 text-[12px] text-muted truncate">{meta.hostname}</span>
                               <a
                                 href={meta.viewUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="shrink-0 inline-flex items-center gap-1 text-[12px] font-medium text-[#E5E5EA] hover:underline"
+                                className="shrink-0 inline-flex items-center gap-1 text-[12px] font-medium text-foreground hover:underline"
                               >
                                 <EyeIcon className="size-3" />
                                 View
@@ -1297,7 +1297,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                                   href={meta.downloadUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="shrink-0 text-[#9CA3AF] hover:text-[#E5E5EA]"
+                                  className="shrink-0 text-muted hover:text-foreground"
                                   title="Download"
                                 >
                                   <ArrowDownTrayIcon className="size-3.5" />
@@ -1305,7 +1305,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                               )}
                               <button
                                 onClick={() => { setAddingLinkFor(d.id); setLinkDraft(""); }}
-                                className="shrink-0 text-[#71757D] hover:text-[#E5E5EA] opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="shrink-0 text-subtle hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                                 title="Replace link"
                               >
                                 <LinkIcon className="size-3" />
@@ -1314,7 +1314,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           ) : (
                             <button
                               onClick={() => { setAddingLinkFor(d.id); setLinkDraft(""); }}
-                              className="inline-flex items-center gap-1 text-[12px] text-[#9CA3AF] hover:text-[#E5E5EA]"
+                              className="inline-flex items-center gap-1 text-[12px] text-muted hover:text-foreground"
                             >
                               <PlusIcon className="size-3" />
                               Attach
@@ -1325,7 +1325,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           {stage.id !== "audit" && customDeliverables.some((cd) => cd.id === d.id) && (
                             <button
                               onClick={() => handleDeleteCustomDeliverable(d.id)}
-                              className="shrink-0 text-[#C7C9CD] hover:text-[#C62828] opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="shrink-0 text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
                               title="Remove deliverable"
                             >
                               <TrashIcon className="size-3.5" />
@@ -1334,8 +1334,8 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                         </div>
                       </div>
                       {timelineOpen && hasPhaseHistory && (
-                        <div className="px-3 py-3 border-t border-[#2A2A2A] bg-[#FAFBFD]">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+                        <div className="px-3 py-3 border-t border-border bg-[#FAFBFD]">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-2">
                             Phase timeline
                           </p>
                           <PhaseTimeline history={phaseHistory} compact />
@@ -1345,7 +1345,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     );
                   })}
                   {stageDeliverables.length === 0 && (
-                    <p className="text-[12px] text-[#71757D] italic px-3 py-3">
+                    <p className="text-[12px] text-subtle italic px-3 py-3">
                       {(() => {
                         switch (stage.id) {
                           case "audit": return "No deliverables.";
@@ -1362,12 +1362,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 </div>
 
                 {canAdd && isAddingHere && (
-                  <div className="mt-3 rounded-md border border-white bg-[#181818] p-3 space-y-2">
+                  <div className="mt-3 rounded-md border border-white bg-surface p-3 space-y-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <select
                         value={newDeliverableDraft.type}
                         onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, type: e.target.value }))}
-                        className="text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white bg-[#181818]"
+                        className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
                         autoFocus
                       >
                         {(Object.keys(PAGE_LABEL) as PageType[]).map((t) => (
@@ -1378,12 +1378,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                         value={newDeliverableDraft.label}
                         onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, label: e.target.value }))}
                         placeholder="Variant label (optional, e.g. Whitening Strips)"
-                        className="flex-1 min-w-[180px] text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white"
+                        className="flex-1 min-w-[180px] text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
                       />
                       <select
                         value={newDeliverableDraft.owner}
                         onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, owner: e.target.value as OwnerRole }))}
-                        className="text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white bg-[#181818]"
+                        className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
                       >
                         <option value="Pod">Pod</option>
                         <option value="Design">Design</option>
@@ -1394,12 +1394,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     </div>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">Lands on</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">Lands on</span>
                         <input
                           type="date"
                           value={newDeliverableDraft.dueDate}
                           onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, dueDate: e.target.value }))}
-                          className="text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white bg-[#181818]"
+                          className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
                         />
                         {newDeliverableDraft.dueDate && (() => {
                           /* Live preview so the PM can see which Month
@@ -1408,7 +1408,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           const previewCycle = cycleForDay(previewDay);
                           const previewWeek = weekInCycleForDay(previewDay);
                           return (
-                            <span className="text-[10px] text-[#71757D]">
+                            <span className="text-[10px] text-subtle">
                               (M{previewCycle} W{previewWeek} · day {previewDay})
                             </span>
                           );
@@ -1417,14 +1417,14 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => { setAddingDeliverableIn(null); setNewDeliverableDraft({ type: "pdp", label: "", owner: "Pod", dueDate: "" }); }}
-                          className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] px-2 py-1.5"
+                          className="text-[11px] text-subtle hover:text-foreground px-2 py-1.5"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleAddCustomDeliverable}
                           disabled={!newDeliverableDraft.type || !newDeliverableDraft.dueDate}
-                          className="text-[12px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-[12px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Add deliverable
                         </button>
@@ -1445,39 +1445,39 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
        * appeared from nowhere with no clear input path. */}
       <section className="mb-6">
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Wins
           </h2>
           <button
             onClick={() => setAddingWin(true)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted hover:text-foreground"
           >
             <PlusIcon className="size-3" />
             Add win
           </button>
         </div>
         {addingWin && (
-          <div className="mb-3 rounded-md border border-white bg-[#181818] p-3 space-y-2">
+          <div className="mb-3 rounded-md border border-white bg-surface p-3 space-y-2">
             <input
               autoFocus
               value={winDraft.title}
               onChange={(e) => setWinDraft((d) => ({ ...d, title: e.target.value }))}
               placeholder="What shipped (e.g. New PDP layout, hero variant B)"
-              className="w-full text-[13px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white"
+              className="w-full text-[13px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
             />
             <div className="grid grid-cols-[1fr_120px] gap-2">
               <input
                 value={winDraft.metric}
                 onChange={(e) => setWinDraft((d) => ({ ...d, metric: e.target.value }))}
                 placeholder="Impact (e.g. +18% CVR, £4.2K extra MRR)"
-                className="text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white"
+                className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
               />
               <input
                 value={winDraft.day}
                 onChange={(e) => setWinDraft((d) => ({ ...d, day: e.target.value }))}
                 placeholder={`Day (current: ${currentDay})`}
                 inputMode="numeric"
-                className="text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white tabular-nums"
+                className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white tabular-nums"
               />
             </div>
             <textarea
@@ -1485,19 +1485,19 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               onChange={(e) => setWinDraft((d) => ({ ...d, notes: e.target.value }))}
               placeholder="Notes (optional)"
               rows={2}
-              className="w-full text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white resize-y"
+              className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white resize-y"
             />
             <div className="flex items-center justify-end gap-2">
               <button
                 onClick={() => { setAddingWin(false); setWinDraft({ title: "", metric: "", day: "", notes: "" }); }}
-                className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] px-2 py-1"
+                className="text-[11px] text-subtle hover:text-foreground px-2 py-1"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddWin}
                 disabled={!winDraft.title.trim()}
-                className="text-[11px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-3 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                className="text-[11px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Save win
               </button>
@@ -1505,36 +1505,36 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           </div>
         )}
         {wins.length > 0 ? (
-          <div className="rounded-md border border-[#2A2A2A] bg-[#181818] overflow-hidden">
+          <div className="rounded-md border border-border bg-surface overflow-hidden">
             {wins
               .slice()
               .sort((a, b) => b.shippedAtDay - a.shippedAtDay)
               .map((win, idx) => (
                 <div
                   key={win.id}
-                  className={`px-4 py-3 ${idx > 0 ? "border-t border-[#2A2A2A]" : ""}`}
+                  className={`px-4 py-3 ${idx > 0 ? "border-t border-border" : ""}`}
                 >
                   <div className="flex items-baseline justify-between gap-3 mb-1">
-                    <h4 className="text-[13px] font-semibold text-[#E5E5EA]">
+                    <h4 className="text-[13px] font-semibold text-foreground">
                       {win.title}
                     </h4>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] tabular-nums shrink-0">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle tabular-nums shrink-0">
                       Day {win.shippedAtDay}
                     </span>
                   </div>
                   {win.metric && (
-                    <p className="inline-flex items-center text-[11px] font-semibold text-[#1B5E20] bg-emerald-500/15 px-1.5 py-0.5 rounded mb-1">
+                    <p className="inline-flex items-center text-[11px] font-semibold text-success bg-emerald-500/15 px-1.5 py-0.5 rounded mb-1">
                       {win.metric}
                     </p>
                   )}
                   {win.notes && (
-                    <p className="text-[12px] text-[#9CA3AF] leading-snug">{win.notes}</p>
+                    <p className="text-[12px] text-muted leading-snug">{win.notes}</p>
                   )}
                 </div>
               ))}
           </div>
         ) : !addingWin && (
-          <p className="text-[12px] text-[#71757D] italic">No wins logged yet. Click Add win to record one.</p>
+          <p className="text-[12px] text-subtle italic">No wins logged yet. Click Add win to record one.</p>
         )}
       </section>
       </div>
@@ -1545,13 +1545,13 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
       {/* Resources - card grid with populated / empty states · scoped to active cycle */}
       <section className="mb-6">
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
-            Resources{engagement.kind === "retainer" && <span className="text-[#E5E5EA]"> · {viewCycleDef.name}</span>}
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
+            Resources{engagement.kind === "retainer" && <span className="text-foreground"> · {viewCycleDef.name}</span>}
           </h2>
           {activeCategory && (
             <button
               onClick={() => setActiveCategory(null)}
-              className="text-[10px] text-[#71757D] hover:text-[#E5E5EA]"
+              className="text-[10px] text-subtle hover:text-foreground"
             >
               Close
             </button>
@@ -1567,32 +1567,32 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
             return (
               <div
                 key={cat.id}
-                className={`rounded-lg border p-4 transition-all flex flex-col bg-[#181818] ${
+                className={`rounded-lg border p-4 transition-all flex flex-col bg-surface ${
                   populated
-                    ? "border-[#2A2A2A] hover:border-white"
+                    ? "border-border hover:border-white"
                     : "border border-dashed border-[#D5D5DA] hover:border-white"
                 }`}
               >
                 <div className="flex items-baseline justify-between mb-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#E5E5EA]">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
                     {cat.label}
                   </p>
                   {populated ? (
-                    <span className="text-[10px] font-semibold text-[#9CA3AF] tabular-nums">
+                    <span className="text-[10px] font-semibold text-muted tabular-nums">
                       {items.length} {items.length === 1 ? "link" : "links"}
                     </span>
                   ) : (
-                    <span className="text-[10px] font-medium text-[#71757D]">Not added yet</span>
+                    <span className="text-[10px] font-medium text-subtle">Not added yet</span>
                   )}
                 </div>
-                <p className="text-[12px] text-[#9CA3AF] leading-snug mb-3">{cat.description}</p>
+                <p className="text-[12px] text-muted leading-snug mb-3">{cat.description}</p>
 
                 {populated && latest && meta && (
                   <a
                     href={meta.viewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-md border border-[#2A2A2A] bg-[#181818] hover:bg-[#222222] px-2 py-1.5 flex items-center gap-2 transition-colors mb-2"
+                    className="rounded-md border border-border bg-surface hover:bg-surface-raised px-2 py-1.5 flex items-center gap-2 transition-colors mb-2"
                   >
                     <span
                       className="shrink-0 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold"
@@ -1600,10 +1600,10 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     >
                       {meta.badge}
                     </span>
-                    <span className="flex-1 min-w-0 text-[12px] text-[#E5E5EA] truncate">
+                    <span className="flex-1 min-w-0 text-[12px] text-foreground truncate">
                       {latest.label}
                     </span>
-                    <ArrowTopRightOnSquareIcon className="size-3 text-[#71757D] shrink-0" />
+                    <ArrowTopRightOnSquareIcon className="size-3 text-subtle shrink-0" />
                   </a>
                 )}
 
@@ -1611,7 +1611,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                   {populated && items.length > 1 && (
                     <button
                       onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
-                      className="text-[12px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
+                      className="text-[12px] font-medium text-muted hover:text-foreground"
                     >
                       View all {items.length}
                     </button>
@@ -1620,8 +1620,8 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
                     className={`inline-flex items-center gap-1 text-[12px] font-semibold ml-auto px-2 py-1 rounded transition-colors ${
                       populated
-                        ? "text-[#9CA3AF] hover:text-[#E5E5EA] font-medium"
-                        : "text-[#181818] bg-[#E5E5EA] hover:bg-white"
+                        ? "text-muted hover:text-foreground font-medium"
+                        : "text-surface bg-foreground hover:bg-white"
                     }`}
                   >
                     <PlusIcon className="size-3" />
@@ -1637,14 +1637,14 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           const cat = ASSET_CATEGORIES.find((c) => c.id === activeCategory)!;
           const items = assets.filter((a) => a.category === activeCategory && a.cycle === viewCycle);
           return (
-            <div className="mt-3 rounded-lg border border-[#2A2A2A] bg-[#181818] p-4">
+            <div className="mt-3 rounded-lg border border-border bg-surface p-4">
               <div className="flex items-baseline justify-between mb-2">
-                <p className="text-[12px] font-semibold text-[#E5E5EA]">{cat.label}{engagement.kind === "retainer" ? ` - ${viewCycleDef.name} links` : " links"}</p>
-                <p className="text-[12px] text-[#9CA3AF]">{cat.description}</p>
+                <p className="text-[12px] font-semibold text-foreground">{cat.label}{engagement.kind === "retainer" ? ` - ${viewCycleDef.name} links` : " links"}</p>
+                <p className="text-[12px] text-muted">{cat.description}</p>
               </div>
               <div className="space-y-1">
                 {items.length === 0 && (
-                  <p className="text-[12px] text-[#71757D] italic py-1">No links yet.</p>
+                  <p className="text-[12px] text-subtle italic py-1">No links yet.</p>
                 )}
                 {items.map((a) => (
                   <a
@@ -1652,33 +1652,33 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     href={a.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-[12px] text-[#E5E5EA] hover:bg-[#222222] -mx-2 px-2 py-1 rounded"
+                    className="flex items-center gap-2 text-[12px] text-foreground hover:bg-surface-raised -mx-2 px-2 py-1 rounded"
                   >
-                    <LinkIcon className="size-3 shrink-0 text-[#71757D]" />
+                    <LinkIcon className="size-3 shrink-0 text-subtle" />
                     <span className="flex-1 truncate">{a.label}</span>
-                    <span className="text-[10px] text-[#71757D] shrink-0">
+                    <span className="text-[10px] text-subtle shrink-0">
                       {a.addedBy} · Day {a.addedAtDay}
                     </span>
-                    <ArrowTopRightOnSquareIcon className="size-3 text-[#71757D] shrink-0" />
+                    <ArrowTopRightOnSquareIcon className="size-3 text-subtle shrink-0" />
                   </a>
                 ))}
               </div>
-              <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-[#2A2A2A]">
+              <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
                 <input
                   value={assetDraft.label}
                   onChange={(e) => setAssetDraft((d) => ({ ...d, label: e.target.value }))}
                   placeholder="Label"
-                  className="w-40 text-[12px] px-2 py-1 border border-[#2A2A2A] rounded focus:outline-none focus:border-white"
+                  className="w-40 text-[12px] px-2 py-1 border border-border rounded focus:outline-none focus:border-white"
                 />
                 <input
                   value={assetDraft.url}
                   onChange={(e) => setAssetDraft((d) => ({ ...d, url: e.target.value }))}
                   placeholder="https://..."
-                  className="flex-1 text-[12px] px-2 py-1 border border-[#2A2A2A] rounded focus:outline-none focus:border-white"
+                  className="flex-1 text-[12px] px-2 py-1 border border-border rounded focus:outline-none focus:border-white"
                 />
                 <button
                   onClick={() => handleAddAsset(activeCategory)}
-                  className="text-[10px] font-semibold text-[#181818] bg-[#E5E5EA] px-2 py-1 rounded hover:bg-white inline-flex items-center gap-1"
+                  className="text-[10px] font-semibold text-surface bg-foreground px-2 py-1 rounded hover:bg-white inline-flex items-center gap-1"
                 >
                   <PlusIcon className="size-3" />
                   Add
@@ -1698,12 +1698,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
        *  log in component state. */}
       <section className="mb-6">
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Notes ({notes.length})
           </h2>
         </div>
-        <div className="rounded-lg border border-[#2A2A2A] bg-[#181818]">
-          <div className="p-3 border-b border-[#2A2A2A]">
+        <div className="rounded-lg border border-border bg-surface">
+          <div className="p-3 border-b border-border">
             <textarea
               value={noteDraft}
               onChange={(e) => setNoteDraft(e.target.value)}
@@ -1716,22 +1716,22 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 }
               }}
               placeholder="Drop a note (decisions, blockers, client asks). Cmd+Enter to save."
-              className="w-full text-[13px] px-3 py-2 border border-[#2A2A2A] rounded resize-y min-h-[60px] focus:outline-none focus:border-white placeholder:text-[#C7C9CD]"
+              className="w-full text-[13px] px-3 py-2 border border-border rounded resize-y min-h-[60px] focus:outline-none focus:border-white placeholder:text-muted"
             />
             <div className="mt-2 flex items-center justify-end">
               <button
                 onClick={handleAddNote}
                 disabled={!noteDraft.trim()}
-                className="text-[12px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-[12px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add note
               </button>
             </div>
           </div>
           {notes.length === 0 ? (
-            <p className="text-[12px] text-[#71757D] p-4 italic">No notes yet.</p>
+            <p className="text-[12px] text-subtle p-4 italic">No notes yet.</p>
           ) : (
-            <ul className="divide-y divide-[#2A2A2A]">
+            <ul className="divide-y divide-border">
               {notes.map((n) => {
                 const dt = new Date(n.created_at);
                 const datePart = dt.toLocaleDateString("en-GB", {
@@ -1746,19 +1746,19 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 return (
                   <li key={n.id} className="group px-4 py-3">
                     <div className="flex items-baseline justify-between gap-3 mb-1">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] tabular-nums">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle tabular-nums">
                         {datePart} · {timePart}
                         {n.author ? ` · ${n.author}` : ""}
                       </span>
                       <button
                         onClick={() => handleDeleteNote(n.id)}
-                        className="text-[10px] text-[#C7C9CD] hover:text-[#C62828] opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="text-[10px] text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Delete note"
                       >
                         <TrashIcon className="size-3" />
                       </button>
                     </div>
-                    <p className="text-[13px] text-[#E5E5EA] whitespace-pre-wrap leading-relaxed">
+                    <p className="text-[13px] text-foreground whitespace-pre-wrap leading-relaxed">
                       {n.content}
                     </p>
                   </li>
@@ -1771,21 +1771,21 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
 
       {/* Activity feed */}
       <section className="mb-6">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-3">
+        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-3">
           Activity
         </h2>
-        <div className="rounded-lg border border-[#2A2A2A] bg-[#181818]">
+        <div className="rounded-lg border border-border bg-surface">
           {activity.length === 0 ? (
-            <p className="text-[12px] text-[#71757D] p-4 italic">No activity yet.</p>
+            <p className="text-[12px] text-subtle p-4 italic">No activity yet.</p>
           ) : (
-            <ul className="divide-y divide-[#2A2A2A]">
+            <ul className="divide-y divide-border">
               {activity.slice(0, 5).map((a) => (
                 <li key={a.id} className="px-4 py-2.5 flex items-baseline gap-3 text-[12px]">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] tabular-nums shrink-0 w-12">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle tabular-nums shrink-0 w-12">
                     Day {a.day}
                   </span>
-                  <span className="font-semibold text-[#E5E5EA] shrink-0">{a.actor}</span>
-                  <span className="text-[#9CA3AF] flex-1 truncate">{a.action}</span>
+                  <span className="font-semibold text-foreground shrink-0">{a.actor}</span>
+                  <span className="text-muted flex-1 truncate">{a.action}</span>
                 </li>
               ))}
             </ul>
@@ -1805,34 +1805,34 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           onClick={() => setDeleteStage("closed")}
         >
           <div
-            className="w-full max-w-md rounded-lg bg-[#181818] p-5 shadow-xl"
+            className="w-full max-w-md rounded-lg bg-surface p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             {deleteStage === "confirm-1" ? (
               <>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#C62828]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-danger">
                   Step 1 of 2
                 </p>
-                <h2 className="text-[16px] font-semibold text-[#E5E5EA] mt-1">
+                <h2 className="text-[16px] font-semibold text-foreground mt-1">
                   Move {engagement.brand} to trash?
                 </h2>
-                <p className="text-[13px] text-[#9CA3AF] mt-2 leading-relaxed">
+                <p className="text-[13px] text-muted mt-2 leading-relaxed">
                   This removes the client from the engagements list and the pod board. Linked projects, tasks, brief, and metrics travel with it. You can restore from{" "}
-                  <span className="font-semibold text-[#E5E5EA]">Engagements, Trash</span>{" "}
+                  <span className="font-semibold text-foreground">Engagements, Trash</span>{" "}
                   any time.
                 </p>
                 <div className="mt-5 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setDeleteStage("closed")}
-                    className="text-[12px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-3 py-2 rounded"
+                    className="text-[12px] font-medium text-muted hover:text-foreground px-3 py-2 rounded"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={() => setDeleteStage("confirm-2")}
-                    className="text-[12px] font-semibold text-white bg-[#C62828] hover:bg-[#B71C1C] px-3 py-2 rounded"
+                    className="text-[12px] font-semibold text-white bg-danger hover:bg-[#B71C1C] px-3 py-2 rounded"
                   >
                     Continue
                   </button>
@@ -1840,15 +1840,15 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               </>
             ) : (
               <>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#C62828]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-danger">
                   Step 2 of 2
                 </p>
-                <h2 className="text-[16px] font-semibold text-[#E5E5EA] mt-1">
+                <h2 className="text-[16px] font-semibold text-foreground mt-1">
                   Type the client name to confirm
                 </h2>
-                <p className="text-[13px] text-[#9CA3AF] mt-2 leading-relaxed">
+                <p className="text-[13px] text-muted mt-2 leading-relaxed">
                   Type{" "}
-                  <span className="font-semibold text-[#E5E5EA]">
+                  <span className="font-semibold text-foreground">
                     {engagement.brand}
                   </span>{" "}
                   exactly to move this engagement to trash.
@@ -1858,14 +1858,14 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                   value={deleteTyped}
                   onChange={(e) => setDeleteTyped(e.target.value)}
                   autoFocus
-                  className="mt-3 w-full rounded border border-[#2A2A2A] px-3 py-2 text-[13px] focus:border-[#C62828] focus:outline-none"
+                  className="mt-3 w-full rounded border border-border px-3 py-2 text-[13px] focus:border-danger focus:outline-none"
                   placeholder={engagement.brand}
                 />
                 <div className="mt-5 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setDeleteStage("closed")}
-                    className="text-[12px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-3 py-2 rounded"
+                    className="text-[12px] font-medium text-muted hover:text-foreground px-3 py-2 rounded"
                   >
                     Cancel
                   </button>
@@ -1873,7 +1873,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     type="button"
                     disabled={deleteTyped.trim() !== engagement.brand}
                     onClick={handleConfirmDelete}
-                    className="text-[12px] font-semibold text-white bg-[#C62828] hover:bg-[#B71C1C] disabled:bg-[#2A2A2A] disabled:text-[#71757D] disabled:cursor-not-allowed px-3 py-2 rounded"
+                    className="text-[12px] font-semibold text-white bg-danger hover:bg-[#B71C1C] disabled:bg-border disabled:text-subtle disabled:cursor-not-allowed px-3 py-2 rounded"
                   >
                     Move to trash
                   </button>
@@ -1914,35 +1914,35 @@ function MetricRow({
 
   return (
     <div className="grid grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))] items-baseline gap-3 px-4 py-2.5">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
         {label}
       </p>
       <div className="flex items-baseline gap-2">
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Base</span>
-        <span className="text-[13px] font-medium tabular-nums text-[#9CA3AF]">
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Base</span>
+        <span className="text-[13px] font-medium tabular-nums text-muted">
           {baseline != null ? fmt(baseline) : "-"}
         </span>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Now</span>
-        <span className="text-[14px] font-semibold tabular-nums text-[#E5E5EA]">
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Now</span>
+        <span className="text-[14px] font-semibold tabular-nums text-foreground">
           {current != null ? fmt(current) : "-"}
         </span>
       </div>
       <div className="flex items-baseline gap-2 justify-end tabular-nums">
         {delta != null ? (
           <>
-            <span className={`text-[12px] font-semibold ${positive ? "text-[#1B5E20]" : negative ? "text-[#C62828]" : "text-[#9CA3AF]"}`}>
+            <span className={`text-[12px] font-semibold ${positive ? "text-success" : negative ? "text-danger" : "text-muted"}`}>
               {positive ? "+" : ""}{fmt(delta)}
             </span>
             {deltaPct != null && (
-              <span className={`text-[11px] font-medium ${positive ? "text-[#1B5E20]" : negative ? "text-[#C62828]" : "text-[#71757D]"}`}>
+              <span className={`text-[11px] font-medium ${positive ? "text-success" : negative ? "text-danger" : "text-subtle"}`}>
                 ({positive ? "+" : ""}{deltaPct.toFixed(0)}%)
               </span>
             )}
           </>
         ) : (
-          <span className="text-[12px] text-[#9CA3AF]">-</span>
+          <span className="text-[12px] text-muted">-</span>
         )}
       </div>
     </div>

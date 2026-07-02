@@ -37,8 +37,8 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
   const color = score >= 7 ? "#10B981" : score >= 5 ? "#F59E0B" : "#EF4444";
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-[#999] w-36 shrink-0">{label}</span>
-      <div className="flex-1 h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
+      <span className="text-xs text-subtle w-36 shrink-0">{label}</span>
+      <div className="flex-1 h-2 bg-foreground rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${score * 10}%`, backgroundColor: color }} />
       </div>
       <span className="text-xs font-semibold w-6 text-right" style={{ color }}>{score}</span>
@@ -59,8 +59,8 @@ export default function DeckPage() {
       .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="min-h-screen bg-[#080808] flex items-center justify-center"><div className="animate-spin size-6 border-2 border-white/20 border-t-white rounded-full" /></div>;
-  if (!deck) return <div className="min-h-screen bg-[#080808] flex items-center justify-center text-white/50 text-sm">Deck not found</div>;
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin size-6 border-2 border-white/20 border-t-white rounded-full" /></div>;
+  if (!deck) return <div className="min-h-screen bg-background flex items-center justify-center text-white/50 text-sm">Deck not found</div>;
 
   const gap = deck.monthly_traffic * (deck.benchmark_cvr / 100 - deck.current_cvr / 100) * deck.aov;
   const annual = gap * 12;
@@ -216,7 +216,7 @@ export default function DeckPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
+    <div className="min-h-screen bg-background text-white">
       {/* Slide */}
       <div className="h-screen flex flex-col">
         <div className="flex-1 flex items-center justify-center">

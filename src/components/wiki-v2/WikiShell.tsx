@@ -45,16 +45,16 @@ export function WikiShell({ sections, children }: Props) {
   return (
     <div className="flex overflow-hidden h-[calc(100dvh-4.5rem)] md:h-[calc(100dvh-1rem)]">
       {/* Wiki nav rail */}
-      <aside className="w-64 shrink-0 bg-[#0C0C0C] border-r border-[#2A2A2A] flex flex-col overflow-hidden">
+      <aside className="w-64 shrink-0 bg-background border-r border-border flex flex-col overflow-hidden">
         {/* Search */}
-        <div className="px-4 py-4 border-b border-[#2A2A2A]">
+        <div className="px-4 py-4 border-b border-border">
           <div className="relative">
-            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#71757D]" />
+            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-subtle" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search wiki..."
-              className="w-full pl-8 pr-3 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md focus:outline-none focus:border-white placeholder:text-[#71757D]"
+              className="w-full pl-8 pr-3 py-2 text-[12px] bg-surface border border-border rounded-md focus:outline-none focus:border-white placeholder:text-subtle"
             />
           </div>
         </div>
@@ -65,14 +65,14 @@ export function WikiShell({ sections, children }: Props) {
             href="/wiki-v2"
             className={`relative block px-2.5 py-1.5 mb-5 text-[12px] rounded-md transition-colors ${
               !activeSlug
-                ? "text-[#E5E5EA] font-semibold bg-[#181818] shadow-[var(--shadow-soft)]"
-                : "text-[#5F6066] hover:text-[#E5E5EA] hover:bg-[#181818]"
+                ? "text-foreground font-semibold bg-surface shadow-[var(--shadow-soft)]"
+                : "text-[#5F6066] hover:text-foreground hover:bg-surface"
             }`}
           >
             {!activeSlug && (
               <span
                 aria-hidden
-                className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-[#1B1B1B]"
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-surface"
               />
             )}
             Overview
@@ -94,9 +94,9 @@ export function WikiShell({ sections, children }: Props) {
             return (
               <div
                 key={section.name}
-                className={`mb-5 ${sectionIdx > 0 ? "pt-5 border-t border-[#2A2A2A]" : ""}`}
+                className={`mb-5 ${sectionIdx > 0 ? "pt-5 border-t border-border" : ""}`}
               >
-                <div className="px-2.5 mb-2 text-[13px] font-semibold text-[#E5E5EA]">
+                <div className="px-2.5 mb-2 text-[13px] font-semibold text-foreground">
                   {section.name}
                 </div>
 
@@ -119,7 +119,7 @@ export function WikiShell({ sections, children }: Props) {
                     {/* Subsection groups */}
                     {section.subsections.map((sub) => (
                       <div key={sub.name} className="mb-3">
-                        <div className="px-2.5 mb-1 text-[12px] text-[#71757D]">
+                        <div className="px-2.5 mb-1 text-[12px] text-subtle">
                           {sub.name}
                         </div>
                         <div className="space-y-0.5">
@@ -154,7 +154,7 @@ export function WikiShell({ sections, children }: Props) {
           })}
 
           {filtered.length === 0 && (
-            <p className="text-[12px] text-[#71757D] px-2.5 py-4 text-center">
+            <p className="text-[12px] text-subtle px-2.5 py-4 text-center">
               No matches for &ldquo;{query}&rdquo;
             </p>
           )}
@@ -162,7 +162,7 @@ export function WikiShell({ sections, children }: Props) {
       </aside>
 
       {/* Page content */}
-      <div className="flex-1 overflow-y-auto bg-[#181818]">{children}</div>
+      <div className="flex-1 overflow-y-auto bg-surface">{children}</div>
     </div>
   );
 }
@@ -183,21 +183,21 @@ function PageLink({
       href={`/wiki-v2/${slug}`}
       className={`relative flex items-baseline gap-2 py-1.5 px-2.5 text-[12px] rounded-md transition-colors ${
         active
-          ? "text-[#E5E5EA] font-semibold bg-[#181818] shadow-[var(--shadow-soft)]"
-          : "text-[#5F6066] hover:text-[#E5E5EA] hover:bg-[#181818]"
+          ? "text-foreground font-semibold bg-surface shadow-[var(--shadow-soft)]"
+          : "text-[#5F6066] hover:text-foreground hover:bg-surface"
       }`}
     >
       {active && (
         <span
           aria-hidden
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-[#1B1B1B]"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-surface"
         />
       )}
       {number && (
         <span
           aria-hidden
           className={`font-mono text-[10px] tabular-nums tracking-wider shrink-0 ${
-            active ? "text-[#9A9A9F]" : "text-[#C5C5C5]"
+            active ? "text-[#9A9A9F]" : "text-muted"
           }`}
         >
           {number}

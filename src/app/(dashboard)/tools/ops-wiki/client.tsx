@@ -111,7 +111,7 @@ function AssemblyLine({ text }: { text: string }) {
     .map((s) => s.trim())
     .filter(Boolean);
   return (
-    <div className="not-prose my-6 flex flex-wrap items-center gap-x-2 gap-y-2 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4">
+    <div className="not-prose my-6 flex flex-wrap items-center gap-x-2 gap-y-2 rounded-lg border border-border bg-background p-4">
       {steps.map((step, i) => {
         const isGate = step.includes("🚧");
         const cleaned = step.replace("🚧", "").trim();
@@ -121,13 +121,13 @@ function AssemblyLine({ text }: { text: string }) {
               className={
                 isGate
                   ? "inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-amber-900"
-                  : "inline-flex items-center rounded-md border border-[#2A2A2A] bg-[#181818] px-3 py-1.5 text-xs font-medium text-[#E5E5EA]"
+                  : "inline-flex items-center rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground"
               }
             >
               {isGate && <span aria-hidden>🚧</span>}
               <span>{cleaned}</span>
             </span>
-            {i < steps.length - 1 && <span className="text-[#71757D]" aria-hidden>→</span>}
+            {i < steps.length - 1 && <span className="text-subtle" aria-hidden>→</span>}
           </Fragment>
         );
       })}
@@ -180,10 +180,10 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
   const isExternalLink = (href?: string) => href?.startsWith("http");
 
   return (
-    <div className="flex h-screen bg-[#181818] overflow-hidden">
+    <div className="flex h-screen bg-surface overflow-hidden">
       {/* Sidebar */}
       {navOpen && (
-        <aside className="w-56 shrink-0 border-r border-[#2A2A2A] overflow-y-auto py-4 px-3">
+        <aside className="w-56 shrink-0 border-r border-border overflow-y-auto py-4 px-3">
           {Object.entries(grouped).map(([cat, items]) => {
             // Split flow items: regular flows vs ce-* (conversion engine children)
             const isFlow = cat === "flow";
@@ -208,23 +208,23 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
                           }}
                           className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors mb-0.5 ${
                             isCeActive
-                              ? "bg-[#222222] text-[#E5E5EA] font-medium"
-                              : "text-[#9CA3AF] hover:bg-[#0C0C0C] hover:text-[#E5E5EA]"
+                              ? "bg-surface-raised text-foreground font-medium"
+                              : "text-muted hover:bg-background hover:text-foreground"
                           }`}
                         >
-                          <span className="shrink-0 text-[#71757D]">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
+                          <span className="shrink-0 text-subtle">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
                           <span className="truncate">{m.shortTitle}</span>
-                          <ChevronRightIcon className={`size-3 text-[#C7C9CD] ml-auto shrink-0 transition-transform duration-200 ${ceOpen ? "rotate-90" : ""}`} />
+                          <ChevronRightIcon className={`size-3 text-muted ml-auto shrink-0 transition-transform duration-200 ${ceOpen ? "rotate-90" : ""}`} />
                         </button>
                         {ceOpen && (
-                          <div className="ml-4 pl-2 mb-1 border-l border-[#2A2A2A]">
+                          <div className="ml-4 pl-2 mb-1 border-l border-border">
                             {ceItems.map((ce, i) => {
                               const prevGroup = i > 0 ? ceItems[i - 1].subGroup : undefined;
                               const showGroupHeader = ce.subGroup && ce.subGroup !== prevGroup;
                               return (
                                 <div key={ce.slug}>
                                   {showGroupHeader && (
-                                    <p className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF] px-2 mt-3 mb-1">
+                                    <p className="text-[9px] font-semibold uppercase tracking-wider text-muted px-2 mt-3 mb-1">
                                       {ce.subGroup}
                                     </p>
                                   )}
@@ -232,11 +232,11 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
                                     onClick={() => setActiveSlug(ce.slug)}
                                     className={`flex items-center gap-2 w-full px-2 py-1 rounded-lg text-[11px] transition-colors mb-0.5 ${
                                       activeSlug === ce.slug
-                                        ? "bg-[#222222] text-[#E5E5EA] font-medium"
-                                        : "text-[#9CA3AF] hover:bg-[#0C0C0C] hover:text-[#E5E5EA]"
+                                        ? "bg-surface-raised text-foreground font-medium"
+                                        : "text-muted hover:bg-background hover:text-foreground"
                                     }`}
                                   >
-                                    <span className="shrink-0 text-[#9CA3AF]">{iconMap[ce.icon] || <ChevronRightIcon className="size-3" />}</span>
+                                    <span className="shrink-0 text-muted">{iconMap[ce.icon] || <ChevronRightIcon className="size-3" />}</span>
                                     <span className="truncate">{ce.shortTitle}</span>
                                   </button>
                                 </div>
@@ -254,13 +254,13 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
                       onClick={() => setActiveSlug(m.slug)}
                       className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors mb-0.5 ${
                         activeSlug === m.slug
-                          ? "bg-[#222222] text-[#E5E5EA] font-medium"
-                          : "text-[#9CA3AF] hover:bg-[#0C0C0C] hover:text-[#E5E5EA]"
+                          ? "bg-surface-raised text-foreground font-medium"
+                          : "text-muted hover:bg-background hover:text-foreground"
                       }`}
                     >
-                      <span className="shrink-0 text-[#71757D]">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
+                      <span className="shrink-0 text-subtle">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
                       <span className="truncate">{m.shortTitle}</span>
-                      {m.toolHref && <WrenchScrewdriverIcon className="size-3 text-[#C7C9CD] ml-auto shrink-0" />}
+                      {m.toolHref && <WrenchScrewdriverIcon className="size-3 text-muted ml-auto shrink-0" />}
                     </button>
                   );
                 })}
@@ -273,36 +273,36 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Toolbar */}
-        <header className="shrink-0 flex items-center gap-3 px-4 py-2.5 border-b border-[#2A2A2A]">
+        <header className="shrink-0 flex items-center gap-3 px-4 py-2.5 border-b border-border">
           <button
             onClick={() => setNavOpen(!navOpen)}
-            className="text-[#71757D] hover:text-[#E5E5EA] text-xs"
+            className="text-subtle hover:text-foreground text-xs"
           >
             {navOpen ? "\u2190" : "\u2192"}
           </button>
 
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#C7C9CD]" />
+            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search all processes..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#C5C5C5]"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:border-muted"
             />
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-lg max-h-72 overflow-y-auto z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-72 overflow-y-auto z-50">
                 {searchResults.map((r, i) => (
                   <button
                     key={i}
                     onClick={() => { setActiveSlug(r.slug); setSearchQuery(""); }}
-                    className="block w-full text-left px-3 py-2 text-xs hover:bg-[#0C0C0C] border-b border-[#F8F8F8] last:border-0"
+                    className="block w-full text-left px-3 py-2 text-xs hover:bg-background border-b border-[#F8F8F8] last:border-0"
                   >
-                    <span className="font-medium text-[#E5E5EA]">{r.module}</span>
-                    <span className="mx-1 text-[#C7C9CD]">/</span>
-                    <span className="text-[#9CA3AF]">{r.heading}</span>
-                    <p className="text-[#71757D] truncate mt-0.5">{r.line}</p>
+                    <span className="font-medium text-foreground">{r.module}</span>
+                    <span className="mx-1 text-muted">/</span>
+                    <span className="text-muted">{r.heading}</span>
+                    <p className="text-subtle truncate mt-0.5">{r.line}</p>
                   </button>
                 ))}
               </div>
@@ -321,7 +321,7 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
               >
                 {categoryLabels[active.category]}
               </span>
-              <span className="text-xs text-[#C7C9CD]">{active.title}</span>
+              <span className="text-xs text-muted">{active.title}</span>
             </div>
           )}
         </header>
@@ -336,7 +336,7 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
                   href={active.toolHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-[#222222] border border-[#2A2A2A] rounded-lg text-xs text-[#9CA3AF] hover:bg-[#222222] hover:text-[#E5E5EA] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-surface-raised border border-border rounded-lg text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
                 >
                   <ArrowTopRightOnSquareIcon className="size-4" />
                   <span>Open {active.shortTitle} in Figma</span>
@@ -345,7 +345,7 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
               ) : (
                 <Link
                   href={active.toolHref}
-                  className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-[#222222] border border-[#2A2A2A] rounded-lg text-xs text-[#9CA3AF] hover:bg-[#222222] hover:text-[#E5E5EA] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-surface-raised border border-border rounded-lg text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
                 >
                   <WrenchScrewdriverIcon className="size-4" />
                   <span>Open {active.shortTitle} tool in Launchpad</span>
@@ -354,7 +354,7 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
               )
             )}
 
-            <article className="prose prose-sm max-w-none prose-headings:text-[#E5E5EA] prose-p:text-[#C7C9CD] prose-strong:text-[#E5E5EA] prose-a:text-blue-600 prose-table:text-xs prose-th:text-[#71757D] prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-blue-400 prose-blockquote:bg-blue-900/20 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-blue-300 prose-code:bg-[#222222] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[#E5E5EA] prose-code:font-mono prose-code:text-xs prose-pre:bg-[#1B1B1B] prose-pre:text-[#E5E5EA] prose-li:text-[#C7C9CD]">
+            <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-a:text-blue-600 prose-table:text-xs prose-th:text-subtle prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-blue-400 prose-blockquote:bg-blue-900/20 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-blue-300 prose-code:bg-surface-raised prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:font-mono prose-code:text-xs prose-pre:bg-surface prose-pre:text-foreground prose-li:text-muted">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{

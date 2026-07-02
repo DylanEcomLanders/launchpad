@@ -93,7 +93,7 @@ export default function NdaPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
@@ -101,7 +101,7 @@ export default function NdaPage() {
   if (!nda) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm text-[#777]">NDA not found or invalid link.</p>
+        <p className="text-sm text-subtle">NDA not found or invalid link.</p>
       </div>
     );
   }
@@ -109,16 +109,16 @@ export default function NdaPage() {
   const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-surface-raised">
       <div className="max-w-2xl mx-auto px-6 py-12 md:py-20">
         {/* Header */}
         <div className="text-center mb-12">
           <Logo height={18} />
-          <p className="text-xs text-[#AAA] uppercase tracking-[0.2em] mt-6">Confidentiality Agreement</p>
+          <p className="text-xs text-muted uppercase tracking-[0.2em] mt-6">Confidentiality Agreement</p>
         </div>
 
         {/* NDA Content */}
-        <div className="bg-white border border-[#E8E8E8] rounded-2xl p-8 md:p-12 shadow-sm">
+        <div className="bg-white border border-foreground rounded-2xl p-8 md:p-12 shadow-sm">
           {nda.signed ? (
             <>
               {/* Signed banner */}
@@ -132,61 +132,61 @@ export default function NdaPage() {
                 </div>
               </div>
 
-              <h1 className="text-xl font-bold text-[#1A1A1A] mb-6">Non-Disclosure Agreement</h1>
+              <h1 className="text-xl font-bold text-surface mb-6">Non-Disclosure Agreement</h1>
 
-              <div className="prose prose-sm text-[#555] leading-relaxed space-y-4 text-sm">
+              <div className="prose prose-sm text-subtle leading-relaxed space-y-4 text-sm">
                 <p>
                   This Non-Disclosure Agreement (&quot;Agreement&quot;) is entered into as of <strong>{nda.signedDate}</strong> between:
                 </p>
                 <p><strong>Ecom Landers Ltd.</strong> (&quot;the Company&quot;), and</p>
                 <p><strong>{nda.memberName}</strong>, {nda.memberRole} (&quot;the Recipient&quot;).</p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">1. Confidential Information</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">1. Confidential Information</h3>
                 <p>&quot;Confidential Information&quot; means any and all information disclosed by the Company to the Recipient, including but not limited to: client data, project details, business strategies, financial information, technical systems, proprietary tools, client lists, pricing structures, internal processes, and any other information that is not publicly available.</p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">2. Obligations</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">2. Obligations</h3>
                 <p>The Recipient agrees to: (a) keep all Confidential Information strictly confidential; (b) not disclose any Confidential Information to any third party without prior written consent from the Company; (c) use the Confidential Information solely for the purpose of providing their services to the Company; (d) take all reasonable measures to protect the confidentiality of the information.</p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">3. Client Information</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">3. Client Information</h3>
                 <p>The Recipient acknowledges that all client information, including but not limited to client names, contact details, project specifications, store URLs, analytics data, revenue figures, and conversion data, is strictly confidential. The Recipient shall not share, discuss, or disclose any client information with anyone outside of the Company, including on social media, personal channels, or to other clients.</p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">4. Intellectual Property</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">4. Intellectual Property</h3>
                 <p>All work product, designs, code, strategies, and materials created during the Recipient&apos;s engagement with the Company remain the exclusive property of the Company and its clients. The Recipient shall not use, reproduce, or distribute any such materials for personal use or for the benefit of any third party.</p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">5. Duration</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">5. Duration</h3>
                 <p>This Agreement shall remain in effect for the duration of the Recipient&apos;s engagement with the Company and for a period of two (2) years following the termination of that engagement.</p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">6. Breach</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">6. Breach</h3>
                 <p>Any breach of this Agreement may result in immediate termination of the Recipient&apos;s engagement and may give rise to legal action for damages and injunctive relief.</p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">7. Governing Law</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">7. Governing Law</h3>
                 <p>This Agreement shall be governed by and construed in accordance with the laws of England and Wales.</p>
               </div>
 
               {/* Signature block */}
-              <div className="mt-10 pt-8 border-t border-[#E8E8E8]">
+              <div className="mt-10 pt-8 border-t border-foreground">
                 <div className="grid grid-cols-2 gap-8">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Company</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A]">Ecom Landers Ltd.</p>
-                    <p className="text-xs text-[#777] mt-1">Authorised Representative</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">Company</p>
+                    <p className="text-sm font-semibold text-surface">Ecom Landers Ltd.</p>
+                    <p className="text-xs text-subtle mt-1">Authorised Representative</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Recipient</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">Recipient</p>
                     {nda.signatureImage && (
                       <img src={nda.signatureImage} alt="Signature" className="h-16 mb-2" />
                     )}
-                    <p className="text-sm font-semibold text-[#1A1A1A]">{nda.signedName}</p>
-                    <p className="text-xs text-[#777] mt-1">{nda.memberRole} · Signed {nda.signedDate}</p>
+                    <p className="text-sm font-semibold text-surface">{nda.signedName}</p>
+                    <p className="text-xs text-subtle mt-1">{nda.memberRole} · Signed {nda.signedDate}</p>
                   </div>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-[#1A1A1A] mb-6">Non-Disclosure Agreement</h1>
+              <h1 className="text-xl font-bold text-surface mb-6">Non-Disclosure Agreement</h1>
 
-              <div className="prose prose-sm text-[#555] leading-relaxed space-y-4 text-sm">
+              <div className="prose prose-sm text-subtle leading-relaxed space-y-4 text-sm">
                 <p>
                   This Non-Disclosure Agreement (&quot;Agreement&quot;) is entered into as of <strong>{today}</strong> between:
                 </p>
@@ -199,63 +199,63 @@ export default function NdaPage() {
                   <strong>{nda.memberName}</strong>, {nda.memberRole} (&quot;the Recipient&quot;).
                 </p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">1. Confidential Information</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">1. Confidential Information</h3>
                 <p>
                   &quot;Confidential Information&quot; means any and all information disclosed by the Company to the Recipient, including but not limited to: client data, project details, business strategies, financial information, technical systems, proprietary tools, client lists, pricing structures, internal processes, and any other information that is not publicly available.
                 </p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">2. Obligations</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">2. Obligations</h3>
                 <p>
                   The Recipient agrees to: (a) keep all Confidential Information strictly confidential; (b) not disclose any Confidential Information to any third party without prior written consent from the Company; (c) use the Confidential Information solely for the purpose of providing their services to the Company; (d) take all reasonable measures to protect the confidentiality of the information.
                 </p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">3. Client Information</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">3. Client Information</h3>
                 <p>
                   The Recipient acknowledges that all client information, including but not limited to client names, contact details, project specifications, store URLs, analytics data, revenue figures, and conversion data, is strictly confidential. The Recipient shall not share, discuss, or disclose any client information with anyone outside of the Company, including on social media, personal channels, or to other clients.
                 </p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">4. Intellectual Property</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">4. Intellectual Property</h3>
                 <p>
                   All work product, designs, code, strategies, and materials created during the Recipient&apos;s engagement with the Company remain the exclusive property of the Company and its clients. The Recipient shall not use, reproduce, or distribute any such materials for personal use or for the benefit of any third party.
                 </p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">5. Duration</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">5. Duration</h3>
                 <p>
                   This Agreement shall remain in effect for the duration of the Recipient&apos;s engagement with the Company and for a period of two (2) years following the termination of that engagement.
                 </p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">6. Breach</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">6. Breach</h3>
                 <p>
                   Any breach of this Agreement may result in immediate termination of the Recipient&apos;s engagement and may give rise to legal action for damages and injunctive relief.
                 </p>
 
-                <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">7. Governing Law</h3>
+                <h3 className="text-sm font-bold text-surface mt-6">7. Governing Law</h3>
                 <p>
                   This Agreement shall be governed by and construed in accordance with the laws of England and Wales.
                 </p>
               </div>
 
               {/* Signature section */}
-              <div className="mt-10 pt-8 border-t border-[#E8E8E8]">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Sign this Agreement</p>
+              <div className="mt-10 pt-8 border-t border-foreground">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">Sign this Agreement</p>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-medium text-[#555] block mb-1.5">Your full name</label>
+                    <label className="text-xs font-medium text-subtle block mb-1.5">Your full name</label>
                     <input
                       type="text"
                       value={signName}
                       onChange={(e) => setSignName(e.target.value)}
-                      className="w-full px-4 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999]"
+                      className="w-full px-4 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:border-subtle"
                       placeholder={nda.memberName}
                     />
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-medium text-[#555]">Draw your signature</label>
+                      <label className="text-xs font-medium text-subtle">Draw your signature</label>
                       {signatureData && (
-                        <button onClick={clearSignature} className="text-[10px] text-[#AAA] hover:text-[#1A1A1A]">Clear</button>
+                        <button onClick={clearSignature} className="text-[10px] text-muted hover:text-surface">Clear</button>
                       )}
                     </div>
                     <canvas
@@ -269,7 +269,7 @@ export default function NdaPage() {
                       onTouchStart={startDraw}
                       onTouchMove={draw}
                       onTouchEnd={endDraw}
-                      className="w-full border border-[#E5E5EA] rounded-lg cursor-crosshair bg-white touch-none"
+                      className="w-full border border-foreground rounded-lg cursor-crosshair bg-white touch-none"
                       style={{ height: 150 }}
                     />
                   </div>
@@ -279,9 +279,9 @@ export default function NdaPage() {
                       type="checkbox"
                       checked={agreed}
                       onChange={(e) => setAgreed(e.target.checked)}
-                      className="mt-0.5 size-4 rounded border-[#E5E5EA] accent-[#1A1A1A]"
+                      className="mt-0.5 size-4 rounded border-foreground accent-surface"
                     />
-                    <span className="text-xs text-[#777] leading-relaxed">
+                    <span className="text-xs text-subtle leading-relaxed">
                       I, <strong>{signName || nda.memberName}</strong>, have read, understood, and agree to the terms of this Non-Disclosure Agreement.
                     </span>
                   </label>
@@ -289,7 +289,7 @@ export default function NdaPage() {
                   <button
                     onClick={handleSign}
                     disabled={!signName.trim() || !agreed || !signatureData || signing}
-                    className="w-full py-3 bg-[#1A1A1A] text-white text-sm font-semibold rounded-xl hover:bg-[#2D2D2D] transition-colors disabled:opacity-30"
+                    className="w-full py-3 bg-surface text-white text-sm font-semibold rounded-xl hover:bg-border transition-colors disabled:opacity-30"
                   >
                     {signing ? "Signing..." : "Sign Agreement"}
                   </button>
@@ -300,7 +300,7 @@ export default function NdaPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-[10px] text-[#CCC] text-center mt-8">© 2026 Ecom Landers Ltd.. All rights reserved.</p>
+        <p className="text-[10px] text-muted text-center mt-8">© 2026 Ecom Landers Ltd.. All rights reserved.</p>
       </div>
     </div>
   );

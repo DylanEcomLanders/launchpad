@@ -83,9 +83,9 @@ export default function TeamPortalPage() {
   if (loading) {
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center">
-        <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F3F3F5] mb-6 animate-pulse" />
-        <div className="h-6 w-48 bg-[#EDEDEF] rounded mx-auto mb-3 animate-pulse" />
-        <div className="h-4 w-64 bg-[#F3F3F5] rounded mx-auto animate-pulse" />
+        <div className="inline-flex items-center justify-center size-14 rounded-full bg-surface-raised mb-6 animate-pulse" />
+        <div className="h-6 w-48 bg-border rounded mx-auto mb-3 animate-pulse" />
+        <div className="h-4 w-64 bg-surface-raised rounded mx-auto animate-pulse" />
       </div>
     );
   }
@@ -93,11 +93,11 @@ export default function TeamPortalPage() {
   if (notFound || !portal) {
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center">
-        <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F3F3F5] mb-6">
+        <div className="inline-flex items-center justify-center size-14 rounded-full bg-surface-raised mb-6">
           <span className="text-2xl">🔒</span>
         </div>
         <h1 className="text-2xl font-bold mb-2">Portal Not Found</h1>
-        <p className="text-[#7A7A7A] text-sm">This portal link is invalid or has been removed.</p>
+        <p className="text-subtle text-sm">This portal link is invalid or has been removed.</p>
       </div>
     );
   }

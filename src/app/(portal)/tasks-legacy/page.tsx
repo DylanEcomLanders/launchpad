@@ -74,18 +74,18 @@ export default function LegacyTaskBoardPage() {
     const s = statusLabel[task.status] || statusLabel.todo;
     const overdue = task.status !== "done" && isOverdue(task.dueDate);
     return (
-      <div className={`flex items-center gap-4 px-5 py-3.5 border-b border-[#F0F0F0] last:border-0 ${overdue ? "bg-red-50/30" : ""}`}>
+      <div className={`flex items-center gap-4 px-5 py-3.5 border-b border-foreground last:border-0 ${overdue ? "bg-red-50/30" : ""}`}>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-[#1A1A1A] truncate">{task.title}</p>
+          <p className="text-sm font-medium text-surface truncate">{task.title}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            {task.client && <span className="text-[10px] text-[#AAA]">{task.client}</span>}
-            {task.client && task.assignee && <span className="text-[10px] text-[#DDD]">/</span>}
-            {task.assignee && <span className="text-[10px] text-[#777]">{task.assignee}</span>}
+            {task.client && <span className="text-[10px] text-muted">{task.client}</span>}
+            {task.client && task.assignee && <span className="text-[10px] text-muted">/</span>}
+            {task.assignee && <span className="text-[10px] text-subtle">{task.assignee}</span>}
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {task.dueDate && (
-            <span className={`text-[11px] font-medium ${overdue ? "text-red-500" : "text-[#AAA]"}`}>
+            <span className={`text-[11px] font-medium ${overdue ? "text-red-500" : "text-muted"}`}>
               {formatDate(task.dueDate)}
               {overdue && " (overdue)"}
             </span>
@@ -103,30 +103,30 @@ export default function LegacyTaskBoardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
-        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-surface-raised">
+        <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
-      <div className="bg-white border-b border-[#E5E5EA] px-6 py-4">
+    <div className="min-h-screen bg-surface-raised">
+      <div className="bg-white border-b border-foreground px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/team"
-              className="flex items-center gap-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1A1A1A] transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-medium text-subtle hover:text-surface transition-colors"
             >
               <ArrowLeftIcon className="size-3" />
               Team Tools
             </Link>
-            <div className="h-4 w-px bg-[#E5E5EA]" />
-            <Logo height={16} className="text-[#1A1A1A]" />
-            <div className="h-4 w-px bg-[#E5E5EA]" />
-            <h1 className="text-sm font-semibold text-[#1A1A1A]">Task Board · Legacy view</h1>
+            <div className="h-4 w-px bg-foreground" />
+            <Logo height={16} className="text-surface" />
+            <div className="h-4 w-px bg-foreground" />
+            <h1 className="text-sm font-semibold text-surface">Task Board · Legacy view</h1>
           </div>
-          <span className="text-[10px] text-[#CCC]">Updated {lastUpdated}</span>
+          <span className="text-[10px] text-muted">Updated {lastUpdated}</span>
         </div>
       </div>
 
@@ -143,23 +143,23 @@ export default function LegacyTaskBoardPage() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="size-2 rounded-full bg-[#7C3AED]" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">
                 Design ({activeTasks(board.designTasks).length} active)
               </h2>
             </div>
-            <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
+            <div className="bg-white border border-foreground rounded-xl overflow-hidden">
               {activeTasks(board.designTasks).length === 0 ? (
-                <p className="text-xs text-[#CCC] text-center py-8">No active design tasks</p>
+                <p className="text-xs text-muted text-center py-8">No active design tasks</p>
               ) : (
                 activeTasks(board.designTasks).map((t) => <TaskRow key={t.id} task={t} />)
               )}
             </div>
             {doneTasks(board.designTasks).length > 0 && (
               <details className="mt-2">
-                <summary className="text-[10px] text-[#CCC] cursor-pointer hover:text-[#999]">
+                <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle">
                   {doneTasks(board.designTasks).length} completed
                 </summary>
-                <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden mt-1 opacity-60">
+                <div className="bg-white border border-foreground rounded-xl overflow-hidden mt-1 opacity-60">
                   {doneTasks(board.designTasks).map((t) => <TaskRow key={t.id} task={t} />)}
                 </div>
               </details>
@@ -169,24 +169,24 @@ export default function LegacyTaskBoardPage() {
           {/* Dev Tasks */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="size-2 rounded-full bg-[#059669]" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              <div className="size-2 rounded-full bg-success" />
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">
                 Development ({activeTasks(board.devTasks).length} active)
               </h2>
             </div>
-            <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
+            <div className="bg-white border border-foreground rounded-xl overflow-hidden">
               {activeTasks(board.devTasks).length === 0 ? (
-                <p className="text-xs text-[#CCC] text-center py-8">No active dev tasks</p>
+                <p className="text-xs text-muted text-center py-8">No active dev tasks</p>
               ) : (
                 activeTasks(board.devTasks).map((t) => <TaskRow key={t.id} task={t} />)
               )}
             </div>
             {doneTasks(board.devTasks).length > 0 && (
               <details className="mt-2">
-                <summary className="text-[10px] text-[#CCC] cursor-pointer hover:text-[#999]">
+                <summary className="text-[10px] text-muted cursor-pointer hover:text-subtle">
                   {doneTasks(board.devTasks).length} completed
                 </summary>
-                <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden mt-1 opacity-60">
+                <div className="bg-white border border-foreground rounded-xl overflow-hidden mt-1 opacity-60">
                   {doneTasks(board.devTasks).map((t) => <TaskRow key={t.id} task={t} />)}
                 </div>
               </details>
@@ -196,7 +196,7 @@ export default function LegacyTaskBoardPage() {
       </div>
 
       <div className="text-center py-6">
-        <p className="text-[10px] text-[#CCC]">Auto-refreshes every 30 seconds</p>
+        <p className="text-[10px] text-muted">Auto-refreshes every 30 seconds</p>
       </div>
     </div>
   );

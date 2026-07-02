@@ -65,7 +65,7 @@ export default function RetentionPage() {
   const openRow = openId ? rows.find((r) => r.client.id === openId) ?? null : null;
 
   if (loading) {
-    return <div className="max-w-7xl mx-auto px-6 md:px-12 py-12 text-[#71757D]">Loading retention…</div>;
+    return <div className="max-w-7xl mx-auto px-6 md:px-12 py-12 text-subtle">Loading retention…</div>;
   }
 
   const TABS: { key: Tab; label: string; badge?: number }[] = [
@@ -80,8 +80,8 @@ export default function RetentionPage() {
       {/* Header */}
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-[#E5E5EA]">Retention</h1>
-          <p className="mt-1 text-sm text-[#71757D]">Client health, churn risk, and the renewal pipeline. CSM home.</p>
+          <h1 className="text-2xl font-semibold text-foreground">Retention</h1>
+          <p className="mt-1 text-sm text-subtle">Client health, churn risk, and the renewal pipeline. CSM home.</p>
         </div>
         {data?.usingMock && (
           <span className="text-xs px-2.5 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400">
@@ -91,13 +91,13 @@ export default function RetentionPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-6 flex items-center gap-6 border-b border-[#2A2A2A]">
+      <div className="mt-6 flex items-center gap-6 border-b border-border">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`relative pb-3 -mb-px text-sm font-medium transition-all flex items-center gap-2 ${
-              tab === t.key ? "text-[#E5E5EA] border-b-2 border-[#E5E5EA]" : "text-[#71757D] hover:text-[#E5E5EA] border-b-2 border-transparent"
+              tab === t.key ? "text-foreground border-b-2 border-foreground" : "text-subtle hover:text-foreground border-b-2 border-transparent"
             }`}
           >
             {t.label}
@@ -159,18 +159,18 @@ function HealthTab({
       </div>
 
       <div className="mt-6 flex items-center justify-between flex-wrap gap-3">
-        <div className="text-xs text-[#71757D]">Health is a rollup of five delivery KPIs — hover a pillar for the why</div>
+        <div className="text-xs text-subtle">Health is a rollup of five delivery KPIs — hover a pillar for the why</div>
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
             {(["all", "red", "amber", "green"] as const).map((f) => (
               <button key={f} onClick={() => setFilter(f)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize transition-all ${filter === f ? "bg-[#E5E5EA] text-[#0F0F0F]" : "bg-[#181818] border border-[#2A2A2A] text-[#71757D] hover:text-[#E5E5EA]"}`}>
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize transition-all ${filter === f ? "bg-foreground text-background" : "bg-surface border border-border text-subtle hover:text-foreground"}`}>
                 {f}
               </button>
             ))}
           </div>
           <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}
-            className="px-2.5 py-1 rounded-lg text-xs bg-[#181818] border border-[#2A2A2A] text-[#71757D] appearance-none">
+            className="px-2.5 py-1 rounded-lg text-xs bg-surface border border-border text-subtle appearance-none">
             <option value="health">Sort: Health</option>
             <option value="renewal">Sort: Renewal</option>
             <option value="mrr">Sort: MRR</option>
@@ -180,28 +180,28 @@ function HealthTab({
       </div>
 
       <div className="mt-4 flex flex-col gap-3">
-        {rows.length === 0 && <div className="text-sm text-[#71757D]">No clients match this filter.</div>}
+        {rows.length === 0 && <div className="text-sm text-subtle">No clients match this filter.</div>}
         {rows.map((r) => {
           const renewal = renewalLabel(r.daysToRenewal);
           return (
             <button key={r.client.id} onClick={() => onOpen(r.client.id)}
-              className="text-left bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-[#3A3A3A] transition-all"
+              className="text-left bg-surface border border-border rounded-xl p-4 hover:border-subtle transition-all"
               style={{ borderLeft: `3px solid ${BAND_META[r.health.band].dot}` }}>
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-[#E5E5EA]">{r.client.name}</span>
-                  <span className="text-[11px] uppercase text-[#71757D]">{r.client.plan}</span>
+                  <span className="font-medium text-foreground">{r.client.name}</span>
+                  <span className="text-[11px] uppercase text-subtle">{r.client.plan}</span>
                 </div>
                 <HealthPill band={r.health.band} overridden={r.health.overridden} title={r.health.reasons.join(" · ")} />
               </div>
-              <div className="mt-2 flex items-center gap-4 text-xs text-[#71757D] flex-wrap">
+              <div className="mt-2 flex items-center gap-4 text-xs text-subtle flex-wrap">
                 <span>{fmtMoney(r.client.mrr)}/mo</span>
                 <span className={renewal.tone}>Renews {renewal.text}</span>
                 <span>{r.client.pod_id ?? "—"} · {r.client.owner_id ?? "unassigned"}</span>
                 <span>Tests {r.testsShipped == null ? "n/a" : `${r.testsShipped}/${r.testsCommitted}`}</span>
                 <span>Review {fmtAgo(r.daysSinceLastReview)}</span>
               </div>
-              <div className="mt-3 pt-3 border-t border-[#242424]">
+              <div className="mt-3 pt-3 border-t border-surface-raised">
                 <PillarDots pillars={r.health.pillars} />
               </div>
             </button>
@@ -215,18 +215,18 @@ function HealthTab({
 // ── Alerts tab ──────────────────────────────────────────────────────────────
 function AlertsTab({ alerts, onOpen }: { alerts: ReturnType<typeof buildAlerts>; onOpen: (id: string) => void }) {
   if (alerts.length === 0) {
-    return <div className="mt-8 text-sm text-[#71757D]">No alerts. Everything's in good shape.</div>;
+    return <div className="mt-8 text-sm text-subtle">No alerts. Everything's in good shape.</div>;
   }
   return (
     <div className="mt-6 flex flex-col gap-2">
-      <div className="text-xs text-[#71757D] mb-1">Delivery, KPI, renewal and engagement alerts — most urgent first</div>
+      <div className="text-xs text-subtle mb-1">Delivery, KPI, renewal and engagement alerts — most urgent first</div>
       {alerts.map((a, i) => (
         <button key={i} onClick={() => onOpen(a.clientId)}
-          className="flex items-center gap-3 text-left bg-[#181818] border border-[#2A2A2A] rounded-lg px-4 py-3 hover:border-[#3A3A3A] transition-all">
+          className="flex items-center gap-3 text-left bg-surface border border-border rounded-lg px-4 py-3 hover:border-subtle transition-all">
           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: BAND_META[a.severity].dot }} />
           <span className="text-[11px] uppercase tracking-wider w-16 shrink-0" style={{ color: BAND_META[a.severity].dot }}>{ALERT_LABEL[a.type]}</span>
-          <span className="text-sm text-[#E5E5EA] font-medium w-40 shrink-0 truncate">{a.clientName}</span>
-          <span className="text-sm text-[#71757D]">{a.message}</span>
+          <span className="text-sm text-foreground font-medium w-40 shrink-0 truncate">{a.clientName}</span>
+          <span className="text-sm text-subtle">{a.message}</span>
         </button>
       ))}
     </div>
@@ -237,46 +237,46 @@ function AlertsTab({ alerts, onOpen }: { alerts: ReturnType<typeof buildAlerts>;
 function RenewalsTab({ rows, onOpen }: { rows: ClientRow[]; onOpen: (id: string) => void }) {
   return (
     <div className="mt-6">
-      <div className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
-        Renewal pipeline <span className="text-[#4B4D52] normal-case tracking-normal font-normal">· every renewal has a named owner</span>
+      <div className="text-xs font-semibold uppercase tracking-wider text-subtle mb-3">
+        Renewal pipeline <span className="text-border normal-case tracking-normal font-normal">· every renewal has a named owner</span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {rows.map((r) => {
           const renewal = renewalLabel(r.daysToRenewal);
           return (
             <button key={r.client.id} onClick={() => onOpen(r.client.id)}
-              className="text-left bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-[#3A3A3A] transition-all">
+              className="text-left bg-surface border border-border rounded-xl p-4 hover:border-subtle transition-all">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-[#E5E5EA]">{r.client.name}</span>
+                <span className="font-medium text-foreground">{r.client.name}</span>
                 <HealthPill band={r.health.band} overridden={r.health.overridden} />
               </div>
               <div className={`mt-2 text-sm ${renewal.tone}`}>Renews {renewal.text} · {fmtDate(r.client.renewal_date)}</div>
-              <div className="mt-2 flex items-center justify-between text-xs text-[#71757D]">
+              <div className="mt-2 flex items-center justify-between text-xs text-subtle">
                 <span>{fmtMoney(r.client.mrr)}/mo</span>
                 <span>Owner: {r.client.owner_id ?? "⚠ unassigned"}</span>
               </div>
             </button>
           );
         })}
-        {rows.length === 0 && <div className="text-sm text-[#71757D]">No upcoming renewals.</div>}
+        {rows.length === 0 && <div className="text-sm text-subtle">No upcoming renewals.</div>}
       </div>
 
-      <div className="mt-8 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
+      <div className="mt-8 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-subtle mb-3">
         What to sell next
-        <span className="text-[#4B4D52] normal-case tracking-normal font-normal">· Project → Core → Pro → Custom</span>
+        <span className="text-border normal-case tracking-normal font-normal">· Project → Core → Pro → Custom</span>
       </div>
       <div className="flex flex-col gap-3">
         {rows.map((r) => (
           <button key={r.client.id} onClick={() => onOpen(r.client.id)}
-            className="text-left bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-[#3A3A3A] transition-all">
+            className="text-left bg-surface border border-border rounded-xl p-4 hover:border-subtle transition-all">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-[#E5E5EA]">{r.client.name}</span>
-                <span className="text-[11px] uppercase text-[#71757D]">{r.client.plan} · {fmtMoney(r.client.mrr)}</span>
+                <span className="font-medium text-foreground">{r.client.name}</span>
+                <span className="text-[11px] uppercase text-subtle">{r.client.plan} · {fmtMoney(r.client.mrr)}</span>
               </div>
               <UpsellBadge move={r.upsell.move} label={r.upsell.label} />
             </div>
-            <div className="mt-1.5 text-xs text-[#71757D]">{r.upsell.reason}</div>
+            <div className="mt-1.5 text-xs text-subtle">{r.upsell.reason}</div>
           </button>
         ))}
       </div>

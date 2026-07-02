@@ -21,10 +21,10 @@ export default function ResultsClient({ submission }: { submission: QuizSubmissi
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#1B1B1B] flex flex-col">
-      <nav className="w-full border-b border-[#F0F0F0] bg-white">
+    <div className="min-h-screen bg-surface flex flex-col">
+      <nav className="w-full border-b border-foreground bg-white">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
-          <Logo height={18} className="text-[#1B1B1B]" />
+          <Logo height={18} className="text-foreground" />
         </div>
       </nav>
 

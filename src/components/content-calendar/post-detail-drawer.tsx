@@ -214,11 +214,11 @@ export function PostDetailDrawer({
         className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
         onClick={flushAndClose}
       />
-      <div className="relative ml-auto w-full max-w-[560px] h-full bg-[#181818] shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="relative ml-auto w-full max-w-[560px] h-full bg-surface shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[#2A2A2A] sticky top-0 bg-[#181818] z-10">
+        <div className="flex items-start justify-between p-6 border-b border-border sticky top-0 bg-surface z-10">
           <div className="min-w-0 pr-3">
-            <h2 className="text-base font-semibold text-[#E5E5EA]">
+            <h2 className="text-base font-semibold text-foreground">
               {draft.status === "idea" && (draft.notes || draft.twitter_copy || draft.linkedin_copy)
                 ? truncate(
                     draft.notes || draft.twitter_copy || draft.linkedin_copy,
@@ -226,7 +226,7 @@ export function PostDetailDrawer({
                   )
                 : "Post"}
             </h2>
-            <p className="text-xs text-[#9CA3AF] mt-1 flex items-center gap-2">
+            <p className="text-xs text-muted mt-1 flex items-center gap-2">
               <span
                 className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
                 style={{
@@ -237,7 +237,7 @@ export function PostDetailDrawer({
                 {STATUS_META[draft.status].label}
               </span>
               {savedAt && (
-                <span className="text-[#71757D] inline-flex items-center gap-1">
+                <span className="text-subtle inline-flex items-center gap-1">
                   <CheckIcon className="size-3" />
                   Saved
                 </span>
@@ -246,7 +246,7 @@ export function PostDetailDrawer({
           </div>
           <button
             onClick={flushAndClose}
-            className="shrink-0 p-1.5 rounded-lg text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
+            className="shrink-0 p-1.5 rounded-lg text-subtle hover:text-foreground hover:bg-surface-raised"
             aria-label="Close"
           >
             <XMarkIcon className="size-4" />
@@ -254,7 +254,7 @@ export function PostDetailDrawer({
         </div>
 
         {/* Pillar + Status */}
-        <section className="px-6 py-5 border-b border-[#2A2A2A] grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="px-6 py-5 border-b border-border grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Pillar</label>
             <div className="relative">
@@ -299,7 +299,7 @@ export function PostDetailDrawer({
         </section>
 
         {/* Platforms */}
-        <section className="px-6 py-5 border-b border-[#2A2A2A]">
+        <section className="px-6 py-5 border-b border-border">
           <label className={labelClass}>Platforms</label>
           <div className="flex items-center gap-2">
             {ALL_PLATFORMS.map((p) => {
@@ -311,8 +311,8 @@ export function PostDetailDrawer({
                   onClick={() => togglePlatform(p)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     active
-                      ? "bg-white text-[#0C0C0C] border-[#1A1A1A]"
-                      : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:border-[#1A1A1A]"
+                      ? "bg-white text-background border-surface"
+                      : "bg-surface text-subtle border-border hover:border-surface"
                   }`}
                 >
                   {PLATFORM_LABELS[p]}
@@ -324,7 +324,7 @@ export function PostDetailDrawer({
 
         {/* Copy editors */}
         {(showTwitter || showLinkedin) && (
-          <section className="px-6 py-5 border-b border-[#2A2A2A] space-y-4">
+          <section className="px-6 py-5 border-b border-border space-y-4">
             {showTwitter && (
               <CopyBlock
                 label="Twitter"
@@ -357,7 +357,7 @@ export function PostDetailDrawer({
         )}
 
         {/* Media */}
-        <section className="px-6 py-5 border-b border-[#2A2A2A]">
+        <section className="px-6 py-5 border-b border-border">
           <label className={labelClass}>Media</label>
           <div
             onDrop={(e) => {
@@ -366,13 +366,13 @@ export function PostDetailDrawer({
             }}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => fileInputRef.current?.click()}
-            className="border border-dashed border-[#2A2A2A] rounded-lg px-4 py-6 text-center cursor-pointer hover:border-[#1A1A1A] hover:bg-[#0C0C0C] transition-colors"
+            className="border border-dashed border-border rounded-lg px-4 py-6 text-center cursor-pointer hover:border-surface hover:bg-background transition-colors"
           >
-            <PhotoIcon className="size-5 text-[#9CA3AF] mx-auto mb-1.5" />
-            <p className="text-xs text-[#71757D]">
+            <PhotoIcon className="size-5 text-muted mx-auto mb-1.5" />
+            <p className="text-xs text-subtle">
               {uploading ? "Uploading..." : "Drop or click to add images / video"}
             </p>
-            <p className="text-[10px] text-[#9CA3AF] mt-1">
+            <p className="text-[10px] text-muted mt-1">
               PNG, JPG, WebP, GIF, MP4, MOV up to 100MB
             </p>
             <input
@@ -385,14 +385,14 @@ export function PostDetailDrawer({
             />
           </div>
           {uploadError && (
-            <p className="mt-2 text-xs text-[#DC2626]">{uploadError}</p>
+            <p className="mt-2 text-xs text-danger">{uploadError}</p>
           )}
           {draft.media.length > 0 && (
             <div className="grid grid-cols-3 gap-2 mt-3">
               {draft.media.map((m, idx) => (
                 <div
                   key={m.id}
-                  className="relative group aspect-square rounded-lg border border-[#2A2A2A] overflow-hidden bg-[#0C0C0C]"
+                  className="relative group aspect-square rounded-lg border border-border overflow-hidden bg-background"
                 >
                   {m.file_type === "video" ? (
                     <video
@@ -413,7 +413,7 @@ export function PostDetailDrawer({
                       <button
                         type="button"
                         onClick={() => deleteMedia(idx)}
-                        className="p-1 rounded bg-[#181818]/90 hover:bg-[#181818] text-[#DC2626]"
+                        className="p-1 rounded bg-surface/90 hover:bg-surface text-danger"
                         aria-label="Delete"
                       >
                         <TrashIcon className="size-3" />
@@ -424,7 +424,7 @@ export function PostDetailDrawer({
                         type="button"
                         onClick={() => moveMedia(idx, -1)}
                         disabled={idx === 0}
-                        className="p-1 rounded bg-[#181818]/90 hover:bg-[#181818] text-[#E5E5EA] disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-1 rounded bg-surface/90 hover:bg-surface text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
                         aria-label="Move up"
                       >
                         <ChevronUpIcon className="size-3" />
@@ -433,7 +433,7 @@ export function PostDetailDrawer({
                         type="button"
                         onClick={() => moveMedia(idx, 1)}
                         disabled={idx === draft.media.length - 1}
-                        className="p-1 rounded bg-[#181818]/90 hover:bg-[#181818] text-[#E5E5EA] disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-1 rounded bg-surface/90 hover:bg-surface text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
                         aria-label="Move down"
                       >
                         <ChevronDownIcon className="size-3" />
@@ -447,7 +447,7 @@ export function PostDetailDrawer({
         </section>
 
         {/* Schedule + Notes + Evergreen */}
-        <section className="px-6 py-5 border-b border-[#2A2A2A] space-y-4">
+        <section className="px-6 py-5 border-b border-border space-y-4">
           <div>
             <label className={labelClass}>Scheduled for</label>
             <input
@@ -474,12 +474,12 @@ export function PostDetailDrawer({
               className={textareaClass}
             />
           </div>
-          <label className="flex items-center gap-2 text-sm text-[#E5E5EA] cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
             <input
               type="checkbox"
               checked={draft.is_evergreen}
               onChange={(e) => set("is_evergreen", e.target.checked)}
-              className="size-4 rounded border-[#2A2A2A] text-[#E5E5EA] focus:ring-[#1A1A1A]"
+              className="size-4 rounded border-border text-foreground focus:ring-surface"
             />
             Evergreen (repurpose later)
           </label>
@@ -487,8 +487,8 @@ export function PostDetailDrawer({
 
         {/* Performance — only shown once posted */}
         {isPosted && (
-          <section className="px-6 py-5 border-b border-[#2A2A2A] space-y-3">
-            <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
+          <section className="px-6 py-5 border-b border-border space-y-3">
+            <h3 className="text-[9px] font-semibold uppercase tracking-wider text-muted">
               Performance
             </h3>
             {showTwitter && (
@@ -557,8 +557,8 @@ export function PostDetailDrawer({
             onClick={handleDelete}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
               confirmDelete
-                ? "bg-[#DC2626] text-white hover:bg-[#B91C1C]"
-                : "text-[#DC2626] hover:bg-[#FEF2F2]"
+                ? "bg-danger text-white hover:bg-danger"
+                : "text-danger hover:bg-[#FEF2F2]"
             }`}
           >
             <TrashIcon className="size-3.5" />
@@ -567,7 +567,7 @@ export function PostDetailDrawer({
           <button
             type="button"
             onClick={() => void persist()}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6]"
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-white text-background rounded-lg hover:bg-foreground"
           >
             <ArrowDownTrayIcon className="size-3.5" />
             Save now
@@ -599,7 +599,7 @@ function CopyBlock({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
           {label}
         </span>
         <div className="flex items-center gap-2">
@@ -607,14 +607,14 @@ function CopyBlock({
             <button
               type="button"
               onClick={onCopyFromOther}
-              className="text-[10px] font-medium text-[#71757D] hover:text-[#E5E5EA] underline-offset-2 hover:underline"
+              className="text-[10px] font-medium text-subtle hover:text-foreground underline-offset-2 hover:underline"
             >
               {copyFromLabel}
             </button>
           )}
           <span
             className={`text-[10px] tabular-nums ${
-              over ? "text-[#DC2626] font-semibold" : "text-[#9CA3AF]"
+              over ? "text-danger font-semibold" : "text-muted"
             }`}
           >
             {value.length} / {limit}

@@ -57,14 +57,14 @@ export default function PipelinePage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0F0F0] shrink-0">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-foreground shrink-0">
         <div>
           <h1 className="text-lg font-bold">Pipeline</h1>
-          <p className="text-xs text-[#AAA]">{leads.length} lead{leads.length !== 1 ? "s" : ""}</p>
+          <p className="text-xs text-muted">{leads.length} lead{leads.length !== 1 ? "s" : ""}</p>
         </div>
         <button
           onClick={() => { setEditLead(createNewLead({})); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B1B1B] text-white text-[11px] font-medium rounded-lg hover:bg-[#2D2D2D]"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-surface text-white text-[11px] font-medium rounded-lg hover:bg-border"
         >
           <PlusIcon className="size-3.5" />
           Add Lead
@@ -73,7 +73,7 @@ export default function PipelinePage() {
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+          <div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" />
         </div>
       ) : (
         <div className="flex-1 overflow-x-auto">
@@ -84,15 +84,15 @@ export default function PipelinePage() {
                 <div
                   key={stage.key}
                   className="w-[260px] flex flex-col shrink-0"
-                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("bg-[#F7F8FA]"); }}
-                  onDragLeave={(e) => { e.currentTarget.classList.remove("bg-[#F7F8FA]"); }}
-                  onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove("bg-[#F7F8FA]"); handleDrop(stage.key); }}
+                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("bg-surface-raised"); }}
+                  onDragLeave={(e) => { e.currentTarget.classList.remove("bg-surface-raised"); }}
+                  onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove("bg-surface-raised"); handleDrop(stage.key); }}
                 >
                   {/* Column header */}
                   <div className="flex items-center gap-2 mb-3 px-1">
                     <div className="size-2 rounded-full" style={{ backgroundColor: stage.color }} />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#777]">{stage.label}</span>
-                    <span className="text-[10px] text-[#CCC] ml-auto">{stageLeads.length}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">{stage.label}</span>
+                    <span className="text-[10px] text-muted ml-auto">{stageLeads.length}</span>
                   </div>
 
                   {/* Cards */}
@@ -104,13 +104,13 @@ export default function PipelinePage() {
                         onDragStart={() => setDraggedId(lead.id)}
                         onDragEnd={() => setDraggedId(null)}
                         onClick={() => { setEditLead(lead); setShowForm(true); }}
-                        className={`bg-[#181818] border border-[#2A2A2A] rounded-lg p-3 cursor-grab active:cursor-grabbing hover:shadow-sm transition-all ${
+                        className={`bg-surface border border-border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:shadow-sm transition-all ${
                           draggedId === lead.id ? "opacity-40" : ""
                         }`}
                       >
-                        <p className="text-xs font-semibold text-[#1A1A1A] mb-1">{lead.brand_name || "Untitled"}</p>
-                        {lead.contact_name && <p className="text-[10px] text-[#999]">{lead.contact_name}</p>}
-                        {lead.notes && <p className="text-[10px] text-[#CCC] mt-1 line-clamp-2">{lead.notes}</p>}
+                        <p className="text-xs font-semibold text-surface mb-1">{lead.brand_name || "Untitled"}</p>
+                        {lead.contact_name && <p className="text-[10px] text-subtle">{lead.contact_name}</p>}
+                        {lead.notes && <p className="text-[10px] text-muted mt-1 line-clamp-2">{lead.notes}</p>}
                         {(lead.funnel || (lead.source && lead.source !== "direct")) && (
                           <div className="flex flex-wrap items-center gap-1 mt-1.5">
                             {lead.funnel && (
@@ -131,14 +131,14 @@ export default function PipelinePage() {
                             <a
                               href={lead.audit_token ? `/audit/${lead.audit_token}` : `/sales-engine/audits?url=${encodeURIComponent(lead.store_url)}&brand=${encodeURIComponent(lead.brand_name)}`}
                               onClick={(e) => e.stopPropagation()}
-                              className={`text-[9px] font-medium ${lead.audit_token ? "text-blue-500" : "text-[#AAA] hover:text-[#1A1A1A]"}`}
+                              className={`text-[9px] font-medium ${lead.audit_token ? "text-blue-500" : "text-muted hover:text-surface"}`}
                             >
                               {lead.audit_token ? "View Audit" : "Run Audit"}
                             </a>
                           )}
                           {lead.follow_up_date && (
                             <span className={`text-[9px] ml-auto ${
-                              new Date(lead.follow_up_date) < new Date() ? "text-red-400 font-semibold" : "text-[#CCC]"
+                              new Date(lead.follow_up_date) < new Date() ? "text-red-400 font-semibold" : "text-muted"
                             }`}>
                               {new Date(lead.follow_up_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                             </span>
@@ -148,7 +148,7 @@ export default function PipelinePage() {
                     ))}
 
                     {stageLeads.length === 0 && (
-                      <div className="flex items-center justify-center h-20 text-[10px] text-[#CCC]">
+                      <div className="flex items-center justify-center h-20 text-[10px] text-muted">
                         Drop here
                       </div>
                     )}
@@ -162,7 +162,7 @@ export default function PipelinePage() {
 
       {/* Lost leads count */}
       {lostLeads.length > 0 && (
-        <div className="px-6 py-2 border-t border-[#F0F0F0] text-[10px] text-[#AAA]">
+        <div className="px-6 py-2 border-t border-foreground text-[10px] text-muted">
           {lostLeads.length} lost lead{lostLeads.length !== 1 ? "s" : ""}
         </div>
       )}
@@ -171,10 +171,10 @@ export default function PipelinePage() {
       {showForm && editLead && (
         <ModalPortal>
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditLead(null); }}>
-            <div className="bg-[#181818] rounded-xl shadow-xl w-full max-w-md mx-4 p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-surface rounded-xl shadow-xl w-full max-w-md mx-4 p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold">{editLead.created_at ? "Edit Lead" : "New Lead"}</h3>
-                <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-[#AAA] hover:text-[#1A1A1A]">
+                <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-muted hover:text-surface">
                   <XMarkIcon className="size-4" />
                 </button>
               </div>
@@ -235,7 +235,7 @@ function LeadForm({ lead, onSave, onDelete }: { lead: Lead; onSave: (l: Lead) =>
         <button
           onClick={() => onSave(form)}
           disabled={!form.brand_name.trim()}
-          className="flex-1 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+          className="flex-1 py-2 bg-surface text-white text-xs font-medium rounded-lg hover:bg-border disabled:opacity-30"
         >
           Save
         </button>

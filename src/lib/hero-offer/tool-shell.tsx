@@ -25,7 +25,7 @@ const STATUS_TINT: Record<ToolStatus, string> = {
   live: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
   shell: "bg-zinc-500/20 text-zinc-200 ring-1 ring-zinc-500/30",
   wip: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
-  soon: "bg-[#222222] text-[#71757D]",
+  soon: "bg-surface-raised text-subtle",
 };
 const STATUS_LABEL: Record<ToolStatus, string> = {
   live: "Live",
@@ -64,7 +64,7 @@ export function ToolShell({
       <div>
         <Link
           href={parentHref}
-          className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] mb-3"
+          className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground mb-3"
         >
           <ArrowLeftIcon className="size-3.5" />
           {parentLabel}
@@ -73,12 +73,12 @@ export function ToolShell({
           <div className={`size-9 rounded-xl bg-gradient-to-br ${ACCENT_GRADIENT[accent]} flex items-center justify-center shrink-0`}>
             <span className="text-white">{icon}</span>
           </div>
-          <h1 className="text-2xl font-semibold text-[#E5E5EA]">{title}</h1>
+          <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
           <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${STATUS_TINT[status]}`}>
             {STATUS_LABEL[status]}
           </span>
         </div>
-        <p className="text-sm text-[#9CA3AF] max-w-2xl">{blurb}</p>
+        <p className="text-sm text-muted max-w-2xl">{blurb}</p>
       </div>
       {children}
     </div>
@@ -112,15 +112,15 @@ export function DeckShell({
   return (
     <div className="space-y-4">
       {/* When to send */}
-      <section className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5">
+      <section className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
         <div className={`text-[10px] uppercase tracking-wider font-semibold mb-2 ${accentText[accent]}`}>
           When to send
         </div>
-        <p className="text-sm text-[#E5E5EA] leading-relaxed">{whenToSend}</p>
+        <p className="text-sm text-foreground leading-relaxed">{whenToSend}</p>
       </section>
 
       {/* Current version */}
-      <section className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5">
+      <section className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
         <div className={`text-[10px] uppercase tracking-wider font-semibold mb-3 ${accentText[accent]}`}>
           Current version
         </div>
@@ -131,7 +131,7 @@ export function DeckShell({
                 href={embedUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
               >
                 Open deck
                 <ArrowTopRightOnSquareIcon className="size-3.5" />
@@ -142,7 +142,7 @@ export function DeckShell({
                 href={downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-[#1A1A1A] text-[#E5E5EA] hover:bg-[#222222]"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-surface text-foreground hover:bg-surface-raised"
               >
                 Download PDF
               </a>
@@ -152,7 +152,7 @@ export function DeckShell({
                 onClick={() => {
                   if (navigator.clipboard) navigator.clipboard.writeText(embedUrl);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-[#1A1A1A] text-[#9CA3AF] hover:text-[#E5E5EA]"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-surface text-muted hover:text-foreground"
               >
                 <ClipboardDocumentIcon className="size-3.5" />
                 Copy link
@@ -161,7 +161,7 @@ export function DeckShell({
           </div>
         ) : (
           <div className="bg-black/40 rounded-lg p-4 ring-1 ring-dashed ring-white/[0.06]">
-            <p className="text-[12px] text-[#71757D] italic">
+            <p className="text-[12px] text-subtle italic">
               No deck linked yet. Build the deck in Tome / Pitch / Figma / Canva, then paste the share URL here in the future polish pass.
             </p>
           </div>
@@ -170,11 +170,11 @@ export function DeckShell({
 
       {/* Notes */}
       {notes && (
-        <section className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5">
+        <section className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5">
           <div className={`text-[10px] uppercase tracking-wider font-semibold mb-2 ${accentText[accent]}`}>
             Notes
           </div>
-          <p className="text-sm text-[#9CA3AF] leading-relaxed whitespace-pre-line">{notes}</p>
+          <p className="text-sm text-muted leading-relaxed whitespace-pre-line">{notes}</p>
         </section>
       )}
 

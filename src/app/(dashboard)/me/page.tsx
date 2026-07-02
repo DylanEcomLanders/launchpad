@@ -104,16 +104,16 @@ export default function MeLanding() {
     person?.preferred_name || me?.name?.split(/\s+/)[0] || person?.full_name?.split(/\s+/)[0];
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
           Your space
         </p>
         <h1 className="mt-2 text-[28px] leading-tight">
           <span className="font-bold">
             {firstName ? `Welcome back, ${firstName}` : "Welcome back"}
           </span>{" "}
-          <span className="font-normal text-[#71757D]">
+          <span className="font-normal text-subtle">
             here&apos;s where to go
           </span>
         </h1>
@@ -125,10 +125,10 @@ export default function MeLanding() {
           >
             <ShieldCheckIcon className="size-5 text-amber-300 shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-[#E5E5EA]">
+              <div className="text-sm font-semibold text-foreground">
                 Sign your contract
               </div>
-              <div className="mt-0.5 text-[12px] text-[#9CA3AF]">
+              <div className="mt-0.5 text-[12px] text-muted">
                 Your Ecom Landers engagement agreement is ready for your
                 signature. Quick review + sign.
               </div>
@@ -162,7 +162,7 @@ export default function MeLanding() {
         </div>
 
         {hydrated && !person && (
-          <p className="text-xs text-[#71757D] mt-8 leading-relaxed">
+          <p className="text-xs text-subtle mt-8 leading-relaxed">
             Your account isn&apos;t linked to a team member record yet. Ask an
             admin to link your email to a Person on the Admin people list.
           </p>
@@ -204,15 +204,15 @@ function ChangePasswordCard({ email }: { email?: string | null }) {
     <button
       onClick={send}
       disabled={state === "sending"}
-      className="text-left bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 hover:border-white transition-colors disabled:opacity-60"
+      className="text-left bg-surface border border-border rounded-xl p-5 hover:border-white transition-colors disabled:opacity-60"
     >
-      <div className="flex items-center gap-2 text-[#71757D]">
+      <div className="flex items-center gap-2 text-subtle">
         <LockClosedIcon className="size-4" />
         <span className="text-[11px] uppercase tracking-wider font-semibold">
           Change password
         </span>
       </div>
-      <div className="mt-2 text-sm text-[#E5E5EA]">
+      <div className="mt-2 text-sm text-foreground">
         {state === "sent"
           ? "Reset link sent. Check your email."
           : state === "error"
@@ -240,24 +240,24 @@ function HubCard({
 }) {
   const inner = (
     <>
-      <div className="flex items-center gap-2 text-[#71757D]">
+      <div className="flex items-center gap-2 text-subtle">
         <Icon className="size-4" />
         <span className="text-[11px] uppercase tracking-wider font-semibold">
           {label}
         </span>
         {disabled && (
-          <span className="text-[9px] uppercase tracking-wider text-[#71757D] ml-auto">
+          <span className="text-[9px] uppercase tracking-wider text-subtle ml-auto">
             Soon
           </span>
         )}
       </div>
-      <div className="mt-2 text-sm text-[#E5E5EA]">{sub}</div>
+      <div className="mt-2 text-sm text-foreground">{sub}</div>
     </>
   );
 
   if (disabled) {
     return (
-      <div className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 opacity-60 cursor-not-allowed">
+      <div className="block bg-surface border border-border rounded-xl p-5 opacity-60 cursor-not-allowed">
         {inner}
       </div>
     );
@@ -265,7 +265,7 @@ function HubCard({
   return (
     <Link
       href={href}
-      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 hover:border-white transition-colors"
+      className="block bg-surface border border-border rounded-xl p-5 hover:border-white transition-colors"
     >
       {inner}
     </Link>

@@ -86,9 +86,9 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
     router.push("/tools/tests");
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
-  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>);
-  if (notFound || !test) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D] mb-3">Test not found.</p><Link href="/tools/tests" className="text-[12px] uppercase tracking-wider text-emerald-300">← Back</Link></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>);
+  if (notFound || !test) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle mb-3">Test not found.</p><Link href="/tools/tests" className="text-[12px] uppercase tracking-wider text-emerald-300">← Back</Link></div></div>);
 
   const days = daysRunning(test);
 
@@ -96,7 +96,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <Link href="/tools/tests" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] mb-3">
+          <Link href="/tools/tests" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground mb-3">
             <ArrowLeftIcon className="size-3.5" />
             All tests
           </Link>
@@ -104,14 +104,14 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
             <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
               <BeakerIcon className="size-4 text-white" />
             </div>
-            <h1 className="text-2xl font-semibold text-[#E5E5EA] truncate">
+            <h1 className="text-2xl font-semibold text-foreground truncate">
               {test.client_name || "Untitled"} {test.surface && `· ${test.surface}`}
             </h1>
             <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${STATUS_TINT[test.status]}`}>
               {STATUS_LABEL[test.status]}
             </span>
           </div>
-          <div className="text-[12px] text-[#71757D]">
+          <div className="text-[12px] text-subtle">
             {saving ? "Saving…" : savedAt ? `Saved ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Loaded"}
             {days !== null && ` · ${days}d running`}
           </div>
@@ -128,7 +128,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
               <button onClick={() => setConcluded("winner")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-600">Winner</button>
               <button onClick={() => setConcluded("loser")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-rose-500 text-white hover:bg-rose-600">Loser</button>
               <button onClick={() => setConcluded("inconclusive")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-zinc-500 text-white hover:bg-zinc-600">Inconclusive</button>
-              <button onClick={() => patch({ status: "killed", ended_at: nowISO() })} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#1A1A1A] text-[#9CA3AF] hover:text-rose-300" title="Kill the test">
+              <button onClick={() => patch({ status: "killed", ended_at: nowISO() })} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:text-rose-300" title="Kill the test">
                 <StopIcon className="size-3.5 inline" />
               </button>
             </>
@@ -136,7 +136,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
           <select value={test.status} onChange={(e) => patch({ status: e.target.value as TestStatus })} className={`${inputClass} w-auto text-[12px]`}>
             {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
-          <button onClick={deleteTest} className="p-1.5 rounded-md text-[#71757D] hover:text-rose-400"><TrashIcon className="size-4" /></button>
+          <button onClick={deleteTest} className="p-1.5 rounded-md text-subtle hover:text-rose-400"><TrashIcon className="size-4" /></button>
         </div>
       </div>
 
@@ -151,7 +151,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
               {test.significance_reached_pct ?? 0}% / {test.significance_target_pct}%
             </div>
           </div>
-          <div className="h-2 bg-[#1A1A1A] rounded-full overflow-hidden">
+          <div className="h-2 bg-surface rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${sigProgress(test)}%` }} />
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
           <Field label="Significance reached (%)"><input type="number" value={test.significance_reached_pct ?? ""} onChange={(e) => patch({ significance_reached_pct: e.target.value ? Number(e.target.value) : undefined })} className={inputClass} placeholder="e.g. 96" /></Field>
         </div>
         {test.outcome && (
-          <div className="text-[12px] text-[#9CA3AF]">
+          <div className="text-[12px] text-muted">
             Called <span className="text-emerald-300 font-semibold">{OUTCOME_LABEL[test.outcome]}</span>
             {test.ended_at && ` on ${new Date(test.ended_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
           </div>
@@ -207,7 +207,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (<div className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] p-5"><h2 className="text-sm font-semibold text-[#E5E5EA] mb-4">{title}</h2><div className="space-y-3">{children}</div></div>);
+  return (<div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5"><h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2><div className="space-y-3">{children}</div></div>);
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (<div><label className={labelClass}>{label}</label>{children}</div>);

@@ -76,13 +76,13 @@ export default function InvoiceDetailPage() {
   }
 
   if (!hydrated) {
-    return <div className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-32 bg-background rounded-xl animate-pulse" />;
   }
   if (!invoice) {
     return (
       <div className="text-center py-12">
-        <p className="text-sm text-[#71757D] mb-3">Invoice not found.</p>
-        <Link href="/company/invoices" className="text-sm text-[#E5E5EA] hover:underline">
+        <p className="text-sm text-subtle mb-3">Invoice not found.</p>
+        <Link href="/company/invoices" className="text-sm text-foreground hover:underline">
           Back to invoices
         </Link>
       </div>
@@ -97,7 +97,7 @@ export default function InvoiceDetailPage() {
       <div className="flex items-center justify-between mb-4">
         <Link
           href="/company/invoices"
-          className="inline-flex items-center gap-1 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+          className="inline-flex items-center gap-1 text-sm text-subtle hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" /> Back
         </Link>
@@ -108,14 +108,14 @@ export default function InvoiceDetailPage() {
               target="_blank"
               rel="noopener noreferrer"
               download={invoice.file_name}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-[#E5E5EA] hover:bg-[#0C0C0C] rounded-md"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-foreground hover:bg-background rounded-md"
             >
               <ArrowDownTrayIcon className="size-3.5" /> Download
             </a>
           )}
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-[#B91C1C] hover:bg-red-500/15 rounded-md"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-red-500/15 rounded-md"
           >
             <TrashIcon className="size-3.5" /> Delete
           </button>
@@ -123,7 +123,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           {invoice.file_url ? (
             invoice.file_url.endsWith(".pdf") || invoice.file_name?.toLowerCase().endsWith(".pdf") ? (
               <iframe src={invoice.file_url} className="w-full h-[700px]" title="Invoice preview" />
@@ -132,16 +132,16 @@ export default function InvoiceDetailPage() {
               <img src={invoice.file_url} alt="Invoice" className="w-full" />
             )
           ) : (
-            <div className="h-[400px] flex items-center justify-center text-[#71757D] text-sm">
+            <div className="h-[400px] flex items-center justify-center text-subtle text-sm">
               No file attached.
             </div>
           )}
         </div>
 
         <div className="space-y-4">
-          <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+          <div className="bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">Status</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">Status</h3>
               <span
                 className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
                 style={{ background: badge.bg, color: badge.text }}
@@ -153,7 +153,7 @@ export default function InvoiceDetailPage() {
               <button
                 onClick={() => changeStatus("paid")}
                 disabled={invoice.status === "paid"}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-[#047857]/20 text-[#10B981] rounded-lg hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-[#047857]/20 text-success rounded-lg hover:opacity-90 disabled:opacity-50"
               >
                 <CheckCircleIcon className="size-3.5" /> Mark paid
               </button>
@@ -167,15 +167,15 @@ export default function InvoiceDetailPage() {
               <button
                 onClick={() => changeStatus("disputed")}
                 disabled={invoice.status === "disputed"}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-[#2A2A2A] text-[#71757D] rounded-lg hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-border text-subtle rounded-lg hover:opacity-90 disabled:opacity-50"
               >
                 <ExclamationCircleIcon className="size-3.5" /> Mark disputed
               </button>
             </div>
           </div>
 
-          <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">Details</h3>
+          <div className="bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">Details</h3>
             <Field
               label="Supplier"
               value={invoice.supplier_name}
@@ -263,21 +263,21 @@ export default function InvoiceDetailPage() {
                 className={textareaClass}
               />
             </div>
-            <div className="text-xs text-[#71757D] pt-2 border-t border-white/[0.04]">
-              Total: <span className="font-medium text-[#E5E5EA]">{fmtMoney(invoice.amount, invoice.currency)}</span>
+            <div className="text-xs text-subtle pt-2 border-t border-white/[0.04]">
+              Total: <span className="font-medium text-foreground">{fmtMoney(invoice.amount, invoice.currency)}</span>
               {invoice.paid_date && <> · Paid {fmtDateUK(invoice.paid_date)}</>}
             </div>
           </div>
 
           {invoice.status_history && invoice.status_history.length > 0 && (
-            <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-3">
+            <div className="bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-3">
                 Status history
               </h3>
-              <ul className="space-y-1.5 text-xs text-[#71757D]">
+              <ul className="space-y-1.5 text-xs text-subtle">
                 {invoice.status_history.map((h) => (
                   <li key={h.id}>
-                    {fmtDateUK(h.changed_at)} · {h.old_status || "—"} → <span className="text-[#E5E5EA]">{h.new_status}</span>
+                    {fmtDateUK(h.changed_at)} · {h.old_status || "—"} → <span className="text-foreground">{h.new_status}</span>
                   </li>
                 ))}
               </ul>

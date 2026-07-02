@@ -144,12 +144,12 @@ export default function PodsClient() {
         />
       ) : (
         <>
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">Operating system</div>
-          <h1 className="text-2xl font-semibold text-[#E5E5EA]">Pod Overview</h1>
-          <p className="mb-5 text-sm text-[#71757D]">Three pods. One cadence. Mondays kick off, Thursdays ship.</p>
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-subtle">Operating system</div>
+          <h1 className="text-2xl font-semibold text-foreground">Pod Overview</h1>
+          <p className="mb-5 text-sm text-subtle">Three pods. One cadence. Mondays kick off, Thursdays ship.</p>
 
           {/* Tabs */}
-          <div className="mb-6 flex gap-1 border-b border-[#2A2A2A]">
+          <div className="mb-6 flex gap-1 border-b border-border">
             {(
               [
                 ["overview", "Overview"],
@@ -161,12 +161,12 @@ export default function PodsClient() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
-                  tab === t ? "border-white text-[#E5E5EA]" : "border-transparent text-[#71757D] hover:text-[#E5E5EA]"
+                  tab === t ? "border-white text-foreground" : "border-transparent text-subtle hover:text-foreground"
                 }`}
               >
                 {label}
                 {t === "strategy" && (
-                  <span className="ml-1.5 rounded-full bg-[#1B1B1B] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white">
+                  <span className="ml-1.5 rounded-full bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white">
                     New
                   </span>
                 )}
@@ -205,10 +205,10 @@ function OverviewTab({ onOpenPod }: { onOpenPod: (id: string) => void }) {
   const anyTrouble = PODS.some((p) => podStats(p.id).blockers > 0);
   return (
     <>
-      <div className="mb-5 rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+      <div className="mb-5 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
         <div className="mb-3 flex items-center gap-2">
           <span className={`size-2 rounded-full ${anyTrouble ? "bg-amber-500" : "bg-emerald-500"}`} />
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">Agency health</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">Agency health</span>
           <span className={`text-[12px] font-medium ${anyTrouble ? "text-amber-700" : "text-emerald-700"}`}>
             {anyTrouble ? "Watch" : "Healthy"}
           </span>
@@ -218,7 +218,7 @@ function OverviewTab({ onOpenPod }: { onOpenPod: (id: string) => void }) {
             const s = podStats(p.id);
             const pct = Math.round((s.used / p.capacityTotal) * 100);
             return (
-              <div key={p.id} className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3">
+              <div key={p.id} className="rounded-lg border border-border bg-surface p-3">
                 <div className="mb-1.5 flex items-center gap-1.5">
                   <span className="size-1.5 rounded-full bg-emerald-500" />
                   <span className="text-[12px] font-semibold">{p.name}</span>
@@ -246,8 +246,8 @@ function OverviewTab({ onOpenPod }: { onOpenPod: (id: string) => void }) {
 function Mini({ label, value, bad }: { label: string; value: string | number; bad?: boolean }) {
   return (
     <div>
-      <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</div>
-      <div className={`text-sm font-semibold tabular-nums ${bad ? "text-rose-700" : "text-[#E5E5EA]"}`}>{value}</div>
+      <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
+      <div className={`text-sm font-semibold tabular-nums ${bad ? "text-rose-700" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }
@@ -257,14 +257,14 @@ function PodCard({ pod, onOpen }: { pod: Pod; onOpen: () => void }) {
   return (
     <button
       onClick={onOpen}
-      className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-5 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
+      className="rounded-xl border border-border bg-surface p-5 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-muted hover:shadow-[var(--shadow-card)]"
     >
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-lg font-semibold text-[#E5E5EA]">{pod.name}</div>
-          <div className="text-[12px] text-[#71757D]">{pod.tagline}</div>
+          <div className="text-lg font-semibold text-foreground">{pod.name}</div>
+          <div className="text-[12px] text-subtle">{pod.tagline}</div>
         </div>
-        <ChevronRightIcon className="size-4 text-[#C5C5C5]" />
+        <ChevronRightIcon className="size-4 text-muted" />
       </div>
 
       <div className="mt-3 flex -space-x-1.5">
@@ -282,7 +282,7 @@ function PodCard({ pod, onOpen }: { pod: Pod; onOpen: () => void }) {
         <WeekCell label="Next week" used={s.nextWeek} cap={pod.capacityTotal / 4} />
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[#F0F0F2] pt-3">
+      <div className="mt-3 grid grid-cols-3 gap-2 border-t border-surface-raised pt-3">
         <Stat label="In flight" value={s.inFlight} />
         <Stat label="Queued" value={s.queued} />
         <Stat label="Blockers" value={s.blockers} bad={s.blockers > 0} />
@@ -295,12 +295,12 @@ function WeekCell({ label, used, cap }: { label: string; used: number; cap: numb
   const pct = Math.min(100, Math.round((used / cap) * 100));
   const tone = used >= cap ? "bg-rose-400" : used >= cap * 0.8 ? "bg-amber-400" : "bg-emerald-400";
   return (
-    <div className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1.5">
+    <div className="rounded-md border border-border bg-surface px-2 py-1.5">
       <div className="flex items-baseline justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</span>
-        <span className="text-[11px] tabular-nums text-[#71757D]">{used}/{cap} pts</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">{label}</span>
+        <span className="text-[11px] tabular-nums text-subtle">{used}/{cap} pts</span>
       </div>
-      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[#222222]">
+      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-surface-raised">
         <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -310,8 +310,8 @@ function WeekCell({ label, used, cap }: { label: string; used: number; cap: numb
 function Stat({ label, value, bad }: { label: string; value: number; bad?: boolean }) {
   return (
     <div>
-      <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</div>
-      <div className={`text-lg font-semibold tabular-nums ${bad ? "text-rose-700" : "text-[#E5E5EA]"}`}>{value}</div>
+      <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
+      <div className={`text-lg font-semibold tabular-nums ${bad ? "text-rose-700" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }
@@ -330,10 +330,10 @@ function PipelineTab({ onOpen }: { onOpen: (id: string) => void }) {
   }).sort((a, b) => (a.lead?.dueDate ?? "").localeCompare(b.lead?.dueDate ?? ""));
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
+    <div className="overflow-x-auto rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
       <table className="w-full min-w-[640px] text-sm">
         <thead>
-          <tr className="border-b border-[#2A2A2A] bg-[#0C0C0C] text-left text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <tr className="border-b border-border bg-background text-left text-[11px] font-semibold uppercase tracking-wider text-subtle">
             <th className="px-4 py-2.5">Project</th>
             <th className="px-4 py-2.5">Client</th>
             <th className="px-4 py-2.5">Pod</th>
@@ -341,27 +341,27 @@ function PipelineTab({ onOpen }: { onOpen: (id: string) => void }) {
             <th className="px-4 py-2.5">Ships</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#2A2A2A]">
+        <tbody className="divide-y divide-border">
           {rows.map(({ p, lead, shipped, state }) => (
             <tr
               key={p.id}
               onClick={() => lead && onOpen(lead.id)}
-              className="cursor-pointer hover:bg-[#0C0C0C]"
+              className="cursor-pointer hover:bg-background"
             >
-              <td className="px-4 py-2.5 font-medium text-[#E5E5EA]">{p.name}</td>
-              <td className="px-4 py-2.5 text-[#71757D]">{CLIENT_BY_ID[p.clientId]?.name}</td>
-              <td className="px-4 py-2.5 text-[12px] text-[#71757D]">{POD_BY_ID[p.podId]?.tagline}</td>
+              <td className="px-4 py-2.5 font-medium text-foreground">{p.name}</td>
+              <td className="px-4 py-2.5 text-subtle">{CLIENT_BY_ID[p.clientId]?.name}</td>
+              <td className="px-4 py-2.5 text-[12px] text-subtle">{POD_BY_ID[p.podId]?.tagline}</td>
               <td className="px-4 py-2.5">
                 {shipped ? (
                   <span className="text-[12px] font-medium text-emerald-700">Shipped</span>
                 ) : (
                   <span className="inline-flex items-center gap-2">
-                    <span className="text-[12px] text-[#E5E5EA]">{lead?.phase ? PHASE_LABEL[lead.phase] : "—"}</span>
+                    <span className="text-[12px] text-foreground">{lead?.phase ? PHASE_LABEL[lead.phase] : "—"}</span>
                     {ATTENTION.includes(state) && <StateBadge state={state} />}
                   </span>
                 )}
               </td>
-              <td className="px-4 py-2.5 text-[12px] tabular-nums text-[#71757D]">
+              <td className="px-4 py-2.5 text-[12px] tabular-nums text-subtle">
                 {shipped ? "—" : lead ? fmtDayMonth(lead.dueDate) : "—"}
               </td>
             </tr>
@@ -389,21 +389,21 @@ function StrategyTab({ onOpenBrief }: { onOpenBrief: (clientId: string) => void 
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2 text-[12px] text-[#71757D]">
+      <div className="flex items-center gap-2 text-[12px] text-subtle">
         <Avatar name={LEAD_STRATEGIST.name} id={LEAD_STRATEGIST.id} size={20} />
         Owned by {LEAD_STRATEGIST.name} · Lead Strategist · across all pods
       </div>
 
       {/* Briefs */}
-      <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
-        <div className="flex items-center gap-2 border-b border-[#F0F0F2] px-4 py-3">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">Briefs</span>
-          <span className="text-[11px] text-[#71757D]">{briefs.length}</span>
-          <span className="text-[11px] text-[#71757D]">· auto-added when onboarding lands on a pod · one per client</span>
+      <div className="rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
+        <div className="flex items-center gap-2 border-b border-surface-raised px-4 py-3">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">Briefs</span>
+          <span className="text-[11px] text-subtle">{briefs.length}</span>
+          <span className="text-[11px] text-subtle">· auto-added when onboarding lands on a pod · one per client</span>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <tr className="text-left text-[10px] font-semibold uppercase tracking-wider text-subtle">
               <th className="px-4 py-2">Client</th>
               <th className="px-4 py-2">Pod</th>
               <th className="px-4 py-2">Status</th>
@@ -411,19 +411,19 @@ function StrategyTab({ onOpenBrief }: { onOpenBrief: (clientId: string) => void 
               <th className="px-4 py-2 text-right">Strategy home</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#2A2A2A]">
+          <tbody className="divide-y divide-border">
             {briefs.map((c) => (
-              <tr key={c.id} onClick={() => onOpenBrief(c.id)} className="cursor-pointer hover:bg-[#0C0C0C]">
-                <td className="px-4 py-2.5 font-medium text-[#E5E5EA]">{c.name}</td>
-                <td className="px-4 py-2.5 text-[12px] text-[#71757D]">{POD_BY_ID[c.podId]?.tagline}</td>
+              <tr key={c.id} onClick={() => onOpenBrief(c.id)} className="cursor-pointer hover:bg-background">
+                <td className="px-4 py-2.5 font-medium text-foreground">{c.name}</td>
+                <td className="px-4 py-2.5 text-[12px] text-subtle">{POD_BY_ID[c.podId]?.tagline}</td>
                 <td className="px-4 py-2.5">
-                  <span className="rounded-md border border-[#2A2A2A] bg-[#222222] px-1.5 py-0.5 text-[11px] font-medium text-[#71757D]">
+                  <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 text-[11px] font-medium text-subtle">
                     {clientStatus(c.id)}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-[12px] text-[#71757D]">{c.strategy?.hypotheses.length ?? 0}</td>
+                <td className="px-4 py-2.5 text-[12px] text-subtle">{c.strategy?.hypotheses.length ?? 0}</td>
                 <td className="px-4 py-2.5 text-right">
-                  <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#E5E5EA]">
+                  <span className="inline-flex items-center gap-1 text-[12px] font-medium text-foreground">
                     Open <ArrowRightIcon className="size-3.5" />
                   </span>
                 </td>
@@ -434,37 +434,37 @@ function StrategyTab({ onOpenBrief }: { onOpenBrief: (clientId: string) => void 
       </div>
 
       {/* Results */}
-      <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
-        <div className="flex items-center gap-2 border-b border-[#F0F0F2] px-4 py-3">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">Results</span>
-          <span className="text-[11px] text-[#71757D]">{results.length}</span>
-          <span className="text-[11px] text-[#71757D]">· live tests Aanchal is tracking</span>
+      <div className="rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)]">
+        <div className="flex items-center gap-2 border-b border-surface-raised px-4 py-3">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">Results</span>
+          <span className="text-[11px] text-subtle">{results.length}</span>
+          <span className="text-[11px] text-subtle">· live tests Aanchal is tracking</span>
         </div>
         {results.length === 0 ? (
-          <p className="px-4 py-6 text-center text-[12px] text-[#C5C5C5]">No live tests right now.</p>
+          <p className="px-4 py-6 text-center text-[12px] text-muted">No live tests right now.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+              <tr className="text-left text-[10px] font-semibold uppercase tracking-wider text-subtle">
                 <th className="px-4 py-2">Client</th>
                 <th className="px-4 py-2">Test</th>
                 <th className="px-4 py-2">Pod</th>
                 <th className="px-4 py-2 text-right">Result</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A2A2A]">
+            <tbody className="divide-y divide-border">
               {results.map((t) => (
-                <tr key={t.id} className="hover:bg-[#0C0C0C]">
-                  <td className="px-4 py-2.5 font-medium text-[#E5E5EA]">{CLIENT_BY_ID[t.clientId]?.name}</td>
-                  <td className="px-4 py-2.5 text-[12px] text-[#71757D]">{t.title}</td>
-                  <td className="px-4 py-2.5 text-[12px] text-[#71757D]">{POD_BY_ID[t.podId]?.tagline}</td>
+                <tr key={t.id} className="hover:bg-background">
+                  <td className="px-4 py-2.5 font-medium text-foreground">{CLIENT_BY_ID[t.clientId]?.name}</td>
+                  <td className="px-4 py-2.5 text-[12px] text-subtle">{t.title}</td>
+                  <td className="px-4 py-2.5 text-[12px] text-subtle">{POD_BY_ID[t.podId]?.tagline}</td>
                   <td className="px-4 py-2.5 text-right">
                     {t.testResult?.status === "winner" ? (
                       <span className="text-[12px] font-semibold text-emerald-700">Winner · +{t.testResult.lift}%</span>
                     ) : t.testResult?.status === "loser" ? (
                       <span className="text-[12px] font-semibold text-rose-700">Lost · {t.testResult.lift}%</span>
                     ) : (
-                      <span className="text-[12px] font-medium text-[#71757D]">Awaiting results</span>
+                      <span className="text-[12px] font-medium text-subtle">Awaiting results</span>
                     )}
                   </td>
                 </tr>
@@ -510,23 +510,23 @@ function PodDetail({
 
   return (
     <div>
-      <button onClick={onBack} className="mb-4 inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA]">
+      <button onClick={onBack} className="mb-4 inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground">
         <ArrowLeftIcon className="size-4" /> All pods
       </button>
 
       {/* header + members */}
-      <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)]">
-        <h1 className="text-2xl font-semibold text-[#E5E5EA]">{pod.name}</h1>
-        <p className="text-sm text-[#71757D]">{pod.tagline}</p>
+      <div className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
+        <h1 className="text-2xl font-semibold text-foreground">{pod.name}</h1>
+        <p className="text-sm text-subtle">{pod.tagline}</p>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {pod.members.map((m) => (
             <div key={m.id} className="flex items-center gap-2">
               <Avatar name={m.name} id={m.id} size={36} placeholder={m.isPlaceholder} />
               <div className="min-w-0 leading-tight">
-                <div className={`truncate text-[13px] font-medium ${m.isPlaceholder ? "italic text-[#71757D]" : "text-[#E5E5EA]"}`}>
+                <div className={`truncate text-[13px] font-medium ${m.isPlaceholder ? "italic text-subtle" : "text-foreground"}`}>
                   {m.isPlaceholder ? "TO HIRE" : m.name}
                 </div>
-                <div className="truncate text-[11px] text-[#71757D]">{ROLE_LABEL[m.role]}</div>
+                <div className="truncate text-[11px] text-subtle">{ROLE_LABEL[m.role]}</div>
               </div>
             </div>
           ))}
@@ -535,7 +535,7 @@ function PodDetail({
 
       {/* capacity + stats */}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+        <div className="rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
           <CapacityBar used={s.used} total={pod.capacityTotal} label="Capacity · this month" />
           <div className="mt-3 grid grid-cols-2 gap-2">
             <WeekCell label="This week" used={s.thisWeek} cap={pod.capacityTotal / 4} />
@@ -551,17 +551,17 @@ function PodDetail({
       </div>
 
       {/* open tasks per member */}
-      <div className="mt-4 rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+      <div className="mt-4 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
         <SectionHeader>Open tasks per member</SectionHeader>
         <div className="space-y-1">
           {pod.members.map((m) => {
             const count = pTasks.filter((t) => t.assignedTo === m.id && t.status !== "done").length;
             return (
               <div key={m.id} className="flex items-center justify-between text-[13px]">
-                <span className={m.isPlaceholder ? "italic text-[#71757D]" : "text-[#E5E5EA]"}>
+                <span className={m.isPlaceholder ? "italic text-subtle" : "text-foreground"}>
                   {m.isPlaceholder ? "TO HIRE" : m.name}
                 </span>
-                <span className="tabular-nums text-[#71757D]">{count}</span>
+                <span className="tabular-nums text-subtle">{count}</span>
               </div>
             );
           })}
@@ -569,10 +569,10 @@ function PodDetail({
       </div>
 
       {/* blockers */}
-      <div className="mt-4 rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+      <div className="mt-4 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
         <SectionHeader>Blockers</SectionHeader>
         {blocked.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-[#2A2A2A] bg-[#0C0C0C] py-4 text-center text-[12px] text-[#71757D]">
+          <p className="rounded-lg border border-dashed border-border bg-background py-4 text-center text-[12px] text-subtle">
             No active blockers. Pod is clear.
           </p>
         ) : (
@@ -592,16 +592,16 @@ function PodDetail({
         <SectionHeader>Client roster</SectionHeader>
         <div className="grid gap-3 md:grid-cols-2">
           {clients.map((c) => (
-            <div key={c.id} className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-3 shadow-[var(--shadow-soft)]">
+            <div key={c.id} className="rounded-xl border border-border bg-surface p-3 shadow-[var(--shadow-soft)]">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-[#E5E5EA]">{c.name}</span>
-                <span className="rounded-md border border-[#2A2A2A] bg-[#222222] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D]">
+                <span className="text-sm font-semibold text-foreground">{c.name}</span>
+                <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium text-subtle">
                   £{c.retainerTier}/mo
                 </span>
               </div>
               {c.cvrCurrent != null && (
-                <div className="mt-2 text-[11px] text-[#71757D]">
-                  CVR {c.cvrBaseline}% → <span className="font-medium text-[#E5E5EA]">{c.cvrCurrent}%</span>
+                <div className="mt-2 text-[11px] text-subtle">
+                  CVR {c.cvrBaseline}% → <span className="font-medium text-foreground">{c.cvrCurrent}%</span>
                 </div>
               )}
             </div>
@@ -611,7 +611,7 @@ function PodDetail({
 
       {/* task list (the familiar working view) */}
       <div className="mt-6">
-        <SectionHeader right={<span className="text-[11px] text-[#71757D]">Click the circle to advance status</span>}>
+        <SectionHeader right={<span className="text-[11px] text-subtle">Click the circle to advance status</span>}>
           Active work
         </SectionHeader>
         <div className="space-y-4">
@@ -621,12 +621,12 @@ function PodDetail({
             const done = ct.filter((t) => t.status === "done");
             if (ct.length === 0) return null;
             return (
-              <div key={client.id} className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+              <div key={client.id} className="rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
                 <div className="mb-2 flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-[#E5E5EA]">{client.name}</h4>
-                  <span className="text-[11px] text-[#71757D]">{live.length} in flight</span>
+                  <h4 className="text-sm font-semibold text-foreground">{client.name}</h4>
+                  <span className="text-[11px] text-subtle">{live.length} in flight</span>
                 </div>
-                <div className="divide-y divide-[#2A2A2A]">
+                <div className="divide-y divide-border">
                   {live.map((t) => (
                     <TaskRow
                       key={t.id}
@@ -642,9 +642,9 @@ function PodDetail({
                   ))}
                 </div>
                 {done.length > 0 && (
-                  <div className="mt-3 border-t border-[#F0F0F2] pt-3">
+                  <div className="mt-3 border-t border-surface-raised pt-3">
                     <Disclosure label="Done" count={done.length}>
-                      <div className="divide-y divide-[#2A2A2A]">
+                      <div className="divide-y divide-border">
                         {done.map((t) => (
                           <TaskRow
                             key={t.id}
@@ -666,7 +666,7 @@ function PodDetail({
             );
           })}
         </div>
-        {projects.length === 0 && <p className="text-[12px] text-[#71757D]">No projects yet.</p>}
+        {projects.length === 0 && <p className="text-[12px] text-subtle">No projects yet.</p>}
       </div>
     </div>
   );
@@ -674,9 +674,9 @@ function PodDetail({
 
 function BigStat({ label, value, bad }: { label: string; value: number; bad?: boolean }) {
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] px-4 py-3 shadow-[var(--shadow-soft)]">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</div>
-      <div className={`mt-1 text-2xl font-semibold tabular-nums ${bad ? "text-rose-700" : "text-[#E5E5EA]"}`}>{value}</div>
+    <div className="rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
+      <div className={`mt-1 text-2xl font-semibold tabular-nums ${bad ? "text-rose-700" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }
@@ -736,15 +736,15 @@ function TaskRow({
         ? "text-amber-700"
         : state === "waiting_client"
           ? "text-blue-600 line-through"
-          : "text-[#71757D]";
+          : "text-subtle";
 
   return (
     <div className="group flex items-center gap-3 py-2.5">
-      {task.locked ? <LockClosedIcon className="size-5 shrink-0 text-[#C5C5C5]" /> : <StatusControl status={task.status} onClick={onCycleStatus} />}
+      {task.locked ? <LockClosedIcon className="size-5 shrink-0 text-muted" /> : <StatusControl status={task.status} onClick={onCycleStatus} />}
 
       <button onClick={onOpen} className="min-w-0 flex-1 text-left">
         <div className="flex items-center gap-2">
-          <span className={`truncate text-sm font-medium ${task.locked || task.status === "done" ? "text-[#71757D]" : "text-[#E5E5EA]"}`}>
+          <span className={`truncate text-sm font-medium ${task.locked || task.status === "done" ? "text-subtle" : "text-foreground"}`}>
             {task.title}
           </span>
           {task.testResult?.status === "winner" && (
@@ -753,7 +753,7 @@ function TaskRow({
             </span>
           )}
         </div>
-        <div className="mt-1 flex items-center gap-2 text-[11px] text-[#71757D]">
+        <div className="mt-1 flex items-center gap-2 text-[11px] text-subtle">
           {task.phase && <span>{PHASE_LABEL[task.phase]}</span>}
           {task.locked && <span>· Locked, cascades from primary</span>}
           {task.blocked && task.blockedReason && <span className="text-orange-700">· {task.blockedReason}</span>}
@@ -774,13 +774,13 @@ function TaskRow({
             onKeyDown={(e) => {
               if (e.key === "Enter") onCommitDate((e.target as HTMLInputElement).value || task.dueDate);
             }}
-            className="w-full rounded-md border border-white bg-[#181818] px-1.5 py-1 text-[11px] focus:outline-none"
+            className="w-full rounded-md border border-white bg-surface px-1.5 py-1 text-[11px] focus:outline-none"
           />
         ) : (
           <button
             onClick={onEditDate}
             disabled={state === "done"}
-            className={`inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[12px] tabular-nums hover:bg-[#222222] disabled:opacity-50 ${dateTone}`}
+            className={`inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[12px] tabular-nums hover:bg-surface-raised disabled:opacity-50 ${dateTone}`}
             title="Click to edit due date"
           >
             <CalendarDaysIcon className="size-3.5 opacity-60" />
@@ -794,7 +794,7 @@ function TaskRow({
         <button
           onClick={onToggleWaiting}
           title={task.waitingOn === "client" ? "Resume — clock restarts" : "Mark waiting on client — pauses the clock"}
-          className="text-[#C5C5C5] opacity-0 transition-opacity hover:text-[#E5E5EA] group-hover:opacity-100"
+          className="text-muted opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
         >
           {task.waitingOn === "client" ? <PlayCircleIcon className="size-5" /> : <PauseCircleIcon className="size-5" />}
         </button>
@@ -831,34 +831,34 @@ function TaskPanel({
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative h-full w-full max-w-md overflow-y-auto border-l border-[#2A2A2A] bg-[#181818] p-6 shadow-[var(--shadow-elevated)]">
+      <div className="relative h-full w-full max-w-md overflow-y-auto border-l border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
+            <div className="text-[11px] font-medium uppercase tracking-wider text-subtle">
               {task.phase ? `${PHASE_LABEL[task.phase]} · ` : ""}
               {task.tier} · {task.discipline}
             </div>
-            <h3 className="mt-2 text-lg font-semibold text-[#E5E5EA]">{task.title}</h3>
+            <h3 className="mt-2 text-lg font-semibold text-foreground">{task.title}</h3>
           </div>
-          <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]">
+          <button onClick={onClose} className="text-subtle hover:text-foreground">
             <XMarkIcon className="size-5" />
           </button>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <StateBadge state={state} />
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-[#71757D]">
+          <span className="inline-flex items-center gap-1.5 text-[12px] text-subtle">
             <Avatar name={assignee?.name ?? "?"} id={assignee?.id ?? ""} size={20} placeholder={assignee?.isPlaceholder} />
             {assignee?.name}
           </span>
           {task.points != null && (
-            <span className="rounded-md border border-[#2A2A2A] bg-[#222222] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D]">
+            <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium text-subtle">
               {task.points} pts
             </span>
           )}
         </div>
 
-        <div className="mt-3 flex items-center gap-2 text-[12px] text-[#71757D]">
+        <div className="mt-3 flex items-center gap-2 text-[12px] text-subtle">
           <CalendarDaysIcon className="size-4" /> Due
           {editingDate ? (
             <input
@@ -869,10 +869,10 @@ function TaskPanel({
                 onSetDate(e.target.value || task.dueDate);
                 setEditingDate(false);
               }}
-              className="rounded-md border border-white bg-[#181818] px-1.5 py-0.5 text-[12px] focus:outline-none"
+              className="rounded-md border border-white bg-surface px-1.5 py-0.5 text-[12px] focus:outline-none"
             />
           ) : (
-            <button onClick={() => setEditingDate(true)} className="font-medium text-[#E5E5EA] underline decoration-dotted underline-offset-2">
+            <button onClick={() => setEditingDate(true)} className="font-medium text-foreground underline decoration-dotted underline-offset-2">
               {fmtDayMonth(task.dueDate)}
             </button>
           )}
@@ -882,7 +882,7 @@ function TaskPanel({
           <button
             onClick={onToggleWaiting}
             className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
-              task.waitingOn === "client" ? "border-blue-200 bg-blue-50 text-blue-700" : "border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:text-[#E5E5EA]"
+              task.waitingOn === "client" ? "border-blue-200 bg-blue-50 text-blue-700" : "border-border bg-surface text-subtle hover:text-foreground"
             }`}
           >
             {task.waitingOn === "client" ? (
@@ -900,18 +900,18 @@ function TaskPanel({
         {task.milestones && (
           <div className="mt-6">
             <SectionHeader>Cascade · milestones</SectionHeader>
-            <p className="mb-3 text-[12px] text-[#71757D]">Completing the trigger milestone hands off to and unlocks the paired build task.</p>
+            <p className="mb-3 text-[12px] text-subtle">Completing the trigger milestone hands off to and unlocks the paired build task.</p>
             <div className="space-y-1.5">
               {task.milestones.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => onToggleMilestone(m.id)}
-                  className="flex w-full items-center gap-2.5 rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2 text-left hover:border-[#C5C5C5]"
+                  className="flex w-full items-center gap-2.5 rounded-lg border border-border bg-surface px-3 py-2 text-left hover:border-muted"
                 >
-                  {m.done ? <CheckSolid className="size-5 shrink-0 text-emerald-500" /> : <CheckCircleIcon className="size-5 shrink-0 text-[#C5C5C5]" />}
-                  <span className={`flex-1 text-sm ${m.done ? "text-[#71757D] line-through" : "text-[#E5E5EA]"}`}>{m.label}</span>
+                  {m.done ? <CheckSolid className="size-5 shrink-0 text-emerald-500" /> : <CheckCircleIcon className="size-5 shrink-0 text-muted" />}
+                  <span className={`flex-1 text-sm ${m.done ? "text-subtle line-through" : "text-foreground"}`}>{m.label}</span>
                   {m.triggersSecondary && (
-                    <span className="rounded-md border border-white bg-[#1B1B1B] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white">
+                    <span className="rounded-md border border-white bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white">
                       Trigger
                     </span>
                   )}
@@ -922,16 +922,16 @@ function TaskPanel({
             {paired && (
               <div className="mt-3">
                 <div className="flex justify-center">
-                  <ArrowDownIcon className="size-4 text-[#C5C5C5]" />
+                  <ArrowDownIcon className="size-4 text-muted" />
                 </div>
-                <div className={`mt-1 rounded-lg border p-3 ${paired.locked ? "border-dashed border-[#D5D5DA] bg-[#0C0C0C]" : "border-emerald-200 bg-emerald-50"}`}>
+                <div className={`mt-1 rounded-lg border p-3 ${paired.locked ? "border-dashed border-[#D5D5DA] bg-background" : "border-emerald-200 bg-emerald-50"}`}>
                   <div className="flex items-center gap-2">
-                    {paired.locked ? <LockClosedIcon className="size-4 text-[#71757D]" /> : <CheckCircleIcon className="size-4 text-emerald-600" />}
-                    <span className="text-sm font-medium text-[#E5E5EA]">{paired.title}</span>
+                    {paired.locked ? <LockClosedIcon className="size-4 text-subtle" /> : <CheckCircleIcon className="size-4 text-emerald-600" />}
+                    <span className="text-sm font-medium text-foreground">{paired.title}</span>
                   </div>
                   <div className="mt-1 pl-6 text-[12px]">
                     {paired.locked ? (
-                      <span className="text-[#71757D]">Locked — unlocks when client design approval is ticked</span>
+                      <span className="text-subtle">Locked — unlocks when client design approval is ticked</span>
                     ) : (
                       <span className="font-medium text-emerald-700">
                         Ready · handed off to {MEMBER_BY_ID[paired.assignedTo]?.name} · due {fmtDayMonth(paired.dueDate)}
@@ -947,12 +947,12 @@ function TaskPanel({
         {primaryParent && (
           <div className="mt-6">
             <SectionHeader>Cascaded from</SectionHeader>
-            <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3">
+            <div className="rounded-lg border border-border bg-surface p-3">
               <div className="flex items-center gap-2 text-sm">
-                <ArrowRightIcon className="size-4 text-[#C5C5C5]" />
+                <ArrowRightIcon className="size-4 text-muted" />
                 <span className="font-medium">{primaryParent.title}</span>
               </div>
-              <p className="mt-1 pl-6 text-[12px] text-[#71757D]">
+              <p className="mt-1 pl-6 text-[12px] text-subtle">
                 <MemberChip id={primaryParent.assignedTo} /> · {task.locked ? "not yet handed off" : "handed off"}
               </p>
             </div>

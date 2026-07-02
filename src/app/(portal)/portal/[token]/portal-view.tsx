@@ -100,7 +100,7 @@ function ProgressRing({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-2xl font-bold tracking-tight">{progress}</span>
-        <span className="text-[10px] font-medium text-[#AAA] -mt-0.5">
+        <span className="text-[10px] font-medium text-muted -mt-0.5">
           percent
         </span>
       </div>
@@ -117,7 +117,7 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
   switch (status) {
     case "complete":
       return (
-        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-accent text-[#1A1A1A]`}>
+        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-accent text-surface`}>
           <svg className={check} viewBox="0 0 12 12" fill="none">
             <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -131,7 +131,7 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
       );
     case "upcoming":
       return (
-        <span className={`inline-flex items-center justify-center ${s} rounded-full border-2 border-[#D4D4D4]`} />
+        <span className={`inline-flex items-center justify-center ${s} rounded-full border-2 border-muted`} />
       );
   }
 }
@@ -182,7 +182,7 @@ function UKTimeBanner({ dark = false }: { dark?: boolean }) {
           isOnline ? "bg-green-500" : "bg-red-500"
         }`}
       />
-      <span className={`text-[11px] ${dark ? "text-[#999]" : "text-[#777]"}`}>
+      <span className={`text-[11px] ${dark ? "text-subtle" : "text-subtle"}`}>
         {isOnline ? "Online" : "Offline"} &middot; {ukTime} UK
       </span>
     </div>
@@ -405,8 +405,8 @@ export function PortalView({
   return (
     <div className="flex min-h-screen bg-white">
       {/* ── Mobile header ── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-[#E8E8E8] px-4 py-3 flex items-center justify-between">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-[#F5F5F5] text-[#777]">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-foreground px-4 py-3 flex items-center justify-between">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-surface-raised text-subtle">
           <svg className="size-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
         </button>
         <Logo height={14} />
@@ -419,8 +419,8 @@ export function PortalView({
       )}
 
       {/* ── Sidebar (always visible) ── */}
-      <aside className={`fixed md:sticky top-0 left-0 md:self-start h-screen md:h-screen md:max-h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="px-5 py-6 border-b border-[#E8E8E8]">
+      <aside className={`fixed md:sticky top-0 left-0 md:self-start h-screen md:h-screen md:max-h-screen z-50 md:z-auto w-[220px] bg-white border-r border-foreground flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="px-5 py-6 border-b border-foreground">
           <Logo height={14} />
         </div>
 
@@ -429,7 +429,7 @@ export function PortalView({
           <div className="px-3 pt-3">
             <a
               href="/team"
-              className="flex items-center gap-1.5 text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-medium text-subtle hover:text-surface transition-colors"
             >
               <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
               Back to Team Tools
@@ -442,13 +442,13 @@ export function PortalView({
           <div className="px-3 pt-4 pb-2">
             <button
               onClick={() => { goHome(); setSidebarOpen(false); }}
-              className="flex items-center gap-1.5 text-xs font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-muted hover:text-surface transition-colors"
             >
               <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
               Home
             </button>
-            <p className="text-sm font-bold text-[#1A1A1A] mt-3 truncate">{selectedProject?.name}</p>
-            <p className="text-[11px] text-[#AAA] mt-0.5">
+            <p className="text-sm font-bold text-surface mt-3 truncate">{selectedProject?.name}</p>
+            <p className="text-[11px] text-muted mt-0.5">
               {selectedProject?.type === "retainer" ? "Retainer" : "Project"}
             </p>
           </div>
@@ -461,8 +461,8 @@ export function PortalView({
               onClick={() => { setActiveTab(item.key); setFocusedGateKey(null); setSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium rounded-lg transition-all duration-150 ${
                 activeTab === item.key && !focusedGateKey
-                  ? "bg-[#1A1A1A] text-white"
-                  : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
+                  ? "bg-surface text-white"
+                  : "text-subtle hover:bg-surface-raised hover:text-surface"
               }`}
             >
               <NavIcon type={item.key} />
@@ -472,12 +472,12 @@ export function PortalView({
           {/* Team: per-gate nav with progress dots */}
           {viewMode === "team" && drillView === "project" && teamGateItems.length > 0 && (
             <div className="pt-4">
-              <p className="px-3 mb-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#BBB]">Handover Gates</p>
+              <p className="px-3 mb-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-muted">Handover Gates</p>
               {teamGateItems.map((g) => {
                 const dotColor =
                   g.status === "submitted" ? "bg-emerald-500"
                   : g.status === "in-progress" ? "bg-amber-400"
-                  : "bg-[#DDD]";
+                  : "bg-muted";
                 const isActive = activeTab === "internal" && focusedGateKey === g.key;
                 return (
                   <button
@@ -485,8 +485,8 @@ export function PortalView({
                     onClick={() => { openGate(g.key); setSidebarOpen(false); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] font-medium rounded-lg transition-all duration-150 ${
                       isActive
-                        ? "bg-[#1A1A1A] text-white"
-                        : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
+                        ? "bg-surface text-white"
+                        : "text-subtle hover:bg-surface-raised hover:text-surface"
                     }`}
                   >
                     <span className={`size-1.5 rounded-full shrink-0 ${dotColor}`} />
@@ -497,9 +497,9 @@ export function PortalView({
             </div>
           )}
         </nav>
-        <div className="px-5 py-4 border-t border-[#E8E8E8] space-y-2">
+        <div className="px-5 py-4 border-t border-foreground space-y-2">
           <UKTimeBanner />
-          <p className="text-[10px] text-[#CCC]">Powered by Ecomlanders</p>
+          <p className="text-[10px] text-muted">Powered by Ecomlanders</p>
         </div>
       </aside>
 
@@ -510,7 +510,7 @@ export function PortalView({
         {/* Project header (when drilled in) */}
         {drillView !== "home" && (
           <div className="mb-6">
-            <h1 className="text-lg font-bold text-[#1A1A1A]">{selectedProject?.name}</h1>
+            <h1 className="text-lg font-bold text-surface">{selectedProject?.name}</h1>
           </div>
         )}
           {/* Tab content */}
@@ -571,7 +571,7 @@ export function PortalView({
                 <ScopeTab scope={[]} deliverables={activeDeliverables} documents={activeDocuments} />
                 {activePhases.length > 0 && (
                   <div className="mt-8">
-                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Timeline</h3>
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-4">Timeline</h3>
                     <TimelineTab phases={activePhases} blockerHistory={portal.blocker_history} />
                   </div>
                 )}
@@ -601,11 +601,11 @@ export function PortalView({
                   {/* Design Section */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA]">Design</h3>
+                      <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted">Design</h3>
                       {viewMode === "team" && (
                         <button
                           onClick={() => { setShowAddDesign(!showAddDesign); setShowAddDev(false); setAddTitle(""); setAddFigmaUrl(""); setAddNotes(""); }}
-                          className="text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+                          className="text-[11px] font-medium text-subtle hover:text-surface transition-colors"
                         >
                           {showAddDesign ? "Cancel" : "+ New Version"}
                         </button>
@@ -614,18 +614,18 @@ export function PortalView({
 
                     {/* Team: Add design version form */}
                     {showAddDesign && viewMode === "team" && (
-                      <div className="border border-[#E5E5EA] rounded-xl p-4 mb-4 bg-[#FAFAFA] space-y-3">
+                      <div className="border border-foreground rounded-xl p-4 mb-4 bg-surface-raised space-y-3">
                         <div>
-                          <label className="text-[11px] font-medium text-[#555] block mb-1">Title</label>
-                          <input type="text" value={addTitle} onChange={(e) => setAddTitle(e.target.value)} placeholder="e.g. Homepage Design" className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                          <label className="text-[11px] font-medium text-subtle block mb-1">Title</label>
+                          <input type="text" value={addTitle} onChange={(e) => setAddTitle(e.target.value)} placeholder="e.g. Homepage Design" className="w-full text-sm px-3 py-2 border border-foreground rounded-lg bg-white focus:border-surface outline-none" />
                         </div>
                         <div>
-                          <label className="text-[11px] font-medium text-[#555] block mb-1">Figma URL</label>
-                          <input type="url" value={addFigmaUrl} onChange={(e) => setAddFigmaUrl(e.target.value)} placeholder="https://www.figma.com/file/..." className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                          <label className="text-[11px] font-medium text-subtle block mb-1">Figma URL</label>
+                          <input type="url" value={addFigmaUrl} onChange={(e) => setAddFigmaUrl(e.target.value)} placeholder="https://www.figma.com/file/..." className="w-full text-sm px-3 py-2 border border-foreground rounded-lg bg-white focus:border-surface outline-none" />
                         </div>
                         <div>
-                          <label className="text-[11px] font-medium text-[#555] block mb-1">Notes</label>
-                          <textarea value={addNotes} onChange={(e) => setAddNotes(e.target.value)} placeholder="What changed in this version..." className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white min-h-[60px] resize-y focus:border-[#1B1B1B] outline-none" />
+                          <label className="text-[11px] font-medium text-subtle block mb-1">Notes</label>
+                          <textarea value={addNotes} onChange={(e) => setAddNotes(e.target.value)} placeholder="What changed in this version..." className="w-full text-sm px-3 py-2 border border-foreground rounded-lg bg-white min-h-[60px] resize-y focus:border-surface outline-none" />
                         </div>
                         <button
                           disabled={!addTitle.trim() || !addFigmaUrl.trim() || addSaving}
@@ -648,7 +648,7 @@ export function PortalView({
                             } catch { /* silent */ }
                             setAddSaving(false);
                           }}
-                          className="px-4 py-2 text-xs font-medium bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-40 transition-colors"
+                          className="px-4 py-2 text-xs font-medium bg-surface text-white rounded-lg hover:bg-border disabled:opacity-40 transition-colors"
                         >
                           {addSaving ? "Saving..." : "Upload Design Version"}
                         </button>
@@ -661,39 +661,39 @@ export function PortalView({
                           {reviews.map((review) => {
                             const versions = [...(reviewVersions[review.id] || [])].sort((a, b) => b.version_number - a.version_number);
                             return (
-                              <details key={review.id} className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden group" open>
-                                <summary className="flex items-center justify-between px-5 py-3 cursor-pointer list-none hover:bg-[#FAFAFA] transition-colors">
+                              <details key={review.id} className="border border-foreground rounded-xl bg-white overflow-hidden group" open>
+                                <summary className="flex items-center justify-between px-5 py-3 cursor-pointer list-none hover:bg-surface-raised transition-colors">
                                   <div className="min-w-0">
-                                    <p className="text-sm font-semibold text-[#1A1A1A] truncate">{review.title}</p>
-                                    <p className="text-[11px] text-[#AAA] mt-0.5">{versions.length} version{versions.length === 1 ? "" : "s"}</p>
+                                    <p className="text-sm font-semibold text-surface truncate">{review.title}</p>
+                                    <p className="text-[11px] text-muted mt-0.5">{versions.length} version{versions.length === 1 ? "" : "s"}</p>
                                   </div>
-                                  <svg className="size-4 text-[#AAA] shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                                  <svg className="size-4 text-muted shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.4a.75.75 0 01-1.08 0l-4.25-4.4a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                                   </svg>
                                 </summary>
-                                <div className="divide-y divide-[#F0F0F0] border-t border-[#F0F0F0]">
+                                <div className="divide-y divide-foreground border-t border-foreground">
                                   {versions.length > 0 ? versions.map((v) => {
                                     const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
                                     return (
                                       <div key={v.id} className="flex items-center justify-between px-5 py-3">
                                         <div className="flex items-center gap-3 min-w-0">
-                                          <span className="inline-flex items-center justify-center size-7 rounded-full bg-[#F3F3F5] text-[11px] font-bold text-[#555] shrink-0">
+                                          <span className="inline-flex items-center justify-center size-7 rounded-full bg-surface-raised text-[11px] font-bold text-subtle shrink-0">
                                             V{v.version_number}
                                           </span>
                                           <div className="min-w-0">
-                                            <p className="text-sm font-medium text-[#1A1A1A]">Version {v.version_number}</p>
-                                            <p className="text-[11px] text-[#AAA]">{vDate}{v.notes ? ` - ${v.notes}` : ""}</p>
+                                            <p className="text-sm font-medium text-surface">Version {v.version_number}</p>
+                                            <p className="text-[11px] text-muted">{vDate}{v.notes ? ` - ${v.notes}` : ""}</p>
                                           </div>
                                         </div>
                                         {v.figma_url && (
-                                          <a href={v.figma_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors shrink-0">
+                                          <a href={v.figma_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-subtle hover:text-surface transition-colors shrink-0">
                                             Open Figma →
                                           </a>
                                         )}
                                       </div>
                                     );
                                   }) : (
-                                    <p className="text-xs text-[#AAA] text-center py-4">No versions yet</p>
+                                    <p className="text-xs text-muted text-center py-4">No versions yet</p>
                                   )}
                                 </div>
                               </details>
@@ -710,8 +710,8 @@ export function PortalView({
                         />
                       )
                     ) : (
-                      <div className="text-center py-12 border border-dashed border-[#E8E8E8] rounded-xl">
-                        <p className="text-sm text-[#AAA]">Design versions will appear here</p>
+                      <div className="text-center py-12 border border-dashed border-foreground rounded-xl">
+                        <p className="text-sm text-muted">Design versions will appear here</p>
                       </div>
                     )}
                   </div>
@@ -719,11 +719,11 @@ export function PortalView({
                   {/* Development Section */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA]">Development</h3>
+                      <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted">Development</h3>
                       {viewMode === "team" && (
                         <button
                           onClick={() => { setShowAddDev(!showAddDev); setShowAddDesign(false); setAddTitle(""); setAddStagingUrl(""); setAddNotes(""); }}
-                          className="text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+                          className="text-[11px] font-medium text-subtle hover:text-surface transition-colors"
                         >
                           {showAddDev ? "Cancel" : "+ New Version"}
                         </button>
@@ -732,18 +732,18 @@ export function PortalView({
 
                     {/* Team: Add development version form */}
                     {showAddDev && viewMode === "team" && (
-                      <div className="border border-[#E5E5EA] rounded-xl p-4 mb-4 bg-[#FAFAFA] space-y-3">
+                      <div className="border border-foreground rounded-xl p-4 mb-4 bg-surface-raised space-y-3">
                         <div>
-                          <label className="text-[11px] font-medium text-[#555] block mb-1">Title</label>
-                          <input type="text" value={addTitle} onChange={(e) => setAddTitle(e.target.value)} placeholder="e.g. Homepage Development" className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                          <label className="text-[11px] font-medium text-subtle block mb-1">Title</label>
+                          <input type="text" value={addTitle} onChange={(e) => setAddTitle(e.target.value)} placeholder="e.g. Homepage Development" className="w-full text-sm px-3 py-2 border border-foreground rounded-lg bg-white focus:border-surface outline-none" />
                         </div>
                         <div>
-                          <label className="text-[11px] font-medium text-[#555] block mb-1">Staging URL</label>
-                          <input type="url" value={addStagingUrl} onChange={(e) => setAddStagingUrl(e.target.value)} placeholder="https://staging.example.com/page" className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                          <label className="text-[11px] font-medium text-subtle block mb-1">Staging URL</label>
+                          <input type="url" value={addStagingUrl} onChange={(e) => setAddStagingUrl(e.target.value)} placeholder="https://staging.example.com/page" className="w-full text-sm px-3 py-2 border border-foreground rounded-lg bg-white focus:border-surface outline-none" />
                         </div>
                         <div>
-                          <label className="text-[11px] font-medium text-[#555] block mb-1">Notes</label>
-                          <textarea value={addNotes} onChange={(e) => setAddNotes(e.target.value)} placeholder="What changed in this version..." className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white min-h-[60px] resize-y focus:border-[#1B1B1B] outline-none" />
+                          <label className="text-[11px] font-medium text-subtle block mb-1">Notes</label>
+                          <textarea value={addNotes} onChange={(e) => setAddNotes(e.target.value)} placeholder="What changed in this version..." className="w-full text-sm px-3 py-2 border border-foreground rounded-lg bg-white min-h-[60px] resize-y focus:border-surface outline-none" />
                         </div>
                         <button
                           disabled={!addTitle.trim() || !addStagingUrl.trim() || addSaving}
@@ -765,7 +765,7 @@ export function PortalView({
                             } catch { /* silent */ }
                             setAddSaving(false);
                           }}
-                          className="px-4 py-2 text-xs font-medium bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-40 transition-colors"
+                          className="px-4 py-2 text-xs font-medium bg-surface text-white rounded-lg hover:bg-border disabled:opacity-40 transition-colors"
                         >
                           {addSaving ? "Saving..." : "Upload Dev Version"}
                         </button>
@@ -786,14 +786,14 @@ export function PortalView({
                           const headerInner = (
                             <>
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-[#1A1A1A] truncate">{review.title}</p>
-                                <p className="text-[11px] text-[#AAA] mt-0.5">
+                                <p className="text-sm font-semibold text-surface truncate">{review.title}</p>
+                                <p className="text-[11px] text-muted mt-0.5">
                                   {versions.length} version{versions.length === 1 ? "" : "s"}
                                   {review.description ? ` · ${review.description}` : ""}
                                 </p>
                               </div>
                               {isTeam ? (
-                                <svg className="size-4 text-[#AAA] shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                                <svg className="size-4 text-muted shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.4a.75.75 0 01-1.08 0l-4.25-4.4a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                                 </svg>
                               ) : (
@@ -812,30 +812,30 @@ export function PortalView({
 
                           const bodyInner = (
                             <>
-                              <div className={isTeam ? "divide-y divide-[#F0F0F0] border-t border-[#F0F0F0]" : "px-5 py-3"}>
+                              <div className={isTeam ? "divide-y divide-foreground border-t border-foreground" : "px-5 py-3"}>
                                 {isTeam ? (
                                   sortedVersions.length > 0 ? sortedVersions.map((v) => {
                                     const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
                                     return (
                                       <div key={v.id} className="flex items-center justify-between px-5 py-3">
                                         <div className="flex items-center gap-3 min-w-0">
-                                          <span className="inline-flex items-center justify-center size-7 rounded-full bg-[#F3F3F5] text-[11px] font-bold text-[#555] shrink-0">
+                                          <span className="inline-flex items-center justify-center size-7 rounded-full bg-surface-raised text-[11px] font-bold text-subtle shrink-0">
                                             V{v.version_number}
                                           </span>
                                           <div className="min-w-0">
-                                            <p className="text-sm font-medium text-[#1A1A1A]">Version {v.version_number}</p>
-                                            <p className="text-[11px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                                            <p className="text-sm font-medium text-surface">Version {v.version_number}</p>
+                                            <p className="text-[11px] text-muted">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
                                           </div>
                                         </div>
                                         {v.staging_url && (
-                                          <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors shrink-0">
+                                          <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-subtle hover:text-surface transition-colors shrink-0">
                                             Open preview →
                                           </a>
                                         )}
                                       </div>
                                     );
                                   }) : (
-                                    <p className="text-xs text-[#AAA] text-center py-4">Staging link coming soon</p>
+                                    <p className="text-xs text-muted text-center py-4">Staging link coming soon</p>
                                   )
                                 ) : versions.length > 0 ? (
                                   <div className="space-y-2">
@@ -843,21 +843,21 @@ export function PortalView({
                                       const isLatest = v.id === latestVersion?.id;
                                       const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
                                       return (
-                                        <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E5E5EA]" : "bg-white"}`}>
+                                        <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-surface-raised border border-foreground" : "bg-white"}`}>
                                           <div className="flex items-center gap-3">
-                                            <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#777]"}`}>
+                                            <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-surface text-white" : "bg-foreground text-subtle"}`}>
                                               V{v.version_number}
                                             </span>
                                             <div>
-                                              <p className="text-xs font-medium text-[#1A1A1A]">
+                                              <p className="text-xs font-medium text-surface">
                                                 Version {v.version_number}
                                                 {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
                                               </p>
-                                              <p className="text-[10px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                                              <p className="text-[10px] text-muted">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
                                             </div>
                                           </div>
                                           {v.staging_url && (
-                                            <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
+                                            <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-surface rounded-lg hover:bg-border transition-colors">
                                               <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
                                               Review Page
                                             </a>
@@ -867,7 +867,7 @@ export function PortalView({
                                     })}
                                   </div>
                                 ) : (
-                                  <p className="text-xs text-[#AAA] text-center py-4">Staging link coming soon</p>
+                                  <p className="text-xs text-muted text-center py-4">Staging link coming soon</p>
                                 )}
                               </div>
                             </>
@@ -875,8 +875,8 @@ export function PortalView({
 
                           if (isTeam) {
                             return (
-                              <details key={review.id} className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden group" open>
-                                <summary className="flex items-center justify-between px-5 py-3 cursor-pointer list-none hover:bg-[#FAFAFA] transition-colors">
+                              <details key={review.id} className="border border-foreground rounded-xl bg-white overflow-hidden group" open>
+                                <summary className="flex items-center justify-between px-5 py-3 cursor-pointer list-none hover:bg-surface-raised transition-colors">
                                   {headerInner}
                                 </summary>
                                 {bodyInner}
@@ -885,8 +885,8 @@ export function PortalView({
                           }
 
                           return (
-                            <div key={review.id} className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden">
-                              <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+                            <div key={review.id} className="border border-foreground rounded-xl bg-white overflow-hidden">
+                              <div className="flex items-center justify-between px-5 py-3 border-b border-foreground">
                                 {headerInner}
                               </div>
                               <div className="px-5 py-3">
@@ -896,21 +896,21 @@ export function PortalView({
                                       const isLatest = v.id === latestVersion?.id;
                                       const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
                                       return (
-                                        <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E5E5EA]" : "bg-white"}`}>
+                                        <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-surface-raised border border-foreground" : "bg-white"}`}>
                                           <div className="flex items-center gap-3">
-                                            <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#777]"}`}>
+                                            <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-surface text-white" : "bg-foreground text-subtle"}`}>
                                               V{v.version_number}
                                             </span>
                                             <div>
-                                              <p className="text-xs font-medium text-[#1A1A1A]">
+                                              <p className="text-xs font-medium text-surface">
                                                 Version {v.version_number}
                                                 {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
                                               </p>
-                                              <p className="text-[10px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                                              <p className="text-[10px] text-muted">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
                                             </div>
                                           </div>
                                           {v.staging_url && (
-                                            <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
+                                            <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-surface rounded-lg hover:bg-border transition-colors">
                                               <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
                                               Review Page
                                             </a>
@@ -920,19 +920,19 @@ export function PortalView({
                                     })}
                                   </div>
                                 ) : (
-                                  <p className="text-xs text-[#AAA] text-center py-4">Staging link coming soon</p>
+                                  <p className="text-xs text-muted text-center py-4">Staging link coming soon</p>
                                 )}
                               </div>
                               {fb.length > 0 && (
-                                <div className="px-5 py-3 border-t border-[#F0F0F0] bg-[#FAFAFA]">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Feedback</p>
+                                <div className="px-5 py-3 border-t border-foreground bg-surface-raised">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">Feedback</p>
                                   <div className="space-y-2">
                                     {fb.map((item) => (
                                       <div key={item.id} className="flex items-start gap-2">
                                         <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-emerald-400" : "bg-amber-400"}`} />
                                         <div>
-                                          <p className="text-xs text-[#1A1A1A]">{item.comment}</p>
-                                          <p className="text-[10px] text-[#AAA]">{item.submitted_by} · {new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}{item.resolved && " · Resolved"}</p>
+                                          <p className="text-xs text-surface">{item.comment}</p>
+                                          <p className="text-[10px] text-muted">{item.submitted_by} · {new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}{item.resolved && " · Resolved"}</p>
                                         </div>
                                       </div>
                                     ))}
@@ -944,8 +944,8 @@ export function PortalView({
                         })}
                       </div>
                     ) : (
-                      <div className="text-center py-12 border border-dashed border-[#E8E8E8] rounded-xl">
-                        <p className="text-sm text-[#AAA]">Staging links and dev versions will appear here</p>
+                      <div className="text-center py-12 border border-dashed border-foreground rounded-xl">
+                        <p className="text-sm text-muted">Staging links and dev versions will appear here</p>
                       </div>
                     )}
                   </div>
@@ -959,23 +959,23 @@ export function PortalView({
                   {funnels.map((funnel) => (
                     <div
                       key={funnel.id}
-                      className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden"
+                      className="border border-foreground rounded-xl bg-white overflow-hidden"
                     >
                       <div className="px-5 py-4">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-semibold text-[#1A1A1A]">
+                          <p className="text-sm font-semibold text-surface">
                             {funnel.name || "Untitled Funnel"}
                           </p>
                           <span className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
                             funnel.mode === "performance"
-                              ? "bg-[#F0F0F0] text-[#555] border-[#E0E0E0]"
-                              : "bg-white text-[#999] border-[#E5E5EA]"
+                              ? "bg-foreground text-subtle border-border"
+                              : "bg-white text-subtle border-foreground"
                           }`}>
                             {funnel.mode}
                           </span>
                         </div>
                         {funnel.created_at && (
-                          <p className="text-[11px] text-[#AAA] mb-3">
+                          <p className="text-[11px] text-muted mb-3">
                             Created {new Date(funnel.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                           </p>
                         )}
@@ -986,14 +986,14 @@ export function PortalView({
                                 key={node.id}
                                 className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded-md border ${
                                   node.data.nodeType === "traffic"
-                                    ? "bg-[#FAFAFA] text-[#777] border-[#E8E8E8]"
-                                    : "bg-white text-[#555] border-[#E5E5EA]"
+                                    ? "bg-surface-raised text-subtle border-foreground"
+                                    : "bg-white text-subtle border-foreground"
                                 }`}
                               >
                                 <span className={`size-1.5 rounded-full ${
                                   node.data.status === "live" ? "bg-emerald-400"
                                     : node.data.status === "in-progress" ? "bg-amber-400"
-                                    : "bg-[#D4D4D4]"
+                                    : "bg-muted"
                                 }`} />
                                 {node.data.label}
                               </span>
@@ -1001,7 +1001,7 @@ export function PortalView({
                           </div>
                         )}
                         {funnel.nodes.length === 0 && (
-                          <p className="text-xs text-[#AAA]">No nodes added yet</p>
+                          <p className="text-xs text-muted">No nodes added yet</p>
                         )}
                       </div>
                     </div>
@@ -1102,8 +1102,8 @@ export function PortalView({
 function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="mb-8">
-      <h1 className="text-xl font-bold tracking-tight text-[#1A1A1A] mb-1">{title}</h1>
-      <p className="text-sm text-[#AAA]">{subtitle}</p>
+      <h1 className="text-xl font-bold tracking-tight text-surface mb-1">{title}</h1>
+      <p className="text-sm text-muted">{subtitle}</p>
     </div>
   );
 }
@@ -1139,20 +1139,20 @@ function AssemblyLineKanban({ portalId }: { portalId: string }) {
 
   const assetTypePill: Record<AssetType, string> = {
     test: "bg-[#EEF2FF] text-[#4F5BD5]",
-    page: "bg-[#ECFDF5] text-[#059669]",
+    page: "bg-[#ECFDF5] text-success",
     upsell: "bg-[#FFF7ED] text-[#C2410C]",
-    other: "bg-[#F3F3F5] text-[#555]",
+    other: "bg-surface-raised text-subtle",
   };
 
   if (loading) {
-    return <p className="text-sm text-[#999]">Loading deliverables…</p>;
+    return <p className="text-sm text-subtle">Loading deliverables…</p>;
   }
 
   if (items.length === 0) {
     return (
-      <div className="border border-dashed border-[#E8E8E8] rounded-xl p-10 text-center bg-[#FAFAFA]">
-        <p className="text-sm text-[#888]">Nothing in flight yet.</p>
-        <p className="text-[11px] text-[#BBB] mt-1">
+      <div className="border border-dashed border-foreground rounded-xl p-10 text-center bg-surface-raised">
+        <p className="text-sm text-subtle">Nothing in flight yet.</p>
+        <p className="text-[11px] text-muted mt-1">
           Tests, pages and upsells we&apos;re working on will show up here as they move through the pipeline.
         </p>
       </div>
@@ -1164,21 +1164,21 @@ function AssemblyLineKanban({ portalId }: { portalId: string }) {
       {COLUMNS.map(({ stage, label }) => {
         const columnItems = grouped[stage] || [];
         return (
-          <div key={stage} className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3 min-h-[200px]">
+          <div key={stage} className="bg-surface-raised border border-foreground rounded-xl p-3 min-h-[200px]">
             <div className="flex items-center justify-between mb-3 px-1">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#888]">{label}</h3>
-              <span className="text-[10px] text-[#BBB]">{columnItems.length}</span>
+              <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-subtle">{label}</h3>
+              <span className="text-[10px] text-muted">{columnItems.length}</span>
             </div>
             <div className="space-y-2">
               {columnItems.length === 0 ? (
-                <p className="text-[11px] text-[#CCC] px-1 py-2 italic">Empty</p>
+                <p className="text-[11px] text-muted px-1 py-2 italic">Empty</p>
               ) : (
                 columnItems.map((item) => {
                   const type = (item.asset_type || "other") as AssetType;
                   return (
                     <div
                       key={item.id}
-                      className="bg-white border border-[#E8E8E8] rounded-lg p-3 hover:border-[#C5C5C5] transition-colors"
+                      className="bg-white border border-foreground rounded-lg p-3 hover:border-muted transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <span
@@ -1192,12 +1192,12 @@ function AssemblyLineKanban({ portalId }: { portalId: string }) {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">{item.title}</p>
+                      <p className="text-sm font-semibold text-surface leading-snug">{item.title}</p>
                       {item.outcome && (
                         <p className="text-[11px] text-emerald-600 font-semibold mt-1.5">{item.outcome}</p>
                       )}
                       {!item.outcome && item.impact_hypothesis && (
-                        <p className="text-[11px] text-[#888] italic mt-1.5 line-clamp-2">{item.impact_hypothesis}</p>
+                        <p className="text-[11px] text-subtle italic mt-1.5 line-clamp-2">{item.impact_hypothesis}</p>
                       )}
                     </div>
                   );
@@ -1232,7 +1232,7 @@ function ClientRoadmapBoard({ portal }: { portal: PortalData }) {
     <div className="space-y-8">
       {/* Miro board */}
       {portal.miro_board_url ? (
-        <div className="relative aspect-[16/10] rounded-xl overflow-hidden border border-[#E8E8E8] bg-[#FAFAFA]">
+        <div className="relative aspect-[16/10] rounded-xl overflow-hidden border border-foreground bg-surface-raised">
           <iframe
             src={embedSrc(portal.miro_board_url)}
             className="absolute inset-0 w-full h-full"
@@ -1243,45 +1243,45 @@ function ClientRoadmapBoard({ portal }: { portal: PortalData }) {
           />
         </div>
       ) : (
-        <div className="border border-dashed border-[#E8E8E8] rounded-xl p-10 text-center bg-[#FAFAFA]">
-          <p className="text-sm text-[#888]">Your strategy board will appear here.</p>
-          <p className="text-[11px] text-[#BBB] mt-1">We&apos;re still putting it together.</p>
+        <div className="border border-dashed border-foreground rounded-xl p-10 text-center bg-surface-raised">
+          <p className="text-sm text-subtle">Your strategy board will appear here.</p>
+          <p className="text-[11px] text-muted mt-1">We&apos;re still putting it together.</p>
         </div>
       )}
 
       {/* Documents */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Documents</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-3">Documents</p>
         {docs.length > 0 ? (
-          <div className="divide-y divide-[#E8E8E8] border border-[#E8E8E8] rounded-xl bg-white">
+          <div className="divide-y divide-foreground border border-foreground rounded-xl bg-white">
             {docs.map((doc) => (
               <a
                 key={doc.id}
                 href={doc.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between px-4 py-3 hover:bg-[#FAFAFA] transition-colors"
+                className="flex items-center justify-between px-4 py-3 hover:bg-surface-raised transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <svg className="size-4 text-[#AAA] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="size-4 text-muted shrink-0" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
                   </svg>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-[#1A1A1A] truncate">{doc.name}</p>
-                    <p className="text-[10px] text-[#AAA]">
+                    <p className="text-sm font-medium text-surface truncate">{doc.name}</p>
+                    <p className="text-[10px] text-muted">
                       {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                       {doc.size ? ` · ${formatSize(doc.size)}` : ""}
                     </p>
                   </div>
                 </div>
-                <svg className="size-4 text-[#CCC] shrink-0 ml-3" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="size-4 text-muted shrink-0 ml-3" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                 </svg>
               </a>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-[#CCC] py-2">No documents shared yet.</p>
+          <p className="text-xs text-muted py-2">No documents shared yet.</p>
         )}
       </div>
     </div>
@@ -1326,7 +1326,7 @@ function CheckpointStepper({ currentPhaseName }: { currentPhaseName: string }) {
             {i > 0 && (
               <div
                 className={`absolute top-3.5 right-1/2 w-full h-px ${
-                  prevDone ? "bg-[#1A1A1A]" : "bg-[#ECECEC]"
+                  prevDone ? "bg-surface" : "bg-[#ECECEC]"
                 }`}
               />
             )}
@@ -1334,10 +1334,10 @@ function CheckpointStepper({ currentPhaseName }: { currentPhaseName: string }) {
             <div
               className={`relative size-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                 done
-                  ? "bg-[#1A1A1A] text-white"
+                  ? "bg-surface text-white"
                   : active
-                  ? "bg-[#1A1A1A] text-white ring-4 ring-[#1A1A1A]/10"
-                  : "bg-[#F3F3F5] text-[#BBB]"
+                  ? "bg-surface text-white ring-4 ring-surface/10"
+                  : "bg-surface-raised text-muted"
               }`}
             >
               {done ? (
@@ -1351,7 +1351,7 @@ function CheckpointStepper({ currentPhaseName }: { currentPhaseName: string }) {
             {/* Label */}
             <p
               className={`text-[10px] font-medium text-center mt-2 leading-tight px-1 ${
-                active ? "text-[#1A1A1A]" : done ? "text-[#777]" : "text-[#BBB]"
+                active ? "text-surface" : done ? "text-subtle" : "text-muted"
               }`}
             >
               {stage}
@@ -1412,44 +1412,44 @@ function ClientHub({
     <div>
       {/* Welcome */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A]">
+        <h1 className="text-2xl font-bold tracking-tight text-surface">
           Welcome, {firstName}
         </h1>
-        <p className="text-sm text-[#999] mt-1">
+        <p className="text-sm text-subtle mt-1">
           Here&apos;s an overview of everything we&apos;re working on together.
         </p>
       </div>
 
       {/* Checkpoint stepper — gives clients the flow at a glance */}
       {activePageProjects.length > 0 && (
-        <div className="mb-10 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-4">Project Flow</p>
+        <div className="mb-10 pb-8 border-b border-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-4">Project Flow</p>
           <CheckpointStepper currentPhaseName={checkpointHint} />
         </div>
       )}
 
       {/* Next touchpoint */}
       {touchpoint?.date && (
-        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Next Touchpoint</p>
-          <div className="border border-[#E8E8E8] rounded-xl p-4 bg-white flex items-center justify-between gap-4">
+        <div className="mb-8 pb-8 border-b border-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-3">Next Touchpoint</p>
+          <div className="border border-foreground rounded-xl p-4 bg-white flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <p className="text-base font-semibold tracking-tight text-[#1A1A1A]">{touchpointDate}</p>
+              <p className="text-base font-semibold tracking-tight text-surface">{touchpointDate}</p>
               {currentPhase?.name && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#555]">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-raised text-[10px] font-semibold uppercase tracking-wider text-subtle">
                   {currentPhase.name}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[#AAA] shrink-0">All times UK</p>
+            <p className="text-[11px] text-muted shrink-0">All times UK</p>
           </div>
         </div>
       )}
 
       {/* Retainer section */}
       {hasRetainer && (
-        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Retainer</p>
+        <div className="mb-8 pb-8 border-b border-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-3">Retainer</p>
           {retainerProjects.length > 0 ? retainerProjects.map((proj, _) => {
             const idx = projects.indexOf(proj);
             const tier = proj.testing_tier || portal.testing_tier;
@@ -1458,14 +1458,14 @@ function ClientHub({
             return (
               <div
                 key={proj.id}
-                className="border border-[#E8E8E8] rounded-xl p-4 mb-2 hover:border-[#C5C5C5] transition-colors"
+                className="border border-foreground rounded-xl p-4 mb-2 hover:border-muted transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
                     <div>
-                      <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
-                      <p className="text-xs text-[#AAA] mt-0.5">
+                      <p className="text-sm font-semibold text-surface">{proj.name}</p>
+                      <p className="text-xs text-muted mt-0.5">
                         {proj.created_at && <span className="mr-3">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
                         {tier && <span className="mr-3">· {tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
                         {liveTests > 0 && <span className="text-emerald-600">{liveTests} live</span>}
@@ -1475,7 +1475,7 @@ function ClientHub({
                   </div>
                   <button
                     onClick={() => onOpenProject(idx)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#777] hover:text-[#1A1A1A] hover:border-[#999] transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-foreground rounded-lg text-subtle hover:text-surface hover:border-subtle transition-colors shrink-0"
                   >
                     View
                     <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
@@ -1491,14 +1491,14 @@ function ClientHub({
               }}
               className="w-full text-left group"
             >
-              <div className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
+              <div className="flex items-center justify-between py-3 hover:bg-surface-raised -mx-2 px-2 rounded-lg transition-colors">
                 <div>
-                  <p className="text-sm font-medium text-[#1A1A1A]">CRO Testing</p>
-                  <p className="text-xs text-[#AAA] mt-0.5">
+                  <p className="text-sm font-medium text-surface">CRO Testing</p>
+                  <p className="text-xs text-muted mt-0.5">
                     {portal.testing_tier && <span>{portal.testing_tier} · {portal.testing_tier === "T1" ? "1" : portal.testing_tier === "T2" ? "2" : "4"} tests/week</span>}
                   </p>
                 </div>
-                <svg className="size-4 text-[#CCC] group-hover:text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                <svg className="size-4 text-muted group-hover:text-subtle" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
               </div>
             </button>
           )}
@@ -1507,8 +1507,8 @@ function ClientHub({
 
       {/* Active projects */}
       {activePageProjects.length > 0 && (
-        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Active Projects</p>
+        <div className="mb-8 pb-8 border-b border-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-3">Active Projects</p>
           <div className="space-y-2">
             {activePageProjects.map((proj) => {
               const idx = projects.indexOf(proj);
@@ -1524,25 +1524,25 @@ function ClientHub({
                 <button
                   key={proj.id}
                   onClick={() => onOpenProject(idx)}
-                  className="w-full text-left block border border-[#E8E8E8] rounded-xl p-5 bg-white hover:border-[#1A1A1A] hover:shadow-sm transition-all group"
+                  className="w-full text-left block border border-foreground rounded-xl p-5 bg-white hover:border-surface hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
-                        <p className="text-base font-bold tracking-tight text-[#1A1A1A] truncate">{proj.name}</p>
+                        <p className="text-base font-bold tracking-tight text-surface truncate">{proj.name}</p>
                       </div>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#555]">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-raised text-[10px] font-semibold uppercase tracking-wider text-subtle">
                         {phaseName}
                       </span>
                     </div>
-                    <span className="flex items-center gap-1.5 text-[11px] font-medium text-[#777] group-hover:text-[#1A1A1A] transition-colors shrink-0">
+                    <span className="flex items-center gap-1.5 text-[11px] font-medium text-subtle group-hover:text-surface transition-colors shrink-0">
                       View
                       <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-[#888] mb-2">
+                  <div className="flex items-center justify-between text-[11px] text-subtle mb-2">
                     <span>
                       {proj.created_at && (
                         <>Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</>
@@ -1551,11 +1551,11 @@ function ClientHub({
                         <> · {deliverablesShipped} of {deliverablesTotal} deliverables live</>
                       )}
                     </span>
-                    {progress > 0 && <span className="font-semibold text-[#1A1A1A]">{progress}%</span>}
+                    {progress > 0 && <span className="font-semibold text-surface">{progress}%</span>}
                   </div>
 
-                  <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#1A1A1A] rounded-full transition-all" style={{ width: `${progress}%` }} />
+                  <div className="h-1.5 bg-foreground rounded-full overflow-hidden">
+                    <div className="h-full bg-surface rounded-full transition-all" style={{ width: `${progress}%` }} />
                   </div>
                 </button>
               );
@@ -1566,11 +1566,11 @@ function ClientHub({
 
       {/* If no projects array but portal has phases (legacy), show as single project */}
       {projects.length === 0 && portal.phases.length > 0 && (
-        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Active Projects</p>
+        <div className="mb-8 pb-8 border-b border-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-3">Active Projects</p>
           <div className="py-3">
-            <p className="text-sm font-medium text-[#1A1A1A]">{portal.project_type || "Page Build"}</p>
-            <p className="text-xs text-[#AAA] mt-0.5">
+            <p className="text-sm font-medium text-surface">{portal.project_type || "Page Build"}</p>
+            <p className="text-xs text-muted mt-0.5">
               {currentPhase?.name || portal.current_phase || "In progress"}
               {portal.progress > 0 && <span className="ml-3">{portal.progress}%</span>}
             </p>
@@ -1580,8 +1580,8 @@ function ClientHub({
 
       {/* Completed projects */}
       {completedPageProjects.length > 0 && (
-        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Completed</p>
+        <div className="mb-8 pb-8 border-b border-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-3">Completed</p>
           {completedPageProjects.map((proj) => {
             const idx = projects.indexOf(proj);
             return (
@@ -1590,12 +1590,12 @@ function ClientHub({
                 onClick={() => onOpenProject(idx)}
                 className="w-full text-left group"
               >
-                <div className="flex items-center justify-between py-2.5 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
+                <div className="flex items-center justify-between py-2.5 hover:bg-surface-raised -mx-2 px-2 rounded-lg transition-colors">
                   <div className="flex items-center gap-2">
                     <svg className="size-3.5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
-                    <p className="text-sm text-[#777]">{proj.name}</p>
+                    <p className="text-sm text-subtle">{proj.name}</p>
                   </div>
-                  <svg className="size-4 text-[#CCC] group-hover:text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  <svg className="size-4 text-muted group-hover:text-subtle" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                 </div>
               </button>
             );
@@ -1606,12 +1606,12 @@ function ClientHub({
       {/* Open requests */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle">
             Open Requests {openRequests.length > 0 && `(${openRequests.length})`}
           </p>
           <button
             onClick={onRequestClick}
-            className="text-[11px] font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+            className="text-[11px] font-medium text-muted hover:text-surface transition-colors"
           >
             + Submit Request
           </button>
@@ -1619,15 +1619,15 @@ function ClientHub({
         {openRequests.length > 0 ? (
           <div className="space-y-0">
             {openRequests.slice(0, 5).map((req) => (
-              <div key={req.id} className="flex items-center justify-between py-2.5 border-b border-[#F5F5F5] last:border-0">
+              <div key={req.id} className="flex items-center justify-between py-2.5 border-b border-surface-raised last:border-0">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-[#1A1A1A] truncate">{req.title}</p>
-                  <p className="text-[10px] text-[#CCC] mt-0.5">
+                  <p className="text-sm text-surface truncate">{req.title}</p>
+                  <p className="text-[10px] text-muted mt-0.5">
                     {new Date(req.requested_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                   </p>
                 </div>
                 <span className={`text-[10px] font-semibold uppercase tracking-wider ${
-                  req.status === "in-progress" ? "text-blue-600" : "text-[#AAA]"
+                  req.status === "in-progress" ? "text-blue-600" : "text-muted"
                 }`}>
                   {req.status === "in-progress" ? "In Progress" : "Open"}
                 </span>
@@ -1635,19 +1635,19 @@ function ClientHub({
             ))}
           </div>
         ) : (
-          <p className="text-xs text-[#CCC] py-2">No open requests</p>
+          <p className="text-xs text-muted py-2">No open requests</p>
         )}
       </div>
 
       {/* Recent updates */}
       {updates.length > 0 && (
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Recent Updates</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-subtle mb-3">Recent Updates</p>
           {updates.slice(0, 3).map((u) => (
-            <div key={u.id} className="py-2.5 border-b border-[#F5F5F5] last:border-0">
-              <p className="text-sm font-medium text-[#1A1A1A]">{u.title}</p>
-              <p className="text-xs text-[#999] mt-0.5 line-clamp-1">{u.description}</p>
-              <p className="text-[10px] text-[#CCC] mt-1">
+            <div key={u.id} className="py-2.5 border-b border-surface-raised last:border-0">
+              <p className="text-sm font-medium text-surface">{u.title}</p>
+              <p className="text-xs text-subtle mt-0.5 line-clamp-1">{u.description}</p>
+              <p className="text-[10px] text-muted mt-1">
                 {new Date(u.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
               </p>
             </div>
@@ -1691,15 +1691,15 @@ function DashboardView({
       {/* Welcome + Request button */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-1">Client Portal</p>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A] mb-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted mb-1">Client Portal</p>
+          <h1 className="text-2xl font-bold tracking-tight text-surface mb-1">
             Welcome, {firstName}
           </h1>
-          <p className="text-sm text-[#AAA]">Here&apos;s an overview of your project</p>
+          <p className="text-sm text-muted">Here&apos;s an overview of your project</p>
         </div>
         <button
           onClick={onRequestClick}
-          className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
+          className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-surface text-white rounded-lg hover:bg-border transition-colors"
         >
           <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
@@ -1713,14 +1713,14 @@ function DashboardView({
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Testing tier */}
-            <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-3">Testing Tier</p>
-              <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{testingTier || "—"}</p>
-              <p className="text-sm text-[#999]">{testingTier ? tierLabel[testingTier] || testingTier : "Not configured"}</p>
+            <div className="bg-white border border-foreground rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-3">Testing Tier</p>
+              <p className="text-lg font-bold tracking-tight text-surface mb-1">{testingTier || "—"}</p>
+              <p className="text-sm text-subtle">{testingTier ? tierLabel[testingTier] || testingTier : "Not configured"}</p>
             </div>
 
             {/* Next touchpoint */}
-            <div className="bg-[#1A1A1A] rounded-lg p-6">
+            <div className="bg-surface rounded-lg p-6">
               <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-3">Next Touchpoint</p>
               <p className="text-lg font-bold tracking-tight text-white mb-1">
                 {(() => {
@@ -1751,17 +1751,17 @@ function DashboardView({
             const winners = portal.results.filter(r => r.result === "winner");
             return (
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Live Now</p>
-                  <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{liveTests.length}</p>
+                <div className="bg-white border border-foreground rounded-lg p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Live Now</p>
+                  <p className="text-2xl font-bold tracking-tight text-surface">{liveTests.length}</p>
                 </div>
-                <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Upcoming</p>
-                  <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{scheduledTests.length}</p>
+                <div className="bg-white border border-foreground rounded-lg p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Upcoming</p>
+                  <p className="text-2xl font-bold tracking-tight text-surface">{scheduledTests.length}</p>
                 </div>
-                <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Winners</p>
-                  <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{winners.length}</p>
+                <div className="bg-white border border-foreground rounded-lg p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Winners</p>
+                  <p className="text-2xl font-bold tracking-tight text-surface">{winners.length}</p>
                 </div>
               </div>
             );
@@ -1771,18 +1771,18 @@ function DashboardView({
         <>
           {/* Current stage + Next touchpoint */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-3">Current Stage</p>
-              <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{currentPhase?.name || currentPhaseName}</p>
+            <div className="bg-white border border-foreground rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-3">Current Stage</p>
+              <p className="text-lg font-bold tracking-tight text-surface mb-1">{currentPhase?.name || currentPhaseName}</p>
               {currentPhase && (
-                <p className="text-sm text-[#999] leading-relaxed">{currentPhase.description}</p>
+                <p className="text-sm text-subtle leading-relaxed">{currentPhase.description}</p>
               )}
               {currentPhase?.dates && (
-                <p className="text-xs text-[#CCC] mt-3">{currentPhase.dates}</p>
+                <p className="text-xs text-muted mt-3">{currentPhase.dates}</p>
               )}
             </div>
 
-            <div className="bg-[#1A1A1A] rounded-lg p-6">
+            <div className="bg-surface rounded-lg p-6">
               <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-3">Next Touchpoint</p>
               <p className="text-lg font-bold tracking-tight text-white mb-1">
                 {(() => {
@@ -1808,26 +1808,26 @@ function DashboardView({
 
           {/* Phase progress bar */}
           {phases.length > 0 && (
-            <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Project Phases</p>
+            <div className="bg-white border border-foreground rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-4">Project Phases</p>
               <div className="flex gap-1.5">
                 {phases.map((phase) => (
                   <div key={phase.id || phase.name} className="flex-1 min-w-0">
                     <div
                       className={`h-2 rounded-full mb-2 ${
                         phase.status === "complete"
-                          ? "bg-[#1A1A1A]"
+                          ? "bg-surface"
                           : phase.status === "in-progress"
-                          ? "bg-[#1A1A1A]"
-                          : "bg-[#F0F0F0]"
+                          ? "bg-surface"
+                          : "bg-foreground"
                       }`}
                     />
                     <p className={`text-[10px] font-medium truncate ${
                       phase.status === "in-progress"
-                        ? "text-[#1A1A1A]"
+                        ? "text-surface"
                         : phase.status === "complete"
-                        ? "text-[#999]"
-                        : "text-[#CCC]"
+                        ? "text-subtle"
+                        : "text-muted"
                     }`}>
                       {phase.name}
                     </p>
@@ -1840,25 +1840,25 @@ function DashboardView({
       )}
 
       {/* Key Documents — always visible so clients know what to expect */}
-      <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Key Documents</p>
+      <div className="bg-white border border-foreground rounded-lg p-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-4">Key Documents</p>
         {documents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {documents.map((doc, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedDoc(doc)}
-                className="group flex items-center gap-3 bg-white border border-[#E8E8E8] rounded-lg p-3.5 text-left hover:border-[#333] transition-all duration-200"
+                className="group flex items-center gap-3 bg-white border border-foreground rounded-lg p-3.5 text-left hover:border-border transition-all duration-200"
               >
-                <div className="shrink-0 size-9 rounded-lg bg-[#F0F0F0] flex items-center justify-center text-[#777]">
+                <div className="shrink-0 size-9 rounded-lg bg-foreground flex items-center justify-center text-subtle">
                   <DocTypeIcon type={doc.type} className="size-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#1A1A1A] truncate">{doc.name}</p>
-                  <p className="text-[10px] text-[#AAA]">{doc.type} &middot; {doc.date}</p>
+                  <p className="text-sm font-medium text-surface truncate">{doc.name}</p>
+                  <p className="text-[10px] text-muted">{doc.type} &middot; {doc.date}</p>
                 </div>
                 <svg
-                  className="size-4 text-[#CCC] group-hover:text-[#777] group-hover:translate-x-0.5 transition-all shrink-0"
+                  className="size-4 text-muted group-hover:text-subtle group-hover:translate-x-0.5 transition-all shrink-0"
                   viewBox="0 0 16 16"
                   fill="none"
                   stroke="currentColor"
@@ -1874,16 +1874,16 @@ function DashboardView({
             {["Onboarding Brief", "Scope", "Roadmap", "Agreement"].map((label) => (
               <div
                 key={label}
-                className="flex items-center gap-3 border border-dashed border-[#E8E8E8] rounded-lg p-3.5 bg-[#FAFAFA]"
+                className="flex items-center gap-3 border border-dashed border-foreground rounded-lg p-3.5 bg-surface-raised"
               >
-                <div className="shrink-0 size-9 rounded-lg bg-white border border-[#EEE] flex items-center justify-center text-[#CCC]">
+                <div className="shrink-0 size-9 rounded-lg bg-white border border-[#EEE] flex items-center justify-center text-muted">
                   <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#BBB] truncate">{label}</p>
-                  <p className="text-[10px] text-[#CCC]">Coming soon</p>
+                  <p className="text-sm font-medium text-muted truncate">{label}</p>
+                  <p className="text-[10px] text-muted">Coming soon</p>
                 </div>
               </div>
             ))}
@@ -1914,13 +1914,13 @@ function TimelineTab({
     <div className="relative">
       {/* Timeline adjusted notice */}
       {totalShifted > 0 && (
-        <div className="mb-6 bg-[#FAFAFA] border border-[#E5E5EA] rounded-lg p-4 flex items-start gap-3">
-          <div className="size-8 rounded-full bg-[#F0F0F0] flex items-center justify-center shrink-0 mt-0.5">
-            <svg className="size-4 text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" /></svg>
+        <div className="mb-6 bg-surface-raised border border-foreground rounded-lg p-4 flex items-start gap-3">
+          <div className="size-8 rounded-full bg-foreground flex items-center justify-center shrink-0 mt-0.5">
+            <svg className="size-4 text-subtle" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" /></svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-[#1A1A1A]">Timeline adjusted</p>
-            <p className="text-xs text-[#777] mt-0.5">
+            <p className="text-sm font-medium text-surface">Timeline adjusted</p>
+            <p className="text-xs text-subtle mt-0.5">
               Dates have been updated to reflect the latest project schedule. All deadlines below are current.
             </p>
           </div>
@@ -1928,7 +1928,7 @@ function TimelineTab({
       )}
 
       {/* Vertical line */}
-      <div className="absolute left-[11px] top-4 bottom-4 w-px bg-[#F0F0F0]" />
+      <div className="absolute left-[11px] top-4 bottom-4 w-px bg-foreground" />
 
       <div className="space-y-0">
         {phases.map((phase) => {
@@ -1943,19 +1943,19 @@ function TimelineTab({
                 <div
                   className={`size-[23px] rounded-full border-2 flex items-center justify-center transition-all ${
                     isComplete
-                      ? "border-[#1A1A1A] bg-white"
+                      ? "border-surface bg-white"
                       : isActive
-                      ? "border-[#1A1A1A] bg-white"
+                      ? "border-surface bg-white"
                       : "border-[#2A2A35] bg-white"
                   }`}
                 >
                   {isComplete && (
-                    <svg className="size-3 text-[#1A1A1A]" viewBox="0 0 12 12" fill="none">
+                    <svg className="size-3 text-surface" viewBox="0 0 12 12" fill="none">
                       <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                   {isActive && (
-                    <span className="size-2 rounded-full bg-[#1A1A1A] animate-pulse" />
+                    <span className="size-2 rounded-full bg-surface animate-pulse" />
                   )}
                 </div>
               </div>
@@ -1964,18 +1964,18 @@ function TimelineTab({
               <div
                 className={`flex-1 rounded-lg p-5 transition-all ${
                   isActive
-                    ? "ring-1 ring-[#1A1A1A] bg-white"
+                    ? "ring-1 ring-surface bg-white"
                     : isComplete
-                    ? "border border-[#E8E8E8] bg-white"
+                    ? "border border-foreground bg-white"
                     : "bg-white border border-[#1A1A22]"
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className={`text-sm font-bold ${!isComplete && !isActive ? "text-[#CCC]" : "text-[#1A1A1A]"}`}>{phase.name}</h3>
+                      <h3 className={`text-sm font-bold ${!isComplete && !isActive ? "text-muted" : "text-surface"}`}>{phase.name}</h3>
                       {isActive && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#1A1A1A]/20 text-[#1A1A1A] rounded-full">
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-surface/20 text-surface rounded-full">
                           Current
                         </span>
                       )}
@@ -1985,11 +1985,11 @@ function TimelineTab({
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#AAA]">
+                    <p className="text-xs text-muted">
                       {phase.dates}
                       {isComplete && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) ? (
                         <>
-                          <span className="ml-2 line-through text-[#CCC]">
+                          <span className="ml-2 line-through text-muted">
                             Deadline: {new Date(phase.deadline + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                           </span>
                           <span className="ml-1.5 text-green-600 font-medium">
@@ -2001,7 +2001,7 @@ function TimelineTab({
                           &middot; Completed {new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
                       ) : phase.deadline ? (
-                        <span className="ml-2 text-[#AAA]">
+                        <span className="ml-2 text-muted">
                           &middot; Deadline: {new Date(phase.deadline + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
                       ) : null}
@@ -2009,16 +2009,16 @@ function TimelineTab({
                   </div>
                 </div>
 
-                <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-[#777]" : "text-[#CCC]"} ${pct > 0 ? "mb-3" : ""}`}>
+                <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-subtle" : "text-muted"} ${pct > 0 ? "mb-3" : ""}`}>
                   {phase.description}
                 </p>
 
                 {/* Progress bar */}
                 {pct > 0 && (
-                  <div className="h-1 rounded-full overflow-hidden bg-[#F0F0F0]">
+                  <div className="h-1 rounded-full overflow-hidden bg-foreground">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${
-                        isComplete ? "bg-[#1A1A1A]" : "bg-[#1A1A1A]"
+                        isComplete ? "bg-surface" : "bg-surface"
                       }`}
                       style={{ width: `${pct}%` }}
                     />
@@ -2039,13 +2039,13 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
   if (updates.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-foreground mb-4">
+          <svg className="size-5 text-muted" viewBox="0 0 20 20" fill="currentColor">
             <path d="M2 3a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H2zM2 7.5h16l-.811 7.71a2 2 0 01-1.99 1.79H4.802a2 2 0 01-1.99-1.79L2 7.5z" />
           </svg>
         </div>
-        <p className="text-sm text-[#777] mb-1">No updates yet</p>
-        <p className="text-xs text-[#AAA]">
+        <p className="text-sm text-subtle mb-1">No updates yet</p>
+        <p className="text-xs text-muted">
           Video updates from the team will appear here
         </p>
       </div>
@@ -2055,7 +2055,7 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {updates.map((update) => (
-        <div key={update.id} className="bg-white border border-[#E8E8E8] rounded-lg overflow-hidden">
+        <div key={update.id} className="bg-white border border-foreground rounded-lg overflow-hidden">
           {/* Video embed */}
           {toLoomEmbed(update.loom_url) && (
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
@@ -2069,17 +2069,17 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
 
           {/* Info */}
           <div className="p-4">
-            <h3 className="text-sm font-bold text-[#1A1A1A] mb-1">{update.title}</h3>
+            <h3 className="text-sm font-bold text-surface mb-1">{update.title}</h3>
             {update.description && (
-              <p className="text-xs text-[#777] leading-relaxed line-clamp-2">
+              <p className="text-xs text-subtle leading-relaxed line-clamp-2">
                 {update.description}
               </p>
             )}
             <div className="flex items-center justify-between mt-2">
-              <p className="text-[10px] text-[#AAA]">
+              <p className="text-[10px] text-muted">
                 {update.posted_by}
               </p>
-              <p className="text-[10px] text-[#AAA]">
+              <p className="text-[10px] text-muted">
                 {new Date(update.created_at).toLocaleDateString("en-GB", {
                   day: "numeric",
                   month: "short",
@@ -2134,26 +2134,26 @@ function ScopeTab({
       {/* Deliverables list */}
       {deliverables.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted mb-5">
             Deliverables
           </h3>
-          <div className="bg-white border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
+          <div className="bg-white border border-foreground rounded-lg divide-y divide-foreground">
             {deliverables.map((del, i) => (
               <div key={del.id || i} className="flex items-center gap-3 px-5 py-3.5">
                 {del.status === "complete" ? (
-                  <svg className="size-4 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="size-4 text-surface shrink-0" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                   </svg>
                 ) : del.status === "in-progress" ? (
-                  <span className="size-4 rounded-full border-2 border-[#1A1A1A] flex items-center justify-center shrink-0">
-                    <span className="size-1.5 rounded-full bg-[#1A1A1A] animate-pulse" />
+                  <span className="size-4 rounded-full border-2 border-surface flex items-center justify-center shrink-0">
+                    <span className="size-1.5 rounded-full bg-surface animate-pulse" />
                   </span>
                 ) : (
-                  <span className="size-4 rounded-full border-2 border-[#D4D4D4] shrink-0" />
+                  <span className="size-4 rounded-full border-2 border-muted shrink-0" />
                 )}
-                <span className={`text-sm flex-1 ${del.status === "complete" ? "text-[#999]" : "text-[#1A1A1A]"}`}>{del.name}</span>
+                <span className={`text-sm flex-1 ${del.status === "complete" ? "text-subtle" : "text-surface"}`}>{del.name}</span>
                 {del.phase && (
-                  <span className="text-[10px] text-[#AAA] shrink-0">{del.phase}</span>
+                  <span className="text-[10px] text-muted shrink-0">{del.phase}</span>
                 )}
               </div>
             ))}
@@ -2164,20 +2164,20 @@ function ScopeTab({
       {/* Scope items */}
       {scope.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted mb-5">
             Scope
           </h3>
-          <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+          <div className="bg-white border border-foreground rounded-lg p-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
               {scope.map((item, i) => {
                 const desc = typeof item === "string" ? item : item.description;
                 const typ = typeof item === "string" ? "" : item.type;
                 return (
                   <div key={i} className="flex items-center gap-2.5 py-1">
-                    <span className="size-1.5 rounded-full bg-[#1A1A1A] shrink-0" />
-                    <span className="text-sm text-[#777] flex-1">{desc}</span>
+                    <span className="size-1.5 rounded-full bg-surface shrink-0" />
+                    <span className="text-sm text-subtle flex-1">{desc}</span>
                     {typ && (
-                      <span className="shrink-0 px-2 py-0.5 text-[9px] font-medium text-[#999] bg-[#F0F0F0] rounded-full">{typ}</span>
+                      <span className="shrink-0 px-2 py-0.5 text-[9px] font-medium text-subtle bg-foreground rounded-full">{typ}</span>
                     )}
                   </div>
                 );
@@ -2190,7 +2190,7 @@ function ScopeTab({
       {/* Documents */}
       {documents.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted mb-5">
             Key Documents
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2198,28 +2198,28 @@ function ScopeTab({
               <button
                 key={i}
                 onClick={() => setSelected(doc)}
-                className="group text-left bg-white border border-[#E8E8E8] rounded-lg p-5 hover:border-[#333] transition-all duration-200"
+                className="group text-left bg-white border border-foreground rounded-lg p-5 hover:border-border transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
-                  <div className="shrink-0 size-10 rounded-lg bg-[#F0F0F0] text-[#777] flex items-center justify-center">
+                  <div className="shrink-0 size-10 rounded-lg bg-foreground text-subtle flex items-center justify-center">
                     <DocTypeIcon type={doc.type} className="size-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#1A1A1A] mb-1.5 truncate">
+                    <p className="text-sm font-semibold text-surface mb-1.5 truncate">
                       {doc.name}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-medium text-[#AAA] uppercase tracking-wider">
+                      <span className="text-[10px] font-medium text-muted uppercase tracking-wider">
                         {doc.type}
                       </span>
-                      <span className="text-[#CCC]">&middot;</span>
-                      <span className="text-[10px] text-[#AAA]">
+                      <span className="text-muted">&middot;</span>
+                      <span className="text-[10px] text-muted">
                         {doc.date}
                       </span>
                     </div>
                   </div>
                   <svg
-                    className="size-4 text-[#CCC] group-hover:text-[#777] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                    className="size-4 text-muted group-hover:text-subtle group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
@@ -2250,13 +2250,13 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
   if (wins.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-foreground mb-4">
+          <svg className="size-5 text-muted" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
           </svg>
         </div>
-        <p className="text-sm text-[#999] mb-1">No wins recorded yet</p>
-        <p className="text-xs text-[#CCC]">Results and milestones will appear here</p>
+        <p className="text-sm text-subtle mb-1">No wins recorded yet</p>
+        <p className="text-xs text-muted">Results and milestones will appear here</p>
       </div>
     );
   }
@@ -2265,50 +2265,50 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
     <div className="space-y-10">
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Total Wins</p>
-          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{wins.length}</p>
+        <div className="border border-foreground rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Total Wins</p>
+          <p className="text-2xl font-bold tracking-tight text-surface">{wins.length}</p>
         </div>
-        <div className="border border-[#E8E8E8] rounded-lg p-5 col-span-1 md:col-span-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Latest Win</p>
+        <div className="border border-foreground rounded-lg p-5 col-span-1 md:col-span-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Latest Win</p>
           <p className="text-sm font-semibold">{wins[0]?.title}</p>
-          <p className="text-xs text-[#1A1A1A] font-semibold mt-0.5">{wins[0]?.lift}</p>
+          <p className="text-xs text-surface font-semibold mt-0.5">{wins[0]?.lift}</p>
         </div>
       </div>
 
       {/* Win cards */}
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted mb-5">
           All Wins
         </h3>
         <div className="space-y-4">
           {wins.map((win) => (
-            <div key={win.id} className="border border-[#E8E8E8] rounded-lg p-5">
+            <div key={win.id} className="border border-foreground rounded-lg p-5">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <h4 className="text-sm font-semibold mb-0.5">{win.title}</h4>
-                  <p className="text-xs text-[#999]">{win.metric} · {win.date}</p>
+                  <p className="text-xs text-subtle">{win.metric} · {win.date}</p>
                 </div>
-                <span className="shrink-0 px-2.5 py-1 text-xs font-bold text-[#1A1A1A] bg-[#F0F0F0] rounded-full">
+                <span className="shrink-0 px-2.5 py-1 text-xs font-bold text-surface bg-foreground rounded-full">
                   {win.lift}
                 </span>
               </div>
               {/* Before → After bar */}
               <div className="flex items-center gap-3 mb-3">
-                <div className="flex-1 bg-[#F0F0F0] rounded-lg p-3 text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Before</p>
-                  <p className="text-lg font-bold text-[#999]">{win.before}</p>
+                <div className="flex-1 bg-foreground rounded-lg p-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">Before</p>
+                  <p className="text-lg font-bold text-subtle">{win.before}</p>
                 </div>
-                <svg className="size-5 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="size-5 text-surface shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638l-3.96-4.158a.75.75 0 111.085-1.034l5.25 5.5a.75.75 0 010 1.034l-5.25 5.5a.75.75 0 01-1.085-1.034l3.96-4.158H3.75A.75.75 0 013 10z" clipRule="evenodd" />
                 </svg>
-                <div className="flex-1 bg-[#F0F0F0] border border-[#E8E8E8] rounded-lg p-3 text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1">After</p>
-                  <p className="text-lg font-bold text-[#1A1A1A]">{win.after}</p>
+                <div className="flex-1 bg-foreground border border-foreground rounded-lg p-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-surface mb-1">After</p>
+                  <p className="text-lg font-bold text-surface">{win.after}</p>
                 </div>
               </div>
               {win.description && (
-                <p className="text-xs text-[#999] leading-relaxed">{win.description}</p>
+                <p className="text-xs text-subtle leading-relaxed">{win.description}</p>
               )}
             </div>
           ))}
@@ -2343,22 +2343,22 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
   if (results.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-foreground mb-4">
+          <svg className="size-5 text-muted" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M2 3.75A.75.75 0 012.75 3h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 3.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.166a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
           </svg>
         </div>
-        <p className="text-sm text-[#999] mb-1">No tests yet</p>
-        <p className="text-xs text-[#CCC]">Results will appear here once testing begins</p>
+        <p className="text-sm text-subtle mb-1">No tests yet</p>
+        <p className="text-xs text-muted">Results will appear here once testing begins</p>
       </div>
     );
   }
 
   const resultBadge = (test: PortalTestResult) => {
-    if (test.status === "live") return { label: "Live", color: "text-[#1A1A1A]", bg: "bg-[#F0F0F0]" };
-    if (test.status === "scheduled") return { label: "Upcoming", color: "text-[#777]", bg: "bg-[#F0F0F0]" };
+    if (test.status === "live") return { label: "Live", color: "text-surface", bg: "bg-foreground" };
+    if (test.status === "scheduled") return { label: "Upcoming", color: "text-subtle", bg: "bg-foreground" };
     if (test.result === "winner") return { label: "Winner", color: "text-emerald-700", bg: "bg-emerald-50" };
-    if (test.result === "loser") return { label: "No Lift", color: "text-[#777]", bg: "bg-[#F0F0F0]" };
+    if (test.result === "loser") return { label: "No Lift", color: "text-subtle", bg: "bg-foreground" };
     return { label: "Inconclusive", color: "text-amber-700", bg: "bg-amber-50" };
   };
 
@@ -2368,7 +2368,7 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
     const badge = resultBadge(test);
 
     return (
-      <div className="border border-[#E8E8E8] rounded-lg overflow-hidden">
+      <div className="border border-foreground rounded-lg overflow-hidden">
         <div className="p-4">
           <div className="flex items-start justify-between gap-3 mb-2">
             <p className="text-sm font-medium">{test.name}</p>
@@ -2376,7 +2376,7 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
               {test.figma_url && (
                 <button
                   onClick={() => setPreviewUrl(test.figma_url!)}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold text-[#777] bg-[#F7F7F7] rounded-md hover:bg-[#EBEBEB] transition-colors"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold text-subtle bg-[#F7F7F7] rounded-md hover:bg-border transition-colors"
                 >
                   <svg className="size-3" viewBox="0 0 24 24" fill="none"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5z" fill="#F24E1E"/><path d="M12 2h3.5a3.5 3.5 0 010 7H12V2z" fill="#FF7262"/><path d="M12 9.5h3.5a3.5 3.5 0 010 7H12V9.5z" fill="#1ABCFE"/><path d="M5 19.5A3.5 3.5 0 018.5 16H12v3.5a3.5 3.5 0 11-7 0z" fill="#0ACF83"/><path d="M5 12.5A3.5 3.5 0 018.5 9H12v7H8.5A3.5 3.5 0 015 12.5z" fill="#A259FF"/></svg>
                   Design
@@ -2387,9 +2387,9 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
               </span>
             </div>
           </div>
-          <p className="text-xs text-[#999] mb-1">{test.metric}</p>
+          <p className="text-xs text-subtle mb-1">{test.metric}</p>
           {(test.cvr || test.aov || test.rpv) && (
-            <div className="grid grid-cols-3 gap-3 mt-2 mb-2 pt-2 border-t border-[#F0F0F0]">
+            <div className="grid grid-cols-3 gap-3 mt-2 mb-2 pt-2 border-t border-foreground">
               {[
                 { label: "CVR", data: test.cvr },
                 { label: "AOV", data: test.aov },
@@ -2405,12 +2405,12 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
                 })();
                 return (
                   <div key={label}>
-                    <p className="text-[9px] font-semibold uppercase tracking-wider text-[#CCC] mb-1">{label}</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-1">{label}</p>
                     {data ? (
                       <div className="flex items-baseline gap-1 flex-wrap">
-                        <span className="text-[10px] text-[#AAA]">{data.a}</span>
-                        <svg className="size-2 text-[#CCC] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" /></svg>
-                        <span className="text-[11px] font-semibold text-[#1A1A1A]">{data.b}</span>
+                        <span className="text-[10px] text-muted">{data.a}</span>
+                        <svg className="size-2 text-muted shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" /></svg>
+                        <span className="text-[11px] font-semibold text-surface">{data.b}</span>
                         {lift && (
                           <span className={`text-[9px] font-semibold ${lift.positive ? "text-emerald-500" : "text-red-400"}`}>
                             {lift.value}
@@ -2418,14 +2418,14 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
                         )}
                       </div>
                     ) : (
-                      <span className="text-[10px] text-[#E8E8E8]">—</span>
+                      <span className="text-[10px] text-foreground">—</span>
                     )}
                   </div>
                 );
               })}
             </div>
           )}
-          <p className="text-xs text-[#CCC]">
+          <p className="text-xs text-muted">
             {test.status === "scheduled"
               ? `Starts ${test.startDate}`
               : test.endDate
@@ -2441,24 +2441,24 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
     <div className="space-y-10">
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Live Tests</p>
+        <div className="border border-foreground rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Live Tests</p>
           <p className="text-2xl font-bold tracking-tight">{live.length}</p>
         </div>
-        <div className="border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Winners</p>
-          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{completed.filter(r => r.result === "winner").length}</p>
+        <div className="border border-foreground rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Winners</p>
+          <p className="text-2xl font-bold tracking-tight text-surface">{completed.filter(r => r.result === "winner").length}</p>
         </div>
-        <div className="border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Coming Up</p>
-          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{scheduled.length}</p>
+        <div className="border border-foreground rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Coming Up</p>
+          <p className="text-2xl font-bold tracking-tight text-surface">{scheduled.length}</p>
         </div>
       </div>
 
       {/* Tests grouped by week */}
       {sortedWeeks.map((weekLabel) => (
         <div key={weekLabel}>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted mb-4">
             {weekLabel}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2471,18 +2471,18 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
       {previewUrl && toFigmaEmbed(previewUrl) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setPreviewUrl(null)}>
           <div className="relative w-full max-w-4xl mx-4 bg-white rounded-xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-3 border-b border-[#E8E8E8]">
-              <p className="text-sm font-semibold text-[#1A1A1A]">Design Preview</p>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-foreground">
+              <p className="text-sm font-semibold text-surface">Design Preview</p>
               <div className="flex items-center gap-3">
                 <a
                   href={previewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[11px] font-semibold text-[#777] hover:text-[#1A1A1A] transition-colors"
+                  className="text-[11px] font-semibold text-subtle hover:text-surface transition-colors"
                 >
                   Open in Figma
                 </a>
-                <button onClick={() => setPreviewUrl(null)} className="text-[#AAA] hover:text-[#1A1A1A] transition-colors">
+                <button onClick={() => setPreviewUrl(null)} className="text-muted hover:text-surface transition-colors">
                   <svg className="size-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
                 </button>
               </div>
@@ -2558,9 +2558,9 @@ function DesignsTab({
 
   if (reviews.length === 0) {
     return (
-      <div className="bg-white border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
-        <p className="text-sm text-[#999] mb-1">Design updates coming soon</p>
-        <p className="text-xs text-[#CCC]">Wireframes and mockups will appear here when they&apos;re ready for your review</p>
+      <div className="bg-white border border-dashed border-foreground rounded-lg p-8 text-center">
+        <p className="text-sm text-subtle mb-1">Design updates coming soon</p>
+        <p className="text-xs text-muted">Wireframes and mockups will appear here when they&apos;re ready for your review</p>
       </div>
     );
   }
@@ -2580,9 +2580,9 @@ function DesignsTab({
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="text-base font-bold">{review.title}</h3>
               <span className={`shrink-0 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
-                review.status === "approved" ? "text-[#1A1A1A] bg-[#F0F0F0]" :
-                review.status === "changes_requested" ? "text-[#777] bg-[#F0F0F0]" :
-                "text-[#999] bg-[#F0F0F0]"
+                review.status === "approved" ? "text-surface bg-foreground" :
+                review.status === "changes_requested" ? "text-subtle bg-foreground" :
+                "text-subtle bg-foreground"
               }`}>
                 {review.status === "approved" ? "Approved" : review.status === "changes_requested" ? "Amends Needed" : "Pending"}
               </span>
@@ -2600,13 +2600,13 @@ function DesignsTab({
                       onClick={() => setSelectedVersions(prev => ({ ...prev, [review.id]: v.id }))}
                       className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                         isActive
-                          ? "bg-[#F0F0F0] text-[#1A1A1A] border-[#E8E8E8]"
-                          : "bg-white text-[#777] border-[#E5E5EA] hover:border-[#E8E8E8] hover:text-[#1A1A1A]"
+                          ? "bg-foreground text-surface border-foreground"
+                          : "bg-white text-subtle border-foreground hover:border-foreground hover:text-surface"
                       }`}
                     >
                       v{v.version_number}
                       {isCurrent && (
-                        <span className={`text-[9px] font-semibold uppercase ${isActive ? "text-[#999]" : "text-[#1A1A1A]"}`}>
+                        <span className={`text-[9px] font-semibold uppercase ${isActive ? "text-subtle" : "text-surface"}`}>
                           Current
                         </span>
                       )}
@@ -2620,7 +2620,7 @@ function DesignsTab({
             {activeVersion && (
               <div>
                 {toFigmaEmbed(activeVersion.figma_url) && (
-                  <div className="relative w-full rounded-lg overflow-hidden border border-[#E8E8E8]" style={{ paddingBottom: "65%" }}>
+                  <div className="relative w-full rounded-lg overflow-hidden border border-foreground" style={{ paddingBottom: "65%" }}>
                     <iframe
                       src={toFigmaEmbed(activeVersion.figma_url) || ""}
                       className="absolute inset-0 w-full h-full"
@@ -2630,7 +2630,7 @@ function DesignsTab({
                       href={activeVersion.figma_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors shadow-lg"
+                      className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-surface text-white rounded-lg hover:bg-border transition-colors shadow-lg"
                     >
                       <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -2651,20 +2651,20 @@ function DesignsTab({
                 <div className="space-y-2 mt-5">
                   {statusFeedback.map((fb) => (
                     <div key={fb.id} className={`rounded-lg p-3 text-xs ${
-                      fb.action === "approved" ? "bg-[#F0F0F0] border border-[#E8E8E8]" : "bg-[#F0F0F0] border border-[#E8E8E8]"
+                      fb.action === "approved" ? "bg-foreground border border-foreground" : "bg-foreground border border-foreground"
                     }`}>
                       <div className="flex items-center gap-2">
-                        <span className={`font-semibold ${fb.action === "approved" ? "text-[#1A1A1A]" : "text-[#777]"}`}>
+                        <span className={`font-semibold ${fb.action === "approved" ? "text-surface" : "text-subtle"}`}>
                           {fb.action === "approved" ? "Approved" : "Changes Requested"}
                         </span>
-                        <span className="text-[#AAA]">&middot;</span>
-                        <span className="text-[#999]">{fb.submitted_by}</span>
-                        <span className="text-[#AAA]">&middot;</span>
-                        <span className="text-[#999]">
+                        <span className="text-muted">&middot;</span>
+                        <span className="text-subtle">{fb.submitted_by}</span>
+                        <span className="text-muted">&middot;</span>
+                        <span className="text-subtle">
                           {new Date(fb.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
                       </div>
-                      {fb.comment && <p className="text-[#777] mt-1">{fb.comment}</p>}
+                      {fb.comment && <p className="text-subtle mt-1">{fb.comment}</p>}
                     </div>
                   ))}
                 </div>
@@ -2675,9 +2675,9 @@ function DesignsTab({
             {isCurrentSelected && activeVersion && review.status !== "approved" && (() => {
               const showFb = feedbackState[activeVersion.id]?.show || false;
               return (
-                <div className="border border-[#E8E8E8] rounded-lg p-5 mt-5">
+                <div className="border border-foreground rounded-lg p-5 mt-5">
                   <p className="text-sm font-semibold mb-1">Ready to approve?</p>
-                  <p className="text-xs text-[#999] mb-4">Leave any comments in Figma first, then approve or request amends below.</p>
+                  <p className="text-xs text-subtle mb-4">Leave any comments in Figma first, then approve or request amends below.</p>
                   {showFb ? (
                     <div className="space-y-3">
                       <textarea
@@ -2687,27 +2687,27 @@ function DesignsTab({
                           [activeVersion.id]: { ...prev[activeVersion.id], show: true, comment: e.target.value }
                         }))}
                         placeholder="Any notes (optional)"
-                        className="w-full px-3 py-2.5 text-sm border border-[#E8E8E8] rounded-lg resize-none h-20 focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]/10 focus:border-[#C5C5C5]"
+                        className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg resize-none h-20 focus:outline-none focus:ring-1 focus:ring-surface/10 focus:border-muted"
                         autoFocus
                       />
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleFeedback(review.id, activeVersion.id, "approved")}
                           disabled={submitting === activeVersion.id}
-                          className="px-5 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors disabled:opacity-50"
+                          className="px-5 py-2.5 text-xs font-semibold bg-surface text-white rounded-lg hover:bg-border transition-colors disabled:opacity-50"
                         >
                           {submitting === activeVersion.id ? "Saving..." : "Approve"}
                         </button>
                         <button
                           onClick={() => handleFeedback(review.id, activeVersion.id, "changes_requested")}
                           disabled={submitting === activeVersion.id}
-                          className="px-5 py-2.5 text-xs font-semibold bg-[#F0F0F0] text-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors disabled:opacity-50"
+                          className="px-5 py-2.5 text-xs font-semibold bg-foreground text-surface rounded-lg hover:bg-border transition-colors disabled:opacity-50"
                         >
                           Request Amends
                         </button>
                         <button
                           onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: false, comment: "" } }))}
-                          className="px-3 py-2.5 text-xs font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+                          className="px-3 py-2.5 text-xs font-medium text-muted hover:text-surface transition-colors"
                         >
                           Cancel
                         </button>
@@ -2717,13 +2717,13 @@ function DesignsTab({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: true, comment: "" } }))}
-                        className="px-5 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
+                        className="px-5 py-2.5 text-xs font-semibold bg-surface text-white rounded-lg hover:bg-border transition-colors"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: true, comment: "" } }))}
-                        className="px-5 py-2.5 text-xs font-semibold border border-[#E8E8E8] text-[#777] rounded-lg hover:bg-[#F0F0F0] transition-colors"
+                        className="px-5 py-2.5 text-xs font-semibold border border-foreground text-subtle rounded-lg hover:bg-foreground transition-colors"
                       >
                         Request Amends
                       </button>
@@ -2735,11 +2735,11 @@ function DesignsTab({
 
             {/* Approved banner */}
             {review.status === "approved" && (
-              <div className="flex items-center gap-2 p-4 bg-[#F0F0F0] border border-[#E8E8E8] rounded-lg mt-5">
-                <svg className="size-5 text-[#1A1A1A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <div className="flex items-center gap-2 p-4 bg-foreground border border-foreground rounded-lg mt-5">
+                <svg className="size-5 text-surface" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-sm font-semibold text-[#1A1A1A]">This design has been approved</span>
+                <span className="text-sm font-semibold text-surface">This design has been approved</span>
               </div>
             )}
           </div>
@@ -2772,7 +2772,7 @@ function ApproveButton({
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Add a note (optional)"
-          className={`px-2 py-1 text-xs border border-[#E8E8E8] rounded ${compact ? "w-32" : "w-full"}`}
+          className={`px-2 py-1 text-xs border border-foreground rounded ${compact ? "w-32" : "w-full"}`}
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -2788,13 +2788,13 @@ function ApproveButton({
               onApprove(comment);
               setShowComment(false);
             }}
-            className="px-2 py-1 text-[10px] font-semibold bg-[#1A1A1A] text-white rounded hover:bg-[#333] transition-colors"
+            className="px-2 py-1 text-[10px] font-semibold bg-surface text-white rounded hover:bg-border transition-colors"
           >
             Confirm
           </button>
           <button
             onClick={() => setShowComment(false)}
-            className="px-2 py-1 text-[10px] font-semibold text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+            className="px-2 py-1 text-[10px] font-semibold text-muted hover:text-surface transition-colors"
           >
             Cancel
           </button>
@@ -2806,8 +2806,8 @@ function ApproveButton({
   return (
     <button
       onClick={() => setShowComment(true)}
-      className={`inline-flex items-center gap-1 font-semibold text-[#1A1A1A] hover:text-[#1A1A1A] transition-colors ${
-        compact ? "text-[10px] px-2 py-1 border border-[#E8E8E8] rounded" : "text-xs"
+      className={`inline-flex items-center gap-1 font-semibold text-surface hover:text-surface transition-colors ${
+        compact ? "text-[10px] px-2 py-1 border border-foreground rounded" : "text-xs"
       }`}
     >
       <svg className="size-3" viewBox="0 0 12 12" fill="none">
@@ -2849,27 +2849,27 @@ function DocumentPreview({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-white border border-foreground rounded-lg shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[#E8E8E8]">
+        <div className="flex items-start justify-between p-6 border-b border-foreground">
           <div className="flex items-start gap-4">
-            <div className="shrink-0 size-12 rounded-lg bg-[#F0F0F0] text-[#777] flex items-center justify-center">
+            <div className="shrink-0 size-12 rounded-lg bg-foreground text-subtle flex items-center justify-center">
               <DocTypeIcon type={doc.type} className="size-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#1A1A1A] mb-1">{doc.name}</h3>
+              <h3 className="text-base font-bold text-surface mb-1">{doc.name}</h3>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#AAA] uppercase tracking-wider font-medium">
+                <span className="text-xs text-muted uppercase tracking-wider font-medium">
                   {doc.type}
                 </span>
-                <span className="text-[#CCC]">&middot;</span>
-                <span className="text-xs text-[#AAA]">{doc.date}</span>
+                <span className="text-muted">&middot;</span>
+                <span className="text-xs text-muted">{doc.date}</span>
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#AAA] hover:text-[#1A1A1A]"
+            className="p-1.5 rounded-md hover:bg-foreground transition-colors text-muted hover:text-surface"
           >
             <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -2879,25 +2879,25 @@ function DocumentPreview({
 
         {/* Document preview placeholder */}
         <div className="p-6">
-          <div className="border border-[#E8E8E8] rounded-lg bg-white p-8 mb-6">
+          <div className="border border-foreground rounded-lg bg-white p-8 mb-6">
             <div className="space-y-4">
-              <div className="h-3 bg-[#F0F0F0] rounded w-2/3" />
+              <div className="h-3 bg-foreground rounded w-2/3" />
               <div className="space-y-2">
-                <div className="h-2 bg-[#F0F0F0] rounded w-full" />
-                <div className="h-2 bg-[#F0F0F0] rounded w-5/6" />
-                <div className="h-2 bg-[#F0F0F0] rounded w-4/6" />
+                <div className="h-2 bg-foreground rounded w-full" />
+                <div className="h-2 bg-foreground rounded w-5/6" />
+                <div className="h-2 bg-foreground rounded w-4/6" />
               </div>
-              <div className="h-px bg-[#F0F0F0]" />
+              <div className="h-px bg-foreground" />
               <div className="space-y-2">
-                <div className="h-2 bg-[#F0F0F0] rounded w-full" />
-                <div className="h-2 bg-[#F0F0F0] rounded w-3/4" />
-                <div className="h-2 bg-[#F0F0F0] rounded w-5/6" />
-                <div className="h-2 bg-[#F0F0F0] rounded w-2/3" />
+                <div className="h-2 bg-foreground rounded w-full" />
+                <div className="h-2 bg-foreground rounded w-3/4" />
+                <div className="h-2 bg-foreground rounded w-5/6" />
+                <div className="h-2 bg-foreground rounded w-2/3" />
               </div>
-              <div className="h-px bg-[#F0F0F0]" />
+              <div className="h-px bg-foreground" />
               <div className="space-y-2">
-                <div className="h-2 bg-[#F0F0F0] rounded w-full" />
-                <div className="h-2 bg-[#F0F0F0] rounded w-4/5" />
+                <div className="h-2 bg-foreground rounded w-full" />
+                <div className="h-2 bg-foreground rounded w-4/5" />
               </div>
             </div>
           </div>
@@ -2908,8 +2908,8 @@ function DocumentPreview({
               onClick={handleDownload}
               className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium rounded-lg transition-colors ${
                 doc.url
-                  ? "bg-[#1A1A1A] text-white hover:bg-[#333]"
-                  : "bg-[#F0F0F0] text-[#AAA] cursor-not-allowed"
+                  ? "bg-surface text-white hover:bg-border"
+                  : "bg-foreground text-muted cursor-not-allowed"
               }`}
             >
               <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
@@ -2920,7 +2920,7 @@ function DocumentPreview({
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-3 text-sm font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:bg-[#1A1A24] transition-colors"
+              className="px-5 py-3 text-sm font-medium text-subtle border border-foreground rounded-lg hover:bg-[#1A1A24] transition-colors"
             >
               Close
             </button>
@@ -2929,7 +2929,7 @@ function DocumentPreview({
 
         {/* Toast */}
         {toast && (
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#F0F0F0] text-[#1A1A1A] text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
+          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-foreground text-surface text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
             {toast}
           </div>
         )}
@@ -2972,13 +2972,13 @@ function WeeklyTestingTab({
   if (results.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-foreground mb-4">
+          <svg className="size-5 text-muted" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
           </svg>
         </div>
-        <p className="text-sm text-[#777] mb-1">No tests scheduled yet</p>
-        <p className="text-xs text-[#AAA]">Weekly tests will appear here as they are scheduled</p>
+        <p className="text-sm text-subtle mb-1">No tests scheduled yet</p>
+        <p className="text-xs text-muted">Weekly tests will appear here as they are scheduled</p>
       </div>
     );
   }
@@ -2988,23 +2988,23 @@ function WeeklyTestingTab({
       {/* Tier + stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {testingTier && (
-          <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Tier</p>
-            <p className="text-lg font-bold tracking-tight text-[#1A1A1A]">{testingTier}</p>
-            <p className="text-[10px] text-[#999] mt-0.5">{tierLabel[testingTier]}</p>
+          <div className="bg-white border border-foreground rounded-lg p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Tier</p>
+            <p className="text-lg font-bold tracking-tight text-surface">{testingTier}</p>
+            <p className="text-[10px] text-subtle mt-0.5">{tierLabel[testingTier]}</p>
           </div>
         )}
-        <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Live</p>
-          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{live.length}</p>
+        <div className="bg-white border border-foreground rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Live</p>
+          <p className="text-2xl font-bold tracking-tight text-surface">{live.length}</p>
         </div>
-        <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Upcoming</p>
-          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{scheduled.length}</p>
+        <div className="bg-white border border-foreground rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Upcoming</p>
+          <p className="text-2xl font-bold tracking-tight text-surface">{scheduled.length}</p>
         </div>
-        <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Winners</p>
-          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{winners.length}</p>
+        <div className="bg-white border border-foreground rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted mb-2">Winners</p>
+          <p className="text-2xl font-bold tracking-tight text-surface">{winners.length}</p>
         </div>
       </div>
 
@@ -3013,25 +3013,25 @@ function WeeklyTestingTab({
         const tests = weekGroups[weekLabel];
         return (
           <div key={weekLabel}>
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">{weekLabel}</h3>
-            <div className="bg-white border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted mb-4">{weekLabel}</h3>
+            <div className="bg-white border border-foreground rounded-lg divide-y divide-foreground">
               {tests.map((test) => {
                 const badge = test.status === "live"
-                  ? { label: "Live", cls: "bg-[#1A1A1A] text-white" }
+                  ? { label: "Live", cls: "bg-surface text-white" }
                   : test.status === "scheduled"
-                  ? { label: "Upcoming", cls: "bg-[#F0F0F0] text-[#777]" }
+                  ? { label: "Upcoming", cls: "bg-foreground text-subtle" }
                   : test.result === "winner"
                   ? { label: "Winner", cls: "bg-emerald-50 text-emerald-700" }
                   : test.result === "loser"
-                  ? { label: "No Lift", cls: "bg-[#F0F0F0] text-[#777]" }
+                  ? { label: "No Lift", cls: "bg-foreground text-subtle" }
                   : { label: "Inconclusive", cls: "bg-amber-50 text-amber-700" };
 
                 return (
                   <div key={test.id} className="px-5 py-4 flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#1A1A1A] truncate">{test.name}</p>
-                      <p className="text-xs text-[#999] mt-0.5">{test.metric}</p>
-                      <p className="text-[10px] text-[#CCC] mt-1">
+                      <p className="text-sm font-medium text-surface truncate">{test.name}</p>
+                      <p className="text-xs text-subtle mt-0.5">{test.metric}</p>
+                      <p className="text-[10px] text-muted mt-1">
                         {test.status === "scheduled"
                           ? `Starts ${test.startDate}`
                           : test.endDate
@@ -3067,11 +3067,11 @@ function RequestsTab({
   const statusColor = (status: AdHocRequest["status"]) => {
     switch (status) {
       case "open":
-        return "bg-[#F0F0F0] text-[#777] border-[#E8E8E8]";
+        return "bg-foreground text-subtle border-foreground";
       case "in-progress":
-        return "bg-[#F0F0F0] text-[#777] border-[#E8E8E8]";
+        return "bg-foreground text-subtle border-foreground";
       case "done":
-        return "bg-[#F0F0F0] text-[#777] border-[#E8E8E8]";
+        return "bg-foreground text-subtle border-foreground";
     }
   };
 
@@ -3091,7 +3091,7 @@ function RequestsTab({
       {/* Submit button */}
       <button
         onClick={onOpenPopup}
-        className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
+        className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-surface text-white rounded-lg hover:bg-border transition-colors"
       >
         <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
@@ -3101,18 +3101,18 @@ function RequestsTab({
 
       {/* Existing requests */}
       {requests.length > 0 && (
-        <div className="bg-white border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
+        <div className="bg-white border border-foreground rounded-lg divide-y divide-foreground">
           {requests.map((req) => (
             <div key={req.id} className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#1A1A1A]">{req.title}</p>
+                  <p className="text-sm font-medium text-surface">{req.title}</p>
                   {req.description && (
-                    <p className="text-xs text-[#777] mt-1 leading-relaxed">
+                    <p className="text-xs text-subtle mt-1 leading-relaxed">
                       {req.description}
                     </p>
                   )}
-                  <p className="text-[10px] text-[#AAA] mt-2">
+                  <p className="text-[10px] text-muted mt-2">
                     {new Date(req.requested_at).toLocaleDateString("en-GB", {
                       day: "numeric",
                       month: "short",
@@ -3133,13 +3133,13 @@ function RequestsTab({
 
       {requests.length === 0 && (
         <div className="text-center py-12">
-          <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-            <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+          <div className="inline-flex items-center justify-center size-12 rounded-full bg-foreground mb-4">
+            <svg className="size-5 text-muted" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
             </svg>
           </div>
-          <p className="text-sm text-[#777] mb-1">No requests yet</p>
-          <p className="text-xs text-[#AAA]">Submit a request for out-of-scope work that needs quoting</p>
+          <p className="text-sm text-subtle mb-1">No requests yet</p>
+          <p className="text-xs text-muted">Submit a request for out-of-scope work that needs quoting</p>
         </div>
       )}
     </div>
@@ -3175,10 +3175,10 @@ function RequestPopup({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-[#E8E8E8]">
-          <h3 className="text-base font-bold text-[#1A1A1A]">Submit a Request</h3>
-          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#AAA] hover:text-[#1A1A1A]">
+      <div className="relative w-full max-w-md bg-white border border-foreground rounded-lg shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-foreground">
+          <h3 className="text-base font-bold text-surface">Submit a Request</h3>
+          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-foreground transition-colors text-muted hover:text-surface">
             <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
             </svg>
@@ -3186,8 +3186,8 @@ function RequestPopup({
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label htmlFor="popup-req-title" className="block text-xs font-medium text-[#777] mb-1.5">
-              Title <span className="text-[#CCC]">*</span>
+            <label htmlFor="popup-req-title" className="block text-xs font-medium text-subtle mb-1.5">
+              Title <span className="text-muted">*</span>
             </label>
             <input
               id="popup-req-title"
@@ -3195,14 +3195,14 @@ function RequestPopup({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Add announcement bar to homepage"
-              className="w-full px-3 py-2.5 text-sm border border-[#E8E8E8] rounded-lg bg-white text-[#1A1A1A] placeholder:text-[#CCC] focus:outline-none focus:border-[#1A1A1A]/50 transition-colors"
+              className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg bg-white text-surface placeholder:text-muted focus:outline-none focus:border-surface/50 transition-colors"
               required
               autoFocus
             />
           </div>
           <div>
-            <label htmlFor="popup-req-desc" className="block text-xs font-medium text-[#777] mb-1.5">
-              Description <span className="text-[#CCC]">(optional)</span>
+            <label htmlFor="popup-req-desc" className="block text-xs font-medium text-subtle mb-1.5">
+              Description <span className="text-muted">(optional)</span>
             </label>
             <textarea
               id="popup-req-desc"
@@ -3210,21 +3210,21 @@ function RequestPopup({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add any details, context, or links..."
               rows={3}
-              className="w-full px-3 py-2.5 text-sm border border-[#E8E8E8] rounded-lg bg-white text-[#1A1A1A] placeholder:text-[#CCC] focus:outline-none focus:border-[#1A1A1A]/50 transition-colors resize-none"
+              className="w-full px-3 py-2.5 text-sm border border-foreground rounded-lg bg-white text-surface placeholder:text-muted focus:outline-none focus:border-surface/50 transition-colors resize-none"
             />
           </div>
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
               disabled={!title.trim() || submitting}
-              className="flex-1 px-5 py-2.5 text-sm font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-5 py-2.5 text-sm font-semibold bg-surface text-white rounded-lg hover:bg-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? "Submitting..." : "Submit Request"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 text-sm font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+              className="px-5 py-2.5 text-sm font-medium text-subtle border border-foreground rounded-lg hover:bg-surface-raised transition-colors"
             >
               Cancel
             </button>
@@ -3245,7 +3245,7 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
       <div className="space-y-4">
         <button
           onClick={() => setSelectedId(null)}
-          className="flex items-center gap-1.5 text-xs font-medium text-[#999] hover:text-[#1A1A1A] transition-colors"
+          className="flex items-center gap-1.5 text-xs font-medium text-subtle hover:text-surface transition-colors"
         >
           <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 011.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
@@ -3264,10 +3264,10 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
   if (reports.length === 0) {
     return (
       <div className="text-center py-20">
-        <svg className="size-8 text-[#D4D4D4] mx-auto mb-3" viewBox="0 0 20 20" fill="currentColor">
+        <svg className="size-8 text-muted mx-auto mb-3" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
         </svg>
-        <p className="text-sm text-[#999]">No reports yet</p>
+        <p className="text-sm text-subtle">No reports yet</p>
       </div>
     );
   }
@@ -3278,14 +3278,14 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
         <button
           key={report.id}
           onClick={() => setSelectedId(report.id)}
-          className="w-full text-left p-5 border border-[#E8E8E8] rounded-xl hover:border-[#1A1A1A] transition-colors group bg-white"
+          className="w-full text-left p-5 border border-foreground rounded-xl hover:border-surface transition-colors group bg-white"
         >
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-[#1A1A1A] group-hover:underline truncate">
+              <p className="text-sm font-semibold text-surface group-hover:underline truncate">
                 {report.title}
               </p>
-              <p className="text-[11px] text-[#AAA] mt-1">
+              <p className="text-[11px] text-muted mt-1">
                 {new Date(report.date + "T00:00:00").toLocaleDateString("en-GB", {
                   day: "numeric",
                   month: "long",
@@ -3293,7 +3293,7 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
                 })}
               </p>
             </div>
-            <svg className="size-4 text-[#D4D4D4] group-hover:text-[#1A1A1A] transition-colors shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <svg className="size-4 text-muted group-hover:text-surface transition-colors shrink-0" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
             </svg>
           </div>

@@ -83,17 +83,17 @@ export function InvoicePdfModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#1B1B1B]/60 backdrop-blur-sm p-4 md:p-8"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-surface/60 backdrop-blur-sm p-4 md:p-8"
       onClick={onClose}
     >
       <div
-        className="bg-[#181818] rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between px-5 py-3 border-b border-[#2A2A2A]">
+        <header className="flex items-center justify-between px-5 py-3 border-b border-border">
           <div>
-            <h3 className="text-sm font-semibold text-[#E5E5EA]">{title}</h3>
-            <p className="text-[11px] text-[#71757D]">{filename}</p>
+            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+            <p className="text-[11px] text-subtle">{filename}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -107,14 +107,14 @@ export function InvoicePdfModal({
                 window.document.body.removeChild(a);
               }}
               disabled={!url}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90 disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-background text-sm rounded-lg hover:opacity-90 disabled:opacity-40"
             >
               <ArrowDownTrayIcon className="size-4" />
               Download
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-[#71757D] hover:text-[#E5E5EA] rounded-lg hover:bg-[#0C0C0C]"
+              className="p-1.5 text-subtle hover:text-foreground rounded-lg hover:bg-background"
               aria-label="Close"
             >
               <XMarkIcon className="size-5" />
@@ -122,9 +122,9 @@ export function InvoicePdfModal({
           </div>
         </header>
 
-        <div className="flex-1 bg-[#0C0C0C] overflow-hidden">
+        <div className="flex-1 bg-background overflow-hidden">
           {rendering && !url && (
-            <div className="h-full flex items-center justify-center text-sm text-[#71757D]">
+            <div className="h-full flex items-center justify-center text-sm text-subtle">
               <ArrowPathIcon className="size-4 animate-spin mr-2" />
               Rendering PDF...
             </div>
@@ -140,7 +140,7 @@ export function InvoicePdfModal({
             // Firefox ignores them but the preview still renders.
             <iframe
               src={`${url}#toolbar=0&navpanes=0&view=FitH`}
-              className="w-full h-full bg-[#181818]"
+              className="w-full h-full bg-surface"
               title={title}
             />
           )}

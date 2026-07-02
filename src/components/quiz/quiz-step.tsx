@@ -54,7 +54,7 @@ export function QuizStep<T extends string>({
       <QuizProgressBar current={step} total={total} />
 
       <h1
-        className="mt-8 text-2xl md:text-[2rem] font-bold text-[#E5E5EA] leading-[1.15] text-center"
+        className="mt-8 text-2xl md:text-[2rem] font-bold text-foreground leading-[1.15] text-center"
         style={{ fontFamily: "var(--font-heading)" }}
       >
         {question}
@@ -78,7 +78,7 @@ export function QuizStep<T extends string>({
             type="button"
             onClick={onBack}
             disabled={pending !== null}
-            className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors disabled:opacity-50"
+            className="text-xs font-medium text-subtle hover:text-foreground transition-colors disabled:opacity-50"
           >
             ← Back
           </button>

@@ -16,12 +16,12 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
   return (
     <div
       className={`
-        min-w-[170px] max-w-[220px] rounded-xl border bg-[#181818] transition-shadow
-        ${selected ? "border-white shadow-lg" : "border-[#2A2A2A] shadow-sm hover:shadow-md"}
+        min-w-[170px] max-w-[220px] rounded-xl border bg-surface transition-shadow
+        ${selected ? "border-white shadow-lg" : "border-border shadow-sm hover:shadow-md"}
       `}
     >
       {/* Header bar */}
-      <div className="flex items-center gap-1.5 px-3.5 py-2 border-b border-[#2A2A2A]">
+      <div className="flex items-center gap-1.5 px-3.5 py-2 border-b border-border">
         <span
           className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
           style={{ background: config.color, color: config.textColor }}
@@ -44,16 +44,16 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
             {stage.label}
           </span>
         )}
-        <span className="ml-auto text-[9px] font-medium text-[#C7C9CD] uppercase tracking-wider">Traffic</span>
+        <span className="ml-auto text-[9px] font-medium text-muted uppercase tracking-wider">Traffic</span>
       </div>
 
       {/* Body */}
       <div className="px-3.5 py-3">
-        <p className="text-[13px] font-semibold text-[#E5E5EA] leading-tight">{data.label}</p>
+        <p className="text-[13px] font-semibold text-foreground leading-tight">{data.label}</p>
 
         {data.metrics?.traffic != null && (
-          <p className="text-[11px] text-[#9CA3AF] mt-2">
-            <span className="font-semibold text-[#E5E5EA]">{data.metrics.traffic.toLocaleString()}</span> visits
+          <p className="text-[11px] text-muted mt-2">
+            <span className="font-semibold text-foreground">{data.metrics.traffic.toLocaleString()}</span> visits
           </p>
         )}
 
@@ -71,7 +71,7 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
         )}
       </div>
 
-      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-[#1B1B1B] !border-2 !border-white" />
+      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-surface !border-2 !border-white" />
     </div>
   );
 }

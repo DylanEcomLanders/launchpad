@@ -61,7 +61,7 @@ export default function EngagementDetailPage() {
   if (engagement === undefined) {
     return (
       <div className="px-6 py-6 max-w-[1400px] mx-auto">
-        <p className="text-[12px] text-[#71757D]">Loading client...</p>
+        <p className="text-[12px] text-subtle">Loading client...</p>
       </div>
     );
   }

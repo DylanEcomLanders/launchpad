@@ -40,7 +40,7 @@ export default function OnboardingListPage() {
     router.push(`/tools/onboarding/${o.id}`);
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   const active = rows.filter((r) => r.status === "in_progress");
   const done = rows.filter((r) => r.status !== "in_progress");
@@ -57,17 +57,17 @@ export default function OnboardingListPage() {
               Onboarding
             </h1>
           </div>
-          <p className="text-sm text-[#9CA3AF] max-w-2xl">
+          <p className="text-sm text-muted max-w-2xl">
             First-week wow per client. Bulletproof checklist - pack sent, call done, deep-dive complete, roadmap delivered, first test live.
           </p>
         </div>
-        <button onClick={createNew} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]">
+        <button onClick={createNew} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground">
           <PlusIcon className="size-4" /> New onboarding
         </button>
       </header>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-background rounded-xl animate-pulse" />)}</div>
       ) : (
         <>
           <Section title={`Active (${active.length})`} rows={active} />
@@ -81,10 +81,10 @@ export default function OnboardingListPage() {
 function Section({ title, rows }: { title: string; rows: ClientOnboarding[] }) {
   return (
     <section>
-      <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">{title}</h2>
+      <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">{title}</h2>
       {rows.length === 0 ? (
-        <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-          <p className="text-sm text-[#71757D]">Nothing here.</p>
+        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+          <p className="text-sm text-subtle">Nothing here.</p>
         </div>
       ) : (
         <ul className="space-y-2">
@@ -93,11 +93,11 @@ function Section({ title, rows }: { title: string; rows: ClientOnboarding[] }) {
             const overdue = overdueItems(r);
             return (
               <li key={r.id}>
-                <Link href={`/tools/onboarding/${r.id}`} className="block bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
+                <Link href={`/tools/onboarding/${r.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-sky-500/30 transition-all">
                   <div className="flex items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-sm font-semibold text-[#E5E5EA] truncate">
+                        <span className="text-sm font-semibold text-foreground truncate">
                           {r.client_name || "Untitled"}
                         </span>
                         <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${STATUS_TINT[r.status]}`}>
@@ -110,13 +110,13 @@ function Section({ title, rows }: { title: string; rows: ClientOnboarding[] }) {
                           </span>
                         )}
                       </div>
-                      <div className="text-[12px] text-[#71757D] flex items-center gap-2 flex-wrap">
+                      <div className="text-[12px] text-subtle flex items-center gap-2 flex-wrap">
                         <span>Day {dayNumber(r)}</span>
                         {r.csm_name && <span>· CSM {r.csm_name}</span>}
                         {r.strategist_name && <span>· {r.strategist_name}</span>}
                         <span className="text-emerald-300/80">· {pct}% done</span>
                       </div>
-                      <div className="mt-2 h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+                      <div className="mt-2 h-1.5 bg-surface rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
                       </div>
                     </div>

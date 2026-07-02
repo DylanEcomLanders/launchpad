@@ -98,30 +98,30 @@ export default function PodOverviewStrategyPreview() {
         Preview, mock data
       </div>
 
-      <div className="mb-4 text-[11px] uppercase tracking-wider text-[#71757D]">
+      <div className="mb-4 text-[11px] uppercase tracking-wider text-subtle">
         What shows when the Strategy toggle is clicked on Pod Overview
       </div>
 
       {/* Subtitle line + pod filter */}
       <div className="mb-3 flex items-center justify-between flex-wrap gap-3">
-        <p className="text-[12px] text-[#71757D]">
+        <p className="text-[12px] text-subtle">
           Maya Lin · {filtered.length} deliverables in flight
           {podFilter !== "all" && ` on ${podFilter}`} ·{" "}
           <span className="font-semibold text-rose-700">{actCount} need her</span>
         </p>
-        <div className="inline-flex items-center gap-1 rounded-md bg-[#222222] p-0.5">
+        <div className="inline-flex items-center gap-1 rounded-md bg-surface-raised p-0.5">
           {(["all", "Pod 1", "Pod 2", "Pod 3"] as PodFilter[]).map((p) => (
             <button
               key={p}
               onClick={() => setPodFilter(p)}
               className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
                 podFilter === p
-                  ? "bg-[#181818] text-[#E5E5EA] shadow-sm"
-                  : "text-[#71757D] hover:text-[#E5E5EA]"
+                  ? "bg-surface text-foreground shadow-sm"
+                  : "text-subtle hover:text-foreground"
               }`}
             >
               {p === "all" ? "All pods" : p}
-              <span className="text-[10px] text-[#71757D] tabular-nums">
+              <span className="text-[10px] text-subtle tabular-nums">
                 {podCounts[p]}
               </span>
             </button>
@@ -137,16 +137,16 @@ export default function PodOverviewStrategyPreview() {
       </div>
 
       {/* What's wired note */}
-      <div className="mt-6 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 text-xs text-[#71757D]">
-        <p className="font-semibold uppercase tracking-wider text-[#E5E5EA]">
+      <div className="mt-6 rounded-lg border border-border bg-background p-4 text-xs text-subtle">
+        <p className="font-semibold uppercase tracking-wider text-foreground">
           What gets added to Pod Overview
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
           <li>
-            <span className="font-medium text-[#E5E5EA]">Third toggle option</span> in the existing Overview / Pipeline tab strip, called Strategy. With a small red count when something needs Maya.
+            <span className="font-medium text-foreground">Third toggle option</span> in the existing Overview / Pipeline tab strip, called Strategy. With a small red count when something needs Maya.
           </li>
           <li>
-            <span className="font-medium text-[#E5E5EA]">This view</span> renders when the toggle is clicked. Five touchpoint sections, pod filter chips at the top, "Live since X · Day N" on tests.
+            <span className="font-medium text-foreground">This view</span> renders when the toggle is clicked. Five touchpoint sections, pod filter chips at the top, "Live since X · Day N" on tests.
           </li>
         </ul>
         <p className="mt-3">
@@ -165,24 +165,24 @@ function TouchpointSection({
   group: { key: Touchpoint; label: string; sub: string; items: Deliverable[] };
 }) {
   return (
-    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818]">
-      <div className="flex items-baseline justify-between border-b border-[#2A2A2A] px-4 py-2.5">
+    <div className="rounded-lg border border-border bg-surface">
+      <div className="flex items-baseline justify-between border-b border-border px-4 py-2.5">
         <div className="flex items-baseline gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
             {group.label}
           </span>
-          <span className="text-[10px] text-[#71757D]">· {group.sub}</span>
+          <span className="text-[10px] text-subtle">· {group.sub}</span>
         </div>
-        <span className="text-[10px] text-[#71757D] tabular-nums">
+        <span className="text-[10px] text-subtle tabular-nums">
           {group.items.length}
         </span>
       </div>
       {group.items.length === 0 ? (
-        <div className="px-4 py-2.5 text-[11px] italic text-[#71757D]">
+        <div className="px-4 py-2.5 text-[11px] italic text-subtle">
           Nothing in flight.
         </div>
       ) : (
-        <div className="divide-y divide-[#2A2A2A]">
+        <div className="divide-y divide-border">
           {group.items.map((d) => (
             <DeliverableRow key={d.id} d={d} />
           ))}
@@ -195,36 +195,36 @@ function TouchpointSection({
 function DeliverableRow({ d }: { d: Deliverable }) {
   const tone =
     d.status === "blocked" ? "text-rose-700"
-      : d.status === "in_progress" ? "text-[#E5E5EA] font-semibold"
+      : d.status === "in_progress" ? "text-foreground font-semibold"
       : d.status === "done" ? "text-emerald-700"
-      : "text-[#71757D]";
+      : "text-subtle";
   const dot =
     d.status === "blocked" ? "bg-rose-500 ring-2 ring-rose-200"
-      : d.status === "in_progress" ? "bg-[#1B1B1B] ring-2 ring-[#1B1B1B]/20"
+      : d.status === "in_progress" ? "bg-surface ring-2 ring-surface/20"
       : d.status === "done" ? "bg-emerald-500"
-      : "bg-[#D5D5D8]";
+      : "bg-muted";
 
   const hasLive = d.live_since != null;
 
   return (
-    <div className="grid grid-cols-[6rem_auto_1fr_auto_auto] items-baseline gap-3 px-4 py-2 hover:bg-[#0C0C0C]">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+    <div className="grid grid-cols-[6rem_auto_1fr_auto_auto] items-baseline gap-3 px-4 py-2 hover:bg-background">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
         {d.client}
       </span>
-      <span className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 py-0 text-[9px] font-medium text-[#71757D]">
+      <span className="rounded border border-border bg-background px-1 py-0 text-[9px] font-medium text-subtle">
         {d.pod}
       </span>
       <div className="min-w-0">
-        <div className="text-[12px] font-medium text-[#E5E5EA] truncate">
+        <div className="text-[12px] font-medium text-foreground truncate">
           {d.title}
         </div>
         {hasLive && (
-          <div className="mt-0.5 text-[10px] text-[#71757D]">
-            Live since <span className="font-medium text-[#9CA3AF]">{d.live_since}</span>
+          <div className="mt-0.5 text-[10px] text-subtle">
+            Live since <span className="font-medium text-muted">{d.live_since}</span>
             {d.live_days != null && (
               <span>
                 {" · Day "}
-                <span className="font-semibold text-[#E5E5EA] tabular-nums">
+                <span className="font-semibold text-foreground tabular-nums">
                   {d.live_days}
                 </span>
               </span>
@@ -236,7 +236,7 @@ function DeliverableRow({ d }: { d: Deliverable }) {
         <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
         {d.status_hint}
       </span>
-      <span className="text-[11px] text-[#71757D] tabular-nums w-28 text-right">
+      <span className="text-[11px] text-subtle tabular-nums w-28 text-right">
         {d.due}
       </span>
     </div>

@@ -170,7 +170,7 @@ export default function FinanceDashboardPage() {
   }, [totals.expensesByCategory]);
 
   if (!hydrated) {
-    return <div className="h-96 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-background rounded-xl animate-pulse" />;
   }
 
   return (
@@ -210,7 +210,7 @@ export default function FinanceDashboardPage() {
                 onChange={(e) => setCustomStart(e.target.value)}
                 className={`${inputClass} h-9`}
               />
-              <span className="text-xs text-[#9A9AA3]">to</span>
+              <span className="text-xs text-subtle">to</span>
               <input
                 type="date"
                 value={customEnd}
@@ -219,7 +219,7 @@ export default function FinanceDashboardPage() {
               />
             </div>
           )}
-          <div className="text-[11px] text-[#9A9AA3] tabular-nums hidden md:block">
+          <div className="text-[11px] text-subtle tabular-nums hidden md:block">
             {range.start} → {range.end}
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function FinanceDashboardPage() {
 
       {/* Charts: bar + donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
-        <div className="lg:col-span-2 bg-[#181818] border border-[#2A2A2A] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="lg:col-span-2 bg-surface border border-border rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <CardHeader
             icon={ArrowTrendingUpIcon}
             title="Revenue vs expenses"
@@ -304,16 +304,16 @@ export default function FinanceDashboardPage() {
           {/* Inline legend chips, kept above the chart so the plot itself stays uncluttered */}
           <div className="flex items-center gap-5 mb-3 -mt-1">
             <span className="inline-flex items-center gap-2 text-[11px] text-[#5A5A63]">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-success" />
               Revenue
             </span>
             <span className="inline-flex items-center gap-2 text-[11px] text-[#5A5A63]">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-warning" />
               Expenses
             </span>
           </div>
           {trailingSeries.length === 0 ? (
-            <p className="text-sm text-[#71757D] py-12 text-center">
+            <p className="text-sm text-subtle py-12 text-center">
               No invoice or expense data yet
             </p>
           ) : (
@@ -407,26 +407,26 @@ export default function FinanceDashboardPage() {
           )}
         </div>
 
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="bg-surface border border-border rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#222222] text-[#E5E5EA]">
+              <span className="inline-flex items-center justify-center size-8 rounded-xl bg-surface-raised text-foreground">
                 <ChartPieIcon className="size-4" />
               </span>
-              <h3 className="text-[15px] font-semibold text-[#E5E5EA]">
+              <h3 className="text-[15px] font-semibold text-foreground">
                 Expense breakdown
               </h3>
             </div>
             <button
               type="button"
-              className="size-7 inline-flex items-center justify-center rounded-lg text-[#9A9AA3] hover:bg-[#222222] transition-colors"
+              className="size-7 inline-flex items-center justify-center rounded-lg text-subtle hover:bg-surface-raised transition-colors"
               aria-label="More options"
             >
               <span className="text-lg leading-none tracking-tighter">···</span>
             </button>
           </div>
           {expenseSlices.length === 0 ? (
-            <p className="text-sm text-[#71757D] py-8 text-center">No expenses</p>
+            <p className="text-sm text-subtle py-8 text-center">No expenses</p>
           ) : (
             <>
               <DonutChart slices={expenseSlices} />
@@ -440,14 +440,14 @@ export default function FinanceDashboardPage() {
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ background: s.color }}
                       />
-                      <span className="text-[#E5E5EA] flex-1 truncate font-medium">{s.name}</span>
-                      <span className="tabular-nums text-[#9A9AA3] font-medium">{pct.toFixed(1)}%</span>
-                      <span className="tabular-nums text-[#E5E5EA] font-semibold w-[64px] text-right">{fmtMoney(s.value)}</span>
+                      <span className="text-foreground flex-1 truncate font-medium">{s.name}</span>
+                      <span className="tabular-nums text-subtle font-medium">{pct.toFixed(1)}%</span>
+                      <span className="tabular-nums text-foreground font-semibold w-[64px] text-right">{fmtMoney(s.value)}</span>
                     </div>
                   );
                 })}
                 {expenseSlices.length > 4 && (
-                  <div className="text-[10px] text-[#9A9AA3] pt-0.5">
+                  <div className="text-[10px] text-subtle pt-0.5">
                     +{expenseSlices.length - 4} more
                   </div>
                 )}
@@ -460,7 +460,7 @@ export default function FinanceDashboardPage() {
       {/* Compact forecast strip - three inline stats in a single card to
        * keep the dashboard at one viewport. The detail (per-frequency
        * breakdown etc) lives on the Expenses page. */}
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] grid grid-cols-3 divide-x divide-[#2A2A2A]">
+      <div className="bg-surface border border-border rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] grid grid-cols-3 divide-x divide-border">
         <ForecastInline
           icon={ArrowPathIcon}
           label="Recurring (monthly)"
@@ -505,7 +505,7 @@ function PeriodPills({
     { key: "custom", label: "Custom" },
   ];
   return (
-    <div className="inline-flex items-center gap-1 p-1 bg-[#222222] rounded-full border border-[#2A2A2A] w-fit">
+    <div className="inline-flex items-center gap-1 p-1 bg-surface-raised rounded-full border border-border w-fit">
       {options.map((o) => {
         const active = value === o.key;
         return (
@@ -514,8 +514,8 @@ function PeriodPills({
             onClick={() => onChange(o.key)}
             className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all ${
               active
-                ? "bg-[#181818] text-[#E5E5EA] shadow-[0_1px_3px_rgba(16,24,40,0.08)]"
-                : "text-[#71757D] hover:text-[#E5E5EA]"
+                ? "bg-surface text-foreground shadow-[0_1px_3px_rgba(16,24,40,0.08)]"
+                : "text-subtle hover:text-foreground"
             }`}
           >
             {o.label}
@@ -549,23 +549,23 @@ function Tile({
     accent === "green"
       ? "text-[#047857]"
       : accent === "red"
-        ? "text-[#B91C1C]"
+        ? "text-danger"
         : accent === "amber"
-          ? "text-[#B45309]"
-          : "text-[#E5E5EA]";
+          ? "text-warning"
+          : "text-foreground";
   const hero = size === "hero";
   return (
     <div
-      className="relative bg-[#181818] border border-[#2A2A2A] rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.08)] transition-shadow overflow-hidden"
+      className="relative bg-surface border border-border rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.08)] transition-shadow overflow-hidden"
     >
       <div className="flex items-start justify-between mb-2.5">
         <div className="flex items-center gap-2">
           {Icon && (
-            <span className="inline-flex items-center justify-center size-7 rounded-lg bg-[#222222] text-[#E5E5EA]">
+            <span className="inline-flex items-center justify-center size-7 rounded-lg bg-surface-raised text-foreground">
               <Icon className="size-3.5" />
             </span>
           )}
-          <div className="text-[10.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold">
+          <div className="text-[10.5px] uppercase tracking-[0.06em] text-subtle font-semibold">
             {label}
           </div>
         </div>
@@ -578,7 +578,7 @@ function Tile({
         {value}
       </div>
       {sub && (
-        <div className="text-[11px] text-[#9A9AA3] mt-1.5 leading-snug">{sub}</div>
+        <div className="text-[11px] text-subtle mt-1.5 leading-snug">{sub}</div>
       )}
       {sparkline && sparkline.length > 1 && hero && (
         <div className="absolute right-3 bottom-3 w-[88px] h-[32px] opacity-90 pointer-events-none">
@@ -677,22 +677,22 @@ function DonutChart({
             >
               {active.name}
             </div>
-            <div className="text-[17px] font-semibold tabular-nums text-[#E5E5EA] leading-none">
+            <div className="text-[17px] font-semibold tabular-nums text-foreground leading-none">
               {fmtMoney(active.value)}
             </div>
-            <div className="text-[10px] text-[#9A9AA3] mt-1 tabular-nums">
+            <div className="text-[10px] text-subtle mt-1 tabular-nums">
               {activePct.toFixed(1)}% of total
             </div>
           </>
         ) : (
           <>
-            <div className="text-[9.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold mb-0.5">
+            <div className="text-[9.5px] uppercase tracking-[0.06em] text-subtle font-semibold mb-0.5">
               Total
             </div>
-            <div className="text-[17px] font-semibold tabular-nums text-[#E5E5EA] leading-none">
+            <div className="text-[17px] font-semibold tabular-nums text-foreground leading-none">
               {fmtMoney(total)}
             </div>
-            <div className="text-[10px] text-[#9A9AA3] mt-1">
+            <div className="text-[10px] text-subtle mt-1">
               across {slices.length} categor{slices.length === 1 ? "y" : "ies"}
             </div>
           </>
@@ -736,16 +736,16 @@ function DateLabelTooltip({
         {fmtMoney(total)}
       </div>
       <div className="flex items-center gap-2 text-[11px] mb-1.5">
-        <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+        <span className="w-2 h-2 rounded-full bg-success" />
         <span className="text-white/70">Revenue</span>
-        <span className="ml-auto tabular-nums font-medium text-white bg-[#181818]/10 px-2 py-0.5 rounded-md">
+        <span className="ml-auto tabular-nums font-medium text-white bg-surface/10 px-2 py-0.5 rounded-md">
           {fmtMoney(revenue)}
         </span>
       </div>
       <div className="flex items-center gap-2 text-[11px]">
-        <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+        <span className="w-2 h-2 rounded-full bg-warning" />
         <span className="text-white/70">Expenses</span>
-        <span className="ml-auto tabular-nums font-medium text-white bg-[#181818]/10 px-2 py-0.5 rounded-md">
+        <span className="ml-auto tabular-nums font-medium text-white bg-surface/10 px-2 py-0.5 rounded-md">
           {fmtMoney(expenses)}
         </span>
       </div>
@@ -768,17 +768,17 @@ function ForecastInline({
 }) {
   const color =
     accent === "red"
-      ? "text-[#B91C1C]"
+      ? "text-danger"
       : accent === "amber"
-        ? "text-[#B45309]"
-        : "text-[#E5E5EA]";
+        ? "text-warning"
+        : "text-foreground";
   return (
     <div className="flex items-center gap-3 px-3 first:pl-0 last:pr-0">
-      <span className="inline-flex items-center justify-center size-9 rounded-xl bg-[#222222] text-[#E5E5EA] shrink-0">
+      <span className="inline-flex items-center justify-center size-9 rounded-xl bg-surface-raised text-foreground shrink-0">
         <Icon className="size-4" />
       </span>
       <div className="min-w-0">
-        <div className="text-[10.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold truncate">
+        <div className="text-[10.5px] uppercase tracking-[0.06em] text-subtle font-semibold truncate">
           {label}
         </div>
         <div className={`text-[18px] font-semibold tabular-nums leading-tight ${color}`}>
@@ -804,12 +804,12 @@ function CardHeader({
   return (
     <div className="flex items-center justify-between mb-5">
       <div className="flex items-center gap-2.5">
-        <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#222222] text-[#E5E5EA]">
+        <span className="inline-flex items-center justify-center size-8 rounded-xl bg-surface-raised text-foreground">
           <Icon className="size-4" />
         </span>
-        <h3 className="text-[15px] font-semibold text-[#E5E5EA]">{title}</h3>
+        <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>
       </div>
-      {eyebrow && <span className="text-[11px] text-[#9A9AA3]">{eyebrow}</span>}
+      {eyebrow && <span className="text-[11px] text-subtle">{eyebrow}</span>}
     </div>
   );
 }

@@ -524,14 +524,14 @@ export function SlideDeck({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+        <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
           {slides.length} slide{slides.length === 1 ? "" : "s"} · {deckTitle}
         </div>
         <div className="flex items-center gap-2">
           {shareUrl && (
             <button
               onClick={copyShareLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] uppercase tracking-wider font-semibold bg-[#1A1A1A] text-[#9CA3AF] hover:text-white"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] uppercase tracking-wider font-semibold bg-surface text-muted hover:text-white"
             >
               {copied ? <CheckIcon className="size-3.5" /> : <ShareIcon className="size-3.5" />}
               {copied ? "Copied" : "Copy share link"}
@@ -539,7 +539,7 @@ export function SlideDeck({
           )}
           <button
             onClick={togglePresent}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] uppercase tracking-wider font-semibold bg-white text-[#0E0D0B] hover:bg-[#E5E5E5]"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] uppercase tracking-wider font-semibold bg-white text-background hover:bg-foreground"
           >
             <ArrowsPointingOutIcon className="size-3.5" />
             Present
@@ -549,12 +549,12 @@ export function SlideDeck({
 
       <div className="space-y-2">
         {slides.map((s, i) => (
-          <div key={i} className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] hover:ring-white/[0.12] transition-all overflow-hidden">
+          <div key={i} className="bg-background rounded-2xl ring-1 ring-white/[0.04] hover:ring-white/[0.12] transition-all overflow-hidden">
             <div className="flex items-center gap-3 px-5 pt-4">
-              <div className="size-6 rounded-md bg-white text-[#0E0D0B] flex items-center justify-center text-[10px] font-bold shrink-0">
+              <div className="size-6 rounded-md bg-white text-background flex items-center justify-center text-[10px] font-bold shrink-0">
                 {i + 1}
               </div>
-              <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+              <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
                 {s.label}
               </div>
             </div>

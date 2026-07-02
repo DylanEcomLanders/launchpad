@@ -130,13 +130,13 @@ export default function PersonProfilePage() {
   }
 
   if (!hydrated) {
-    return <div className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-32 bg-background rounded-xl animate-pulse" />;
   }
   if (!person) {
     return (
       <div className="text-center py-12">
-        <p className="text-sm text-[#71757D] mb-3">Person not found.</p>
-        <Link href="/company/people" className="text-sm text-[#E5E5EA] hover:underline">
+        <p className="text-sm text-subtle mb-3">Person not found.</p>
+        <Link href="/company/people" className="text-sm text-foreground hover:underline">
           Back to People
         </Link>
       </div>
@@ -167,28 +167,28 @@ export default function PersonProfilePage() {
       <div className="flex items-center justify-between mb-4">
         <Link
           href="/company/people"
-          className="inline-flex items-center gap-1 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+          className="inline-flex items-center gap-1 text-sm text-subtle hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" />
           Back to People
         </Link>
         <button
           onClick={handleDelete}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-[#B91C1C] hover:bg-red-500/15 rounded-md"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-red-500/15 rounded-md"
         >
           <TrashIcon className="size-3.5" />
           Delete
         </button>
       </div>
 
-      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-6 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <div className="bg-background border border-white/[0.04] rounded-xl p-6 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         <div className="flex items-start gap-4">
           <AvatarWithUpload person={person} onUpdate={patch} />
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-baseline gap-2 mb-1">
-              <h2 className="text-xl font-semibold text-[#E5E5EA]">{person.full_name}</h2>
+              <h2 className="text-xl font-semibold text-foreground">{person.full_name}</h2>
               {person.preferred_name && person.preferred_name !== person.full_name && (
-                <span className="text-sm text-[#71757D]">"{person.preferred_name}"</span>
+                <span className="text-sm text-subtle">"{person.preferred_name}"</span>
               )}
               <span
                 className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -197,7 +197,7 @@ export default function PersonProfilePage() {
                 {status.label}
               </span>
             </div>
-            <div className="text-sm text-[#71757D]">
+            <div className="text-sm text-subtle">
               {person.job_title || "—"}
               {person.department && (
                 <>
@@ -225,8 +225,8 @@ export default function PersonProfilePage() {
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-2.5 text-sm border-b-2 transition-colors ${
                   tab === t.id
-                    ? "border-white text-[#E5E5EA] font-medium"
-                    : "border-transparent text-[#71757D] hover:text-[#E5E5EA]"
+                    ? "border-white text-foreground font-medium"
+                    : "border-transparent text-subtle hover:text-foreground"
                 }`}
               >
                 {t.label}
@@ -615,10 +615,10 @@ function FinancialTab({
 
         {person.engagement_type === "core_retainer" && (
           <div className="mt-4 pt-4 border-t border-white/[0.04]">
-            <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-3">
+            <div className="text-[11px] uppercase tracking-wider text-subtle mb-3">
               Revenue-tier bonuses ({person.compensation_currency || "GBP"})
             </div>
-            <p className="text-xs text-[#71757D] mb-3">
+            <p className="text-xs text-subtle mb-3">
               Paid when monthly revenue first crosses each milestone.
               Currency follows the compensation currency above.
             </p>
@@ -648,14 +648,14 @@ function FinancialTab({
         {(person.engagement_type === "contractor_retainer" ||
           person.engagement_type === "contractor_per_page") && (
           <div className="mt-4 pt-4 border-t border-white/[0.04]">
-            <p className="text-xs text-[#71757D]">
+            <p className="text-xs text-subtle">
               Bonuses + deductions for this contractor are auto-computed
               from kanban delivery data under the{" "}
               {person.engagement_type === "contractor_retainer"
                 ? "retainer scheme (max +33% / -30% per month)"
                 : "per-page scheme (max +25% / -30% per build)"}
               . PM reviews + locks per invoice. See the{" "}
-              <strong className="text-[#E5E5EA]">Scoring</strong> tab.
+              <strong className="text-foreground">Scoring</strong> tab.
             </p>
           </div>
         )}
@@ -670,16 +670,16 @@ function FinancialTab({
               const reason = prompt("Reason?") || "";
               logChange(parseFloat(amount), reason);
             }}
-            className="inline-flex items-center gap-1 text-xs text-[#E5E5EA] hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-foreground hover:underline"
           >
             <PlusIcon className="size-3.5" /> Log change
           </button>
         </div>
         {history.length === 0 ? (
-          <div className="text-xs text-[#71757D] py-3">No history yet.</div>
+          <div className="text-xs text-subtle py-3">No history yet.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="text-[11px] uppercase tracking-wider text-[#71757D]">
+            <thead className="text-[11px] uppercase tracking-wider text-subtle">
               <tr>
                 <th className="text-left py-2 font-semibold">Date</th>
                 <th className="text-left py-2 font-semibold">Old</th>
@@ -690,16 +690,16 @@ function FinancialTab({
             <tbody>
               {history.map((h) => (
                 <tr key={h.id} className="border-t border-white/[0.04]">
-                  <td className="py-2 text-[#71757D]">{fmtDateUK(h.changed_at)}</td>
-                  <td className="py-2 text-[#71757D]">
+                  <td className="py-2 text-subtle">{fmtDateUK(h.changed_at)}</td>
+                  <td className="py-2 text-subtle">
                     {h.old_amount != null
                       ? fmtMoney(h.old_amount, person.compensation_currency || "GBP")
                       : "—"}
                   </td>
-                  <td className="py-2 text-[#E5E5EA] font-medium">
+                  <td className="py-2 text-foreground font-medium">
                     {fmtMoney(h.new_amount, person.compensation_currency || "GBP")}
                   </td>
-                  <td className="py-2 text-[#71757D]">{h.reason || "—"}</td>
+                  <td className="py-2 text-subtle">{h.reason || "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -785,13 +785,13 @@ function PerformanceTab({
       <Section
         title="Reviews"
         action={
-          <button onClick={addReview} className="text-xs text-[#E5E5EA] hover:underline inline-flex items-center gap-1">
+          <button onClick={addReview} className="text-xs text-foreground hover:underline inline-flex items-center gap-1">
             <PlusIcon className="size-3.5" /> Add review
           </button>
         }
       >
         {reviews.length === 0 ? (
-          <div className="text-xs text-[#71757D] py-2">No reviews yet.</div>
+          <div className="text-xs text-subtle py-2">No reviews yet.</div>
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (
@@ -830,7 +830,7 @@ function PerformanceTab({
                   className={textareaClass}
                 />
                 <div className="flex justify-end mt-1">
-                  <button onClick={() => removeReview(r.id)} className="text-xs text-[#B91C1C] hover:underline">
+                  <button onClick={() => removeReview(r.id)} className="text-xs text-danger hover:underline">
                     Delete
                   </button>
                 </div>
@@ -843,13 +843,13 @@ function PerformanceTab({
       <Section
         title="Goals"
         action={
-          <button onClick={addGoal} className="text-xs text-[#E5E5EA] hover:underline inline-flex items-center gap-1">
+          <button onClick={addGoal} className="text-xs text-foreground hover:underline inline-flex items-center gap-1">
             <PlusIcon className="size-3.5" /> Add goal
           </button>
         }
       >
         {goals.length === 0 ? (
-          <div className="text-xs text-[#71757D] py-2">No goals yet.</div>
+          <div className="text-xs text-subtle py-2">No goals yet.</div>
         ) : (
           <div className="space-y-3">
             {goals.map((g) => (
@@ -886,7 +886,7 @@ function PerformanceTab({
                   </select>
                 </div>
                 <div className="flex justify-end mt-1">
-                  <button onClick={() => removeGoal(g.id)} className="text-xs text-[#B91C1C] hover:underline">
+                  <button onClick={() => removeGoal(g.id)} className="text-xs text-danger hover:underline">
                     Delete
                   </button>
                 </div>
@@ -899,18 +899,18 @@ function PerformanceTab({
       <Section
         title="1:1 / performance notes"
         action={
-          <button onClick={addNote} className="text-xs text-[#E5E5EA] hover:underline inline-flex items-center gap-1">
+          <button onClick={addNote} className="text-xs text-foreground hover:underline inline-flex items-center gap-1">
             <PlusIcon className="size-3.5" /> Add note
           </button>
         }
       >
         {notes.length === 0 ? (
-          <div className="text-xs text-[#71757D] py-2">No notes yet.</div>
+          <div className="text-xs text-subtle py-2">No notes yet.</div>
         ) : (
           <div className="space-y-3">
             {notes.map((n) => (
               <div key={n.id} className="p-3 border border-white/[0.04] rounded-lg">
-                <div className="text-[11px] text-[#71757D] mb-2">{fmtDateUK(n.created_at)}</div>
+                <div className="text-[11px] text-subtle mb-2">{fmtDateUK(n.created_at)}</div>
                 <input
                   placeholder="Author"
                   value={n.author}
@@ -935,7 +935,7 @@ function PerformanceTab({
                   className={`${inputClass} mt-2`}
                 />
                 <div className="flex justify-end mt-1">
-                  <button onClick={() => removeNote(n.id)} className="text-xs text-[#B91C1C] hover:underline">
+                  <button onClick={() => removeNote(n.id)} className="text-xs text-danger hover:underline">
                     Delete
                   </button>
                 </div>
@@ -987,18 +987,18 @@ function InvoicesTab({ person }: { person: Person }) {
   }, [invoices]);
 
   if (!hydrated) {
-    return <div className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-32 bg-background rounded-xl animate-pulse" />;
   }
 
   if (invoices.length === 0) {
     return (
-      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-8 text-center">
-        <p className="text-sm text-[#71757D] mb-2">
+      <div className="bg-background border border-white/[0.04] rounded-xl p-8 text-center">
+        <p className="text-sm text-subtle mb-2">
           No invoices linked to {person.preferred_name || person.full_name} yet.
         </p>
         <Link
           href="/company/invoices"
-          className="text-xs text-[#E5E5EA] hover:underline"
+          className="text-xs text-foreground hover:underline"
         >
           Log one in Invoices
         </Link>
@@ -1022,9 +1022,9 @@ function InvoicesTab({ person }: { person: Person }) {
       {/* Invoice table - same shape as /company/invoices but scoped to
           this person + cleaner (no supplier name column since theyre
           all this person). Each row links out to the invoice detail. */}
-      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
+      <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+          <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
             <tr>
               <th className="text-left px-4 py-3 font-semibold">Invoice</th>
               <th className="text-left px-4 py-3 font-semibold">Issued</th>
@@ -1040,19 +1040,19 @@ function InvoicesTab({ person }: { person: Person }) {
               return (
                 <tr
                   key={i.id}
-                  className="border-t border-white/[0.04] hover:bg-[#0C0C0C]"
+                  className="border-t border-white/[0.04] hover:bg-background"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/company/invoices/${i.id}`}
-                      className="font-medium text-[#E5E5EA] hover:underline"
+                      className="font-medium text-foreground hover:underline"
                     >
                       {i.invoice_number || "(no number)"}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.issue_date)}</td>
-                  <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.due_date)}</td>
-                  <td className="px-4 py-3 font-medium text-[#E5E5EA]">
+                  <td className="px-4 py-3 text-subtle">{fmtDateUK(i.issue_date)}</td>
+                  <td className="px-4 py-3 text-subtle">{fmtDateUK(i.due_date)}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">
                     {fmtMoney(i.amount, i.currency)}
                   </td>
                   <td className="px-4 py-3">
@@ -1069,12 +1069,12 @@ function InvoicesTab({ person }: { person: Person }) {
                         href={i.file_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[#E5E5EA] hover:underline text-xs"
+                        className="text-foreground hover:underline text-xs"
                       >
                         {i.file_name || "Open"}
                       </a>
                     ) : (
-                      <span className="text-[#71757D] text-xs">No file</span>
+                      <span className="text-subtle text-xs">No file</span>
                     )}
                   </td>
                 </tr>
@@ -1087,7 +1087,7 @@ function InvoicesTab({ person }: { person: Person }) {
       <div className="text-right">
         <Link
           href="/company/invoices"
-          className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-white"
+          className="text-[11px] uppercase tracking-wider text-subtle hover:text-white"
         >
           Manage all invoices →
         </Link>
@@ -1111,11 +1111,11 @@ function SummaryCard({
       : tone === "warn"
       ? "text-amber-300"
       : tone === "muted"
-      ? "text-[#71757D]"
-      : "text-[#E5E5EA]";
+      ? "text-subtle"
+      : "text-foreground";
   return (
-    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4">
-      <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1">
+    <div className="bg-background border border-white/[0.04] rounded-xl p-4">
+      <div className="text-[10px] uppercase tracking-wider text-subtle mb-1">
         {label}
       </div>
       <div className={`text-xl font-semibold ${valueColor}`}>{value}</div>
@@ -1205,13 +1205,13 @@ function OnboardingTab({
   return (
     <div className="space-y-4">
       {/* Clock + progress */}
-      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5">
+      <div className="bg-background border border-white/[0.04] rounded-xl p-5">
         <div className="flex items-baseline justify-between mb-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+            <div className="text-[11px] uppercase tracking-wider text-subtle">
               30-day clock
             </div>
-            <div className="text-2xl font-semibold text-[#E5E5EA] mt-1">
+            <div className="text-2xl font-semibold text-foreground mt-1">
               {allDone ? (
                 <span className="text-emerald-300">Onboarding complete</span>
               ) : daysRemaining === 0 ? (
@@ -1219,28 +1219,28 @@ function OnboardingTab({
               ) : (
                 <>
                   Day {Math.min(daysIn, totalDays)} of {totalDays}{" "}
-                  <span className="text-sm text-[#71757D] font-normal">
+                  <span className="text-sm text-subtle font-normal">
                     ({daysRemaining} day{daysRemaining === 1 ? "" : "s"} left)
                   </span>
                 </>
               )}
             </div>
-            <div className="text-xs text-[#71757D] mt-1">
+            <div className="text-xs text-subtle mt-1">
               Started {fmtDateUK(startedAt)}
               {person.onboarding_completed_at &&
                 ` · completed ${fmtDateUK(person.onboarding_completed_at)}`}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+            <div className="text-[11px] uppercase tracking-wider text-subtle">
               Checklist
             </div>
-            <div className="text-2xl font-semibold text-[#E5E5EA] mt-1 tabular-nums">
+            <div className="text-2xl font-semibold text-foreground mt-1 tabular-nums">
               {doneCount} / {checklist.length}
             </div>
           </div>
         </div>
-        <div className="h-2 bg-[#0C0C0C] rounded-full overflow-hidden">
+        <div className="h-2 bg-background rounded-full overflow-hidden">
           <div
             className="h-full bg-emerald-400/70 transition-all"
             style={{ width: `${pctElapsed}%` }}
@@ -1252,10 +1252,10 @@ function OnboardingTab({
       {allDone && person.status === "onboarding" && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <div className="text-sm font-semibold text-[#E5E5EA]">
+            <div className="text-sm font-semibold text-foreground">
               All tasks complete. Ready to flip to active?
             </div>
-            <div className="text-xs text-[#71757D] mt-0.5">
+            <div className="text-xs text-subtle mt-0.5">
               Status: <strong>onboarding</strong> → <strong>active</strong>.
               The Onboarding tab will hide afterwards.
             </div>
@@ -1270,9 +1270,9 @@ function OnboardingTab({
       )}
 
       {/* Checklist */}
-      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
+      <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+          <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
             <tr>
               <th className="text-left px-4 py-3 font-semibold w-12">Done</th>
               <th className="text-left px-4 py-3 font-semibold">Task</th>
@@ -1287,14 +1287,14 @@ function OnboardingTab({
               .map((t) => (
                 <tr
                   key={t.id}
-                  className={`border-t border-white/[0.04] hover:bg-[#0C0C0C] ${
+                  className={`border-t border-white/[0.04] hover:bg-background ${
                     t.done_at ? "opacity-60" : ""
                   }`}
                 >
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggleTask(t.id)}
-                      className="size-5 rounded border border-white/[0.04] hover:border-[#383838] flex items-center justify-center"
+                      className="size-5 rounded border border-white/[0.04] hover:border-border flex items-center justify-center"
                       title={t.done_at ? "Mark not done" : "Mark done"}
                     >
                       {t.done_at && (
@@ -1304,14 +1304,14 @@ function OnboardingTab({
                   </td>
                   <td className="px-4 py-3">
                     <div
-                      className={`text-[#E5E5EA] ${
+                      className={`text-foreground ${
                         t.done_at ? "line-through" : "font-medium"
                       }`}
                     >
                       {t.title}
                     </div>
                     {t.description && (
-                      <div className="text-xs text-[#71757D] mt-0.5">
+                      <div className="text-xs text-subtle mt-0.5">
                         {t.description}
                       </div>
                     )}
@@ -1319,7 +1319,7 @@ function OnboardingTab({
                   <td className="px-4 py-3">
                     <span
                       className={
-                        isOverdue(t) ? "text-red-400" : "text-[#71757D]"
+                        isOverdue(t) ? "text-red-400" : "text-subtle"
                       }
                     >
                       {fmtDateUK(dueDateFor(t.due_offset_days))}
@@ -1330,7 +1330,7 @@ function OnboardingTab({
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-[#71757D]">
+                  <td className="px-4 py-3 text-subtle">
                     {t.done_at ? fmtDateUK(t.done_at) : "—"}
                   </td>
                 </tr>
@@ -1489,14 +1489,14 @@ function ScoringTab({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 flex items-center justify-between gap-4">
+      <div className="bg-background border border-white/[0.04] rounded-xl p-4 flex items-center justify-between gap-4">
         <div>
-          <div className="text-sm font-semibold text-[#E5E5EA]">
+          <div className="text-sm font-semibold text-foreground">
             {isPerPage
               ? "Per-page contractor scheme"
               : "Retainer contractor scheme"}
           </div>
-          <div className="text-xs text-[#71757D] mt-1">
+          <div className="text-xs text-subtle mt-1">
             {isPerPage
               ? "Score per build (max +25%, max -30%). Bonuses stack: early + zero revs + test win = +25%."
               : "Score per month (max +33%, max -30%). Retention lever carries the largest bonus (+10% renewals)."}
@@ -1509,7 +1509,7 @@ function ScoringTab({
               if (e.target.value) addPeriod(e.target.value);
               e.target.value = "";
             }}
-            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2 hover:border-[#383838]"
+            className="text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2 hover:border-border"
           >
             <option value="">+ Score new {isPerPage ? "build" : "month"}</option>
             {candidatePeriods.map((c) => (
@@ -1522,11 +1522,11 @@ function ScoringTab({
       </div>
 
       {periods.length === 0 ? (
-        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-8 text-center">
-          <p className="text-sm text-[#71757D] mb-2">
+        <div className="bg-background border border-white/[0.04] rounded-xl p-8 text-center">
+          <p className="text-sm text-subtle mb-2">
             No scoring periods yet.
           </p>
-          <p className="text-xs text-[#71757D]">
+          <p className="text-xs text-subtle">
             {candidatePeriods.length === 0
               ? "Once this person ships kanban work, they'll show up here for scoring."
               : `Pick a ${isPerPage ? "build" : "month"} above to draft a score from the kanban + retention data.`}
@@ -1574,19 +1574,19 @@ function ScoringPeriodCard({
   const displayDelta = isLocked ? (period.final_delta_pct ?? 0) : projected;
 
   return (
-    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
+    <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+          <div className="text-[11px] uppercase tracking-wider text-subtle">
             {scheme === "per_page" ? "Build" : "Month"}
           </div>
-          <div className="text-base font-semibold text-[#E5E5EA]">
+          <div className="text-base font-semibold text-foreground">
             {period.period_key}
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+          <div className="text-[11px] uppercase tracking-wider text-subtle">
             {isLocked ? "Locked" : "Projected"}
           </div>
           <div
@@ -1595,7 +1595,7 @@ function ScoringPeriodCard({
                 ? "text-emerald-300"
                 : displayDelta < 0
                 ? "text-red-300"
-                : "text-[#E5E5EA]"
+                : "text-foreground"
             }`}
           >
             {displayDelta > 0 ? "+" : ""}
@@ -1613,13 +1613,13 @@ function ScoringPeriodCard({
       {/* Entries */}
       <div>
         {period.entries.length === 0 ? (
-          <div className="px-5 py-6 text-center text-xs text-[#71757D]">
+          <div className="px-5 py-6 text-center text-xs text-subtle">
             No entries detected. Add a manual entry below to capture
             anything kanban can't see (renewal, no-show, complaint).
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+            <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
               <tr>
                 <th className="text-left px-5 py-2 font-semibold">Lever</th>
                 <th className="text-left px-5 py-2 font-semibold">Reason</th>
@@ -1632,20 +1632,20 @@ function ScoringPeriodCard({
               {period.entries.map((e) => (
                 <tr
                   key={e.id}
-                  className="border-t border-white/[0.04] hover:bg-[#0C0C0C]"
+                  className="border-t border-white/[0.04] hover:bg-background"
                 >
-                  <td className="px-5 py-2.5 text-[#71757D] capitalize">
+                  <td className="px-5 py-2.5 text-subtle capitalize">
                     {e.lever}
                   </td>
-                  <td className="px-5 py-2.5 text-[#E5E5EA]">
+                  <td className="px-5 py-2.5 text-foreground">
                     {e.label}
                     {e.reason && (
-                      <div className="text-xs text-[#71757D] mt-0.5">
+                      <div className="text-xs text-subtle mt-0.5">
                         {e.reason}
                       </div>
                     )}
                   </td>
-                  <td className="px-5 py-2.5 text-[#71757D] text-xs">
+                  <td className="px-5 py-2.5 text-subtle text-xs">
                     {e.source === "manual"
                       ? "PM manual"
                       : e.source === "auto_kanban"
@@ -1666,7 +1666,7 @@ function ScoringPeriodCard({
                     {!isLocked && (
                       <button
                         onClick={() => onRemoveEntry(e.id)}
-                        className="text-[#71757D] hover:text-red-400"
+                        className="text-subtle hover:text-red-400"
                         title="Remove entry"
                       >
                         <XCircleIcon className="size-4" />
@@ -1682,14 +1682,14 @@ function ScoringPeriodCard({
 
       {/* Add manual + lock */}
       {!isLocked && (
-        <div className="px-5 py-4 border-t border-white/[0.04] bg-[#0C0C0C]/50">
+        <div className="px-5 py-4 border-t border-white/[0.04] bg-background/50">
           <ManualEntryForm onAdd={onAddManual} />
         </div>
       )}
 
       {/* Footer actions */}
       <div className="px-5 py-3 border-t border-white/[0.04] flex items-center justify-between">
-        <div className="text-xs text-[#71757D]">
+        <div className="text-xs text-subtle">
           {isLocked
             ? `Locked ${period.locked_at ? fmtDateUK(period.locked_at.slice(0, 10)) : ""}. 5-day dispute window from lock date.`
             : `Status: draft. Sum +${sub.bonus}% bonus / ${sub.deduction}% deduction. Lock when ready to attach to an invoice.`}
@@ -1697,14 +1697,14 @@ function ScoringPeriodCard({
         {isLocked ? (
           <button
             onClick={onReopen}
-            className="inline-flex items-center gap-1.5 text-xs text-[#71757D] hover:text-white"
+            className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-white"
           >
             Reopen
           </button>
         ) : (
           <button
             onClick={onLock}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
           >
             <LockClosedIcon className="size-3.5" />
             Lock at invoice
@@ -1743,18 +1743,18 @@ function ManualEntryForm({
   return (
     <div className="flex items-end gap-2 flex-wrap">
       <div className="grow min-w-[180px]">
-        <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+        <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
           Reason (what happened)
         </label>
         <input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="e.g. Client renewed, contractor went dark, complaint received"
-          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
+          className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
         />
       </div>
       <div className="w-32">
-        <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+        <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
           Lever
         </label>
         <select
@@ -1762,7 +1762,7 @@ function ManualEntryForm({
           onChange={(e) =>
             setLever(e.target.value as "speed" | "quality" | "retention")
           }
-          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
+          className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
         >
           <option value="speed">Speed</option>
           <option value="quality">Quality</option>
@@ -1770,7 +1770,7 @@ function ManualEntryForm({
         </select>
       </div>
       <div className="w-24">
-        <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+        <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
           Δ %
         </label>
         <input
@@ -1778,13 +1778,13 @@ function ManualEntryForm({
           value={delta}
           onChange={(e) => setDelta(e.target.value)}
           placeholder="+10"
-          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
+          className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
         />
       </div>
       <button
         onClick={submit}
         disabled={!label.trim() || !delta}
-        className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#2A2A2A] text-[#E5E5EA] hover:bg-[#383838] disabled:opacity-40 disabled:cursor-not-allowed"
+        className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Add
       </button>
@@ -1936,27 +1936,27 @@ function KpisTab({ person }: { person: Person }) {
       </div>
 
       {scoringRollup && (
-        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-[#71757D] mb-2">
+        <div className="bg-background border border-white/[0.04] rounded-xl p-5">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-subtle mb-2">
             <SparklesIcon className="size-4" />
             Contractor scheme rollup
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <div className="text-xs text-[#71757D]">Periods locked</div>
-              <div className="text-2xl font-semibold text-[#E5E5EA] tabular-nums">
+              <div className="text-xs text-subtle">Periods locked</div>
+              <div className="text-2xl font-semibold text-foreground tabular-nums">
                 {scoringRollup.count}
               </div>
             </div>
             <div>
-              <div className="text-xs text-[#71757D]">Total Δ% applied</div>
+              <div className="text-xs text-subtle">Total Δ% applied</div>
               <div
                 className={`text-2xl font-semibold tabular-nums ${
                   scoringRollup.total > 0
                     ? "text-emerald-300"
                     : scoringRollup.total < 0
                     ? "text-red-300"
-                    : "text-[#E5E5EA]"
+                    : "text-foreground"
                 }`}
               >
                 {scoringRollup.total > 0 ? "+" : ""}
@@ -1964,14 +1964,14 @@ function KpisTab({ person }: { person: Person }) {
               </div>
             </div>
             <div>
-              <div className="text-xs text-[#71757D]">Average per period</div>
+              <div className="text-xs text-subtle">Average per period</div>
               <div
                 className={`text-2xl font-semibold tabular-nums ${
                   scoringRollup.avg > 0
                     ? "text-emerald-300"
                     : scoringRollup.avg < 0
                     ? "text-red-300"
-                    : "text-[#E5E5EA]"
+                    : "text-foreground"
                 }`}
               >
                 {scoringRollup.avg > 0 ? "+" : ""}
@@ -2034,7 +2034,7 @@ function BonusesTab({
     <div className="space-y-4">
       {/* Totals header */}
       {totals.length === 0 ? (
-        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 text-xs text-[#71757D]">
+        <div className="bg-background border border-white/[0.04] rounded-xl p-4 text-xs text-subtle">
           No bonuses logged for {person.preferred_name || person.full_name} yet.
         </div>
       ) : (
@@ -2059,14 +2059,14 @@ function BonusesTab({
 
       {/* History */}
       {sorted.length > 0 && (
-        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
+        <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-white/[0.04]">
-            <h3 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+            <h3 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
               History
             </h3>
           </div>
           <table className="w-full text-sm">
-            <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+            <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
               <tr>
                 <th className="text-left px-4 py-2 font-semibold">Paid</th>
                 <th className="text-left px-4 py-2 font-semibold">Kind</th>
@@ -2083,9 +2083,9 @@ function BonusesTab({
                 return (
                 <tr
                   key={b.id}
-                  className="border-t border-white/[0.04] hover:bg-[#0C0C0C]"
+                  className="border-t border-white/[0.04] hover:bg-background"
                 >
-                  <td className="px-4 py-2.5 text-[#71757D] tabular-nums whitespace-nowrap">
+                  <td className="px-4 py-2.5 text-subtle tabular-nums whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       {fmtDateUK(b.paid_at)}
                       <span
@@ -2100,7 +2100,7 @@ function BonusesTab({
                     </div>
                   </td>
                   <td className="px-4 py-2.5">
-                    <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+                    <span className="text-[10px] uppercase tracking-wider text-subtle">
                       {b.kind === "contractor_scheme"
                         ? "Scheme"
                         : b.kind === "revenue_tier"
@@ -2108,7 +2108,7 @@ function BonusesTab({
                         : "Ad-hoc"}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-[#E5E5EA]">
+                  <td className="px-4 py-2.5 text-foreground">
                     {b.scoring_period_id ? (
                       <Link
                         href={`/company/people/${person.id}?tab=scoring`}
@@ -2123,13 +2123,13 @@ function BonusesTab({
                   <td className="px-4 py-2.5 text-right font-medium text-emerald-300 tabular-nums whitespace-nowrap">
                     {fmtMoney(b.amount, b.currency)}
                   </td>
-                  <td className="px-4 py-2.5 text-[#71757D] text-xs">
+                  <td className="px-4 py-2.5 text-subtle text-xs">
                     {b.paid_by}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <button
                       onClick={() => removeBonus(b.id)}
-                      className="text-[#71757D] hover:text-red-400"
+                      className="text-subtle hover:text-red-400"
                       title="Remove entry"
                     >
                       <XCircleIcon className="size-4" />
@@ -2177,30 +2177,30 @@ function LogBonusForm({
   }
 
   return (
-    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5">
-      <h3 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-4">
+    <div className="bg-background border border-white/[0.04] rounded-xl p-5">
+      <h3 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-4">
         Log a bonus payment
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
         <div className="md:col-span-1">
-          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
             Paid on
           </label>
           <input
             type="date"
             value={paidAt}
             onChange={(e) => setPaidAt(e.target.value)}
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
+            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
           />
         </div>
         <div className="md:col-span-1">
-          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
             Kind
           </label>
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as BonusKind)}
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
+            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
           >
             <option value="adhoc">Ad-hoc</option>
             <option value="revenue_tier">Revenue tier</option>
@@ -2209,13 +2209,13 @@ function LogBonusForm({
         </div>
         {kind === "revenue_tier" && (
           <div className="md:col-span-1">
-            <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+            <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
               Tier
             </label>
             <select
               value={tier}
               onChange={(e) => setTier(parseInt(e.target.value) as 100 | 150 | 200)}
-              className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
+              className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
             >
               <option value={100}>100k</option>
               <option value={150}>150k</option>
@@ -2224,7 +2224,7 @@ function LogBonusForm({
           </div>
         )}
         <div className={kind === "revenue_tier" ? "md:col-span-2" : "md:col-span-3"}>
-          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
             Reason
           </label>
           <input
@@ -2232,11 +2232,11 @@ function LogBonusForm({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="What's it for?"
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
+            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
           />
         </div>
         <div className="md:col-span-1">
-          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
             Amount ({currency})
           </label>
           <input
@@ -2244,7 +2244,7 @@ function LogBonusForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
+            className="w-full text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
           />
         </div>
       </div>
@@ -2254,12 +2254,12 @@ function LogBonusForm({
           value={paidBy}
           onChange={(e) => setPaidBy(e.target.value)}
           placeholder="Logged by"
-          className="text-xs bg-[#0C0C0C] text-[#71757D] border border-white/[0.04] rounded-md px-2 py-1.5 w-32"
+          className="text-xs bg-background text-subtle border border-white/[0.04] rounded-md px-2 py-1.5 w-32"
         />
         <button
           onClick={submit}
           disabled={!amount || !reason.trim()}
-          className="px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Log payment
         </button>
@@ -2320,17 +2320,17 @@ function InviteButton({ person }: { person: Person }) {
       <button
         onClick={() => setShowCredentials(true)}
         disabled={!canSet || checking}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#2A2A2A] text-[#E5E5EA] hover:bg-[#383838] disabled:opacity-40 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {alreadyHasLogin ? "Reset login credentials" : "Set login credentials"}
       </button>
       {!person.email?.trim() && (
-        <p className="text-[11px] text-[#71757D] mt-1">
+        <p className="text-[11px] text-subtle mt-1">
           Add an email above to enable login setup.
         </p>
       )}
       {alreadyHasLogin && (
-        <p className="text-[11px] text-[#71757D] mt-1">
+        <p className="text-[11px] text-subtle mt-1">
           {person.full_name} already has a login. Click above to reset their password.
         </p>
       )}
@@ -2402,7 +2402,7 @@ function AccessLevelControl({ person }: { person: Person }) {
 
   return (
     <div className="pt-3 mt-3 border-t border-white/[0.06]">
-      <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">
+      <div className="text-[10px] uppercase tracking-wider text-subtle mb-1.5">
         Access level
       </div>
       <div className="grid grid-cols-2 gap-1.5 max-w-[260px]">
@@ -2412,8 +2412,8 @@ function AccessLevelControl({ person }: { person: Person }) {
           disabled={busy}
           className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
             bucket === "team"
-              ? "bg-white text-[#0C0C0C]"
-              : "bg-[#2A2A2A] text-[#9CA3AF] hover:text-[#E5E5EA]"
+              ? "bg-white text-background"
+              : "bg-border text-muted hover:text-foreground"
           }`}
         >
           Member
@@ -2424,14 +2424,14 @@ function AccessLevelControl({ person }: { person: Person }) {
           disabled={busy}
           className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
             bucket === "admin"
-              ? "bg-white text-[#0C0C0C]"
-              : "bg-[#2A2A2A] text-[#9CA3AF] hover:text-[#E5E5EA]"
+              ? "bg-white text-background"
+              : "bg-border text-muted hover:text-foreground"
           }`}
         >
           Admin
         </button>
       </div>
-      <p className="text-[10px] text-[#71757D] mt-1.5 leading-relaxed">
+      <p className="text-[10px] text-subtle mt-1.5 leading-relaxed">
         {bucket === "team"
           ? "Member: My Tasks, Delivery, Hero Offer, Training, tools. No finance/admin."
           : "Admin: full access to every surface (finance + admin still need their own passcode)."}
@@ -2519,46 +2519,46 @@ function SetCredentialsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <form
         onSubmit={submit}
-        className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+        className="bg-background rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
       >
-        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-1">
+        <h2 className="text-lg font-semibold text-foreground mb-1">
           Set login credentials
         </h2>
-        <p className="text-xs text-[#71757D] mb-5 leading-relaxed">
-          Creates the login for <span className="text-[#E5E5EA]">{person.full_name}</span> directly. They can sign in immediately - no verification email needed.
+        <p className="text-xs text-subtle mb-5 leading-relaxed">
+          Creates the login for <span className="text-foreground">{person.full_name}</span> directly. They can sign in immediately - no verification email needed.
         </p>
         <div className="space-y-3">
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Email</label>
+            <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
               required
             />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Password</label>
+            <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Password</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="flex-1 h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] font-mono placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                className="flex-1 h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground font-mono placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
                 required
                 minLength={8}
               />
               <button
                 type="button"
                 onClick={() => setPassword(generatePassword())}
-                className="px-2 h-9 text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] rounded-md transition-colors"
+                className="px-2 h-9 text-[11px] text-subtle hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
                 title="Generate new password"
               >
                 ↻
               </button>
             </div>
-            <p className="text-[10px] text-[#71757D] mt-1">Min 8 chars. Auto-generated; edit if you prefer.</p>
+            <p className="text-[10px] text-subtle mt-1">Min 8 chars. Auto-generated; edit if you prefer.</p>
           </div>
         </div>
         {result && (
@@ -2601,7 +2601,7 @@ function SetCredentialsModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+            className="px-3 py-2 text-sm text-subtle hover:text-foreground"
           >
             {result?.ok ? "Done" : "Cancel"}
           </button>
@@ -2609,7 +2609,7 @@ function SetCredentialsModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-3 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-lg hover:bg-[#E5E5EA] disabled:opacity-50"
+              className="px-3 py-2 bg-white text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-50"
             >
               {submitting ? "Setting..." : "Set credentials"}
             </button>
@@ -2650,9 +2650,9 @@ function Section({
   action?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] ${className}`}>
+    <div className={`bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">{title}</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">{title}</h3>
         {action}
       </div>
       <div className="space-y-3">{children}</div>
@@ -2776,7 +2776,7 @@ function AgreementsTab({ person }: { person: Person }) {
   }
 
   if (loading) {
-    return <div className="h-24 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+    return <div className="h-24 bg-background rounded-xl animate-pulse" />;
   }
 
   return (
@@ -2786,29 +2786,29 @@ function AgreementsTab({ person }: { person: Person }) {
        * second contract after a role change, a separate NDA, etc.). */}
       <div className="flex items-center justify-between mb-4 gap-3">
         <div>
-          <h3 className="text-[15px] font-semibold text-[#E5E5EA]">
+          <h3 className="text-[15px] font-semibold text-foreground">
             Agreements ({agreements.length})
           </h3>
-          <p className="text-[11px] text-[#71757D] mt-0.5">
+          <p className="text-[11px] text-subtle mt-0.5">
             Every contract, NDA + status for {person.full_name}. New one picks
             from Leadership / Designer / Developer / Custom template.
           </p>
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-[12px] font-semibold rounded-md hover:bg-[#E5E5EA]"
+          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-background text-[12px] font-semibold rounded-md hover:bg-foreground"
         >
           + New agreement
         </button>
       </div>
 
       {agreements.length === 0 ? (
-        <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-2xl p-10 text-center">
-          <p className="text-sm text-[#E5E5EA] font-medium mb-1">
+        <div className="bg-background ring-1 ring-white/[0.04] rounded-2xl p-10 text-center">
+          <p className="text-sm text-foreground font-medium mb-1">
             No agreements yet for {person.full_name}.
           </p>
-          <p className="text-xs text-[#71757D] max-w-md mx-auto">
-            Click <span className="text-[#E5E5EA] font-medium">+ New agreement</span> above to generate a contract. Pick the template that fits the role - the master clauses get snapshotted onto this person&apos;s contract so future template edits don&apos;t rewrite it.
+          <p className="text-xs text-subtle max-w-md mx-auto">
+            Click <span className="text-foreground font-medium">+ New agreement</span> above to generate a contract. Pick the template that fits the role - the master clauses get snapshotted onto this person&apos;s contract so future template edits don&apos;t rewrite it.
           </p>
         </div>
       ) : (
@@ -2818,20 +2818,20 @@ function AgreementsTab({ person }: { person: Person }) {
             return (
               <div
                 key={a.id}
-                className="flex items-center justify-between gap-3 bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] transition-all group"
+                className="flex items-center justify-between gap-3 bg-background ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] transition-all group"
               >
                 <Link
                   href={`/company/contracts/${a.id}`}
                   className="flex items-center gap-3 flex-1 min-w-0"
                 >
-                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA] shrink-0">
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-surface-raised text-foreground shrink-0">
                     {AGREEMENT_KIND_LABEL[a.kind]}
                   </span>
                   <div className="min-w-0">
-                    <div className="text-[14px] font-medium text-[#E5E5EA] truncate">
+                    <div className="text-[14px] font-medium text-foreground truncate">
                       {a.template_body.title}
                     </div>
-                    <div className="text-[11px] text-[#71757D] mt-0.5 truncate">
+                    <div className="text-[11px] text-subtle mt-0.5 truncate">
                       {a.template_revision}
                     </div>
                   </div>
@@ -2852,7 +2852,7 @@ function AgreementsTab({ person }: { person: Person }) {
                       <button
                         onClick={() => archiveAgreement(a)}
                         title="Archive (flips to terminated, kept for audit)"
-                        className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] rounded"
+                        className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-foreground hover:bg-white/[0.04] rounded"
                       >
                         Archive
                       </button>
@@ -2860,7 +2860,7 @@ function AgreementsTab({ person }: { person: Person }) {
                     <button
                       onClick={() => deleteAgreement(a)}
                       title="Delete permanently"
-                      className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#71757D] hover:text-rose-300 hover:bg-rose-500/[0.06] rounded"
+                      className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-rose-300 hover:bg-rose-500/[0.06] rounded"
                     >
                       Delete
                     </button>

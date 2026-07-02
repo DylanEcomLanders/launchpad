@@ -38,9 +38,9 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="Approach" title="One-week sprint, three deliverables.">
         <ul className="space-y-3 text-base">
-          <li><strong className="text-[#0E0D0B]">1. Heuristic audit.</strong> Manual walkthrough of every funnel surface (Home → PLP → PDP → Cart → Checkout → Post-purchase). Mobile first, desktop second.</li>
-          <li><strong className="text-[#0E0D0B]">2. Data audit.</strong> GA4 + Shopify reports. Where are users dropping? Which pages are leaking? What&apos;s the CR by source?</li>
-          <li><strong className="text-[#0E0D0B]">3. Roadmap.</strong> 30/60/90 day prioritised list of fixes + tests ranked by ICE.</li>
+          <li><strong className="text-background">1. Heuristic audit.</strong> Manual walkthrough of every funnel surface (Home → PLP → PDP → Cart → Checkout → Post-purchase). Mobile first, desktop second.</li>
+          <li><strong className="text-background">2. Data audit.</strong> GA4 + Shopify reports. Where are users dropping? Which pages are leaking? What&apos;s the CR by source?</li>
+          <li><strong className="text-background">3. Roadmap.</strong> 30/60/90 day prioritised list of fixes + tests ranked by ICE.</li>
         </ul>
       </SlideBody>
     ),
@@ -227,10 +227,10 @@ const SLIDES = [
     content: (
       <SlideBody eyebrow="12 · The Deliverable" title="What we hand over.">
         <ul className="space-y-3 text-base">
-          <li><strong className="text-[#0E0D0B]">Slide deck audit.</strong> 20-40 slides with screenshots, scored against the bar, ranked by impact.</li>
-          <li><strong className="text-[#0E0D0B]">Quick wins list.</strong> 5-10 changes the brand can make immediately, no Hero Offer needed.</li>
-          <li><strong className="text-[#0E0D0B]">30/60/90 roadmap.</strong> What we&apos;d do in the first three months if they signed.</li>
-          <li><strong className="text-[#0E0D0B]">Live audit walkthrough.</strong> 60-minute call with the founder + screen share.</li>
+          <li><strong className="text-background">Slide deck audit.</strong> 20-40 slides with screenshots, scored against the bar, ranked by impact.</li>
+          <li><strong className="text-background">Quick wins list.</strong> 5-10 changes the brand can make immediately, no Hero Offer needed.</li>
+          <li><strong className="text-background">30/60/90 roadmap.</strong> What we&apos;d do in the first three months if they signed.</li>
+          <li><strong className="text-background">Live audit walkthrough.</strong> 60-minute call with the founder + screen share.</li>
         </ul>
       </SlideBody>
     ),

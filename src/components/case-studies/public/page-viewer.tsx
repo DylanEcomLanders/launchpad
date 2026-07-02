@@ -46,22 +46,22 @@ export function PageViewer({ slices, device, brandName }: Props) {
         className="group block w-full text-left h-full"
         aria-label={`View ${deviceLabel} page render of ${brandName}`}
       >
-        <div className="rounded-xl overflow-hidden border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)] group-hover:shadow-[var(--shadow-elevated)] transition-shadow h-full flex flex-col">
-          <div className="flex items-center gap-1.5 px-3 py-2 bg-[#0C0C0C] border-b border-[#2A2A2A]">
-            <div className="size-2.5 rounded-full bg-[#2A2A2A]" />
-            <div className="size-2.5 rounded-full bg-[#2A2A2A]" />
-            <div className="size-2.5 rounded-full bg-[#2A2A2A]" />
-            <div className="ml-2 text-[10px] uppercase tracking-wider text-[#71757D]">
+        <div className="rounded-xl overflow-hidden border border-border bg-surface shadow-[var(--shadow-card)] group-hover:shadow-[var(--shadow-elevated)] transition-shadow h-full flex flex-col">
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-background border-b border-border">
+            <div className="size-2.5 rounded-full bg-border" />
+            <div className="size-2.5 rounded-full bg-border" />
+            <div className="size-2.5 rounded-full bg-border" />
+            <div className="ml-2 text-[10px] uppercase tracking-wider text-subtle">
               {deviceLabel}
             </div>
-            <div className="ml-auto text-[10px] uppercase tracking-wider text-[#71757D] font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="ml-auto text-[10px] uppercase tracking-wider text-subtle font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
               View full page →
             </div>
           </div>
-          <div className="relative aspect-[16/10] overflow-hidden bg-[#181818] flex-1">
+          <div className="relative aspect-[16/10] overflow-hidden bg-surface flex-1">
             {device === "mobile" ? (
               <div className="absolute inset-0 flex justify-center pt-4">
-                <div className="w-[42%] max-w-[200px] rounded-md overflow-hidden border border-[#2A2A2A] shadow-[var(--shadow-card)]">
+                <div className="w-[42%] max-w-[200px] rounded-md overflow-hidden border border-border shadow-[var(--shadow-card)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewSlice.url}
@@ -109,7 +109,7 @@ export function PageViewer({ slices, device, brandName }: Props) {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-[#181818]/10"
+                className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-surface/10"
                 aria-label="Close"
               >
                 <XMarkIcon className="size-5" />
@@ -140,7 +140,7 @@ export function PageViewer({ slices, device, brandName }: Props) {
 function ModalSlice({ slice, eager }: { slice: CaseStudyImage; eager: boolean }) {
   return (
     <div
-      className="relative w-full overflow-hidden bg-[#181818]/5"
+      className="relative w-full overflow-hidden bg-surface/5"
       style={
         slice.width && slice.height
           ? { aspectRatio: `${slice.width} / ${slice.height}` }

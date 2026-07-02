@@ -51,7 +51,7 @@ function ScreenshotCollageBlockRender({ block }: { block: ScreenshotCollageBlock
     <section className="px-6 md:px-10 pb-20">
       <div className="max-w-[1200px] mx-auto">
         {block.headline && (
-          <h3 className="text-xl md:text-2xl font-semibold text-[#E5E5EA] mb-6">
+          <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-6">
             {block.headline}
           </h3>
         )}
@@ -64,7 +64,7 @@ function ScreenshotCollageBlockRender({ block }: { block: ScreenshotCollageBlock
               return (
                 <div
                   key={img.filename || i}
-                  className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg overflow-hidden border border-[#2A2A2A] bg-[#181818]`}
+                  className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg overflow-hidden border border-border bg-surface`}
                   style={
                     useNaturalAspect
                       ? { aspectRatio: `${img.width} / ${img.height}` }
@@ -85,7 +85,7 @@ function ScreenshotCollageBlockRender({ block }: { block: ScreenshotCollageBlock
             return (
               <div
                 key={`placeholder-${i}`}
-                className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg border border-[#2A2A2A] bg-[#222222]/40`}
+                className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg border border-border bg-surface-raised/40`}
                 style={!isRigidLayout ? { aspectRatio: "4 / 3" } : undefined}
               />
             );
@@ -104,7 +104,7 @@ function ProseBlockRender({ block }: { block: ProseBlock }) {
     <section className="px-6 md:px-10 pb-16">
       <div className="max-w-[820px] mx-auto">
         {block.headline && (
-          <h3 className="text-xl md:text-2xl font-semibold text-[#E5E5EA] mb-4">
+          <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-4">
             {block.headline}
           </h3>
         )}

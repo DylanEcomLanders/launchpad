@@ -35,13 +35,13 @@ export default function WikiIndexPage() {
   return (
     <div className="max-w-3xl mx-auto px-8 py-12">
       <header className="mb-12">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-2">
           Ecomlanders Wiki
         </p>
-        <h1 className="text-3xl font-semibold text-[#E5E5EA] mb-5">
+        <h1 className="text-3xl font-semibold text-foreground mb-5">
           The ops manual
         </h1>
-        <div className="text-[14px] text-[#E5E5EA] leading-relaxed space-y-3 max-w-2xl">
+        <div className="text-[14px] text-foreground leading-relaxed space-y-3 max-w-2xl">
           <p>
             We&apos;re plug-in conversion layer specialists for ecommerce brands looking to push their growth beyond the KPIs they&apos;re stuck on. We build bulletproof, scalable funnels that compound.
           </p>
@@ -54,7 +54,7 @@ export default function WikiIndexPage() {
         </div>
       </header>
 
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-4">
         Jump in
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -64,17 +64,17 @@ export default function WikiIndexPage() {
             <Link
               key={section.name}
               href={firstPageHref(section)}
-              className="group rounded-xl border border-[#2A2A2A] bg-[#181818] px-5 py-4 hover:border-white/25 hover:shadow-[var(--shadow-soft)] transition-all"
+              className="group rounded-xl border border-border bg-surface px-5 py-4 hover:border-white/25 hover:shadow-[var(--shadow-soft)] transition-all"
             >
               <div className="flex items-start justify-between mb-1.5">
-                <h3 className="text-[14px] font-semibold text-[#E5E5EA]">
+                <h3 className="text-[14px] font-semibold text-foreground">
                   {section.name}
                 </h3>
-                <span className="text-[10px] font-medium uppercase tracking-wider text-[#71757D] tabular-nums shrink-0 mt-0.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-subtle tabular-nums shrink-0 mt-0.5">
                   {count} {count === 1 ? "page" : "pages"}
                 </span>
               </div>
-              <p className="text-[13px] text-[#9CA3AF] leading-relaxed">
+              <p className="text-[13px] text-muted leading-relaxed">
                 {sectionDescriptions[section.name] ?? ""}
               </p>
             </Link>

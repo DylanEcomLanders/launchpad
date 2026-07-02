@@ -171,14 +171,14 @@ export default function ExpensesListPage() {
                   }
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                     active
-                      ? "bg-white text-[#0C0C0C] border-white"
-                      : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                      ? "bg-white text-background border-white"
+                      : "bg-surface text-foreground border-border hover:bg-background"
                   }`}
                 >
                   {p.label}
                   <span
                     className={`text-[10px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${
-                      active ? "bg-[#181818]/20 text-white" : "bg-[#222222] text-[#71757D]"
+                      active ? "bg-surface/20 text-white" : "bg-surface-raised text-subtle"
                     }`}
                   >
                     {p.count}
@@ -193,7 +193,7 @@ export default function ExpensesListPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#71757D] z-10" />
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
             <input
               placeholder="Search supplier or description..."
               value={query}
@@ -217,13 +217,13 @@ export default function ExpensesListPage() {
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C] disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface border border-border text-foreground text-sm rounded-lg hover:bg-background disabled:opacity-40 transition-colors"
           >
             <ArrowDownTrayIcon className="size-4" /> CSV
           </button>
           <Link
             href="/finance/expenses/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
           >
             <PlusIcon className="size-4" /> New expense
           </Link>
@@ -231,10 +231,10 @@ export default function ExpensesListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />
+        <div className="h-48 bg-background rounded-xl animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#71757D] mb-3">
+        <div className="bg-surface border border-dashed border-border rounded-xl p-12 text-center">
+          <p className="text-sm text-subtle mb-3">
             {expenses.length === 0
               ? "No expenses yet - log your first one."
               : "No expenses match these filters."}
@@ -242,16 +242,16 @@ export default function ExpensesListPage() {
           {expenses.length === 0 && (
             <Link
               href="/finance/expenses/new"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
             >
               <PlusIcon className="size-4" /> New expense
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
+        <div className="bg-surface border border-border rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
+            <thead className="bg-background text-[11px] uppercase tracking-wider text-subtle">
               <tr>
                 <th className="text-left px-4 py-3 font-semibold">Supplier</th>
                 <th className="text-left px-4 py-3 font-semibold">Category</th>
@@ -264,24 +264,24 @@ export default function ExpensesListPage() {
               {filtered.map((e) => {
                 const badge = STATUS_BADGE[e.status];
                 return (
-                  <tr key={e.id} className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]">
+                  <tr key={e.id} className="border-t border-border hover:bg-background">
                     <td className="px-4 py-3">
                       <Link
                         href={`/finance/expenses/${e.id}`}
-                        className="font-medium text-[#E5E5EA] hover:underline"
+                        className="font-medium text-foreground hover:underline"
                       >
                         {e.supplier_name}
                       </Link>
                       {e.recurring && (
-                        <span className="ml-2 text-[10px] uppercase tracking-wider text-[#71757D]">
+                        <span className="ml-2 text-[10px] uppercase tracking-wider text-subtle">
                           {e.recurring}
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[#71757D]">
+                    <td className="px-4 py-3 text-subtle">
                       {EXPENSE_CATEGORY_LABELS[e.category]}
                     </td>
-                    <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(e.date_due)}</td>
+                    <td className="px-4 py-3 text-subtle">{fmtDateUK(e.date_due)}</td>
                     <td className="px-4 py-3">
                       <span
                         className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -290,10 +290,10 @@ export default function ExpensesListPage() {
                         {badge.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-[#E5E5EA] tabular-nums">
+                    <td className="px-4 py-3 text-right font-medium text-foreground tabular-nums">
                       {fmtMoney(e.amount)}
                       {e.vat_included && (
-                        <div className="text-[10px] text-[#71757D]">incl VAT</div>
+                        <div className="text-[10px] text-subtle">incl VAT</div>
                       )}
                     </td>
                   </tr>
@@ -316,10 +316,10 @@ function SummaryCard({
   amount: number;
   accent?: "red";
 }) {
-  const color = accent === "red" ? "text-[#B91C1C]" : "text-[#E5E5EA]";
+  const color = accent === "red" ? "text-danger" : "text-foreground";
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-1">{label}</div>
+    <div className="bg-surface border border-border rounded-xl p-4 shadow-[var(--shadow-soft)]">
+      <div className="text-[11px] uppercase tracking-wider text-subtle mb-1">{label}</div>
       <div className={`text-2xl font-semibold tabular-nums ${color}`}>{fmtMoney(amount)}</div>
     </div>
   );

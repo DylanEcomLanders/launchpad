@@ -136,10 +136,10 @@ export default function TeamInvoicePage() {
       <div className="min-h-screen flex items-center justify-center px-4 py-12">
         <div className="max-w-md w-full text-center">
           <CheckCircleIcon className="size-14 text-emerald-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-[#E5E5EA] mb-3">
+          <h1 className="text-2xl font-bold text-foreground mb-3">
             Invoice received.
           </h1>
-          <p className="text-sm text-[#71757D] leading-relaxed mb-6">
+          <p className="text-sm text-subtle leading-relaxed mb-6">
             Your invoice is with the finance team. Payment runs on the 28th if
             it was submitted by the 26th — anything later rolls to next month.
           </p>
@@ -152,13 +152,13 @@ export default function TeamInvoicePage() {
                 setNotes("");
                 setFile(null);
               }}
-              className="px-4 py-2 text-sm font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+              className="px-4 py-2 text-sm font-medium text-subtle hover:text-foreground transition-colors"
             >
               Submit another
             </button>
             <Link
               href="/team/payments"
-              className="px-4 py-2 bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A] text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-surface-raised text-foreground hover:bg-border text-sm font-medium rounded-lg transition-colors"
             >
               Back to payments
             </Link>
@@ -174,7 +174,7 @@ export default function TeamInvoicePage() {
       {/* Back */}
       <Link
         href="/team/payments"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeftIcon className="size-4" />
         Back to payments
@@ -182,10 +182,10 @@ export default function TeamInvoicePage() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#E5E5EA] mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           Submit an invoice
         </h1>
-        <p className="text-sm text-[#71757D] leading-relaxed max-w-lg">
+        <p className="text-sm text-subtle leading-relaxed max-w-lg">
           Total up the projects you shipped this cycle and attach your invoice
           PDF. Anything in by the 26th gets paid on the 28th.
         </p>
@@ -234,14 +234,14 @@ export default function TeamInvoicePage() {
         {/* Row 3: PDF upload */}
         <Field label="Attach invoice (PDF or image)" required>
           {file ? (
-            <div className="flex items-center justify-between gap-3 px-4 py-3 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-[var(--shadow-soft)]">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 bg-surface border border-border rounded-lg shadow-[var(--shadow-soft)]">
               <div className="flex items-center gap-2 min-w-0">
-                <DocumentArrowUpIcon className="size-4 text-[#71757D] shrink-0" />
+                <DocumentArrowUpIcon className="size-4 text-subtle shrink-0" />
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-[#E5E5EA] truncate">
+                  <div className="text-sm font-medium text-foreground truncate">
                     {file.filename}
                   </div>
-                  <div className="text-[11px] text-[#71757D]">
+                  <div className="text-[11px] text-subtle">
                     {fmtSize(file.size)} · uploaded
                   </div>
                 </div>
@@ -249,26 +249,26 @@ export default function TeamInvoicePage() {
               <button
                 type="button"
                 onClick={removeFile}
-                className="text-[#71757D] hover:text-[#B22B2B] transition-colors p-1"
+                className="text-subtle hover:text-danger transition-colors p-1"
                 aria-label="Remove file"
               >
                 <XMarkIcon className="size-4" />
               </button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-[#2A2A2A] rounded-lg cursor-pointer hover:border-[#999] transition-colors bg-[#181818]">
+            <label className="flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-subtle transition-colors bg-surface">
               {uploading ? (
-                <div className="flex items-center gap-2 text-[#71757D] text-sm">
-                  <div className="size-4 border-2 border-[#2A2A2A] border-t-[#1B1B1B] rounded-full animate-spin" />
+                <div className="flex items-center gap-2 text-subtle text-sm">
+                  <div className="size-4 border-2 border-border border-t-[#1B1B1B] rounded-full animate-spin" />
                   Uploading...
                 </div>
               ) : (
                 <>
-                  <DocumentArrowUpIcon className="size-6 text-[#71757D]" />
-                  <span className="text-sm text-[#71757D]">
+                  <DocumentArrowUpIcon className="size-6 text-subtle" />
+                  <span className="text-sm text-subtle">
                     Click to upload or drop a file
                   </span>
-                  <span className="text-[11px] text-[#71757D]">
+                  <span className="text-[11px] text-subtle">
                     PDF, PNG, JPG, or WebP, up to 25 MB
                   </span>
                 </>
@@ -307,12 +307,12 @@ export default function TeamInvoicePage() {
         <button
           type="submit"
           disabled={submitting || uploading || !file}
-          className="w-full py-3.5 bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A] text-sm font-semibold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full py-3.5 bg-surface-raised text-foreground hover:bg-border text-sm font-semibold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {submitting ? "Submitting..." : "Submit invoice"}
         </button>
 
-        <p className="text-[11px] text-[#71757D] text-center leading-relaxed">
+        <p className="text-[11px] text-subtle text-center leading-relaxed">
           Submissions land with the finance team for review before payment runs.
         </p>
       </form>
@@ -321,7 +321,7 @@ export default function TeamInvoicePage() {
 }
 
 const fieldClass =
-  "w-full px-3 py-2.5 bg-[#181818] border border-[#2A2A2A] rounded-lg text-sm focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all shadow-[var(--shadow-soft)] placeholder:text-[#C5C5C5]";
+  "w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-surface focus:ring-1 focus:ring-surface/10 transition-all shadow-[var(--shadow-soft)] placeholder:text-muted";
 
 function Field({
   label,
@@ -334,9 +334,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[13px] font-medium text-[#E5E5EA] mb-1.5">
+      <label className="block text-[13px] font-medium text-foreground mb-1.5">
         {label}
-        {required && <span className="text-[#B22B2B] ml-0.5">*</span>}
+        {required && <span className="text-danger ml-0.5">*</span>}
       </label>
       {children}
     </div>

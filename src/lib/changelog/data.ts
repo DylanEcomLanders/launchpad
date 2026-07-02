@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-140",
+    date: "2 July 2026",
+    version: "3.1.0",
+    title: "Design system foundation + Linear-clean kanban, cards, and sidebar",
+    changes: [
+      { type: "added", text: "Design system foundation. Semantic design tokens (colour, a full micro-to-display type scale, radius, shadow, and status/category palettes) live in globals.css, and src/components/ui is now the single locked source of primitives: Pill, Segmented, ProjectCard, Field/Fields, StatusGlyph, Button. Every new page composes from these instead of hardcoded styles, so the whole app can move up a tier from one place" },
+      { type: "improved", text: "Kanban board rebuilt to a Linear-clean standard. The header is split into two zones: client context on the left (client switch as the title, an inline project breadcrumb, onboarding brief + assign-pod in a lean client menu) and display controls on the right (scope, search, a Display menu for filters). Project and pod switches are now inline breadcrumbs, so the board no longer shifts between views" },
+      { type: "improved", text: "Board density and responsiveness. Tight 8px card rows, columns that fit the viewport height, and fixed-width columns packed from the left for a dense, calm board" },
+      { type: "added", text: "Card state signals, all token-driven (derived from the status palette via colour-mix, not hardcoded). Live tests carry a subtle green tint, overdue cards a red tint, and cards due today or tomorrow an amber tint (revision cards included)" },
+      { type: "improved", text: "Card and detail-modal redesign. Larger status dot, header and assignee inline with the type icon, and a genuinely rebuilt modal: a bold stat row (Status coloured green/amber/red by state, in-phase, due, revisions), a phase-progress hero, and a clean two-tab Status/Info form with generous spacing" },
+      { type: "improved", text: "Sidebar rebuilt as a navigational surface. Collapsible sections (Client Health, Sales, Offer, Team, Company) with My Tasks pinned, multiple sections open at once, a calmer active state, a muted Hero Offer icon, and full migration onto the design tokens" },
+    ],
+  },
+  {
     id: "cl-139",
     date: "1 July 2026",
     version: "3.0.1",
@@ -406,7 +420,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Add Person flow now has a Generate contract draft toggle (default on). After save, the GenerateAgreementsModal pops with role + employment type pre-filled, you confirm comp + start date, a draft Agreement is created, and you land on /company/contracts/[id] to share the signing link. One-step create-person + contract-ready" },
       { type: "added", text: "New Admin tab: Pods. /company/pods is the canonical place to define pods, slot Persons into Strategist / Designer / Developer / Copy roles. Each slot is a PersonPicker pulling from /company/people, so renames + invites propagate everywhere automatically. Top callout flags any Person not yet slotted into a pod" },
       { type: "added", text: "PersonPicker shared component (src/components/person-picker.tsx) - universal Person dropdown with gradient avatar tile, dept-coloured initials, search, and dept filter. Becomes the source of truth for who's who across Launchpad. PersonPickerNamed wrapper handles surfaces that still store free-text display names" },
-      { type: "improved", text: "/admin chrome sweep: gradient title + pink tab pills dialled back to clean white title + subtle ring-active tab so Hero Offer keeps its visual throne. Every panel + sub-page swapped from legacy bg-[#181818] / border-[#2A2A2A] to Hero Offer chrome (bg-[#0F0F10] + border-white/[0.04] + 0_8px_32px shadow). Grey bar at the bottom of /admin surfaces fixed by stretching the wrapper to viewport-minus-header" },
+      { type: "improved", text: "/admin chrome sweep: gradient title + pink tab pills dialled back to clean white title + subtle ring-active tab so Hero Offer keeps its visual throne. Every panel + sub-page swapped from legacy bg-surface / border-border to Hero Offer chrome (bg-background + border-white/[0.04] + 0_8px_32px shadow). Grey bar at the bottom of /admin surfaces fixed by stretching the wrapper to viewport-minus-header" },
       { type: "improved", text: "Sales pipeline owner field now uses PersonPicker - new entries auto-write the canonical display name so name-match resolvers stop guessing" },
       { type: "removed", text: "/pods-v2/admin redirects to /company/pods. One source of truth, no parallel UIs to drift" },
     ],
@@ -647,7 +661,7 @@ const seedChangelog: ChangelogEntry[] = [
     title: "Hero Offer - the conversion engine playbook house",
     changes: [
       { type: "added", text: "New /hero-offer top-level area with a 4-tab shell (Start here / Acquisition / Execution / Retention). Sits at the top of the Growth + Learning group in the sidebar, visible to every role. Tabs are local-state for instant swap; URL syncs via router.replace with scroll:false. Migration 031 adds six tables (offer_sections / offer_objections / offer_layers / offer_milestones / offer_resources / offer_pricing) following the established id+jsonb pattern; flag as manual paste" },
-      { type: "added", text: "Per-stage colour identity in cool / green-blue palette: Acquisition emerald, Execution cyan, Retention sky blue. Page-level accents (gradient title text, soft radial blob behind the header, gradient active tab pill, gradient day badges, glowing section dots) all sit on a cohesive bg-[#0F0F10] card chrome with ring-1 ring-white/[0.04] rather than visible borders" },
+      { type: "added", text: "Per-stage colour identity in cool / green-blue palette: Acquisition emerald, Execution cyan, Retention sky blue. Page-level accents (gradient title text, soft radial blob behind the header, gradient active tab pill, gradient day badges, glowing section dots) all sit on a cohesive bg-background card chrome with ring-1 ring-white/[0.04] rather than visible borders" },
       { type: "added", text: "Editable scaffolding pre-seeded per stage so admin lands on the structure (not a blank Add prompt). Start here: 2 sections. Acquisition: 4 sections + 3 pricing slots (Entry / Core / VIP). Execution: 6 layer cards. Retention: 2 sections + 4 milestone cards (Day 30 / 90 / 180 / 365). Seed fires only when the table is empty AND the user is admin/cro" },
       { type: "added", text: "scripts/populate-hero-offer.mjs - one-shot Node script that wipes the seed scaffolding and inserts the full v1 Conversion Engine playbook content (5+9+7 sections, 8 objections, 3 fully-fleshed pricing tiers, 7 execution layers, 4 lifecycle milestones). All structured per the playbook doc; ready for the team to edit in place" },
       { type: "added", text: "/me hub gets a Change password card that fires Supabase resetPasswordForEmail with a redirect to /login/reset-password. Adds /me/profile (read-only Person view) and /me/invoices (self-service upload form with auto-set linked_person_id). Team members can now run their own admin without admin access" },

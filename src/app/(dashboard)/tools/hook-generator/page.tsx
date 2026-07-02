@@ -173,7 +173,7 @@ export default function HookGeneratorPage() {
           <h1 className="text-[28px] font-bold mb-2">
             Hook Generator
           </h1>
-          <p className="text-[#71757D]">
+          <p className="text-subtle">
             Generate scroll-stopping hooks optimized per platform using proven
             formulas
           </p>
@@ -182,7 +182,7 @@ export default function HookGeneratorPage() {
         <div className="space-y-8">
           {/* ── Input Form ── */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-subtle mb-4">
               Topic & Context
             </label>
             <div className="space-y-4">
@@ -219,7 +219,7 @@ export default function HookGeneratorPage() {
                 <div>
                   <label className={labelClass}>
                     Client Name{" "}
-                    <span className="font-normal text-[#71757D]">
+                    <span className="font-normal text-subtle">
                       (optional)
                     </span>
                   </label>
@@ -234,7 +234,7 @@ export default function HookGeneratorPage() {
                 <div>
                   <label className={labelClass}>
                     Key Metric{" "}
-                    <span className="font-normal text-[#71757D]">
+                    <span className="font-normal text-subtle">
                       (optional)
                     </span>
                   </label>
@@ -252,7 +252,7 @@ export default function HookGeneratorPage() {
                 <div>
                   <label className={labelClass}>
                     Pain Point{" "}
-                    <span className="font-normal text-[#71757D]">
+                    <span className="font-normal text-subtle">
                       (optional)
                     </span>
                   </label>
@@ -267,7 +267,7 @@ export default function HookGeneratorPage() {
                 <div>
                   <label className={labelClass}>
                     Solution{" "}
-                    <span className="font-normal text-[#71757D]">
+                    <span className="font-normal text-subtle">
                       (optional)
                     </span>
                   </label>
@@ -285,7 +285,7 @@ export default function HookGeneratorPage() {
 
           {/* ── Platform Selection ── */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-4">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-subtle mb-4">
               Platforms
             </label>
             <div className="flex flex-wrap gap-2">
@@ -295,8 +295,8 @@ export default function HookGeneratorPage() {
                   onClick={() => togglePlatform(p.id)}
                   className={`px-4 py-2 text-sm font-medium rounded-md border transition-colors ${
                     selectedPlatforms.has(p.id)
-                      ? "bg-white text-[#0C0C0C] border-white"
-                      : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:bg-[#222222]"
+                      ? "bg-white text-background border-white"
+                      : "bg-surface text-subtle border-border hover:bg-surface-raised"
                   }`}
                 >
                   <span className="mr-1.5">{p.icon}</span>
@@ -309,12 +309,12 @@ export default function HookGeneratorPage() {
           {/* ── Formula Selection ── */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#71757D]">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-subtle">
                 Hook Formulas
               </label>
               <button
                 onClick={selectAllFormulas}
-                className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+                className="text-xs font-medium text-subtle hover:text-foreground transition-colors"
               >
                 {selectedFormulas.size === hookFormulas.length
                   ? "Deselect All"
@@ -328,26 +328,26 @@ export default function HookGeneratorPage() {
                   onClick={() => toggleFormula(f.id)}
                   className={`text-left p-3 rounded-lg border transition-colors ${
                     selectedFormulas.has(f.id)
-                      ? "border-white bg-[#0C0C0C]"
-                      : "border-[#2A2A2A] bg-[#181818] hover:bg-[#222222]"
+                      ? "border-white bg-background"
+                      : "border-border bg-surface hover:bg-surface-raised"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-semibold text-[#E5E5EA]">
+                    <span className="text-sm font-semibold text-foreground">
                       {f.label}
                     </span>
                     <div className="flex gap-1">
                       {f.bestFor.map((pid) => (
                         <span
                           key={pid}
-                          className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#222222] text-[#999999]"
+                          className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-raised text-subtle"
                         >
                           {platforms.find((p) => p.id === pid)?.icon}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs text-[#71757D]">{f.description}</p>
+                  <p className="text-xs text-subtle">{f.description}</p>
                 </button>
               ))}
             </div>
@@ -358,13 +358,13 @@ export default function HookGeneratorPage() {
             <button
               onClick={handleGenerate}
               disabled={!isValid}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <SparklesIcon className="size-4" />
               Generate Hooks
             </button>
             {!isValid && (
-              <p className="text-xs text-[#71757D] mt-2">
+              <p className="text-xs text-subtle mt-2">
                 Enter a topic to generate hooks
               </p>
             )}
@@ -373,12 +373,12 @@ export default function HookGeneratorPage() {
 
         {/* ── Generated Hooks ── */}
         {showGenerated && hooks.length > 0 && (
-          <div className="mt-12 pt-12 border-t border-[#2A2A2A] space-y-8">
+          <div className="mt-12 pt-12 border-t border-border space-y-8">
             <div>
               <h2 className="text-lg font-bold mb-1">
                 Generated Hooks
               </h2>
-              <p className="text-xs text-[#71757D]">
+              <p className="text-xs text-subtle">
                 {hooks.length} hooks across{" "}
                 {Object.keys(hooksByPlatform).length} platforms
               </p>
@@ -386,8 +386,8 @@ export default function HookGeneratorPage() {
 
             {Object.entries(hooksByPlatform).map(([platformId, platformHooks]) => (
               <div key={platformId}>
-                <h3 className="text-sm font-semibold text-[#E5E5EA] mb-3 flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-[#222222] text-[10px] font-bold">
+                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-surface-raised text-[10px] font-bold">
                     {platforms.find((p) => p.id === platformId)?.icon}
                   </span>
                   {platformLabel(platformId)}
@@ -400,23 +400,23 @@ export default function HookGeneratorPage() {
                     return (
                       <div
                         key={hook.id}
-                        className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-4"
+                        className="bg-background border border-border rounded-lg p-4"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] bg-[#181818] px-2 py-0.5 rounded border border-[#2A2A2A]">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle bg-surface px-2 py-0.5 rounded border border-border">
                             {formula?.label}
                           </span>
-                          <span className="text-[10px] text-[#71757D] tabular-nums">
+                          <span className="text-[10px] text-subtle tabular-nums">
                             {hook.charCount} chars
                           </span>
                         </div>
-                        <p className="text-sm text-[#E5E5EA] leading-relaxed whitespace-pre-line mb-3">
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line mb-3">
                           {hook.text}
                         </p>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => copyHook(hook)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:bg-[#222222] transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-surface text-subtle hover:bg-surface-raised transition-colors"
                           >
                             {copiedId === hook.id ? (
                               <>
@@ -435,7 +435,7 @@ export default function HookGeneratorPage() {
                             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                               hook.saved
                                 ? "border-amber-300 bg-amber-50 text-amber-700"
-                                : "border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:bg-[#222222]"
+                                : "border-border bg-surface text-subtle hover:bg-surface-raised"
                             }`}
                           >
                             <BookmarkIcon className="size-3.5" />
@@ -453,7 +453,7 @@ export default function HookGeneratorPage() {
 
         {/* ── Saved Hooks ── */}
         {savedHooks.length > 0 && (
-          <div className="mt-12 pt-12 border-t border-[#2A2A2A]">
+          <div className="mt-12 pt-12 border-t border-border">
             <button
               onClick={() => setShowSaved(!showSaved)}
               className="flex items-center justify-between w-full text-left"
@@ -462,13 +462,13 @@ export default function HookGeneratorPage() {
                 <h2 className="text-lg font-bold">
                   Saved Hooks
                 </h2>
-                <p className="text-xs text-[#71757D]">
+                <p className="text-xs text-subtle">
                   {savedHooks.length} saved hook
                   {savedHooks.length !== 1 ? "s" : ""}
                 </p>
               </div>
               <ChevronDownIcon
-                className={`size-5 text-[#71757D] transition-transform ${
+                className={`size-5 text-subtle transition-transform ${
                   showSaved ? "rotate-180" : ""
                 }`}
               />
@@ -483,23 +483,23 @@ export default function HookGeneratorPage() {
                   return (
                     <div
                       key={hook.id}
-                      className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-4"
+                      className="bg-background border border-border rounded-lg p-4"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-[#222222] text-[9px] font-bold">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-surface-raised text-[9px] font-bold">
                           {platforms.find((p) => p.id === hook.platform)?.icon}
                         </span>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                           {formula?.label}
                         </span>
                       </div>
-                      <p className="text-sm text-[#E5E5EA] leading-relaxed whitespace-pre-line mb-3">
+                      <p className="text-sm text-foreground leading-relaxed whitespace-pre-line mb-3">
                         {hook.text}
                       </p>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => copyHook(hook)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:bg-[#222222] transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-surface text-subtle hover:bg-surface-raised transition-colors"
                         >
                           {copiedId === hook.id ? (
                             <>
@@ -515,7 +515,7 @@ export default function HookGeneratorPage() {
                         </button>
                         <button
                           onClick={() => removeSavedHook(hook.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-[#2A2A2A] bg-[#181818] text-red-400 hover:bg-red-50 hover:border-red-200 transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-surface text-red-400 hover:bg-red-50 hover:border-red-200 transition-colors"
                         >
                           <TrashIcon className="size-3.5" />
                           Remove

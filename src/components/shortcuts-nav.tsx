@@ -38,14 +38,14 @@ export function ShortcutsNav() {
         return (
           <span key={tab.href} className="flex items-center gap-1">
             {i === CLIENT_FACING_START && (
-              <span className="mx-1 h-4 w-px bg-[#2A2A2A]" aria-hidden />
+              <span className="mx-1 h-4 w-px bg-border" aria-hidden />
             )}
             <Link
               href={tab.href}
               className={`whitespace-nowrap px-3.5 py-1.5 text-[13px] font-medium rounded-full transition-colors ${
                 active
-                  ? "bg-white text-[#0C0C0C]"
-                  : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
+                  ? "bg-white text-background"
+                  : "text-subtle hover:text-foreground hover:bg-surface-raised"
               }`}
             >
               {tab.label}

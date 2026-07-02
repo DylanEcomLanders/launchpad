@@ -84,7 +84,7 @@ export default function PaymentLinkPage() {
           <h1 className="text-[28px] font-bold mb-2">
             Payment Link
           </h1>
-          <p className="text-[#71757D]">
+          <p className="text-subtle">
             Generate a checkout link to send to a client
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function PaymentLinkPage() {
             <label className={labelClass}>Quick Preset</label>
             <button
               onClick={applyConversionEnginePreset}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white text-background rounded-lg hover:bg-foreground transition-colors"
             >
               <BoltIcon className="size-4 text-amber-300" />
               <div className="text-left flex-1">
@@ -115,8 +115,8 @@ export default function PaymentLinkPage() {
                   onClick={() => setPlanType(type)}
                   className={`py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${
                     planType === type
-                      ? "border-white bg-white text-[#0C0C0C]"
-                      : "border-[#2A2A2A] text-[#71757D] hover:border-[#383838]"
+                      ? "border-white bg-white text-background"
+                      : "border-border text-subtle hover:border-border"
                   }`}
                 >
                   {type === "one-time" ? "One-time" : "Monthly"}
@@ -150,10 +150,10 @@ export default function PaymentLinkPage() {
           <div>
             <label className={labelClass}>
               Amount (GBP) *
-              {planType === "recurring" && <span className="ml-2 text-[#71757D] font-normal text-xs">per month</span>}
+              {planType === "recurring" && <span className="ml-2 text-subtle font-normal text-xs">per month</span>}
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#71757D]">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-subtle">
                 £
               </span>
               <input
@@ -167,7 +167,7 @@ export default function PaymentLinkPage() {
               />
             </div>
             {planType === "recurring" && amount && parseFloat(amount) > 0 && (
-              <p className="text-[11px] text-[#71757D] mt-1.5">
+              <p className="text-[11px] text-subtle mt-1.5">
                 Billed monthly • First payment £{parseFloat(amount).toLocaleString("en-GB")} • Renews every 30 days
               </p>
             )}
@@ -192,8 +192,8 @@ export default function PaymentLinkPage() {
 
           {paymentUrl ? (
             <div className="space-y-4">
-              <div className="px-4 py-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
-                <p className="text-sm font-medium text-[#15803D] mb-2">
+              <div className="px-4 py-3 bg-success border border-[#BBF7D0] rounded-lg">
+                <p className="text-sm font-medium text-success mb-2">
                   {planType === "recurring" ? "Recurring subscription link created" : "Payment link created"}
                 </p>
                 <div className="flex items-center gap-2">
@@ -201,11 +201,11 @@ export default function PaymentLinkPage() {
                     type="text"
                     readOnly
                     value={paymentUrl}
-                    className="flex-1 px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded-md text-sm text-[#71757D] truncate"
+                    className="flex-1 px-3 py-2 bg-surface border border-border rounded-md text-sm text-subtle truncate"
                   />
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm font-medium rounded-md hover:bg-surface transition-colors shrink-0"
                   >
                     {copied ? (
                       <>
@@ -224,7 +224,7 @@ export default function PaymentLinkPage() {
 
               <button
                 onClick={handleReset}
-                className="w-full py-2.5 text-sm font-medium text-[#71757D] border border-[#2A2A2A] rounded-md hover:bg-[#222222] transition-colors"
+                className="w-full py-2.5 text-sm font-medium text-subtle border border-border rounded-md hover:bg-surface-raised transition-colors"
               >
                 Create another
               </button>
@@ -233,7 +233,7 @@ export default function PaymentLinkPage() {
             <button
               onClick={handleGenerate}
               disabled={!canSubmit || loading}
-              className="w-full py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-white text-background text-sm font-medium rounded-md hover:bg-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Creating…" : planType === "recurring" ? "Generate Subscription Link" : "Generate Payment Link"}
             </button>

@@ -86,7 +86,7 @@ export function TeamSidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-[#181818] border border-[#2A2A2A] md:hidden"
+        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-surface border border-border md:hidden"
         aria-label="Open menu"
       >
         <Bars3Icon className="size-5" />
@@ -106,14 +106,14 @@ export function TeamSidebar() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           fixed md:relative z-50 md:z-0
-          h-screen bg-[#181818] border-r border-[#2A2A2A]
+          h-screen bg-surface border-r border-border
           flex flex-col
           transition-all duration-200 ease-in-out
           w-52
         `}
       >
         {/* Logo area */}
-        <div className="flex items-center justify-between px-4 h-14 border-b border-[#2A2A2A]">
+        <div className="flex items-center justify-between px-4 h-14 border-b border-border">
           <Link
             href="/team"
             className="flex items-center"
@@ -144,7 +144,7 @@ export function TeamSidebar() {
                 ${
                   pathname === "/team"
                     ? "bg-accent-light text-accent font-medium border-l-2 border-accent"
-                    : "hover:bg-[#222222] text-[#71757D] border-l-2 border-transparent"
+                    : "hover:bg-surface-raised text-subtle border-l-2 border-transparent"
                 }
               `}
             >
@@ -155,7 +155,7 @@ export function TeamSidebar() {
 
           {/* Section header */}
           <div className="px-4 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
               Delivery
             </span>
           </div>
@@ -175,10 +175,10 @@ export function TeamSidebar() {
                   transition-colors duration-150
                   ${
                     item.comingSoon
-                      ? "text-[#C5C5C5] cursor-default"
+                      ? "text-muted cursor-default"
                       : pathname.startsWith(item.href)
-                        ? "bg-[#222222] font-medium border-l-2 border-accent"
-                        : "hover:bg-[#222222] text-[#71757D] border-l-2 border-transparent"
+                        ? "bg-surface-raised font-medium border-l-2 border-accent"
+                        : "hover:bg-surface-raised text-subtle border-l-2 border-transparent"
                   }
                 `}
               >
@@ -186,7 +186,7 @@ export function TeamSidebar() {
                 <span className="flex items-center gap-1.5">
                   {item.label}
                   {item.comingSoon && (
-                    <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#222222] text-[#71757D] rounded">
+                    <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-surface-raised text-subtle rounded">
                       Soon
                     </span>
                   )}
@@ -202,7 +202,7 @@ export function TeamSidebar() {
 
           {/* Tools section */}
           <div className="px-4 mb-1.5 mt-5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
               Tools
             </span>
           </div>
@@ -217,8 +217,8 @@ export function TeamSidebar() {
                   transition-colors duration-150
                   ${
                     pathname.startsWith(item.href)
-                      ? "bg-[#222222] font-medium border-l-2 border-accent"
-                      : "hover:bg-[#222222] text-[#71757D] border-l-2 border-transparent"
+                      ? "bg-surface-raised font-medium border-l-2 border-accent"
+                      : "hover:bg-surface-raised text-subtle border-l-2 border-transparent"
                   }
                 `}
               >
@@ -230,15 +230,15 @@ export function TeamSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-[#2A2A2A] space-y-2">
+        <div className="px-4 py-3 border-t border-border space-y-2">
           <Link
             href="/"
-            className="flex items-center gap-2 text-[11px] font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
+            className="flex items-center gap-2 text-[11px] font-medium text-subtle hover:text-foreground transition-colors"
           >
             <ArrowLeftIcon className="size-3" />
             Back to Admin
           </Link>
-          <span className="text-[11px] text-[#71757D]">Team Tools v0.1</span>
+          <span className="text-[11px] text-subtle">Team Tools v0.1</span>
         </div>
       </aside>
     </>

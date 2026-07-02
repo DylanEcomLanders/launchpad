@@ -159,16 +159,16 @@ export function ChatTab({ agent, onStatusChange, onRunComplete }: ChatTabProps) 
     : `Brief them with a task — responses are mocked in v0.5 while we wire the API.`;
 
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)] flex flex-col h-[560px]">
+    <div className="rounded-xl border border-border bg-surface shadow-[var(--shadow-soft)] flex flex-col h-[560px]">
       {/* Header — only shown when there's a thread to clear */}
       {messages.length > 0 && (
-        <div className="flex items-center justify-between border-b border-[#2A2A2A] px-3 py-2">
-          <span className="text-[11px] uppercase tracking-wider text-[#71757D]">
+        <div className="flex items-center justify-between border-b border-border px-3 py-2">
+          <span className="text-[11px] uppercase tracking-wider text-subtle">
             Conversation with {agent.name}
           </span>
           <button
             onClick={clearConversation}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA] transition-colors"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-subtle hover:bg-surface-raised hover:text-foreground transition-colors"
             aria-label="Clear conversation"
             title="Clear conversation"
           >
@@ -183,8 +183,8 @@ export function ChatTab({ agent, onStatusChange, onRunComplete }: ChatTabProps) 
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <PixelPortrait agent={agent} size={64} className="mb-3" static />
-            <p className="text-sm font-medium text-[#E5E5EA]">{agent.name} is ready.</p>
-            <p className="text-xs text-[#71757D] mt-1 max-w-xs">{emptyStateCopy}</p>
+            <p className="text-sm font-medium text-foreground">{agent.name} is ready.</p>
+            <p className="text-xs text-subtle mt-1 max-w-xs">{emptyStateCopy}</p>
           </div>
         ) : (
           messages.map((msg) => <Bubble key={msg.id} msg={msg} agent={agent} />)
@@ -192,7 +192,7 @@ export function ChatTab({ agent, onStatusChange, onRunComplete }: ChatTabProps) 
       </div>
 
       {/* Input */}
-      <div className="border-t border-[#2A2A2A] p-3">
+      <div className="border-t border-border p-3">
         <div className="flex gap-2 items-end">
           <textarea
             value={input}
@@ -211,13 +211,13 @@ export function ChatTab({ agent, onStatusChange, onRunComplete }: ChatTabProps) 
           <button
             onClick={send}
             disabled={sending || !input.trim()}
-            className="shrink-0 inline-flex items-center justify-center size-10 rounded-lg bg-white text-[#0C0C0C] hover:bg-[#F3F4F6] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 inline-flex items-center justify-center size-10 rounded-lg bg-white text-background hover:bg-foreground active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Send"
           >
             <PaperAirplaneIcon className="size-4" />
           </button>
         </div>
-        <p className="mt-2 text-[10px] uppercase tracking-wider text-[#71757D]">{footerLabel}</p>
+        <p className="mt-2 text-[10px] uppercase tracking-wider text-subtle">{footerLabel}</p>
       </div>
     </div>
   );
@@ -227,7 +227,7 @@ function Bubble({ msg, agent }: { msg: Message; agent: Agent }) {
   if (msg.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-xl bg-white text-[#0C0C0C] px-3 py-2 text-sm leading-relaxed shadow-[var(--shadow-soft)] whitespace-pre-wrap">
+        <div className="max-w-[80%] rounded-xl bg-white text-background px-3 py-2 text-sm leading-relaxed shadow-[var(--shadow-soft)] whitespace-pre-wrap">
           {msg.text}
         </div>
       </div>
@@ -237,12 +237,12 @@ function Bubble({ msg, agent }: { msg: Message; agent: Agent }) {
     <div className="flex gap-2 items-start">
       <PixelPortrait agent={agent} size={32} static />
       <div className="max-w-[80%] flex flex-col gap-1.5">
-        <div className="rounded-xl bg-[#222222] px-3 py-2 text-sm leading-relaxed text-[#E5E5EA] whitespace-pre-wrap">
+        <div className="rounded-xl bg-surface-raised px-3 py-2 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
           {msg.pending ? (
             <span className="inline-flex gap-1 py-1">
-              <span className="size-1.5 rounded-full bg-[#7A7A7A] animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="size-1.5 rounded-full bg-[#7A7A7A] animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="size-1.5 rounded-full bg-[#7A7A7A] animate-bounce" style={{ animationDelay: "300ms" }} />
+              <span className="size-1.5 rounded-full bg-subtle animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="size-1.5 rounded-full bg-subtle animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="size-1.5 rounded-full bg-subtle animate-bounce" style={{ animationDelay: "300ms" }} />
             </span>
           ) : (
             msg.text
@@ -276,8 +276,8 @@ function ToolCallStrip({ calls }: { calls: ToolCall[] }) {
             onClick={() => setOpenIdx(openIdx === i ? null : i)}
             className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-mono transition-colors ${
               openIdx === i
-                ? "bg-white text-[#0C0C0C] border-white"
-                : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-[#E5E5EA] hover:border-white/40"
+                ? "bg-white text-background border-white"
+                : "bg-surface text-subtle border-border hover:text-foreground hover:border-white/40"
             }`}
             title="Tap to inspect what data Felix saw"
           >
@@ -288,10 +288,10 @@ function ToolCallStrip({ calls }: { calls: ToolCall[] }) {
         ))}
       </div>
       {openIdx !== null && (
-        <div className="rounded-md border border-[#2A2A2A] bg-[#181818] p-2 text-[11px] font-mono text-[#E5E5EA] max-h-64 overflow-auto whitespace-pre-wrap">
-          <div className="text-[#71757D] mb-1">input:</div>
+        <div className="rounded-md border border-border bg-surface p-2 text-[11px] font-mono text-foreground max-h-64 overflow-auto whitespace-pre-wrap">
+          <div className="text-subtle mb-1">input:</div>
           <pre className="mb-2">{safeJson(calls[openIdx].input)}</pre>
-          <div className="text-[#71757D] mb-1">result:</div>
+          <div className="text-subtle mb-1">result:</div>
           <pre>{safeJson(calls[openIdx].result)}</pre>
         </div>
       )}

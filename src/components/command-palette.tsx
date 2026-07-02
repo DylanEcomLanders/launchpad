@@ -141,13 +141,13 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
       onKeyDown={onKeyDown}
     >
       <div
-        className="absolute inset-0 bg-[#1B1B1B]/30 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-surface/30 backdrop-blur-[2px]"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-[640px] bg-[#181818] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden">
+      <div className="relative w-full max-w-[640px] bg-surface rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden">
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 h-12 border-b border-[#2A2A2A]">
-          <MagnifyingGlassIcon className="size-4 text-[#71757D]" />
+        <div className="flex items-center gap-3 px-4 h-12 border-b border-border">
+          <MagnifyingGlassIcon className="size-4 text-subtle" />
           <input
             ref={inputRef}
             value={query}
@@ -156,14 +156,14 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
               setActiveIdx(0);
             }}
             placeholder="Jump to..."
-            className="flex-1 bg-transparent outline-none text-[14px] text-[#E5E5EA] placeholder:text-[#71757D]"
+            className="flex-1 bg-transparent outline-none text-[14px] text-foreground placeholder:text-subtle"
           />
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-[#222222] transition-colors"
+            className="p-1 rounded-md hover:bg-surface-raised transition-colors"
             aria-label="Close"
           >
-            <XMarkIcon className="size-4 text-[#71757D]" />
+            <XMarkIcon className="size-4 text-subtle" />
           </button>
         </div>
 
@@ -173,13 +173,13 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
           className="max-h-[55vh] overflow-y-auto scrollbar-thin py-2"
         >
           {grouped.length === 0 ? (
-            <div className="px-4 py-10 text-center text-[13px] text-[#71757D]">
+            <div className="px-4 py-10 text-center text-[13px] text-subtle">
               No matches for &ldquo;{query}&rdquo;
             </div>
           ) : (
             grouped.map((g) => (
               <div key={g.name} className="mb-1">
-                <div className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
+                <div className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-subtle">
                   {g.name}
                 </div>
                 {g.items.map((item) => {
@@ -196,21 +196,21 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
                       }}
                       className={`w-full flex items-center gap-2.5 px-4 py-2 text-left text-[13px] transition-colors ${
                         active
-                          ? "bg-[#222222] text-[#E5E5EA]"
-                          : "text-[#3A3A3A] hover:bg-[#0C0C0C]"
+                          ? "bg-surface-raised text-foreground"
+                          : "text-subtle hover:bg-background"
                       }`}
                     >
                       {item.icon && (
-                        <span className="text-[#71757D] shrink-0">{item.icon}</span>
+                        <span className="text-subtle shrink-0">{item.icon}</span>
                       )}
                       <span className="flex-1 truncate">{item.label}</span>
                       {item.shelved && (
-                        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#222222] text-[#71757D]">
+                        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-raised text-subtle">
                           Shelved
                         </span>
                       )}
                       {item.shortcut && !item.shelved && (
-                        <span className="text-[10px] text-[#71757D] font-mono">
+                        <span className="text-[10px] text-subtle font-mono">
                           {item.shortcut}
                         </span>
                       )}
@@ -223,18 +223,18 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
         </div>
 
         {/* Footer hints */}
-        <div className="flex items-center justify-between px-4 h-9 border-t border-[#2A2A2A] bg-[#0C0C0C] text-[11px] text-[#71757D]">
+        <div className="flex items-center justify-between px-4 h-9 border-t border-border bg-background text-[11px] text-subtle">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-[#181818] border border-[#2A2A2A] font-mono text-[10px]">↑↓</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border font-mono text-[10px]">↑↓</kbd>
               Navigate
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-[#181818] border border-[#2A2A2A] font-mono text-[10px]">↵</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border font-mono text-[10px]">↵</kbd>
               Open
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-[#181818] border border-[#2A2A2A] font-mono text-[10px]">esc</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border font-mono text-[10px]">esc</kbd>
               Close
             </span>
           </div>

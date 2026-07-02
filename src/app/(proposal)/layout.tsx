@@ -24,16 +24,16 @@ export default function ProposalLayout({
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Minimal branded header */}
-      <header className="border-b border-[#333333] px-6 md:px-12 py-5">
-        <Logo height={16} className="text-[#1B1B1B]" />
+      <header className="border-b border-border px-6 md:px-12 py-5">
+        <Logo height={16} className="text-foreground" />
       </header>
 
       {/* Main content */}
       <main className="flex-1 animate-fadeInUp">{children}</main>
 
       {/* Footer */}
-      <footer className="border-t border-[#333333] px-6 md:px-12 py-8 text-center">
-        <p className="text-xs text-[#A0A0A0]">
+      <footer className="border-t border-border px-6 md:px-12 py-8 text-center">
+        <p className="text-xs text-muted">
           Ecomlanders &mdash; Shopify CRO &amp; Landing Page Agency
         </p>
       </footer>

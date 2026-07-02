@@ -428,7 +428,7 @@ function CoverSlide() {
   return (
     <div className="slide-cover-v2">
       <div className="cover-v2-brand">
-        <Logo height={26} className="text-[#1B1B1B]" />
+        <Logo height={26} className="text-foreground" />
       </div>
       <div className="cover-v2-body">
         <h1 className="cover-v2-headline">Conversion Engine Partnership</h1>
@@ -1392,7 +1392,7 @@ export function SalesDeckPresentation({
 
   if (slides.length === 0) {
     return (
-      <div className="min-h-screen bg-[#080808] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-background text-white flex items-center justify-center">
         <p className="text-sm text-white/60">Deck content not found.</p>
       </div>
     );
@@ -1403,7 +1403,7 @@ export function SalesDeckPresentation({
 
   return (
     <div
-      className={`relative min-h-screen overflow-hidden bg-white text-[#1B1B1B] ${
+      className={`relative min-h-screen overflow-hidden bg-white text-foreground ${
         entering ? "is-entering-engine" : ""
       }`}
     >
@@ -1448,7 +1448,7 @@ export function SalesDeckPresentation({
       </div>
 
       {/* Slide counter */}
-      <div className="fixed bottom-6 left-6 z-20 text-[11px] font-medium uppercase tracking-[0.2em] text-[#999]">
+      <div className="fixed bottom-6 left-6 z-20 text-[11px] font-medium uppercase tracking-[0.2em] text-subtle">
         {index + 1} / {slides.length}
       </div>
 
@@ -1457,26 +1457,26 @@ export function SalesDeckPresentation({
         <button
           onClick={goPrev}
           disabled={index === 0 || entering}
-          className="size-9 rounded-full border border-[#E5E5EA] bg-white hover:bg-[#F7F8FA] flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="size-9 rounded-full border border-foreground bg-white hover:bg-surface-raised flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Previous slide"
         >
-          <svg className="size-4 text-[#666]" viewBox="0 0 20 20" fill="currentColor">
+          <svg className="size-4 text-subtle" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
           </svg>
         </button>
         <button
           onClick={goNext}
           disabled={index === slides.length - 1 || entering}
-          className="size-9 rounded-full border border-[#E5E5EA] bg-white hover:bg-[#F7F8FA] flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="size-9 rounded-full border border-foreground bg-white hover:bg-surface-raised flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Next slide"
         >
-          <svg className="size-4 text-[#666]" viewBox="0 0 20 20" fill="currentColor">
+          <svg className="size-4 text-subtle" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
         </svg>
         </button>
       </div>
 
-      <div className="hidden md:block fixed top-6 right-6 z-20 text-[10px] font-medium tracking-wider uppercase text-[#BBB]">
+      <div className="hidden md:block fixed top-6 right-6 z-20 text-[10px] font-medium tracking-wider uppercase text-muted">
         ← → arrow keys to navigate
       </div>
 

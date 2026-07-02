@@ -47,13 +47,13 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
     <div className="w-full max-w-2xl mx-auto">
       {/* Header */}
       <p
-        className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-3"
+        className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-3"
         style={{ fontFamily: "var(--font-body)" }}
       >
         Your results, {submission.firstName}
       </p>
       <h1
-        className="text-[2rem] md:text-[2.75rem] font-bold text-[#E5E5EA] leading-[1.1]"
+        className="text-[2rem] md:text-[2.75rem] font-bold text-foreground leading-[1.1]"
         style={{ fontFamily: "var(--font-heading)" }}
       >
         {headline}
@@ -61,7 +61,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
 
       {/* Context line */}
       <p
-        className="mt-4 text-sm text-[#9CA3AF]"
+        className="mt-4 text-sm text-muted"
         style={{ fontFamily: "var(--font-body)" }}
       >
         {VERTICAL_LABELS[submission.vertical]} &middot; {REVENUE_LABELS[submission.revenue]} &middot;{" "}
@@ -71,7 +71,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
       {/* Priorities */}
       <div className="mt-10">
         <p
-          className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-4"
+          className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-4"
           style={{ fontFamily: "var(--font-body)" }}
         >
           The 3 priorities for {normaliseStoreUrl(submission.storeUrl) || "your store"}
@@ -80,15 +80,15 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
           {priorities.map((p) => (
             <li
               key={p.rank}
-              className="flex gap-4 items-start p-5 bg-[#181818] border border-[#E5E5E5] rounded-lg"
+              className="flex gap-4 items-start p-5 bg-surface border border-foreground rounded-lg"
             >
               <span
-                className="shrink-0 size-8 rounded-full bg-[#D1FF4C] text-[#E5E5EA] font-bold text-sm flex items-center justify-center tabular-nums"
+                className="shrink-0 size-8 rounded-full bg-[#D1FF4C] text-foreground font-bold text-sm flex items-center justify-center tabular-nums"
                 style={{ fontFamily: "var(--font-heading)" }}
               >
                 {p.rank}
               </span>
-              <p className="text-[15px] text-[#E5E5EA] leading-snug pt-0.5">{p.label}</p>
+              <p className="text-[15px] text-foreground leading-snug pt-0.5">{p.label}</p>
             </li>
           ))}
         </ol>
@@ -96,7 +96,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
 
       {/* Pain-point reflection */}
       <p
-        className="mt-8 text-sm text-[#9CA3AF] leading-relaxed"
+        className="mt-8 text-sm text-muted leading-relaxed"
         style={{ fontFamily: "var(--font-body)" }}
       >
         Based on what you told us — <em>{PAIN_LABELS[submission.painPoint].toLowerCase()}</em> —
@@ -104,14 +104,14 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
       </p>
 
       {/* CTAs */}
-      <div className="mt-10 p-6 md:p-7 bg-[#0C0C0C] border border-[#EEE] rounded-lg" style={{ fontFamily: "var(--font-body)" }}>
-        <p className="text-base font-semibold text-[#E5E5EA] mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+      <div className="mt-10 p-6 md:p-7 bg-background border border-[#EEE] rounded-lg" style={{ fontFamily: "var(--font-body)" }}>
+        <p className="text-base font-semibold text-foreground mb-1" style={{ fontFamily: "var(--font-heading)" }}>
           {ctaCopy}
         </p>
 
         {tier === "A" && (
           <>
-            <p className="text-sm text-[#9CA3AF] mb-5">
+            <p className="text-sm text-muted mb-5">
               We&apos;ll review your store before the call and come with a starting point — not a discovery questionnaire.
             </p>
             <div className="flex flex-col sm:flex-row gap-2.5">
@@ -128,7 +128,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
                   href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 py-3.5 bg-[#181818] border border-white text-[#E5E5EA] text-sm font-semibold rounded-lg hover:bg-[#222222] transition-colors text-center"
+                  className="flex-1 py-3.5 bg-surface border border-white text-foreground text-sm font-semibold rounded-lg hover:bg-surface-raised transition-colors text-center"
                 >
                   Message on WhatsApp
                 </a>
@@ -139,7 +139,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
 
         {tier === "B" && (
           <>
-            <p className="text-sm text-[#9CA3AF] mb-5">
+            <p className="text-sm text-muted mb-5">
               No pitch — just a 20-minute walkthrough of where the leak likely is.
             </p>
             <div className="flex flex-col sm:flex-row gap-2.5">
@@ -156,7 +156,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
                   href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 py-3.5 bg-[#181818] border border-white text-[#E5E5EA] text-sm font-semibold rounded-lg hover:bg-[#222222] transition-colors text-center"
+                  className="flex-1 py-3.5 bg-surface border border-white text-foreground text-sm font-semibold rounded-lg hover:bg-surface-raised transition-colors text-center"
                 >
                   Message on WhatsApp
                 </a>
@@ -167,7 +167,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
 
         {tier === "C" && (
           <>
-            <p className="text-sm text-[#9CA3AF] mb-5">
+            <p className="text-sm text-muted mb-5">
               You&apos;re early in the journey — start with the playbook we use on every {VERTICAL_LABELS[submission.vertical].toLowerCase()} build.
             </p>
             <div className="flex flex-col sm:flex-row gap-2.5">
@@ -180,7 +180,7 @@ export function ResultCard({ submission }: { submission: QuizSubmission }) {
                 Get the free playbook →
               </a>
             </div>
-            <p className="text-xs text-[#71757D] mt-4">
+            <p className="text-xs text-subtle mt-4">
               We&apos;ll also drop you on our newsletter — one practical CRO breakdown a week, no fluff. Unsubscribe whenever.
             </p>
           </>

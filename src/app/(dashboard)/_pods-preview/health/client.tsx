@@ -48,12 +48,12 @@ export default function HealthClient() {
       </AnnotationStrip>
 
       <div className="mb-1 flex items-center gap-2">
-        <h1 className="text-2xl font-semibold text-[#E5E5EA]">Client Health</h1>
-        <span className="rounded-full border border-[#2A2A2A] bg-[#222222] px-2 py-0.5 text-[11px] text-[#71757D]">
+        <h1 className="text-2xl font-semibold text-foreground">Client Health</h1>
+        <span className="rounded-full border border-border bg-surface-raised px-2 py-0.5 text-[11px] text-subtle">
           {CSM.name} · {CSM.role}
         </span>
       </div>
-      <p className="mb-6 text-sm text-[#71757D]">Worst health first.</p>
+      <p className="mb-6 text-sm text-subtle">Worst health first.</p>
 
       <div className="grid gap-4 md:grid-cols-2">
         {ranked.map((c) => (
@@ -90,12 +90,12 @@ function ClientHealthCard({ client, onOpen }: { client: Client; onOpen: () => vo
   return (
     <button
       onClick={onOpen}
-      className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
+      className="rounded-xl border border-border bg-surface p-4 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-muted hover:shadow-[var(--shadow-card)]"
     >
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-sm font-semibold text-[#E5E5EA]">{client.name}</div>
-          <div className="mt-0.5 text-[11px] text-[#71757D]">
+          <div className="text-sm font-semibold text-foreground">{client.name}</div>
+          <div className="mt-0.5 text-[11px] text-subtle">
             {POD_BY_ID[client.podId]?.tagline} · £{client.retainerTier}/mo
           </div>
         </div>
@@ -103,12 +103,12 @@ function ClientHealthCard({ client, onOpen }: { client: Client; onOpen: () => vo
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]">
-        <span className={`inline-flex items-center gap-1 ${checkInDue ? "text-rose-700" : "text-[#71757D]"}`}>
+        <span className={`inline-flex items-center gap-1 ${checkInDue ? "text-rose-700" : "text-subtle"}`}>
           <CalendarDaysIcon className="size-3.5" />
           Check-in {checkInDue ? "due" : fmtDayMonth(client.nextCheckIn)}
         </span>
         {client.cvrCurrent != null && (
-          <span className={`inline-flex items-center gap-1 ${cvrUp ? "text-emerald-700" : "text-[#71757D]"}`}>
+          <span className={`inline-flex items-center gap-1 ${cvrUp ? "text-emerald-700" : "text-subtle"}`}>
             <ArrowTrendingUpIcon className="size-3.5" />
             CVR {client.cvrBaseline}% → {client.cvrCurrent}%
           </span>
@@ -148,13 +148,13 @@ function SignalBar({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="text-[12px] text-[#71757D]">{label}</span>
+        <span className="text-[12px] text-subtle">{label}</span>
         <span className={`text-[12px] font-semibold tabular-nums ${txt}`}>
           {value}
           {unit}
         </span>
       </div>
-      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#222222]">
+      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
         <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -167,15 +167,15 @@ function HealthPanel({ client, onClose }: { client: Client; onClose: () => void 
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative h-full w-full max-w-md overflow-y-auto border-l border-[#2A2A2A] bg-[#181818] p-6 shadow-[var(--shadow-elevated)]">
+      <div className="relative h-full w-full max-w-md overflow-y-auto border-l border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-[#E5E5EA]">{client.name}</h3>
-            <p className="text-[12px] text-[#71757D]">
+            <h3 className="text-lg font-semibold text-foreground">{client.name}</h3>
+            <p className="text-[12px] text-subtle">
               {POD_BY_ID[client.podId]?.tagline} · £{client.retainerTier}/mo
             </p>
           </div>
-          <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]">
+          <button onClick={onClose} className="text-subtle hover:text-foreground">
             <XMarkIcon className="size-5" />
           </button>
         </div>
@@ -184,8 +184,8 @@ function HealthPanel({ client, onClose }: { client: Client; onClose: () => void 
           <Score signals={s} size="lg" />
         </div>
 
-        <div className="mt-3 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2 text-[12px]">
-          <span className={checkIn <= 0 ? "font-medium text-rose-700" : "text-[#71757D]"}>
+        <div className="mt-3 rounded-lg border border-border bg-background px-3 py-2 text-[12px]">
+          <span className={checkIn <= 0 ? "font-medium text-rose-700" : "text-subtle"}>
             <CalendarDaysIcon className="mr-1 inline size-3.5" />
             Next check-in: {checkIn <= 0 ? `overdue (${fmtDayMonth(client.nextCheckIn)})` : fmtDayMonth(client.nextCheckIn)}
           </span>
@@ -200,7 +200,7 @@ function HealthPanel({ client, onClose }: { client: Client; onClose: () => void 
             <SignalBar label="Days since last touch" value={s.engagementGapDays} unit="d" bad={7} max={12} />
             <SignalBar label="Open blockers" value={s.openBlockers} unit="" bad={2} max={3} />
           </div>
-          <p className="mt-2 text-[11px] text-[#71757D]">
+          <p className="mt-2 text-[11px] text-subtle">
             These are wired to delivery — the same client-side delay the board attributes flows
             straight in here.
           </p>
@@ -213,11 +213,11 @@ function HealthPanel({ client, onClose }: { client: Client; onClose: () => void 
               <ClipboardDocumentListIcon className="size-4" /> From onboarding
             </span>
           </SectionHeader>
-          <Card className="bg-[#0C0C0C]">
-            <ul className="space-y-1.5 text-[12px] text-[#3A3A3A]">
+          <Card className="bg-background">
+            <ul className="space-y-1.5 text-[12px] text-subtle">
               {client.onboardingNotes.map((n, i) => (
                 <li key={i} className="flex gap-1.5">
-                  <span className="text-[#C5C5C5]">•</span>
+                  <span className="text-muted">•</span>
                   <span>{n}</span>
                 </li>
               ))}
@@ -230,11 +230,11 @@ function HealthPanel({ client, onClose }: { client: Client; onClose: () => void 
           <SectionHeader>CSM notes</SectionHeader>
           <div className="space-y-2.5">
             {client.notes.map((n, i) => (
-              <div key={i} className="border-l-2 border-[#2A2A2A] pl-3">
-                <div className="text-[11px] text-[#71757D]">
+              <div key={i} className="border-l-2 border-border pl-3">
+                <div className="text-[11px] text-subtle">
                   {fmtDayMonth(n.at)} · {n.by}
                 </div>
-                <div className="text-[13px] text-[#3A3A3A]">{n.text}</div>
+                <div className="text-[13px] text-subtle">{n.text}</div>
               </div>
             ))}
           </div>

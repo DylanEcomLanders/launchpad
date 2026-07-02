@@ -63,7 +63,7 @@ export default function TestWinsPage() {
     await testWinsStore.update(winId, { status, updated_at: nowISO() });
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
@@ -76,7 +76,7 @@ export default function TestWinsPage() {
             Test wins
           </h1>
         </div>
-        <p className="text-sm text-[#9CA3AF] max-w-2xl">
+        <p className="text-sm text-muted max-w-2xl">
           Quick-capture every winning test as it concludes - the inbox ahead of the proof deck. Promote to a full case study when ready.
         </p>
       </header>
@@ -92,13 +92,13 @@ export default function TestWinsPage() {
               <li key={u.test_id} className="bg-emerald-500/5 ring-1 ring-emerald-500/20 rounded-xl p-4 flex items-center gap-3">
                 <CheckCircleIcon className="size-5 text-emerald-400 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-[#E5E5EA] flex items-center gap-2">
+                  <div className="text-sm text-foreground flex items-center gap-2">
                     <span className="font-semibold">{u.client_name || "Unknown"}</span>
                     {u.uplift_pct !== undefined && <span className="text-emerald-300 font-mono">+{u.uplift_pct}%</span>}
                   </div>
-                  <div className="text-[12px] text-[#9CA3AF] truncate">{u.hypothesis || "(no hypothesis)"}</div>
+                  <div className="text-[12px] text-muted truncate">{u.hypothesis || "(no hypothesis)"}</div>
                 </div>
-                <button onClick={() => captureFromTest(u.test_id)} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0">
+                <button onClick={() => captureFromTest(u.test_id)} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground shrink-0">
                   <PlusIcon className="size-3.5" />
                   Capture
                 </button>
@@ -110,25 +110,25 @@ export default function TestWinsPage() {
 
       {/* Captured wins */}
       <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+        <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
           Captured ({wins.length})
         </h2>
         {!hydrated ? (
-          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>
+          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />)}</div>
         ) : wins.length === 0 ? (
-          <div className="bg-[#0F0F10] rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
-            <p className="text-sm text-[#71757D]">No wins captured yet.</p>
+          <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+            <p className="text-sm text-subtle">No wins captured yet.</p>
           </div>
         ) : (
           <ul className="space-y-2">
             {wins.map((w) => (
-              <li key={w.id} className="bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04]">
+              <li key={w.id} className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04]">
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-sm font-semibold text-[#E5E5EA] truncate">
+                      <span className="text-sm font-semibold text-foreground truncate">
                         {w.client_anonymised || w.client_name}
-                        {w.surface && <span className="text-[#71757D] font-normal"> · {w.surface}</span>}
+                        {w.surface && <span className="text-subtle font-normal"> · {w.surface}</span>}
                       </span>
                       <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${STATUS_TINT[w.status]}`}>
                         {STATUS_LABEL[w.status]}
@@ -137,8 +137,8 @@ export default function TestWinsPage() {
                         <span className="text-emerald-300 font-mono text-[12px]">+{w.uplift_pct}%</span>
                       )}
                     </div>
-                    <div className="text-[12px] text-[#9CA3AF] line-clamp-2">{w.hypothesis || "(no hypothesis)"}</div>
-                    <div className="text-[11px] text-[#71757D] mt-1">
+                    <div className="text-[12px] text-muted line-clamp-2">{w.hypothesis || "(no hypothesis)"}</div>
+                    <div className="text-[11px] text-subtle mt-1">
                       {w.hero_metric}
                       {w.baseline_value && w.variant_value && ` · ${w.baseline_value} → ${w.variant_value}`}
                       {w.durability_days && ` · ${w.durability_days}d durable`}
@@ -147,7 +147,7 @@ export default function TestWinsPage() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => updateStatus(w.id, w.status === "anonymised" ? "captured" : "anonymised")}
-                      className="p-1.5 rounded-md text-[#71757D] hover:text-amber-300"
+                      className="p-1.5 rounded-md text-subtle hover:text-amber-300"
                       title="Toggle anonymised"
                     >
                       <EyeSlashIcon className="size-4" />
@@ -155,7 +155,7 @@ export default function TestWinsPage() {
                     {w.status !== "archived" && (
                       <button
                         onClick={() => updateStatus(w.id, "archived")}
-                        className="p-1.5 rounded-md text-[#71757D] hover:text-rose-400"
+                        className="p-1.5 rounded-md text-subtle hover:text-rose-400"
                         title="Archive"
                       >
                         <ArchiveBoxIcon className="size-4" />

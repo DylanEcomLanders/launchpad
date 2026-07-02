@@ -127,7 +127,7 @@ export default function PeoplePanel() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-56">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#71757D] z-10" />
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
             <input
               type="text"
               placeholder="Search…"
@@ -181,28 +181,28 @@ export default function PeoplePanel() {
           <div className="inline-flex rounded-lg border border-white/[0.04] overflow-hidden">
             <button
               onClick={() => setView("grid")}
-              className={`p-2 ${view === "grid" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
+              className={`p-2 ${view === "grid" ? "bg-white text-background" : "bg-background text-subtle"}`}
               title="Grid view"
             >
               <Squares2X2Icon className="size-4" />
             </button>
             <button
               onClick={() => setView("table")}
-              className={`p-2 ${view === "table" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
+              className={`p-2 ${view === "table" ? "bg-white text-background" : "bg-background text-subtle"}`}
               title="Table view"
             >
               <ListBulletIcon className="size-4" />
             </button>
             <button
               onClick={() => setView("byPod")}
-              className={`p-2 ${view === "byPod" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
+              className={`p-2 ${view === "byPod" ? "bg-white text-background" : "bg-background text-subtle"}`}
               title="By pod"
             >
               <UsersIcon className="size-4" />
             </button>
             <button
               onClick={() => setView("byStatus")}
-              className={`p-2 ${view === "byStatus" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
+              className={`p-2 ${view === "byStatus" ? "bg-white text-background" : "bg-background text-subtle"}`}
               title="By status"
             >
               <TagIcon className="size-4" />
@@ -210,7 +210,7 @@ export default function PeoplePanel() {
           </div>
           <button
             onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
           >
             <PlusIcon className="size-4" />
             Add person
@@ -221,7 +221,7 @@ export default function PeoplePanel() {
       {!hydrated ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-36 bg-[#0C0C0C] rounded-xl animate-pulse" />
+            <div key={i} className="h-36 bg-background rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -266,13 +266,13 @@ function StatTile({
   muted?: boolean;
 }) {
   return (
-    <div className="bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
+    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
       <div className={`size-9 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
         {icon}
       </div>
       <div>
-        <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">{label}</div>
-        <div className={`text-2xl font-semibold ${muted ? "text-[#71757D]" : "text-[#E5E5EA]"}`}>{value}</div>
+        <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">{label}</div>
+        <div className={`text-2xl font-semibold ${muted ? "text-subtle" : "text-foreground"}`}>{value}</div>
       </div>
     </div>
   );
@@ -335,7 +335,7 @@ function PersonCard({
   return (
     <Link
       href={`/company/people/${person.id}`}
-      className={`group block bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all ${isLeadership ? "ring-emerald-500/20 hover:ring-emerald-500/40" : ""}`}
+      className={`group block bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all ${isLeadership ? "ring-emerald-500/20 hover:ring-emerald-500/40" : ""}`}
     >
       <div className="flex items-start gap-3">
         {/* Avatar tile - photo if available, else gradient initials.
@@ -360,16 +360,16 @@ function PersonCard({
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-sm font-semibold text-[#E5E5EA] truncate">
+            <span className="text-sm font-semibold text-foreground truncate">
               {person.preferred_name || person.full_name}
             </span>
             {isLeadership && (
               <SparklesIcon className="size-3 text-emerald-400 shrink-0" title="Leadership" />
             )}
           </div>
-          <div className="text-[12px] text-[#71757D] truncate">{person.job_title || "No role set"}</div>
+          <div className="text-[12px] text-subtle truncate">{person.job_title || "No role set"}</div>
           {/* Meta row: department + pod + tenure. Compact, comma-sep style. */}
-          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[11px] text-[#71757D]">
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[11px] text-subtle">
             {dept && (
               <span className="inline-flex items-center gap-1">
                 <span className="size-1.5 rounded-full" style={{ background: deptHex }} />
@@ -386,16 +386,16 @@ function PersonCard({
           </div>
         </div>
         {/* Hover-reveal "open" arrow. */}
-        <ArrowTopRightOnSquareIcon className="size-3.5 text-[#71757D] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
+        <ArrowTopRightOnSquareIcon className="size-3.5 text-subtle opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
       </div>
 
       {/* Status row + invite chip. */}
       <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${DARK_STATUS_TINT[person.status] ?? "bg-[#222] text-[#9CA3AF]"}`}>
+          <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${DARK_STATUS_TINT[person.status] ?? "bg-[#222] text-muted"}`}>
             {status.label}
           </span>
-          <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+          <span className="text-[10px] uppercase tracking-wider text-subtle">
             {person.employment_type === "employee" ? "Employee" : "Contractor"}
           </span>
         </div>
@@ -414,7 +414,7 @@ function PersonCard({
             </span>
           ) : null
         ) : (
-          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#71757D]">
+          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-subtle">
             <UserCircleIcon className="size-3" />
             No email
           </span>
@@ -426,9 +426,9 @@ function PersonCard({
 
 function PeopleTable({ rows }: { rows: Person[] }) {
   return (
-    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+    <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
       <table className="w-full text-sm">
-        <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
+        <thead className="bg-background text-[11px] uppercase tracking-wider text-subtle">
           <tr>
             <th className="text-left px-4 py-3 font-semibold">Name</th>
             <th className="text-left px-4 py-3 font-semibold">Title</th>
@@ -442,15 +442,15 @@ function PeopleTable({ rows }: { rows: Person[] }) {
           {rows.map((p) => {
             const status = STATUS_BADGE[p.status];
             return (
-              <tr key={p.id} className="border-t border-white/[0.04] hover:bg-[#0C0C0C]">
+              <tr key={p.id} className="border-t border-white/[0.04] hover:bg-background">
                 <td className="px-4 py-3">
-                  <Link href={`/company/people/${p.id}`} className="font-medium text-[#E5E5EA] hover:underline">
+                  <Link href={`/company/people/${p.id}`} className="font-medium text-foreground hover:underline">
                     {p.preferred_name || p.full_name}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-[#71757D]">{p.job_title || "—"}</td>
-                <td className="px-4 py-3 text-[#71757D]">{p.department || "—"}</td>
-                <td className="px-4 py-3 text-[#71757D] capitalize">{p.employment_type}</td>
+                <td className="px-4 py-3 text-subtle">{p.job_title || "—"}</td>
+                <td className="px-4 py-3 text-subtle">{p.department || "—"}</td>
+                <td className="px-4 py-3 text-subtle capitalize">{p.employment_type}</td>
                 <td className="px-4 py-3">
                   <span
                     className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -459,7 +459,7 @@ function PeopleTable({ rows }: { rows: Person[] }) {
                     {status.label}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-[#71757D]">{p.email || "—"}</td>
+                <td className="px-4 py-3 text-subtle">{p.email || "—"}</td>
               </tr>
             );
           })}
@@ -471,14 +471,14 @@ function PeopleTable({ rows }: { rows: Person[] }) {
 
 function EmptyState({ onAdd, hasFilter }: { onAdd: () => void; hasFilter: boolean }) {
   return (
-    <div className="bg-[#0F0F10] border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
-      <div className="text-sm text-[#71757D] mb-3">
+    <div className="bg-background border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
+      <div className="text-sm text-subtle mb-3">
         {hasFilter ? "No people match these filters." : "No people yet - add your first team member."}
       </div>
       {!hasFilter && (
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
         >
           <PlusIcon className="size-4" />
           Add person
@@ -534,9 +534,9 @@ function AddPersonModal({
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
       <form
         onSubmit={submit}
-        className="bg-[#0F0F10] rounded-xl shadow-xl w-full max-w-md p-6"
+        className="bg-background rounded-xl shadow-xl w-full max-w-md p-6"
       >
-        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Add person</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Add person</h2>
         <div className="space-y-4">
           <div>
             <label className={labelClass}>Full name</label>
@@ -599,7 +599,7 @@ function AddPersonModal({
               row tied to this Person, then pops the comp/role review
               modal so admin can fill the missing fields before sending
               the signing link. */}
-          <label className="flex items-start gap-2 text-xs text-[#E5E5EA]">
+          <label className="flex items-start gap-2 text-xs text-foreground">
             <input
               type="checkbox"
               checked={generateContract}
@@ -608,7 +608,7 @@ function AddPersonModal({
             />
             <span>
               <span className="font-medium">Generate contract draft</span>
-              <span className="block text-[#71757D] text-[11px] mt-0.5">
+              <span className="block text-subtle text-[11px] mt-0.5">
                 Opens a contract review form pre-filled with role + employment type. You confirm comp + start date, then share the signing link.
               </span>
             </span>
@@ -618,13 +618,13 @@ function AddPersonModal({
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+            className="px-3 py-2 text-sm text-subtle hover:text-foreground"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
+            className="px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
           >
             Add
           </button>
@@ -664,8 +664,8 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
 
   if (pods.length === 0) {
     return (
-      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-8 text-center">
-        <p className="text-sm text-[#71757D]">
+      <div className="bg-background border border-white/[0.04] rounded-xl p-8 text-center">
+        <p className="text-sm text-subtle">
           No pods configured. Set up pods in /workspace, then link each
           Person to their pod member on their Overview tab.
         </p>
@@ -678,11 +678,11 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
       {pods.map((pod) => (
         <div
           key={pod.id}
-          className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden"
+          className="bg-background border border-white/[0.04] rounded-xl overflow-hidden"
         >
           <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[#E5E5EA]">{pod.name}</h3>
-            <span className="text-[11px] uppercase tracking-wider text-[#71757D] tabular-nums">
+            <h3 className="text-sm font-semibold text-foreground">{pod.name}</h3>
+            <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
               {pod.members.filter((m) => !m.is_placeholder).length} members
             </span>
           </div>
@@ -697,7 +697,7 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
                     className="px-5 py-3 flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm text-[#E5E5EA] truncate">
+                      <div className="text-sm text-foreground truncate">
                         {linked ? (
                           <Link
                             href={`/company/people/${linked.id}`}
@@ -706,19 +706,19 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
                             {linked.preferred_name || linked.full_name}
                           </Link>
                         ) : (
-                          <span className="text-[#71757D]">
+                          <span className="text-subtle">
                             {m.name} (no HR record)
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-[#71757D] mt-0.5 capitalize">
+                      <div className="text-[11px] text-subtle mt-0.5 capitalize">
                         {m.role.replace(/_/g, " ")}
                       </div>
                     </div>
                     {linked ? (
                       <PersonStatusPill person={linked} />
                     ) : (
-                      <span className="text-[10px] text-[#71757D] uppercase tracking-wider">
+                      <span className="text-[10px] text-subtle uppercase tracking-wider">
                         Unlinked
                       </span>
                     )}
@@ -730,10 +730,10 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
       ))}
 
       {unassigned.length > 0 && (
-        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden md:col-span-2">
+        <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden md:col-span-2">
           <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[#E5E5EA]">Not on a pod</h3>
-            <span className="text-[11px] uppercase tracking-wider text-[#71757D] tabular-nums">
+            <h3 className="text-sm font-semibold text-foreground">Not on a pod</h3>
+            <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
               {unassigned.length}
             </span>
           </div>
@@ -746,11 +746,11 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/company/people/${p.id}`}
-                    className="text-sm font-medium text-[#E5E5EA] hover:underline truncate"
+                    className="text-sm font-medium text-foreground hover:underline truncate"
                   >
                     {p.preferred_name || p.full_name}
                   </Link>
-                  <div className="text-[11px] text-[#71757D] mt-0.5">
+                  <div className="text-[11px] text-subtle mt-0.5">
                     {p.job_title || "(no title)"}
                   </div>
                 </div>
@@ -789,7 +789,7 @@ function ByStatusView({ people }: { people: Person[] }) {
         return (
           <div
             key={s}
-            className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden"
+            className="bg-background border border-white/[0.04] rounded-xl overflow-hidden"
           >
             <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -800,7 +800,7 @@ function ByStatusView({ people }: { people: Person[] }) {
                   {badge.label}
                 </span>
               </div>
-              <span className="text-[11px] uppercase tracking-wider text-[#71757D] tabular-nums">
+              <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
                 {bucket.length}
               </span>
             </div>
@@ -828,11 +828,11 @@ function ByStatusView({ people }: { people: Person[] }) {
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/company/people/${p.id}`}
-                      className="text-sm font-medium text-[#E5E5EA] hover:underline truncate"
+                      className="text-sm font-medium text-foreground hover:underline truncate"
                     >
                       {p.preferred_name || p.full_name}
                     </Link>
-                    <div className="text-[11px] text-[#71757D] mt-0.5">
+                    <div className="text-[11px] text-subtle mt-0.5">
                       {p.job_title || "(no title)"} ·{" "}
                       {p.employment_type === "employee" ? "Employee" : "Contractor"}
                     </div>

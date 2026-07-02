@@ -118,13 +118,13 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
   }, [roadmap]);
 
   if (!isAdmin) {
-    return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D]">Admin / CRO only.</p></div></div>);
+    return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
   }
   if (!hydrated) {
-    return (<div className="p-6 space-y-3 max-w-6xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />)}</div>);
+    return (<div className="p-6 space-y-3 max-w-6xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>);
   }
   if (notFound || !roadmap) {
-    return (<div className="p-6"><div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-[#71757D] mb-3">Roadmap not found.</p><Link href="/tools/roadmap" className="text-[12px] uppercase tracking-wider text-cyan-300 hover:text-cyan-200">← Back</Link></div></div>);
+    return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle mb-3">Roadmap not found.</p><Link href="/tools/roadmap" className="text-[12px] uppercase tracking-wider text-cyan-300 hover:text-cyan-200">← Back</Link></div></div>);
   }
 
   return (
@@ -132,7 +132,7 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <Link href="/tools/roadmap" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] mb-3">
+          <Link href="/tools/roadmap" className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground mb-3">
             <ArrowLeftIcon className="size-3.5" />
             All roadmaps
           </Link>
@@ -144,20 +144,20 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
               value={roadmap.client_name}
               onChange={(e) => patch({ client_name: e.target.value })}
               placeholder="Client name"
-              className="text-2xl font-semibold text-[#E5E5EA] bg-transparent border-none outline-none focus:ring-0 min-w-0 flex-1"
+              className="text-2xl font-semibold text-foreground bg-transparent border-none outline-none focus:ring-0 min-w-0 flex-1"
             />
           </div>
-          <div className="text-[12px] text-[#71757D]">
+          <div className="text-[12px] text-subtle">
             {saving ? "Saving…" : savedAt ? `Saved ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Loaded"}
           </div>
         </div>
-        <button onClick={deleteRoadmap} className="p-1.5 rounded-md text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.1]" title="Delete">
+        <button onClick={deleteRoadmap} className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]" title="Delete">
           <TrashIcon className="size-4" />
         </button>
       </div>
 
       {/* Meta */}
-      <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Strategist</label>
           <input value={roadmap.strategist} onChange={(e) => patch({ strategist: e.target.value })} className={inputClass} placeholder="Dylan / Ajay" />
@@ -177,17 +177,17 @@ export default function RoadmapDetailPage({ params }: { params: Promise<{ id: st
                 <div className="text-[10px] uppercase tracking-wider font-semibold text-cyan-300">
                   {HORIZON_LABEL[h]}
                 </div>
-                <div className="text-[11px] text-[#71757D] mt-0.5">{itemsByHorizon[h].length} items</div>
+                <div className="text-[11px] text-subtle mt-0.5">{itemsByHorizon[h].length} items</div>
               </div>
-              <button onClick={() => addItem(h)} className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-white/5 hover:bg-white/10 text-[#E5E5EA]">
+              <button onClick={() => addItem(h)} className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-white/5 hover:bg-white/10 text-foreground">
                 <PlusIcon className="size-3" />
                 Add
               </button>
             </div>
             <div className="space-y-2">
               {itemsByHorizon[h].length === 0 ? (
-                <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.03] text-center">
-                  <p className="text-[11px] italic text-[#71757D]">Empty</p>
+                <div className="bg-background/60 rounded-xl p-4 ring-1 ring-white/[0.03] text-center">
+                  <p className="text-[11px] italic text-subtle">Empty</p>
                 </div>
               ) : (
                 itemsByHorizon[h].map((item) => (
@@ -229,7 +229,7 @@ function ItemCard({
 
   if (editing) {
     return (
-      <div className="bg-[#0F0F10] rounded-xl p-3 space-y-2 ring-1 ring-cyan-500/30 shadow-[0_8px_32px_rgba(6,182,212,0.12)]">
+      <div className="bg-background rounded-xl p-3 space-y-2 ring-1 ring-cyan-500/30 shadow-[0_8px_32px_rgba(6,182,212,0.12)]">
         <input
           value={item.title}
           onChange={(e) => onChange({ title: e.target.value })}
@@ -258,10 +258,10 @@ function ItemCard({
           placeholder="Hypothesis (because we observed X, we believe Y will Z)"
         />
         <div className="flex items-center justify-between">
-          <button onClick={onDelete} className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-rose-400">
+          <button onClick={onDelete} className="text-[10px] uppercase tracking-wider text-subtle hover:text-rose-400">
             Delete
           </button>
-          <button onClick={onCancel} className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]">
+          <button onClick={onCancel} className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-white text-background hover:bg-foreground">
             Done
           </button>
         </div>
@@ -270,28 +270,28 @@ function ItemCard({
   }
 
   return (
-    <div className="bg-[#0F0F10] rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all group">
+    <div className="bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all group">
       <button onClick={onEdit} className="w-full text-left">
         <div className="flex items-start gap-2 mb-2">
           <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold shrink-0 ${ITEM_TYPE_TINT[item.type]}`}>
             {ITEM_TYPE_LABEL[item.type]}
           </span>
           <span className="text-[10px] text-cyan-300 font-mono shrink-0">ICE {ice}</span>
-          <ChevronDownIcon className="size-3 text-[#71757D] ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ChevronDownIcon className="size-3 text-subtle ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
-        <p className="text-[13px] text-[#E5E5EA] mb-2">
-          {item.title || <span className="italic text-[#71757D]">Untitled</span>}
+        <p className="text-[13px] text-foreground mb-2">
+          {item.title || <span className="italic text-subtle">Untitled</span>}
         </p>
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold ${STATUS_TINT[item.status]}`}>
             {STATUS_LABEL[item.status]}
           </span>
           {item.owner_role && (
-            <span className="text-[9px] uppercase tracking-wider text-[#71757D]">{item.owner_role}</span>
+            <span className="text-[9px] uppercase tracking-wider text-subtle">{item.owner_role}</span>
           )}
         </div>
         {item.hypothesis && (
-          <div className="mt-2 pt-2 border-t border-white/[0.04] text-[11px] text-[#9CA3AF] line-clamp-2">
+          <div className="mt-2 pt-2 border-t border-white/[0.04] text-[11px] text-muted line-clamp-2">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.hypothesis}</ReactMarkdown>
           </div>
         )}
@@ -303,7 +303,7 @@ function ItemCard({
 function ScoreField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div>
-      <div className="text-[9px] uppercase tracking-wider text-[#71757D] mb-1">{label}</div>
+      <div className="text-[9px] uppercase tracking-wider text-subtle mb-1">{label}</div>
       <input
         type="number"
         min={1}
