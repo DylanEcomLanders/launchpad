@@ -63,6 +63,18 @@
      ProjectCard clusters). Never inline hex for these elsewhere. */
   --color-cat-dev: #6366F1;
   --color-cat-design: #EC4899;
+  /* Categorical chart palette — the sanctioned data-viz series colours
+     (expense breakdown, multi-series charts). Muted jewel tones tuned to
+     read on the dark canvas. Reference as var(--color-chart-N) / bg-chart-N;
+     never inline hex for chart series elsewhere. */
+  --color-chart-1: #8B93F8;
+  --color-chart-2: #4FD1C5;
+  --color-chart-3: #E5C07B;
+  --color-chart-4: #E68FB0;
+  --color-chart-5: #86C67C;
+  --color-chart-6: #5EB0EF;
+  --color-chart-7: #B794F4;
+  --color-chart-8: #E0A878;
   /* Muted status palette — softer than the solid success/warning/danger,
      for status dots + overdue emphasis (Linear-calm). */
   --color-status-ontrack: #3FA372;
