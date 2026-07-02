@@ -299,7 +299,7 @@ export default function NewExpensePage() {
           <button
             type="submit"
             disabled={saving || uploading}
-            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-xs font-medium rounded hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save expense

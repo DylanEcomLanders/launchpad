@@ -44,7 +44,7 @@ const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-med
  * inside one p-5 surface card. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-surface border border-border-faint rounded-md p-5">
+    <section className="bg-surface border border-border-faint rounded p-5">
       <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
         {title}
       </h3>
@@ -251,7 +251,7 @@ export default function NewInvoicePage() {
       </div>
 
       {error && (
-        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-md text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded text-sm text-danger">
           {error}
         </div>
       )}
@@ -321,7 +321,7 @@ export default function NewInvoicePage() {
             }}
           />
           {clientId && (
-            <div className="mt-3 px-4 py-3 bg-surface-raised border border-border rounded-md text-xs text-muted">
+            <div className="mt-3 px-4 py-3 bg-surface-raised border border-border rounded text-xs text-muted">
               <div className="text-sm font-medium text-foreground">{clientName}</div>
               {contactName && <div>{contactName}</div>}
               {clientEmail && <div>{clientEmail}</div>}
@@ -358,14 +358,14 @@ export default function NewInvoicePage() {
             <button
               onClick={addDeliverable}
               disabled={!selectedDeliverable}
-              className="px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
+              className="px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded hover:opacity-90 transition-colors disabled:opacity-30"
             >
               <PlusIcon className="size-4" />
             </button>
           </div>
 
           {items.length > 0 && (
-            <div className="border border-border rounded-md overflow-hidden mb-4">
+            <div className="border border-border rounded overflow-hidden mb-4">
               <div className="hidden md:grid grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-2.5 bg-surface-raised text-2xs font-medium uppercase tracking-wider text-subtle">
                 <span>Description</span>
                 <span className="text-center">Qty</span>
@@ -465,7 +465,7 @@ export default function NewInvoicePage() {
 
         {items.length > 0 && (
           <Section title="Totals">
-            <div className="bg-surface-raised border border-border rounded-md p-5 space-y-2">
+            <div className="bg-surface-raised border border-border rounded p-5 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted">Subtotal</span>
                 <span className="font-medium tabular-nums">{fmtMoney(breakdown.subtotal)}</span>
@@ -570,7 +570,7 @@ export default function NewInvoicePage() {
           <button
             onClick={() => save("draft")}
             disabled={!canSave || saving}
-            className="flex items-center justify-center gap-2 px-5 py-3 bg-surface border border-border text-foreground text-sm font-medium rounded-md hover:bg-surface-raised transition-colors disabled:opacity-30"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-surface border border-border text-foreground text-sm font-medium rounded hover:bg-surface-raised transition-colors disabled:opacity-30"
           >
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : null}
             Save as draft
@@ -578,7 +578,7 @@ export default function NewInvoicePage() {
           <button
             onClick={() => save("sent")}
             disabled={!canSave || saving}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded hover:opacity-90 transition-colors disabled:opacity-30"
           >
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : null}
             Save & mark as sent

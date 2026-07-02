@@ -219,12 +219,12 @@ export default function InvoiceDetailPage() {
   }
 
   if (loading) {
-    return <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />;
+    return <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />;
   }
 
   if (!invoice) {
     return (
-      <div className="bg-surface border border-border-faint rounded-md p-12 text-center">
+      <div className="bg-surface border border-border-faint rounded p-12 text-center">
         <p className="text-sm text-subtle mb-3">Invoice not found</p>
         <Link href="/finance/invoices" className="text-sm text-foreground underline">
           Back to invoices
@@ -266,7 +266,7 @@ export default function InvoiceDetailPage() {
         </div>
 
         {!editing && (
-          <div className="inline-flex items-center divide-x divide-dashed divide-border border border-border rounded-md bg-surface overflow-hidden">
+          <div className="inline-flex items-center divide-x divide-dashed divide-border border border-border rounded bg-surface overflow-hidden">
             <ToolbarButton onClick={startEdit} icon={<PencilSquareIcon className="size-4" />}>
               Edit
             </ToolbarButton>
@@ -301,17 +301,17 @@ export default function InvoiceDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-md text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded text-sm text-danger">
           {error}
         </div>
       )}
       {sendError && (
-        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-md text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded text-sm text-danger">
           {sendError}
         </div>
       )}
       {sendSuccess && (
-        <div className="mb-4 px-4 py-3 bg-success/10 border border-success/20 rounded-md text-sm text-success">
+        <div className="mb-4 px-4 py-3 bg-success/10 border border-success/20 rounded text-sm text-success">
           Invoice emailed successfully.
         </div>
       )}
@@ -683,7 +683,7 @@ function EditInvoiceForm({
 
       <FormSection title="Line items">
         {draft.items.length > 0 && (
-          <div className="border border-border rounded-md overflow-hidden mb-3">
+          <div className="border border-border rounded overflow-hidden mb-3">
             <div className="hidden md:grid grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 bg-surface-raised text-2xs font-medium uppercase tracking-wider text-subtle">
               <span>Description</span>
               <span className="text-center">Qty</span>
@@ -756,7 +756,7 @@ function EditInvoiceForm({
         </FormSection>
 
         <FormSection title={`Totals (live, ${draft.currency})`}>
-          <div className="bg-surface-raised border border-border rounded-md p-3 space-y-1.5">
+          <div className="bg-surface-raised border border-border rounded p-3 space-y-1.5">
             <div className="flex justify-between text-sm">
               <span className="text-muted">Subtotal</span>
               <span className="tabular-nums">
@@ -854,7 +854,7 @@ function EditInvoiceForm({
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-5 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-5 py-2 bg-foreground text-background text-sm font-medium rounded hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -963,7 +963,7 @@ function InvoiceAttachmentCard({
           <p className="text-2xs text-subtle mb-2">
             Signed PO, payment confirmation, contract reference, etc.
           </p>
-          <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-raised border border-border text-foreground text-xs rounded-md hover:bg-surface cursor-pointer">
+          <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-raised border border-border text-foreground text-xs rounded hover:bg-surface cursor-pointer">
             <input
               type="file"
               accept="application/pdf,image/*"
@@ -1020,7 +1020,7 @@ function ToolbarButton({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface border border-border-faint rounded-md p-5">
+    <div className="bg-surface border border-border-faint rounded p-5">
       <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-3">
         {title}
       </h3>
@@ -1033,9 +1033,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
  * tighter inline labels than the global form-styles, so admin forms
  * feel less bulky. */
 const compactInput =
-  "w-full px-3 py-2 bg-surface-raised border border-border rounded-md text-sm focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground/10 transition-all placeholder:text-subtle";
+  "w-full px-3 py-2 bg-surface-raised border border-border rounded text-sm focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground/10 transition-all placeholder:text-subtle";
 const compactTextarea =
-  "w-full px-3 py-2 bg-surface-raised border border-border rounded-md text-sm focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground/10 transition-all resize-none placeholder:text-subtle";
+  "w-full px-3 py-2 bg-surface-raised border border-border rounded text-sm focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground/10 transition-all resize-none placeholder:text-subtle";
 
 function FormSection({
   title,

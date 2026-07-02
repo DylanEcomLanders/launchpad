@@ -93,7 +93,7 @@ export default function VatReturnPage() {
   }
 
   if (!hydrated) {
-    return <div className="h-96 bg-surface rounded-md border border-border-faint animate-pulse" />;
+    return <div className="h-96 bg-surface rounded border border-border-faint animate-pulse" />;
   }
 
   return (
@@ -156,7 +156,7 @@ export default function VatReturnPage() {
         </div>
         <button
           onClick={downloadPack}
-          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
         >
           <ArrowDownTrayIcon className="size-3.5" /> Download VAT pack (.zip)
         </button>
@@ -185,19 +185,19 @@ export default function VatReturnPage() {
       </div>
 
       {ret.reverseChargeTotal > 0 && (
-        <div className="bg-surface border border-border-faint rounded-md px-4 py-3 text-sm text-muted">
+        <div className="bg-surface border border-border-faint rounded px-4 py-3 text-sm text-muted">
           <strong className="text-foreground font-medium">Reverse charge:</strong> {fmtMoney(ret.reverseChargeTotal)} of non-UK B2B sales in
           this period are zero-VAT under reverse charge. The net value is included in Box 6; output
           VAT on those supplies is zero.
         </div>
       )}
 
-      <div className="bg-surface border border-border-faint rounded-md p-4 text-xs text-status-approaching">
+      <div className="bg-surface border border-border-faint rounded p-4 text-xs text-status-approaching">
         <strong>Estimate only - confirm with accountant before filing.</strong> {ret.noteForAccountant}
       </div>
 
       {ret.sales.length > 0 && (
-        <details className="bg-surface border border-border-faint rounded-md" open>
+        <details className="bg-surface border border-border-faint rounded" open>
           <summary className="px-5 py-3 cursor-pointer text-sm font-medium text-foreground flex items-center justify-between">
             <span>Sales detail ({ret.sales.length})</span>
             <span className="text-xs font-normal text-subtle">
@@ -236,7 +236,7 @@ export default function VatReturnPage() {
       )}
 
       {ret.purchases.length > 0 && (
-        <details className="bg-surface border border-border-faint rounded-md" open>
+        <details className="bg-surface border border-border-faint rounded" open>
           <summary className="px-5 py-3 cursor-pointer text-sm font-medium text-foreground flex items-center justify-between">
             <span>Purchases detail ({ret.purchases.length})</span>
             <span className="text-xs font-normal text-subtle">
@@ -273,7 +273,7 @@ export default function VatReturnPage() {
       )}
 
       {ret.sales.length === 0 && ret.purchases.length === 0 && (
-        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
           <p className="text-sm text-subtle">No invoices or expenses in this period.</p>
         </div>
       )}
@@ -304,12 +304,12 @@ function BoxRow({
         : "text-foreground";
   return (
     <div
-      className={`bg-surface border border-border-faint rounded-md p-5 flex items-center justify-between ${
+      className={`bg-surface border border-border-faint rounded p-5 flex items-center justify-between ${
         muted ? "opacity-60" : ""
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center justify-center size-6 rounded-md bg-surface-raised text-2xs font-medium tabular-nums text-subtle">
+        <span className="inline-flex items-center justify-center size-6 rounded bg-surface-raised text-2xs font-medium tabular-nums text-subtle">
           {num}
         </span>
         <span className="text-sm text-foreground">{label}</span>

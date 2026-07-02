@@ -218,7 +218,7 @@ export default function ReceivablesListPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as "all" | InvoiceStatus)}
-            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
             <option value="all">All statuses</option>
             <option value="draft">Draft</option>
@@ -230,7 +230,7 @@ export default function ReceivablesListPage() {
           <select
             value={vatFilter}
             onChange={(e) => setVatFilter(e.target.value as "all" | "vat" | "no_vat")}
-            className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
             <option value="all">All VAT</option>
             <option value="vat">VAT charged</option>
@@ -240,7 +240,7 @@ export default function ReceivablesListPage() {
             <select
               value={countryFilter}
               onChange={(e) => setCountryFilter(e.target.value)}
-              className="h-8 px-2.5 rounded-md border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
+              className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
             >
               {countryPills.map((p) => (
                 <option key={p.key} value={p.key}>
@@ -252,13 +252,13 @@ export default function ReceivablesListPage() {
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
           >
             <ArrowDownTrayIcon className="size-3.5" /> CSV
           </button>
           <Link
             href="/finance/invoices/new"
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" /> New invoice
           </Link>
@@ -269,15 +269,15 @@ export default function ReceivablesListPage() {
             placeholder="Search invoice # or client"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="h-8 w-full pl-8 pr-3 rounded-md border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+            className="h-8 w-full pl-8 pr-3 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
           />
         </div>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-surface rounded-md border border-border-faint animate-pulse" />
+        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
           <p className="text-sm text-subtle">
             {invoices.length === 0
               ? "No invoices yet."
@@ -286,14 +286,14 @@ export default function ReceivablesListPage() {
           {invoices.length === 0 && (
             <Link
               href="/finance/invoices/new"
-              className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+              className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
             >
               <PlusIcon className="size-3.5" /> New invoice
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-surface border border-border-faint rounded-md overflow-x-auto">
+        <div className="bg-surface border border-border-faint rounded overflow-x-auto">
           <Table>
             <THead>
               <TR hover={false}>
@@ -351,7 +351,7 @@ function SummaryCard({
 }) {
   const color = accent === "red" ? "text-status-late" : "text-foreground";
   return (
-    <div className="bg-surface border border-border-faint rounded-md p-5">
+    <div className="bg-surface border border-border-faint rounded p-5">
       <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
       <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${color}`}>{fmtMoney(amount)}</div>
     </div>

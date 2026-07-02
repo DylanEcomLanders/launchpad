@@ -121,7 +121,7 @@ export default function MonthlyCostsPage() {
       </div>
 
       {loadError && (
-        <div className="rounded-md border border-border-faint bg-surface px-4 py-3 text-xs text-status-approaching">
+        <div className="rounded border border-border-faint bg-surface px-4 py-3 text-xs text-status-approaching">
           Couldn&apos;t load saved costs. The{" "}
           <code className="font-mono">finance_monthly_costs</code> table may need
           migration 026 applied. You can still calculate below, but changes
@@ -131,7 +131,7 @@ export default function MonthlyCostsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-surface border border-border-faint rounded-md p-5">
+        <div className="bg-surface border border-border-faint rounded p-5">
           <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Total per month
           </div>
@@ -139,7 +139,7 @@ export default function MonthlyCostsPage() {
             {fmtMoneyShort(monthlyTotal)}
           </div>
         </div>
-        <div className="bg-surface border border-border-faint rounded-md p-5">
+        <div className="bg-surface border border-border-faint rounded p-5">
           <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Per year
           </div>
@@ -147,7 +147,7 @@ export default function MonthlyCostsPage() {
             {fmtMoneyShort(annualTotal)}
           </div>
         </div>
-        <div className="bg-surface border border-border-faint rounded-md p-5">
+        <div className="bg-surface border border-border-faint rounded p-5">
           <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Active lines
           </div>
@@ -159,7 +159,7 @@ export default function MonthlyCostsPage() {
 
       {/* Category breakdown */}
       {byCategory.length > 0 && (
-        <div className="bg-surface border border-border-faint rounded-md p-5">
+        <div className="bg-surface border border-border-faint rounded p-5">
           <h3 className="text-sm font-medium text-foreground mb-4">
             By category, per month
           </h3>
@@ -187,7 +187,7 @@ export default function MonthlyCostsPage() {
       )}
 
       {/* Add a cost */}
-      <div className="bg-surface border border-border-faint rounded-md p-5">
+      <div className="bg-surface border border-border-faint rounded p-5">
         <div className="flex flex-col md:flex-row gap-2 md:items-end">
           <div className="flex-1">
             <label className="block text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">
@@ -250,7 +250,7 @@ export default function MonthlyCostsPage() {
           <button
             onClick={addCost}
             disabled={!draftName.trim()}
-            className="shrink-0 inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add
@@ -260,14 +260,14 @@ export default function MonthlyCostsPage() {
 
       {/* List */}
       {hydrated && items.length === 0 ? (
-        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
           <p className="text-sm text-subtle">
             No costs yet. Add your recurring outgoings above to see your monthly
             burn.
           </p>
         </div>
       ) : (
-        <div className="bg-surface border border-border-faint rounded-md overflow-x-auto">
+        <div className="bg-surface border border-border-faint rounded overflow-x-auto">
           <Table>
             <THead>
               <TR hover={false}>

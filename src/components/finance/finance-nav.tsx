@@ -34,7 +34,7 @@ export function FinanceNav() {
           <Link
             key={tab.href}
             href={tab.href}
-            className={`whitespace-nowrap px-3 py-1 text-[13px] font-medium rounded-md transition-colors ${
+            className={`whitespace-nowrap px-3 py-1 text-[13px] font-medium rounded transition-colors ${
               active
                 ? "bg-surface-raised text-foreground"
                 : "text-muted hover:text-foreground hover:bg-surface-raised"
