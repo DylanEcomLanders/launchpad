@@ -50,7 +50,7 @@ export function AppSwitcher({ collapsed }: { collapsed?: boolean }) {
                   : "text-subtle hover:bg-background hover:text-foreground"
               }`}
             >
-              <div className={`size-1.5 rounded-full ${current.name === app.name ? "bg-emerald-500" : "bg-transparent"}`} />
+              <div className={`size-1.5 rounded-full ${current.name === app.name ? "bg-success" : "bg-transparent"}`} />
               {app.name}
             </Link>
           ))}

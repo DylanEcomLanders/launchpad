@@ -361,7 +361,7 @@ export default function InboxPanel() {
             action={
               <Link
                 href={`/company/contracts/${a.id}`}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
+                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground"
               >
                 Counter-sign
               </Link>
@@ -438,7 +438,7 @@ export default function InboxPanel() {
               action={
                 <button
                   onClick={() => logScoringBonus(b.person, b.period)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success"
                 >
                   <CheckCircleIcon className="size-3.5" />
                   Approve
@@ -471,7 +471,7 @@ export default function InboxPanel() {
               action={
                 <button
                   onClick={() => logKpiBonus(s)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success"
                 >
                   <CheckCircleIcon className="size-3.5" />
                   Approve
@@ -487,29 +487,29 @@ export default function InboxPanel() {
       <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-subtle">
         <Link
           href="/company/contracts"
-          className="hover:text-white transition-colors"
+          className="hover:text-foreground transition-colors"
         >
           All contracts →
         </Link>
-        <span className="text-border">·</span>
+        <span className="text-muted">·</span>
         <Link
           href="/company/bonuses"
-          className="hover:text-white transition-colors"
+          className="hover:text-foreground transition-colors"
         >
           All bonuses →
         </Link>
-        <span className="text-border">·</span>
+        <span className="text-muted">·</span>
         <Link
           href="/company/invoices"
-          className="hover:text-white transition-colors"
+          className="hover:text-foreground transition-colors"
         >
           All invoices →
         </Link>
       </div>
 
       {/* Section 6 - Recent activity (log) */}
-      <div className="bg-background ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/[0.04] flex items-center gap-2">
+      <div className="bg-background ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border flex items-center gap-2">
           <SparklesIcon className="size-4 text-subtle" />
           <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
             Recent activity
@@ -520,7 +520,7 @@ export default function InboxPanel() {
             No recent activity.
           </div>
         ) : (
-          <ul className="divide-y divide-white/[0.04]">
+          <ul className="divide-y divide-border">
             {activity.map((e) => (
               <li key={e.id} className="px-5 py-2.5">
                 <Link
@@ -557,8 +557,8 @@ function InboxSection({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-background ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
+    <div className="bg-background ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon className="size-4 text-subtle" />
           <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
@@ -572,7 +572,7 @@ function InboxSection({
       {count === 0 ? (
         <div className="px-5 py-6 text-xs text-subtle">{empty}</div>
       ) : (
-        <ul className="divide-y divide-white/[0.04]">{children}</ul>
+        <ul className="divide-y divide-border">{children}</ul>
       )}
     </div>
   );

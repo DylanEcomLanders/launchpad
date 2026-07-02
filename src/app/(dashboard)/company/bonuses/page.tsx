@@ -96,7 +96,7 @@ export default function GlobalBonusesPage() {
           <select
             value={kindFilter}
             onChange={(e) => setKindFilter(e.target.value as "all" | BonusKind)}
-            className="text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+            className="text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
           >
             <option value="all">All kinds</option>
             <option value="contractor_scheme">Contractor scheme</option>
@@ -108,7 +108,7 @@ export default function GlobalBonusesPage() {
             onChange={(e) =>
               setStatusFilter(e.target.value as "all" | "scheduled" | "paid")
             }
-            className="text-sm bg-background text-foreground border border-white/[0.04] rounded-md px-3 py-2"
+            className="text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
           >
             <option value="all">All statuses</option>
             <option value="scheduled">Scheduled</option>
@@ -123,7 +123,7 @@ export default function GlobalBonusesPage() {
           {totals.map(([cur, t]) => (
             <div
               key={cur}
-              className="bg-background border border-white/[0.04] rounded-xl p-5"
+              className="bg-background border border-border rounded-xl p-5"
             >
               <div className="text-[10px] uppercase tracking-wider text-subtle mb-2">
                 {cur}
@@ -131,13 +131,13 @@ export default function GlobalBonusesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <div className="text-xs text-subtle">Paid</div>
-                  <div className="text-lg font-semibold text-emerald-300 tabular-nums">
+                  <div className="text-lg font-semibold text-success tabular-nums">
                     {fmtMoney(t.paid, cur)}
                   </div>
                 </div>
                 <div>
                   <div className="text-xs text-subtle">Scheduled</div>
-                  <div className="text-lg font-semibold text-amber-300 tabular-nums">
+                  <div className="text-lg font-semibold text-warning tabular-nums">
                     {fmtMoney(t.scheduled, cur)}
                   </div>
                 </div>
@@ -148,7 +148,7 @@ export default function GlobalBonusesPage() {
       )}
 
       {/* Table */}
-      <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden">
+      <div className="bg-background border border-border rounded-xl overflow-hidden">
         {filtered.length === 0 ? (
           <div className="px-5 py-8 text-center text-xs text-subtle">
             No bonuses match the current filters.
@@ -171,7 +171,7 @@ export default function GlobalBonusesPage() {
                 return (
                   <tr
                     key={b.id}
-                    className="border-t border-white/[0.04] hover:bg-background"
+                    className="border-t border-border hover:bg-background"
                   >
                     <td className="px-4 py-2.5 text-subtle tabular-nums whitespace-nowrap">
                       {fmtDateUK(b.paid_at)}
@@ -194,15 +194,15 @@ export default function GlobalBonusesPage() {
                     <td className="px-4 py-2.5 text-foreground truncate max-w-md">
                       {b.reason}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-medium text-emerald-300 tabular-nums whitespace-nowrap">
+                    <td className="px-4 py-2.5 text-right font-medium text-success tabular-nums whitespace-nowrap">
                       {fmtMoney(b.amount, b.currency)}
                     </td>
                     <td className="px-4 py-2.5">
                       <span
                         className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
                           scheduled
-                            ? "bg-amber-500/15 text-amber-300"
-                            : "bg-emerald-500/15 text-emerald-300"
+                            ? "bg-warning/15 text-warning"
+                            : "bg-success/15 text-success"
                         }`}
                       >
                         {scheduled ? "Scheduled" : "Paid"}

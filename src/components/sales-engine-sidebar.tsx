@@ -125,7 +125,7 @@ export function SalesEngineSidebar() {
           <Link
             href="/sales-engine/proposals"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white text-background text-[12px] font-semibold rounded-lg hover:bg-foreground transition-colors"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 bg-accent text-accent-foreground text-[12px] font-semibold rounded-lg hover:opacity-90 transition-colors"
           >
             Send Proposal
           </Link>

@@ -95,7 +95,7 @@ export default function SocialAnalyticsPage() {
         <div className="flex items-center gap-3">
           <div className="flex gap-1 bg-surface-raised rounded-lg p-0.5">
             {(["dylan", "ajay"] as const).map((o) => (
-              <button key={o} onClick={() => setOwner(o)} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors capitalize ${owner === o ? "bg-white text-surface shadow-sm" : "text-subtle"}`}>{o}</button>
+              <button key={o} onClick={() => setOwner(o)} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors capitalize ${owner === o ? "bg-surface text-foreground shadow-sm" : "text-subtle"}`}>{o}</button>
             ))}
           </div>
           <button onClick={() => fetchData(owner, true)} disabled={loading} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-subtle border border-foreground rounded-lg hover:bg-surface-raised disabled:opacity-30 whitespace-nowrap">
@@ -105,8 +105,8 @@ export default function SocialAnalyticsPage() {
         </div>
       </div>
 
-      {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg"><p className="text-xs text-red-600">{error}</p></div>}
-      {loading && !profile && <div className="flex items-center justify-center py-20"><div className="animate-spin size-6 border-2 border-foreground border-t-[#1A1A1A] rounded-full" /></div>}
+      {error && <div className="mb-6 p-3 bg-danger/10 border border-danger/20 rounded-lg"><p className="text-xs text-danger">{error}</p></div>}
+      {loading && !profile && <div className="flex items-center justify-center py-20"><div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" /></div>}
 
       {profile && stats && (
         <>
@@ -141,7 +141,7 @@ export default function SocialAnalyticsPage() {
                 <p className="text-xs font-semibold text-surface">Weekly Performance</p>
                 <div className="flex gap-1">
                   {(["impressions", "engagement", "likes", "tweets"] as ChartMetric[]).map((m) => (
-                    <button key={m} onClick={() => setChartMetric(m)} className={`px-2 py-1 text-[9px] font-semibold uppercase rounded transition-colors ${chartMetric === m ? "bg-surface text-white" : "text-muted hover:text-surface"}`}>
+                    <button key={m} onClick={() => setChartMetric(m)} className={`px-2 py-1 text-[9px] font-semibold uppercase rounded transition-colors ${chartMetric === m ? "bg-surface text-foreground" : "text-muted hover:text-surface"}`}>
                       {chartMetricLabels[m]}
                     </button>
                   ))}
@@ -149,15 +149,15 @@ export default function SocialAnalyticsPage() {
               </div>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={stats.chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-                  <XAxis dataKey="week" tickFormatter={fmtWeek} tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} />
-                  <YAxis tickFormatter={fmt} tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} width={45} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="week" tickFormatter={fmtWeek} tick={{ fontSize: 10, fill: "var(--muted)" }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={fmt} tick={{ fontSize: 10, fill: "var(--muted)" }} axisLine={false} tickLine={false} width={45} />
                   <Tooltip
-                    contentStyle={{ fontSize: 11, border: "1px solid #E8E8E8", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                    contentStyle={{ fontSize: 11, border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface-raised)" }}
                     labelFormatter={(label: any) => fmtWeek(String(label))}
                     formatter={(v: any) => [fmt(Number(v)), chartMetricLabels[chartMetric]]}
                   />
-                  <Line type="monotone" dataKey={chartMetric} stroke="#1A1A1A" strokeWidth={2} dot={{ r: 3, fill: "#1A1A1A" }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey={chartMetric} stroke="var(--foreground)" strokeWidth={2} dot={{ r: 3, fill: "var(--foreground)" }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -172,8 +172,8 @@ export default function SocialAnalyticsPage() {
                 {stats.topHooks.slice(0, 7).map((h, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <span className="text-[10px] text-muted font-bold tabular-nums w-4 shrink-0">{i + 1}</span>
-                    <p className="text-xs text-border flex-1 truncate">{h.hook}</p>
-                    <span className={`text-[10px] font-semibold tabular-nums shrink-0 ${h.engagementRate >= 5 ? "text-emerald-600" : h.engagementRate >= 2 ? "text-amber-600" : "text-muted"}`}>
+                    <p className="text-xs text-muted flex-1 truncate">{h.hook}</p>
+                    <span className={`text-[10px] font-semibold tabular-nums shrink-0 ${h.engagementRate >= 5 ? "text-success" : h.engagementRate >= 2 ? "text-warning" : "text-muted"}`}>
                       {h.engagementRate.toFixed(1)}%
                     </span>
                     <span className="text-[10px] text-muted tabular-nums shrink-0">{fmt(h.impressions)} views</span>
@@ -214,7 +214,7 @@ export default function SocialAnalyticsPage() {
               <button
                 onClick={runAnalysis}
                 disabled={analysing || !tweets.length}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium bg-surface text-white rounded-lg hover:bg-border disabled:opacity-30"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium bg-surface text-foreground rounded-lg hover:bg-border disabled:opacity-30"
               >
                 {analysing ? (
                   <><ArrowPathIcon className="size-3 animate-spin" /> Analysing...</>
@@ -224,7 +224,7 @@ export default function SocialAnalyticsPage() {
 
             {analysing && (
               <div className="px-4 py-8 text-center">
-                <div className="animate-spin size-5 border-2 border-foreground border-t-[#1A1A1A] rounded-full mx-auto mb-2" />
+                <div className="animate-spin size-5 border-2 border-border border-t-foreground rounded-full mx-auto mb-2" />
                 <p className="text-xs text-muted">Analysing {tweets.length} tweets...</p>
               </div>
             )}
@@ -251,13 +251,13 @@ export default function SocialAnalyticsPage() {
                             <span className="text-[9px] text-muted">{t.count} posts</span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className={`text-[10px] font-semibold ${t.avgEngagement >= 4 ? "text-emerald-600" : t.avgEngagement >= 2 ? "text-amber-600" : "text-muted"}`}>
+                            <span className={`text-[10px] font-semibold ${t.avgEngagement >= 4 ? "text-success" : t.avgEngagement >= 2 ? "text-warning" : "text-muted"}`}>
                               {typeof t.avgEngagement === "number" ? `${t.avgEngagement.toFixed(1)}%` : t.avgEngagement}
                             </span>
                             <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full ${
-                              t.verdict === "keep posting" ? "bg-emerald-50 text-emerald-600" :
-                              t.verdict === "reduce" ? "bg-red-50 text-red-500" :
-                              "bg-amber-50 text-amber-600"
+                              t.verdict === "keep posting" ? "bg-success/10 text-success" :
+                              t.verdict === "reduce" ? "bg-danger/10 text-danger" :
+                              "bg-warning/10 text-warning"
                             }`}>{t.verdict}</span>
                           </div>
                         </div>
@@ -275,7 +275,7 @@ export default function SocialAnalyticsPage() {
                         <div key={i} className="bg-surface-raised rounded-lg px-3 py-2.5">
                           <div className="flex items-center justify-between mb-1">
                             <p className="text-xs font-semibold text-surface">{h.pattern}</p>
-                            <span className="text-[10px] text-emerald-600 font-semibold">{typeof h.avgEngagement === "number" ? `${h.avgEngagement.toFixed(1)}%` : h.avgEngagement}</span>
+                            <span className="text-[10px] text-success font-semibold">{typeof h.avgEngagement === "number" ? `${h.avgEngagement.toFixed(1)}%` : h.avgEngagement}</span>
                           </div>
                           <p className="text-[10px] text-subtle italic mb-1">&ldquo;{h.example}&rdquo;</p>
                           <p className="text-[10px] text-muted">{h.tip}</p>
@@ -293,7 +293,7 @@ export default function SocialAnalyticsPage() {
                       <div className="space-y-1.5">
                         {analysis.contentGaps.map((g: string, i: number) => (
                           <div key={i} className="flex items-start gap-2">
-                            <span className="text-amber-500 text-xs mt-0.5">○</span>
+                            <span className="text-warning text-xs mt-0.5">○</span>
                             <p className="text-xs text-subtle">{g}</p>
                           </div>
                         ))}
@@ -308,7 +308,7 @@ export default function SocialAnalyticsPage() {
                       <div className="space-y-1.5">
                         {analysis.nextPosts.map((p: string, i: number) => (
                           <div key={i} className="flex items-start gap-2">
-                            <span className="text-emerald-500 text-xs mt-0.5">→</span>
+                            <span className="text-success text-xs mt-0.5">→</span>
                             <p className="text-xs text-subtle">{p}</p>
                           </div>
                         ))}
@@ -357,7 +357,7 @@ export default function SocialAnalyticsPage() {
                       <p className="text-xs tabular-nums text-right font-medium">{fmt(t.impressions)}</p>
                       <p className="text-xs tabular-nums text-right text-subtle">{t.likes}</p>
                       <p className="text-xs tabular-nums text-right text-subtle">{t.retweets}</p>
-                      <p className={`text-xs tabular-nums text-right font-medium ${t.engagementRate >= 5 ? "text-emerald-600" : t.engagementRate >= 2 ? "text-amber-600" : "text-subtle"}`}>
+                      <p className={`text-xs tabular-nums text-right font-medium ${t.engagementRate >= 5 ? "text-success" : t.engagementRate >= 2 ? "text-warning" : "text-subtle"}`}>
                         {t.engagementRate.toFixed(1)}%
                       </p>
                     </div>

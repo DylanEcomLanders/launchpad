@@ -25,7 +25,7 @@ export function WorkspaceNav() {
     <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-[1240px] items-center gap-6 px-6">
         <Link href="/workspace" className="flex items-center gap-2 py-4">
-          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-900 text-[11px] font-bold text-foreground">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-[11px] font-bold text-accent-foreground">
             W
           </span>
           <span className="font-heading text-sm font-semibold text-foreground">
@@ -47,7 +47,7 @@ export function WorkspaceNav() {
               >
                 {t.label}
                 {active && (
-                  <span className="absolute inset-x-2 -bottom-[13px] h-0.5 rounded-full bg-slate-900" />
+                  <span className="absolute inset-x-2 -bottom-[13px] h-0.5 rounded-full bg-accent" />
                 )}
               </Link>
             );
@@ -63,7 +63,7 @@ export function WorkspaceNav() {
             >
               Team access
               {pathname.startsWith("/workspace/team") && (
-                <span className="absolute inset-x-2 -bottom-[13px] h-0.5 rounded-full bg-slate-900" />
+                <span className="absolute inset-x-2 -bottom-[13px] h-0.5 rounded-full bg-accent" />
               )}
             </Link>
           )}

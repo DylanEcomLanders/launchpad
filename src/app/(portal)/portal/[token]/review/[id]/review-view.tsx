@@ -77,9 +77,9 @@ export function ReviewView({
     pending: { label: "Pending Review", color: "bg-border text-subtle" },
     changes_requested: {
       label: "Changes Requested",
-      color: "bg-amber-50 text-amber-700",
+      color: "bg-warning/10 text-warning",
     },
-    approved: { label: "Approved", color: "bg-emerald-50 text-emerald-700" },
+    approved: { label: "Approved", color: "bg-success/10 text-success" },
   };
 
   const status = statusConfig[currentStatus];
@@ -87,7 +87,7 @@ export function ReviewView({
   return (
     <div className="min-h-screen bg-surface-raised">
       {/* Header */}
-      <header className="bg-white border-b border-foreground">
+      <header className="bg-surface border-b border-foreground">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Logo height={16} className="text-foreground" />
@@ -117,13 +117,13 @@ export function ReviewView({
               <div className="relative">
                 <button
                   onClick={() => setShowVersionDropdown(!showVersionDropdown)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-foreground rounded-md hover:border-surface transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-surface border border-foreground rounded-md hover:border-surface transition-colors"
                 >
                   Version {currentVersion?.version_number}
                   <ChevronDownIcon className="size-3 text-muted" />
                 </button>
                 {showVersionDropdown && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-foreground rounded-lg shadow-lg z-20 py-1">
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-surface border border-foreground rounded-lg shadow-lg z-20 py-1">
                     {versions.map((v, idx) => (
                       <button
                         key={v.id}
@@ -150,7 +150,7 @@ export function ReviewView({
                 )}
               </div>
             ) : versions.length === 1 ? (
-              <span className="px-3 py-1.5 text-xs font-medium bg-white border border-foreground rounded-md text-subtle">
+              <span className="px-3 py-1.5 text-xs font-medium bg-surface border border-foreground rounded-md text-subtle">
                 Version 1
               </span>
             ) : null}
@@ -174,7 +174,7 @@ export function ReviewView({
 
         {/* Figma embed */}
         {embedUrl ? (
-          <div className="rounded-lg overflow-hidden border border-foreground bg-white shadow-sm mb-6">
+          <div className="rounded-lg overflow-hidden border border-foreground bg-surface shadow-sm mb-6">
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
               <iframe
                 src={embedUrl}
@@ -184,13 +184,13 @@ export function ReviewView({
             </div>
           </div>
         ) : versions.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-foreground bg-white p-16 text-center mb-6">
+          <div className="rounded-lg border border-dashed border-foreground bg-surface p-16 text-center mb-6">
             <p className="text-sm text-muted">
               No design versions uploaded yet
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-foreground bg-white p-16 text-center mb-6">
+          <div className="rounded-lg border border-foreground bg-surface p-16 text-center mb-6">
             <p className="text-sm text-muted">
               Unable to load Figma embed
             </p>
@@ -199,7 +199,7 @@ export function ReviewView({
 
         {/* Action bar */}
         {versions.length > 0 && (
-          <div className="bg-white border border-foreground rounded-lg p-5 mb-8">
+          <div className="bg-surface border border-foreground rounded-lg p-5 mb-8">
             {showChangesForm ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -222,7 +222,7 @@ export function ReviewView({
                 <button
                   onClick={() => handleFeedback("changes_requested")}
                   disabled={submitting}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-surface text-white text-xs font-medium rounded-md hover:bg-border transition-colors disabled:opacity-40"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-surface text-white text-xs font-medium rounded-md hover:bg-background transition-colors disabled:opacity-40"
                 >
                   <ArrowPathIcon className="size-3.5" />
                   {submitting ? "Submitting..." : "Submit Feedback"}
@@ -246,7 +246,7 @@ export function ReviewView({
                   <button
                     onClick={() => handleFeedback("approved")}
                     disabled={submitting}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-medium rounded-md hover:bg-emerald-700 transition-colors disabled:opacity-40"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-success text-white text-xs font-medium rounded-md hover:bg-success/90 transition-colors disabled:opacity-40"
                   >
                     <CheckIcon className="size-3.5" />
                     {submitting ? "Approving..." : "Approve Design"}
@@ -275,17 +275,17 @@ export function ReviewView({
                     <span
                       className={`mt-0.5 size-6 rounded-full flex items-center justify-center shrink-0 ${
                         isApproval
-                          ? "bg-emerald-100"
-                          : "bg-amber-100"
+                          ? "bg-success/10"
+                          : "bg-warning/10"
                       }`}
                     >
                       {isApproval ? (
-                        <CheckIcon className="size-3 text-emerald-600" />
+                        <CheckIcon className="size-3 text-success" />
                       ) : (
-                        <ArrowPathIcon className="size-3 text-amber-600" />
+                        <ArrowPathIcon className="size-3 text-warning" />
                       )}
                     </span>
-                    <div className="flex-1 min-w-0 bg-white border border-foreground rounded-lg p-3">
+                    <div className="flex-1 min-w-0 bg-surface border border-foreground rounded-lg p-3">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <p className="text-xs font-medium text-foreground">
                           {entry.submitted_by}{" "}
@@ -323,7 +323,7 @@ export function ReviewView({
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-foreground bg-white mt-12">
+      <footer className="border-t border-foreground bg-surface mt-12">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Logo height={12} className="text-muted" />
           <p className="text-[10px] text-muted">

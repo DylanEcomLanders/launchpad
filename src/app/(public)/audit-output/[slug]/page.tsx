@@ -89,7 +89,7 @@ export default function AuditOutputPage({
       <div className="max-w-4xl mx-auto px-6 pt-6 flex justify-end print:hidden">
         <button
           onClick={() => window.print()}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white/10 text-white hover:bg-white/15 ring-1 ring-white/20"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface-raised text-foreground hover:bg-surface-hover ring-1 ring-border"
         >
           <ArrowDownTrayIcon className="size-3.5" />
           Download PDF
@@ -170,7 +170,7 @@ export default function AuditOutputPage({
               {sortedFindings.map((f, i) => (
                 <li
                   key={f.id}
-                  className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]"
+                  className="bg-background rounded-2xl p-5 ring-1 ring-border"
                 >
                   <div className="flex items-center gap-3 mb-3 flex-wrap">
                     <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold">
@@ -215,7 +215,7 @@ export default function AuditOutputPage({
                           href={f.screenshot_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block rounded-lg overflow-hidden ring-1 ring-white/[0.06] hover:ring-emerald-500/40 transition-all"
+                          className="block rounded-lg overflow-hidden ring-1 ring-border hover:ring-emerald-500/40 transition-all"
                         >
                           <Image
                             src={f.screenshot_url}
@@ -274,7 +274,7 @@ export default function AuditOutputPage({
         )}
 
         {/* Footer */}
-        <footer className="pt-8 pb-4 text-center border-t border-white/[0.04]">
+        <footer className="pt-8 pb-4 text-center border-t border-border">
           <p className="text-[11px] text-subtle">
             Built by Ecom Landers · Conversion engine for Shopify brands
           </p>
@@ -363,7 +363,7 @@ function Stat({
   value: string;
 }) {
   return (
-    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04]">
+    <div className="bg-background rounded-xl p-4 ring-1 ring-border">
       <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-subtle font-semibold mb-1">
         <span className="text-cyan-300">{icon}</span>
         {label}
@@ -375,7 +375,7 @@ function Stat({
 
 function Horizon({ label, body }: { label: string; body: string }) {
   return (
-    <div className="bg-background rounded-2xl p-5 ring-1 ring-white/[0.04]">
+    <div className="bg-background rounded-2xl p-5 ring-1 ring-border">
       <div className="text-[10px] uppercase tracking-wider font-semibold text-cyan-300 mb-2">
         {label}
       </div>

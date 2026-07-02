@@ -46,7 +46,7 @@ function WIPGate({ children }: { children: React.ReactNode }) {
   if (!unlocked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-raised px-6">
-        <div className="bg-white rounded-2xl border border-border shadow-[var(--shadow-card)] p-8 max-w-sm w-full">
+        <div className="bg-surface rounded-2xl border border-border shadow-[var(--shadow-card)] p-8 max-w-sm w-full">
           <p
             className="text-[12px] font-semibold uppercase tracking-wider mb-2"
             style={{ color: ACCENT }}
@@ -81,7 +81,7 @@ function WIPGate({ children }: { children: React.ReactNode }) {
             className="mt-5 w-full px-4 py-3 text-[14px] border border-foreground rounded-lg focus:outline-none focus:border-surface transition-colors"
           />
           {error && (
-            <p className="mt-2 text-[12px] text-red-600">
+            <p className="mt-2 text-[12px] text-danger">
               Incorrect password.
             </p>
           )}
@@ -117,7 +117,7 @@ function CheatsheetBody() {
       {/* ── Bento grid ──────────────────────── */}
       <div className="grid grid-cols-12 gap-3 auto-rows-min">
         {/* Anchor principle — DARK HERO, full width */}
-        <div className="col-span-12 rounded-[16px] bg-surface px-7 py-6 text-white">
+        <div className="col-span-12 rounded-[16px] bg-foreground px-7 py-6 text-background">
           <p
             className="text-[12px] font-semibold uppercase tracking-[0.2em] mb-2"
             style={{ color: ACCENT }}
@@ -177,7 +177,7 @@ function CheatsheetBody() {
         </BentoCard>
 
         {/* 03 — Pricing HERO — big £8k anchor (neutral) */}
-        <div className="col-span-12 md:col-span-4 rounded-[16px] border-[0.5px] border-border bg-white p-5 flex flex-col justify-between">
+        <div className="col-span-12 md:col-span-4 rounded-[16px] border-[0.5px] border-border bg-surface p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-baseline justify-between mb-3">
               <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
@@ -235,7 +235,7 @@ function CheatsheetBody() {
         </BentoCard>
 
         {/* 07 — Sales framing HERO with pull-quote (neutral) */}
-        <div className="col-span-12 md:col-span-7 rounded-[16px] border-[0.5px] border-border bg-white p-5">
+        <div className="col-span-12 md:col-span-7 rounded-[16px] border-[0.5px] border-border bg-surface p-5">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
               Sales framing
@@ -257,7 +257,7 @@ function CheatsheetBody() {
         </div>
 
         {/* 06 — Rituals — features 11AM as anchor */}
-        <div className="col-span-12 md:col-span-5 rounded-[16px] border-[0.5px] border-border bg-white p-5">
+        <div className="col-span-12 md:col-span-5 rounded-[16px] border-[0.5px] border-border bg-surface p-5">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">
               Rituals
@@ -280,7 +280,7 @@ function CheatsheetBody() {
         </div>
 
         {/* What we do — green-tinted YES card */}
-        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-white border-[0.5px] border-border p-5">
+        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-surface border-[0.5px] border-border p-5">
           <div className="mb-3">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-[#0E8345]">
               What we do
@@ -293,13 +293,13 @@ function CheatsheetBody() {
         </div>
 
         {/* What we don't do — DARK card with strikethrough rules */}
-        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-surface p-5 text-white">
+        <div className="col-span-12 md:col-span-6 rounded-[16px] bg-foreground p-5 text-background">
           <div className="mb-3">
             <span className="text-[12px] font-semibold uppercase tracking-wider text-[#FF6B6B]">
               What we don&apos;t do
             </span>
           </div>
-          <ul className="space-y-1.5 text-[14px] leading-snug font-medium text-white/85">
+          <ul className="space-y-1.5 text-[14px] leading-snug font-medium text-background/85">
             <li>Paid media · pre-click work</li>
             <li>Standalone copywriting</li>
             <li>SEO</li>
@@ -408,7 +408,7 @@ function WeekCalendar() {
               {d.tabs.map((t, ti) => (
                 <span
                   key={ti}
-                  className="rounded-full bg-white px-2.5 py-1 text-[12px] font-medium leading-none"
+                  className="rounded-full bg-surface px-2.5 py-1 text-[12px] font-medium leading-none"
                   style={{
                     color: isClient ? "#15803D" : "#555",
                     border: `0.5px solid ${isClient ? "#BBF7D0" : "#E5E5EA"}`,
@@ -443,7 +443,7 @@ function BentoCard({
 }) {
   return (
     <div
-      className={`rounded-[12px] border-[0.5px] border-border bg-white p-5 ${className}`}
+      className={`rounded-[12px] border-[0.5px] border-border bg-surface p-5 ${className}`}
     >
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <h2 className="text-[12px] font-semibold uppercase tracking-wider text-foreground">

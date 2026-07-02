@@ -155,7 +155,7 @@ export default function DiscoveryAuditDetailPage({
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle">Strategist tool. Admin/CRO only.</p>
         </div>
       </div>
@@ -166,7 +166,7 @@ export default function DiscoveryAuditDetailPage({
     return (
       <div className="p-6 space-y-3 max-w-5xl mx-auto">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-surface rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -175,11 +175,11 @@ export default function DiscoveryAuditDetailPage({
   if (notFound || !audit) {
     return (
       <div className="p-6">
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle mb-3">Audit not found.</p>
           <Link
             href="/tools/discovery-audit"
-            className="text-[12px] uppercase tracking-wider text-emerald-300 hover:text-emerald-200"
+            className="text-[12px] uppercase tracking-wider text-foreground hover:text-muted"
           >
             ← Back to audits
           </Link>
@@ -204,8 +204,8 @@ export default function DiscoveryAuditDetailPage({
             All audits
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
-              <DocumentMagnifyingGlassIcon className="size-4 text-white" />
+            <div className="size-8 rounded-xl bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <DocumentMagnifyingGlassIcon className="size-4 text-foreground" />
             </div>
             <h1 className="text-2xl font-semibold text-foreground truncate">
               {audit.brand_name || "Untitled audit"}
@@ -238,7 +238,7 @@ export default function DiscoveryAuditDetailPage({
               href={sharePath}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-emerald-300 transition-colors"
+              className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
             >
               Open deck
               <ArrowTopRightOnSquareIcon className="size-3" />
@@ -249,7 +249,7 @@ export default function DiscoveryAuditDetailPage({
           {nextStatus && (
             <button
               onClick={() => transitionStatus(nextStatus)}
-              className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
+              className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
             >
               {STATUS_ACTION_LABEL[audit.status]}
             </button>
@@ -257,14 +257,14 @@ export default function DiscoveryAuditDetailPage({
           {audit.status !== "passed" && audit.status !== "credited" && (
             <button
               onClick={() => transitionStatus("passed")}
-              className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-rose-300"
+              className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-danger"
             >
               Mark passed
             </button>
           )}
           <button
             onClick={deleteAudit}
-            className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]"
+            className="p-1.5 rounded-md text-subtle hover:text-danger hover:bg-danger/10"
             title="Delete audit"
           >
             <TrashIcon className="size-4" />
@@ -505,10 +505,10 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-background rounded-2xl ring-1 ring-white/[0.04]">
+    <div className="bg-surface rounded-2xl border border-border">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] rounded-2xl transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-hover rounded-2xl transition-colors"
       >
         <span className="text-sm font-semibold text-foreground">{title}</span>
         <ChevronDownIcon
@@ -629,7 +629,7 @@ function FindingCard({
   const ice = iceScore(finding);
 
   return (
-    <div className="bg-black/40 rounded-xl ring-1 ring-white/[0.06]">
+    <div className="bg-surface-raised rounded-xl border border-border">
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => setOpen((v) => !v)}
@@ -643,14 +643,14 @@ function FindingCard({
           </span>
         </button>
         <span
-          className="text-[11px] font-mono text-cyan-300 shrink-0"
+          className="text-[11px] font-mono text-info shrink-0"
           title="ICE score (Impact × Confidence × Ease)"
         >
           ICE {ice}
         </span>
         <button
           onClick={onDelete}
-          className="p-1 text-subtle hover:text-rose-400"
+          className="p-1 text-subtle hover:text-danger"
           title="Delete finding"
         >
           <TrashIcon className="size-3.5" />
@@ -661,7 +661,7 @@ function FindingCard({
         />
       </div>
       {open && (
-        <div className="border-t border-white/[0.04] p-4 space-y-3">
+        <div className="border-t border-border p-4 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-3">
             <Field label="Title">
               <input

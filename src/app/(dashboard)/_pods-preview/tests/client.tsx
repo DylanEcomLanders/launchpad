@@ -8,17 +8,17 @@ import { TESTS, callTest, clientName, type Test, type TestStatus, type CallTone 
 
 const STATUS_META: Record<TestStatus, { label: string; cls: string }> = {
   setup: { label: "Setup", cls: "bg-surface-raised text-subtle border-border" },
-  live: { label: "Live", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  analysing: { label: "Analysing", cls: "bg-purple-50 text-purple-700 border-purple-200" },
-  won: { label: "Won", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  lost: { label: "Lost", cls: "bg-rose-50 text-rose-700 border-rose-200" },
-  inconclusive: { label: "Inconclusive", cls: "bg-amber-50 text-amber-800 border-amber-200" },
+  live: { label: "Live", cls: "bg-info/10 text-info border-info/20" },
+  analysing: { label: "Analysing", cls: "bg-info/10 text-info border-info/20" },
+  won: { label: "Won", cls: "bg-success/10 text-success border-success/20" },
+  lost: { label: "Lost", cls: "bg-danger/10 text-danger border-danger/20" },
+  inconclusive: { label: "Inconclusive", cls: "bg-warning/10 text-warning border-warning/20" },
   archived: { label: "Archived", cls: "bg-surface-raised text-subtle border-border" },
 };
 const CALL_META: Record<CallTone, string> = {
-  ship: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  revert: "bg-rose-50 text-rose-700 border-rose-200",
-  inconclusive: "bg-amber-50 text-amber-800 border-amber-200",
+  ship: "bg-success/10 text-success border-success/20",
+  revert: "bg-danger/10 text-danger border-danger/20",
+  inconclusive: "bg-warning/10 text-warning border-warning/20",
   continue: "bg-surface-raised text-subtle border-border",
   setup: "bg-surface-raised text-subtle border-border",
 };
@@ -64,7 +64,7 @@ export default function TestsClient() {
           <Step n={2} title="Variant configuration">
             <div className="flex gap-1.5">
               {["A/B", "Multivariate", "Split URL"].map((v, i) => (
-                <span key={v} className={`rounded-md border px-2 py-1 text-[12px] ${i === 0 ? "border-white bg-white text-background" : "border-border text-subtle"}`}>
+                <span key={v} className={`rounded-md border px-2 py-1 text-[12px] ${i === 0 ? "border-border bg-foreground text-background" : "border-border text-subtle"}`}>
                   {v}
                 </span>
               ))}
@@ -76,7 +76,7 @@ export default function TestsClient() {
                 <button
                   key={t}
                   onClick={() => setTraffic(t)}
-                  className={`rounded-md border px-2 py-1 text-[12px] ${traffic === t ? "border-white bg-white text-background" : "border-border text-subtle hover:text-foreground"}`}
+                  className={`rounded-md border px-2 py-1 text-[12px] ${traffic === t ? "border-border bg-foreground text-background" : "border-border text-subtle hover:text-foreground"}`}
                 >
                   {t}
                 </button>
@@ -86,7 +86,7 @@ export default function TestsClient() {
           </Step>
           <Step n={4} title="Success metric + guardrails">
             <div className="flex flex-wrap gap-1.5 text-[11px]">
-              <span className="rounded-md border border-white bg-surface px-1.5 py-0.5 text-white">Primary: ATC rate</span>
+              <span className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-foreground">Primary: ATC rate</span>
               <span className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-subtle">Guardrail: RPV</span>
               <span className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-subtle">Guardrail: Bounce</span>
             </div>
@@ -104,7 +104,7 @@ export default function TestsClient() {
                     onClick={() => setQa((p) => { const n = new Set(p); n.has(q) ? n.delete(q) : n.add(q); return n; })}
                     className="flex items-center gap-1.5 text-left text-[12px]"
                   >
-                    {on ? <CheckSolid className="size-4 text-emerald-500" /> : <CheckCircleIcon className="size-4 text-muted" />}
+                    {on ? <CheckSolid className="size-4 text-success" /> : <CheckCircleIcon className="size-4 text-muted" />}
                     <span className={on ? "text-subtle line-through" : "text-subtle"}>{q}</span>
                   </button>
                 );
@@ -119,7 +119,7 @@ export default function TestsClient() {
               <button
                 key={tname}
                 onClick={() => setTool(tname)}
-                className={`rounded-md border px-2 py-1 text-[12px] font-medium ${tool === tname ? "border-white bg-white text-background" : "border-border text-subtle hover:text-foreground"}`}
+                className={`rounded-md border px-2 py-1 text-[12px] font-medium ${tool === tname ? "border-border bg-foreground text-background" : "border-border text-subtle hover:text-foreground"}`}
               >
                 {tname}
               </button>
@@ -154,7 +154,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   return (
     <div className="rounded-lg border border-surface-raised bg-background p-3">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="grid size-4 place-items-center rounded-full bg-surface text-[9px] font-semibold text-white">{n}</span>
+        <span className="grid size-4 place-items-center rounded-full bg-surface text-[9px] font-semibold text-foreground">{n}</span>
         <span className="text-[12px] font-semibold text-foreground">{title}</span>
       </div>
       {children}
@@ -171,7 +171,7 @@ function TestRow({ t }: { t: Test }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-[13px] font-semibold text-foreground">{t.name}</span>
-          {breach && !terminal && <ExclamationTriangleIcon className="size-4 shrink-0 text-rose-500" />}
+          {breach && !terminal && <ExclamationTriangleIcon className="size-4 shrink-0 text-danger" />}
         </div>
         <div className="mt-0.5 truncate text-[11px] text-subtle">
           {clientName(t.clientId)} · {t.primaryMetric} · {t.variant} · {t.tool}
@@ -186,7 +186,7 @@ function TestRow({ t }: { t: Test }) {
       </span>
       {terminal ? (
         t.liftPct != null ? (
-          <span className={`hidden w-20 shrink-0 text-right text-[11px] font-semibold md:block ${t.liftPct >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+          <span className={`hidden w-20 shrink-0 text-right text-[11px] font-semibold md:block ${t.liftPct >= 0 ? "text-success" : "text-danger"}`}>
             {t.liftPct >= 0 ? "+" : ""}{t.liftPct}%
           </span>
         ) : (

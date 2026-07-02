@@ -200,7 +200,7 @@ export default function WorkspaceClientDetail() {
 
       {/* Paused banner */}
       {vm.paused && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
           <span className="font-medium">Engagement paused.</span> Deadlines are
           frozen while we wait on the client, so nothing reads as overdue.
           Resume to shift every open deadline forward by the time lost.
@@ -285,7 +285,7 @@ export default function WorkspaceClientDetail() {
       {/* Notes */}
       <section>
         <SectionTitle>Recent notes</SectionTitle>
-        <Card className="divide-y divide-slate-100">
+        <Card className="divide-y divide-border">
           {(c.notes ?? []).length === 0 ? (
             <div className="px-5 py-6 text-center text-sm text-subtle">No notes yet.</div>
           ) : (
@@ -367,7 +367,7 @@ function ObjectiveCard({
               <button
                 disabled={busy}
                 onClick={save}
-                className="rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                className="rounded-md bg-accent px-3 py-1 text-xs font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
               >
                 {busy ? "Saving..." : "Save objective"}
               </button>
@@ -516,7 +516,7 @@ function BriefPanel({
                   ) : val ? (
                     <p className="text-sm leading-relaxed text-muted">{val}</p>
                   ) : (
-                    <p className="text-sm italic text-border">Not set</p>
+                    <p className="text-sm italic text-muted">Not set</p>
                   )}
                 </div>
               );
@@ -527,7 +527,7 @@ function BriefPanel({
               <button
                 disabled={busy}
                 onClick={save}
-                className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
               >
                 {busy ? "Saving..." : "Save brief"}
               </button>
@@ -550,7 +550,7 @@ function BriefPanel({
             </div>
             <div className="space-y-2">
               {linkedBriefs.length === 0 ? (
-                <p className="text-xs text-border">
+                <p className="text-xs text-muted">
                   No extra briefs. Add one if the client redid onboarding or sent more context.
                 </p>
               ) : (
@@ -566,7 +566,7 @@ function BriefPanel({
                           href={b.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-sky-600 hover:underline"
+                          className="text-xs text-info hover:underline"
                         >
                           Open
                         </a>
@@ -574,7 +574,7 @@ function BriefPanel({
                     </div>
                     <button
                       onClick={() => removeBrief(b.id)}
-                      className="shrink-0 text-xs text-border hover:text-rose-500"
+                      className="shrink-0 text-xs text-muted hover:text-danger"
                     >
                       Remove
                     </button>
@@ -629,9 +629,9 @@ function AssignPodPanel({
 
   return (
     <Card className="overflow-hidden">
-      <div className="border-b border-border bg-amber-50/50 px-5 py-3">
+      <div className="border-b border-border bg-warning/10 px-5 py-3">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+          <span className="h-2.5 w-2.5 rounded-full bg-warning" />
           <h2 className="font-heading text-sm font-semibold text-foreground">
             Not assigned yet
           </h2>
@@ -672,7 +672,7 @@ function AssignPodPanel({
                 onClick={() => setKind(k)}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm capitalize transition-colors ${
                   kind === k
-                    ? "border-slate-900 bg-white text-background"
+                    ? "border-accent bg-accent text-accent-foreground"
                     : "border-border text-muted hover:border-border"
                 }`}
               >
@@ -685,7 +685,7 @@ function AssignPodPanel({
         <button
           disabled={busy || !podId}
           onClick={assign}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
         >
           {busy ? "Assigning…" : "Assign to pod"}
         </button>
@@ -820,7 +820,7 @@ function StrategySection({
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border bg-violet-50/40 px-5 py-3">
+      <div className="flex items-center justify-between border-b border-border bg-surface-raised px-5 py-3">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-violet-500" />
           <h2 className="font-heading text-sm font-semibold text-foreground">Strategy</h2>
@@ -906,7 +906,7 @@ function StrategySection({
                   <button
                     disabled={busy}
                     onClick={addDeliverable}
-                    className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                    className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
                   >
                     {busy ? "Adding..." : "Add deliverable"}
                   </button>
@@ -1030,15 +1030,15 @@ function DeliverableBriefRow({
                   href={brief.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sky-600 hover:underline"
+                  className="text-info hover:underline"
                 >
                   Brief attached
                 </a>
               ) : (
-                <span className="text-emerald-600">Brief attached</span>
+                <span className="text-success">Brief attached</span>
               )
             ) : (
-              <span className="font-medium text-amber-600">Needs brief</span>
+              <span className="font-medium text-warning">Needs brief</span>
             )}
           </div>
         </div>
@@ -1049,7 +1049,7 @@ function DeliverableBriefRow({
             <>
               <button
                 onClick={() => setAttaching(true)}
-                className="rounded-md border border-slate-900 bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-slate-700"
+                className="rounded-md border border-accent bg-accent px-2.5 py-1 text-[11px] font-medium text-accent-foreground hover:bg-accent/90"
               >
                 Attach brief
               </button>
@@ -1065,7 +1065,7 @@ function DeliverableBriefRow({
           {!pending && d.needsBrief === true && !brief && !attaching && (
             <button
               onClick={() => setAttaching(true)}
-              className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100"
+              className="rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning hover:bg-warning/20"
             >
               Attach link
             </button>
@@ -1096,7 +1096,7 @@ function DeliverableBriefRow({
               onRule(true, url);
               setAttaching(false);
             }}
-            className="rounded-md bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-slate-700"
+            className="rounded-md bg-accent px-2.5 py-1.5 text-[11px] font-medium text-accent-foreground hover:bg-accent/90"
           >
             Save
           </button>
@@ -1122,13 +1122,13 @@ function ResourceRow({ r, onRemove }: { r: StrategyResource; onRemove: () => voi
             href={r.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-sky-600 hover:underline"
+            className="text-xs text-info hover:underline"
           >
             Open
           </a>
         )}
       </div>
-      <button onClick={onRemove} className="shrink-0 text-xs text-border hover:text-rose-500">
+      <button onClick={onRemove} className="shrink-0 text-xs text-muted hover:text-danger">
         Remove
       </button>
     </div>
@@ -1167,7 +1167,7 @@ function TestRow({ test, onClick }: { test: PodTest; onClick: () => void }) {
           {test.lift_pct != null && (
             <span
               className={`tabular-nums font-medium ${
-                test.lift_pct >= 0 ? "text-emerald-600" : "text-rose-600"
+                test.lift_pct >= 0 ? "text-success" : "text-danger"
               }`}
             >
               {test.lift_pct >= 0 ? "+" : ""}
@@ -1178,12 +1178,12 @@ function TestRow({ test, onClick }: { test: PodTest; onClick: () => void }) {
         </div>
       </button>
       {test.link && (
-        <div className="border-t border-slate-50 px-3 py-1.5">
+        <div className="border-t border-border px-3 py-1.5">
           <a
             href={test.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-medium text-sky-600 hover:underline"
+            className="text-xs font-medium text-info hover:underline"
           >
             Open test ↗
           </a>
@@ -1292,7 +1292,7 @@ function TestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4"
       onClick={onClose}
     >
       <div
@@ -1337,7 +1337,7 @@ function TestModal({
                   onClick={() => setStatus(s)}
                   className={`flex-1 rounded-lg border px-3 py-2 text-sm capitalize transition-colors ${
                     status === s
-                      ? "border-slate-900 bg-white text-background"
+                      ? "border-accent bg-accent text-accent-foreground"
                       : "border-border text-muted hover:border-border"
                   }`}
                 >
@@ -1358,10 +1358,10 @@ function TestModal({
                     className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
                       result === r
                         ? r === "won"
-                          ? "border-emerald-500 bg-emerald-500 text-white"
+                          ? "border-success bg-success text-white"
                           : r === "lost"
-                            ? "border-rose-500 bg-rose-500 text-white"
-                            : "border-amber-500 bg-amber-500 text-white"
+                            ? "border-danger bg-danger text-white"
+                            : "border-warning bg-warning text-white"
                         : "border-border text-muted hover:border-border"
                     }`}
                   >
@@ -1408,7 +1408,7 @@ function TestModal({
           <button
             disabled={busy || !name.trim()}
             onClick={save}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
           >
             {busy ? "Saving…" : existing ? "Save changes" : "Add test"}
           </button>
@@ -1419,7 +1419,7 @@ function TestModal({
             <button
               onClick={del}
               disabled={busy}
-              className="ml-auto text-xs text-border hover:text-rose-500"
+              className="ml-auto text-xs text-muted hover:text-danger"
             >
               Delete test
             </button>
@@ -1494,9 +1494,9 @@ function LaneColumn({
           tone={summary.atRisk > 0 ? "amber" : "green"}
         />
       </div>
-      <div className="flex-1 divide-y divide-slate-50 px-1 py-2">
+      <div className="flex-1 divide-y divide-border px-1 py-2">
         {items.length === 0 ? (
-          <div className="px-3 py-4 text-center text-xs text-border">
+          <div className="px-3 py-4 text-center text-xs text-muted">
             Added from Strategy above.
           </div>
         ) : (
@@ -1552,7 +1552,7 @@ function DeliverableRow({
         {notReady ? (
           // Locked placeholder instead of a tickable checkbox.
           <span
-            className="flex h-4 w-4 items-center justify-center rounded-full border border-border bg-surface-raised text-border"
+            className="flex h-4 w-4 items-center justify-center rounded-full border border-border bg-surface-raised text-muted"
             title="Not ready yet"
           >
             <svg viewBox="0 0 12 12" className="h-2 w-2" fill="currentColor">
@@ -1597,7 +1597,7 @@ function DeliverableRow({
 
         {/* Brief flag on design tasks that need one but it's not attached */}
         {isDesign && !done && d.needsBrief === true && (
-          <div className="mt-1 text-[11px] font-medium text-amber-600">Needs brief</div>
+          <div className="mt-1 text-[11px] font-medium text-warning">Needs brief</div>
         )}
 
         {/* Client-approval control — only once the design is actually ready
@@ -1606,11 +1606,11 @@ function DeliverableRow({
         {isDesign && !designPending && (
           <div className="mt-2">
             {d.designApprovedAt ? (
-              <div className="flex items-center gap-2 text-[11px] text-emerald-600">
+              <div className="flex items-center gap-2 text-[11px] text-success">
                 <span>✓ Client approved {formatDue(d.designApprovedAt)}</span>
                 <button
                   onClick={onUnapprove}
-                  className="text-border hover:text-muted"
+                  className="text-muted hover:text-muted"
                 >
                   undo
                 </button>
@@ -1618,7 +1618,7 @@ function DeliverableRow({
             ) : (
               <button
                 onClick={onApprove}
-                className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100"
+                className="rounded-md border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success hover:bg-success/20"
               >
                 Mark client approved → start dev clock
               </button>
@@ -1672,7 +1672,7 @@ function PauseControl({
       }
       className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
         paused
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+          ? "border-success/20 bg-success/10 text-success hover:bg-success/20"
           : "border-border bg-surface text-muted hover:border-border"
       }`}
     >
@@ -1759,7 +1759,7 @@ function AmendsSection({
       >
         Amends &amp; tickets
       </SectionTitle>
-      <Card className="divide-y divide-slate-100">
+      <Card className="divide-y divide-border">
         {amends.length === 0 && !adding && (
           <div className="px-5 py-6 text-center text-sm text-subtle">
             No amends. Add revision tickets for the secondaries here.
@@ -1822,7 +1822,7 @@ function AmendsSection({
               <button
                 disabled={busy || !title.trim()}
                 onClick={add}
-                className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
               >
                 {busy ? "Adding..." : "Add amend"}
               </button>
@@ -1853,13 +1853,13 @@ function MiniStat({
 }) {
   const dot =
     tone === "red"
-      ? "bg-rose-500"
+      ? "bg-danger"
       : tone === "amber"
-        ? "bg-amber-500"
+        ? "bg-warning"
         : tone === "violet"
           ? "bg-violet-500"
           : tone === "green"
-            ? "bg-emerald-500"
+            ? "bg-success"
             : "bg-border";
   return (
     <Card className="px-4 py-3">

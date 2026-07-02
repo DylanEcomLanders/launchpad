@@ -30,7 +30,7 @@ export default function PortfolioGrid({ projects }: { projects: PortfolioProject
   return (
     <>
       {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-6 md:px-10 border-b border-border sticky top-0 bg-white z-10">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 border-b border-border sticky top-0 bg-surface z-10">
         <div className="flex gap-6 md:gap-8 overflow-x-auto -mb-px">
           {categories.map((c) => {
             const isActive = c === active;
@@ -68,7 +68,7 @@ export default function PortfolioGrid({ projects }: { projects: PortfolioProject
                 <button
                   key={p.id}
                   onClick={() => setOpenProject(p)}
-                  className="group relative block aspect-[9/19] overflow-hidden rounded-lg bg-[#F5F5F7] border border-border text-left"
+                  className="group relative block aspect-[9/19] overflow-hidden rounded-lg bg-surface-raised border border-border text-left"
                 >
                   {thumb && (
                     <img

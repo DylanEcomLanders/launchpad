@@ -217,14 +217,14 @@ export default function ReceivablesListPage() {
                   onClick={() => setCountryFilter(p.key)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                     active
-                      ? "bg-white text-background border-white"
+                      ? "bg-foreground text-background border-border"
                       : "bg-surface text-foreground border-border hover:bg-background"
                   }`}
                 >
                   {p.label}
                   <span
                     className={`text-[10px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${
-                      active ? "bg-surface/20 text-white" : "bg-surface-raised text-subtle"
+                      active ? "bg-surface-raised text-foreground" : "bg-surface-raised text-subtle"
                     }`}
                   >
                     {p.count}
@@ -279,7 +279,7 @@ export default function ReceivablesListPage() {
           </button>
           <Link
             href="/finance/invoices/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
           >
             <PlusIcon className="size-4" /> New invoice
           </Link>
@@ -298,7 +298,7 @@ export default function ReceivablesListPage() {
           {invoices.length === 0 && (
             <Link
               href="/finance/invoices/new"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
             >
               <PlusIcon className="size-4" /> New invoice
             </Link>
@@ -387,7 +387,7 @@ function SummaryCard({
     accent === "red"
       ? "text-danger"
       : accent === "green"
-        ? "text-[#047857]"
+        ? "text-success"
         : "text-foreground";
   return (
     <div className="bg-surface border border-border rounded-xl p-4 shadow-[var(--shadow-soft)]">

@@ -86,7 +86,7 @@ const RESOURCE_TONE: Record<ResourceKind, string> = {
   doc: "border-blue-200 bg-blue-50 text-blue-700",
   loom: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
   link: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  file: "border-border bg-surface-raised text-border",
+  file: "border-border bg-surface-raised text-muted",
 };
 
 const RESOURCE_ICON: Record<ResourceKind, React.ReactNode> = {
@@ -232,7 +232,7 @@ export function StrategySandbox({
         </div>
         <div className="flex items-center gap-3">
           {savedLabel && (
-            <span className="text-[10px] text-emerald-700">{savedLabel}</span>
+            <span className="text-[10px] text-success">{savedLabel}</span>
           )}
           {open ? (
             <ChevronUpIcon className="h-4 w-4 text-subtle" />
@@ -271,7 +271,7 @@ export function StrategySandbox({
               <button
                 onClick={addUrl}
                 disabled={!urlInput.trim()}
-                className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-1 text-[11px] font-medium text-white hover:bg-foreground disabled:bg-muted"
+                className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:bg-foreground disabled:bg-muted"
               >
                 <PlusIcon className="h-3 w-3" />
                 Add
@@ -280,7 +280,7 @@ export function StrategySandbox({
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:border-white disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-foreground hover:border-border disabled:opacity-50"
               >
                 <PaperClipIcon className="h-3 w-3" />
                 {uploading ? "Uploading…" : "Upload"}
@@ -394,14 +394,14 @@ function NotesEntries({
           }
         }}
         placeholder={`New note for ${clientName}. Cmd+Enter to save.`}
-        className="h-[78px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12px] leading-relaxed text-foreground focus:border-white focus:outline-none"
+        className="h-[78px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12px] leading-relaxed text-foreground focus:border-ring focus:outline-none"
       />
       <div className="mt-1 flex items-center justify-between">
         <span className="text-[10px] text-subtle">Cmd+Enter to save</span>
         <button
           onClick={submit}
           disabled={!draft.trim()}
-          className="inline-flex items-center gap-1 rounded-md bg-surface px-2.5 py-1 text-[11px] font-medium text-white hover:bg-foreground disabled:bg-muted"
+          className="inline-flex items-center gap-1 rounded-md bg-surface px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-foreground disabled:bg-muted"
         >
           <PlusIcon className="h-3 w-3" />
           Add note
@@ -433,7 +433,7 @@ function NotesEntries({
                 <button
                   onClick={() => onRemove(e.id)}
                   title="Delete"
-                  className="rounded p-1 text-subtle opacity-0 transition-opacity hover:bg-surface-raised hover:text-rose-700 group-hover:opacity-100"
+                  className="rounded p-1 text-subtle opacity-0 transition-opacity hover:bg-surface-raised hover:text-danger group-hover:opacity-100"
                 >
                   <TrashIcon className="h-3 w-3" />
                 </button>
@@ -467,7 +467,7 @@ function BrandedShareButton({ resourceId }: { resourceId: string }) {
     <button
       onClick={onClick}
       title="Copies the branded share URL to your clipboard"
-      className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-medium text-foreground hover:border-white"
+      className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-medium text-foreground hover:border-border"
     >
       <SparklesIcon className="h-3 w-3" />
       {copied ? "Link copied" : "Branded share link"}
@@ -553,7 +553,7 @@ function ResourceRowView({
                 onRemove();
                 setMenuOpen(false);
               }}
-              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] text-rose-700 hover:bg-rose-50"
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] text-danger hover:bg-danger/10"
             >
               <TrashIcon className="h-3 w-3" />
               Remove

@@ -311,7 +311,7 @@ export function PostDetailDrawer({
                   onClick={() => togglePlatform(p)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     active
-                      ? "bg-white text-background border-surface"
+                      ? "bg-accent text-accent-foreground border-surface"
                       : "bg-surface text-subtle border-border hover:border-surface"
                   }`}
                 >
@@ -558,7 +558,7 @@ export function PostDetailDrawer({
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
               confirmDelete
                 ? "bg-danger text-white hover:bg-danger"
-                : "text-danger hover:bg-[#FEF2F2]"
+                : "text-danger hover:bg-danger/10"
             }`}
           >
             <TrashIcon className="size-3.5" />
@@ -567,7 +567,7 @@ export function PostDetailDrawer({
           <button
             type="button"
             onClick={() => void persist()}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-white text-background rounded-lg hover:bg-foreground"
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-accent text-accent-foreground rounded-lg hover:opacity-90"
           >
             <ArrowDownTrayIcon className="size-3.5" />
             Save now

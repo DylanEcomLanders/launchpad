@@ -132,7 +132,7 @@ export default function GrowthEnginePage() {
   if (loading || !engine) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" />
       </div>
     );
   }
@@ -153,7 +153,7 @@ export default function GrowthEnginePage() {
                   onClick={() => { setProfile(p.key); setSelectedNode(null); }}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
                     profile === p.key
-                      ? "bg-white text-background"
+                      ? "bg-foreground text-background"
                       : "text-subtle hover:text-foreground hover:bg-surface-raised"
                   }`}
                 >
@@ -194,7 +194,7 @@ export default function GrowthEnginePage() {
                 <span style={{ color: isActive ? p.color : undefined }}>{p.icon}</span>
                 {p.label}
                 {nodeCount > 0 && (
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-white text-background" : "bg-surface-raised text-subtle"}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-foreground text-background" : "bg-surface-raised text-subtle"}`}>
                     {nodeCount}
                   </span>
                 )}
@@ -255,15 +255,15 @@ export default function GrowthEnginePage() {
                         <div
                           key={stage.key}
                           className={`px-4 py-4 border-l border-border cursor-pointer hover:bg-background transition-colors ${
-                            isEmpty ? "bg-red-50/30" : hasLive ? "bg-emerald-50/30" : "bg-amber-50/30"
+                            isEmpty ? "bg-danger/10" : hasLive ? "bg-success/10" : "bg-warning/10"
                           }`}
                           onClick={() => { setPlatform(ch.key); setView("funnel"); }}
                         >
                           {isEmpty ? (
-                            <span className="text-[10px] font-medium text-red-400">Gap</span>
+                            <span className="text-[10px] font-medium text-danger">Gap</span>
                           ) : (
                             <div>
-                              <span className={`text-[10px] font-semibold ${hasLive ? "text-emerald-600" : "text-amber-600"}`}>
+                              <span className={`text-[10px] font-semibold ${hasLive ? "text-success" : "text-warning"}`}>
                                 {stageNodes.length} item{stageNodes.length !== 1 ? "s" : ""}
                               </span>
                               <p className="text-[9px] text-muted mt-0.5 truncate">
@@ -514,7 +514,7 @@ export default function GrowthEnginePage() {
                     e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                     e.dataTransfer.effectAllowed = "move";
                   }}
-                  className="flex items-center gap-2 px-3 py-2 border border-[#BBF7D0] rounded-lg cursor-grab hover:border-success hover:shadow-sm transition-all bg-success"
+                  className="flex items-center gap-2 px-3 py-2 border border-success/20 rounded-lg cursor-grab hover:border-success transition-all bg-success/10"
                 >
                   <span className="size-2 rounded-full bg-success" />
                   <span className="text-xs font-medium text-foreground">Lead Magnet</span>
@@ -526,9 +526,9 @@ export default function GrowthEnginePage() {
                     e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                     e.dataTransfer.effectAllowed = "move";
                   }}
-                  className="flex items-center gap-2 px-3 py-2 border border-[#FED7AA] rounded-lg cursor-grab hover:border-[#C2410C] hover:shadow-sm transition-all bg-[#FFF7ED]"
+                  className="flex items-center gap-2 px-3 py-2 border border-warning/20 rounded-lg cursor-grab hover:border-warning transition-all bg-warning/10"
                 >
-                  <span className="size-2 rounded-full bg-[#C2410C]" />
+                  <span className="size-2 rounded-full bg-warning" />
                   <span className="text-xs font-medium text-foreground">Email Sequence</span>
                 </div>
               </div>

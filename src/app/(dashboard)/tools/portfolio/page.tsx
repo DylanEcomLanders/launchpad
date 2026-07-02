@@ -199,7 +199,7 @@ export default function PortfolioManager() {
               <button
                 onClick={handleSubmit}
                 disabled={!label.trim() || !figmaUrl.trim()}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white text-background text-xs font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <CheckIcon className="size-3.5" />
                 {editingId ? "Save Changes" : "Add Tab"}
@@ -278,7 +278,7 @@ export default function PortfolioManager() {
                   </button>
                   <button
                     onClick={() => handleDelete(tab.id)}
-                    className="p-1.5 text-subtle hover:text-red-400 transition-colors"
+                    className="p-1.5 text-subtle hover:text-danger transition-colors"
                     title="Delete"
                   >
                     <TrashIcon className="size-3.5" />

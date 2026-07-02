@@ -215,7 +215,7 @@ function PipelineView({
         <p className="text-sm text-subtle">No posts yet.</p>
         <button
           onClick={onCreate}
-          className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground"
+          className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-foreground text-surface text-xs font-medium rounded-lg hover:bg-foreground"
         >
           <PlusIcon className="size-3.5" />
           Capture your first idea
@@ -349,7 +349,7 @@ function FilterChip({
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
         active
-          ? "bg-white text-background border-surface"
+          ? "bg-foreground text-surface border-surface"
           : "bg-surface text-subtle border-border hover:border-surface"
       }`}
     >

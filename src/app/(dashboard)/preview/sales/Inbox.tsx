@@ -415,7 +415,7 @@ function ContextPane({
               className="w-full flex items-start gap-2 text-left group"
             >
               {t.completed_at ? (
-                <CheckCircleSolid className="size-4 text-[#25D366] shrink-0 mt-0.5" />
+                <CheckCircleSolid className="size-4 text-success shrink-0 mt-0.5" />
               ) : (
                 <CheckCircleIcon className="size-4 text-subtle group-hover:text-muted shrink-0 mt-0.5" />
               )}
@@ -426,7 +426,7 @@ function ContextPane({
                   {t.title}
                 </span>
                 <span
-                  className={`block text-[11px] ${overdue(t) ? "text-[#F97066] font-semibold" : "text-subtle"}`}
+                  className={`block text-[11px] ${overdue(t) ? "text-danger font-semibold" : "text-subtle"}`}
                 >
                   {overdue(t) ? "overdue · " : ""}
                   {timeShort(t.due_at)}

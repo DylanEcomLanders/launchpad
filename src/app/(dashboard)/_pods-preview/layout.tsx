@@ -20,7 +20,7 @@ export default function PodsPreviewLayout({ children }: { children: React.ReactN
     <div className="min-h-full">
       <div className="sticky top-0 z-20 border-b border-border bg-surface/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-1 gap-y-2 px-6 py-2.5 md:px-10">
-          <span className="mr-3 inline-flex items-center gap-1.5 rounded-full border border-white bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+          <span className="mr-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground">
             Pods V2 · Preview
           </span>
           {NAV.map((item) => {
@@ -34,8 +34,8 @@ export default function PodsPreviewLayout({ children }: { children: React.ReactN
                 href={item.href}
                 className={`rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-white text-background"
-                    : "text-subtle hover:bg-surface-raised hover:text-foreground"
+                    ? "bg-surface-raised text-foreground"
+                    : "text-subtle hover:bg-surface-hover hover:text-foreground"
                 }`}
               >
                 {item.label}

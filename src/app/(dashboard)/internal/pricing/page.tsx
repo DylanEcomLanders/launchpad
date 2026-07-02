@@ -54,8 +54,8 @@ function CopyButton({ item }: { item: PriceItem }) {
       }}
       className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
         copied
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-border bg-surface text-subtle hover:border-white hover:text-foreground"
+          ? "border-success/20 bg-success/10 text-success"
+          : "border-border bg-surface text-subtle hover:border-border hover:text-foreground"
       }`}
       title="Copy as quote line"
     >

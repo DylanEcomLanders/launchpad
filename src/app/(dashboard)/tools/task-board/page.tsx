@@ -185,8 +185,8 @@ const TaskEditorRow = memo(function TaskEditorRow({
         title={confirmDelete ? "Click again to confirm delete" : "Delete task"}
         className={`p-1 rounded transition-colors ${
           confirmDelete
-            ? "bg-red-50 text-red-600 ring-1 ring-red-400"
-            : "text-muted hover:text-red-400"
+            ? "bg-danger/10 text-danger ring-1 ring-danger/30"
+            : "text-muted hover:text-danger"
         }`}
       >
         <TrashIcon className="size-3.5" />
@@ -403,7 +403,7 @@ export default function TaskBoardAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" />
       </div>
     );
   }
@@ -426,7 +426,7 @@ export default function TaskBoardAdminPage() {
           <h1 className="text-[28px] leading-tight font-bold text-foreground">Task Board</h1>
           <p className="text-xs text-subtle mt-1">
             Manage design and dev tasks. Team views at{" "}
-            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-[#2563EB] underline">/tasks</a>
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-info underline">/tasks</a>
           </p>
         </div>
         <button onClick={save} disabled={saving} className="px-5 py-2.5 bg-white text-background text-xs font-medium rounded-lg hover:bg-foreground disabled:opacity-50">

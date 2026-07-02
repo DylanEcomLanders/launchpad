@@ -18,7 +18,7 @@ export default function SalesEngineLayout() {
 
   return (
     <AuthGate>
-      <div className="flex h-screen items-center justify-center bg-background text-sm text-white/50">
+      <div className="flex h-screen items-center justify-center bg-background text-sm text-subtle">
         Redirecting…
       </div>
     </AuthGate>

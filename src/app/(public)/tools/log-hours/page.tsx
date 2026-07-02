@@ -181,11 +181,11 @@ export default function LogHoursPage() {
 
         {/* Error banner */}
         {error && (
-          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+          <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger/20 rounded-xl text-sm text-danger">
             {error}
             <button
               onClick={() => setError(null)}
-              className="ml-3 text-red-500 hover:text-red-700"
+              className="ml-3 text-danger hover:text-danger/80"
             >
               Dismiss
             </button>
@@ -194,7 +194,7 @@ export default function LogHoursPage() {
 
         {/* Success banner */}
         {success && (
-          <div className="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700 flex items-center gap-2">
+          <div className="mb-6 px-4 py-3 bg-success/10 border border-success/20 rounded-xl text-sm text-success flex items-center gap-2">
             <CheckCircleIcon className="size-4" />
             Hours logged successfully
           </div>
@@ -341,7 +341,7 @@ export default function LogHoursPage() {
               form.hours <= 0 ||
               !context.trim()
             }
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-surface text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>
@@ -377,7 +377,7 @@ export default function LogHoursPage() {
                 {myEntries.map((entry) => (
                   <div
                     key={entry.id}
-                    className="bg-white border border-foreground rounded-md px-4 py-3"
+                    className="bg-surface border border-foreground rounded-md px-4 py-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">

@@ -23,8 +23,8 @@ function NodeShell({
 }) {
   return (
     <div className="bg-surface rounded-xl shadow-md border border-border min-w-[200px] max-w-[240px] overflow-hidden">
-      <Handle type="target" position={Position.Left} className="!w-2 !h-2 !bg-subtle !border-white !border-2" />
-      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !bg-subtle !border-white !border-2" />
+      <Handle type="target" position={Position.Left} className="!w-2 !h-2 !bg-subtle !border-surface !border-2" />
+      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !bg-subtle !border-surface !border-2" />
 
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-background border-b border-border">
@@ -58,7 +58,7 @@ function NodeShell({
 
 /* ── Status dot helper ── */
 const statusDot = (status: string) =>
-  status === "live" ? "bg-emerald-500" : status === "in-progress" ? "bg-blue-500" : "bg-muted";
+  status === "live" ? "bg-success" : status === "in-progress" ? "bg-info" : "bg-muted";
 
 /* ── Content Node ── */
 export const ContentNode = memo(({ data }: NodeProps) => {

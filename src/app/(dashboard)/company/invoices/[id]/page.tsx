@@ -115,7 +115,7 @@ export default function InvoiceDetailPage() {
           )}
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-red-500/15 rounded-md"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/15 rounded-md"
           >
             <TrashIcon className="size-3.5" /> Delete
           </button>
@@ -123,7 +123,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <div className="bg-background border border-border rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           {invoice.file_url ? (
             invoice.file_url.endsWith(".pdf") || invoice.file_name?.toLowerCase().endsWith(".pdf") ? (
               <iframe src={invoice.file_url} className="w-full h-[700px]" title="Invoice preview" />
@@ -139,7 +139,7 @@ export default function InvoiceDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+          <div className="bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">Status</h3>
               <span
@@ -153,14 +153,14 @@ export default function InvoiceDetailPage() {
               <button
                 onClick={() => changeStatus("paid")}
                 disabled={invoice.status === "paid"}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-[#047857]/20 text-success rounded-lg hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-success/10 text-success rounded-lg hover:opacity-90 disabled:opacity-50"
               >
                 <CheckCircleIcon className="size-3.5" /> Mark paid
               </button>
               <button
                 onClick={() => changeStatus("pending")}
                 disabled={invoice.status === "pending"}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-amber-500/15 text-amber-300 rounded-lg hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-warning/15 text-warning rounded-lg hover:opacity-90 disabled:opacity-50"
               >
                 Mark pending
               </button>
@@ -174,7 +174,7 @@ export default function InvoiceDetailPage() {
             </div>
           </div>
 
-          <div className="bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] space-y-3">
+          <div className="bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">Details</h3>
             <Field
               label="Supplier"
@@ -263,14 +263,14 @@ export default function InvoiceDetailPage() {
                 className={textareaClass}
               />
             </div>
-            <div className="text-xs text-subtle pt-2 border-t border-white/[0.04]">
+            <div className="text-xs text-subtle pt-2 border-t border-border">
               Total: <span className="font-medium text-foreground">{fmtMoney(invoice.amount, invoice.currency)}</span>
               {invoice.paid_date && <> · Paid {fmtDateUK(invoice.paid_date)}</>}
             </div>
           </div>
 
           {invoice.status_history && invoice.status_history.length > 0 && (
-            <div className="bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+            <div className="bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-3">
                 Status history
               </h3>

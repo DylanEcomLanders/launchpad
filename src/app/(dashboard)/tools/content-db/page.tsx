@@ -279,7 +279,7 @@ export default function ContentAnalyticsPage() {
                 }}
                 className={`px-5 py-2 text-sm font-medium rounded-md transition-colors ${
                   activeAccount === acct.id
-                    ? "bg-white text-background"
+                    ? "bg-foreground text-background"
                     : "text-subtle hover:text-foreground"
                 }`}
               >
@@ -300,7 +300,7 @@ export default function ContentAnalyticsPage() {
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-white text-background hover:bg-surface disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-muted disabled:opacity-50 transition-colors"
           >
             <ArrowPathIcon
               className={`size-4 ${syncing ? "animate-spin" : ""}`}
@@ -325,7 +325,7 @@ export default function ContentAnalyticsPage() {
             {syncErrors.map((e, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800"
+                className="flex items-start gap-2 px-4 py-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning"
               >
                 <ExclamationTriangleIcon className="size-4 shrink-0 mt-0.5" />
                 <span>
@@ -362,7 +362,7 @@ export default function ContentAnalyticsPage() {
         {analysis && (
           <div className="mb-8 space-y-6">
             {/* Summary */}
-            <div className="bg-gradient-to-r from-[#F8F8FF] to-surface-raised border border-border rounded-lg p-5">
+            <div className="bg-surface-raised border border-border rounded-lg p-5">
               <p className="text-sm text-foreground leading-relaxed">
                 {analysis.summary}
               </p>

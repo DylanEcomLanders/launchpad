@@ -132,7 +132,7 @@ export default function BucketEngagementPreview() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-6">
-      <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-800">
+      <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning">
         <SparklesIcon className="h-3.5 w-3.5" />
         Preview, mock data · Bucket project (non-CE)
       </div>
@@ -151,7 +151,7 @@ export default function BucketEngagementPreview() {
               {ENGAGEMENT.name}
             </h1>
             <div className="flex items-baseline gap-3 mt-1">
-              <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded text-[#1976D2] bg-[#E3F2FD]">
+              <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded text-info bg-info/10">
                 Bucket {ENGAGEMENT.bucket}
               </span>
             </div>
@@ -195,9 +195,9 @@ export default function BucketEngagementPreview() {
               key={m.key}
               className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-medium ${
                 m.complete
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  ? "border-success/20 bg-success/10 text-success"
                   : m.active
-                    ? "border-amber-200 bg-amber-50 text-amber-800"
+                    ? "border-warning/20 bg-warning/10 text-warning"
                     : "border-border bg-background text-muted"
               }`}
             >
@@ -270,7 +270,7 @@ export default function BucketEngagementPreview() {
                 <span className="text-[12px] text-muted">
                   Paste a Google Doc / Loom / link, or drop a file
                 </span>
-                <button className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-1 text-[11px] font-medium text-white hover:bg-foreground">
+                <button className="inline-flex items-center gap-1 rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background hover:opacity-90">
                   <PlusIcon className="h-3.5 w-3.5" />
                   Add
                 </button>
@@ -295,7 +295,7 @@ export default function BucketEngagementPreview() {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="h-[200px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12px] leading-relaxed text-foreground focus:border-white focus:outline-none"
+              className="h-[200px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12px] leading-relaxed text-foreground focus:border-ring focus:outline-none"
             />
           </div>
         </div>
@@ -344,7 +344,7 @@ function DeliverableList({
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-[10px] font-semibold uppercase tracking-wider ${
-              tone === "strategy" ? "text-violet-700" : "text-subtle"
+              tone === "strategy" ? "text-muted" : "text-subtle"
             }`}
           >
             {label}
@@ -367,7 +367,7 @@ function DeliverableList({
               <span
                 className={`shrink-0 inline-flex items-center gap-1 text-[10px] tabular-nums ${
                   t.status === "done"
-                    ? "text-emerald-700"
+                    ? "text-success"
                     : t.status === "in_progress"
                       ? "text-foreground font-semibold"
                       : "text-subtle"
@@ -394,7 +394,7 @@ function ResourceRow({ resource }: { resource: Resource }) {
     resource.kind === "doc" ? "text-blue-700 bg-blue-50 border-blue-200" :
     resource.kind === "loom" ? "text-fuchsia-700 bg-fuchsia-50 border-fuchsia-200" :
     resource.kind === "link" ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
-    "text-border bg-surface-raised border-border";
+    "text-subtle bg-surface-raised border-border";
 
   return (
     <div className="flex items-center gap-2.5 rounded-md border border-border bg-surface px-2.5 py-2">
@@ -410,7 +410,7 @@ function ResourceRow({ resource }: { resource: Resource }) {
         </div>
       </div>
       {resource.has_branded && (
-        <button className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-medium text-foreground hover:border-white">
+        <button className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-medium text-foreground hover:border-subtle">
           <SparklesIcon className="h-3 w-3" />
           Generate branded version
         </button>

@@ -165,7 +165,7 @@ function TouchpointRow({ task, meta, idleLabel, doneLabel, done, onAction }: { t
       <button
         onClick={onAction}
         className={`mt-2 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-all ${
-          done ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-border bg-surface text-subtle hover:text-foreground"
+          done ? "border-success/20 bg-success/10 text-success" : "border-border bg-surface text-subtle hover:text-foreground"
         }`}
       >
         {done ? <CheckSolid className="size-3.5" /> : <CheckCircleIcon className="size-3.5" />}
@@ -178,8 +178,8 @@ function TouchpointRow({ task, meta, idleLabel, doneLabel, done, onAction }: { t
 function TestResultChip({ task }: { task: Task }) {
   const r = task.testResult;
   if (!r) return null;
-  if (r.status === "winner") return <span className="text-[11px] font-semibold text-emerald-700">Winner · +{r.lift}%</span>;
-  if (r.status === "loser") return <span className="text-[11px] font-semibold text-rose-700">Lost · {r.lift}%</span>;
+  if (r.status === "winner") return <span className="text-[11px] font-semibold text-success">Winner · +{r.lift}%</span>;
+  if (r.status === "loser") return <span className="text-[11px] font-semibold text-danger">Lost · {r.lift}%</span>;
   return <span className="text-[11px] font-medium text-subtle">Awaiting results</span>;
 }
 
@@ -197,8 +197,8 @@ function TestRow({ task }: { task: Task }) {
 
 const HYP_STATUS_META: Record<HypStatus, { label: string; cls: string }> = {
   idea: { label: "Idea", cls: "bg-surface-raised text-subtle border-border" },
-  testing: { label: "Testing", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  validated: { label: "Validated", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  testing: { label: "Testing", cls: "bg-info/10 text-info border-info/20" },
+  validated: { label: "Validated", cls: "bg-success/10 text-success border-success/20" },
 };
 
 export function ClientStrategyPanel({
@@ -241,7 +241,7 @@ export function ClientStrategyPanel({
             value={st.thesis}
             onChange={(e) => store.setThesis(clientId, e.target.value)}
             rows={3}
-            className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[13px] leading-relaxed text-subtle focus:border-white focus:bg-surface focus:outline-none focus:ring-1 focus:ring-surface/10"
+            className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[13px] leading-relaxed text-subtle focus:border-border focus:bg-surface focus:outline-none focus:ring-1 focus:ring-surface/10"
           />
         </div>
 
@@ -252,7 +252,7 @@ export function ClientStrategyPanel({
             {st.focus.map((f, i) => (
               <span key={i} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[12px] text-subtle">
                 {f}
-                <button onClick={() => store.removeFocus(clientId, i)} className="text-muted hover:text-rose-600">
+                <button onClick={() => store.removeFocus(clientId, i)} className="text-muted hover:text-danger">
                   <XMarkIcon className="size-3.5" />
                 </button>
               </span>
@@ -293,7 +293,7 @@ export function ClientStrategyPanel({
                 >
                   {HYP_STATUS_META[h.status].label}
                 </button>
-                <button onClick={() => store.removeHyp(clientId, h.id)} className="shrink-0 text-muted hover:text-rose-600">
+                <button onClick={() => store.removeHyp(clientId, h.id)} className="shrink-0 text-muted hover:text-danger">
                   <XMarkIcon className="size-4" />
                 </button>
               </div>
@@ -347,7 +347,7 @@ export function ClientStrategyPanel({
             className="mb-3 flex gap-2"
           >
             <input value={noteDraft} onChange={(e) => setNoteDraft(e.target.value)} placeholder="Add a note…" className={`${inputClass} py-1.5 text-[12px]`} />
-            <button type="submit" className="shrink-0 rounded-lg bg-surface px-3 text-sm font-medium text-white hover:bg-foreground">
+            <button type="submit" className="shrink-0 rounded-lg bg-surface px-3 text-sm font-medium text-foreground hover:bg-surface-hover">
               Add
             </button>
           </form>

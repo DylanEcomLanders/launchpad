@@ -16,6 +16,10 @@ import {
   previewChat,
   type UnipileChannel,
 } from "@/lib/sales-dashboard/unipile-adapter";
+import {
+  isBeeperLive,
+  previewChatBeeper,
+} from "@/lib/sales-dashboard/beeper-adapter";
 
 const SUPPORTED: UnipileChannel[] = ["whatsapp", "linkedin", "email"];
 
@@ -34,6 +38,37 @@ export async function GET(req: Request) {
       { error: "Required ?chatId=..." },
       { status: 400 },
     );
+  }
+
+  /* Beeper path - one local API call returns the full thread
+   * with names, attachments, and proper isSender flags built in. */
+  if (isBeeperLive()) {
+    const beeper = await previewChatBeeper(chatId, 500);
+    if (!beeper.ok) {
+      return NextResponse.json(
+        { error: beeper.error ?? "Beeper preview failed" },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json({
+      ok: true,
+      provider: "beeper",
+      attendee_name: beeper.chat?.title,
+      attendee_handle: beeper.chat?.id ?? chatId,
+      messages: beeper.messages.map((m) => ({
+        body: m.text ?? "",
+        direction: m.isSender ? "outbound" : "inbound",
+        sent_at: m.timestamp,
+        external_id: m.id,
+        attachments: (m.attachments ?? []).map((a) => ({
+          id: a.id ?? "",
+          type: a.type ?? "file",
+          mimetype: a.mimeType,
+          srcURL: a.srcURL,
+        })),
+        senderName: m.senderName,
+      })),
+    });
   }
 
   /* maxMessages defaults to 500 - covers months of normal chat

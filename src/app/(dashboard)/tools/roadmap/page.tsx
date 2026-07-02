@@ -35,7 +35,7 @@ export default function RoadmapsListPage() {
   }
 
   if (!isAdmin) {
-    return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+    return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
   }
 
   return (
@@ -43,10 +43,10 @@ export default function RoadmapsListPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)]">
-              <MapIcon className="size-5 text-white" />
+            <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+              <MapIcon className="size-5 text-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               Roadmaps
             </h1>
           </div>
@@ -61,14 +61,14 @@ export default function RoadmapsListPage() {
       </header>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-background rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-surface rounded-xl animate-pulse" />)}</div>
       ) : roadmaps.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">No roadmaps yet. Start one per client.</p></div>
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border"><p className="text-sm text-subtle">No roadmaps yet. Start one per client.</p></div>
       ) : (
         <ul className="space-y-2">
           {roadmaps.map((r) => (
             <li key={r.id}>
-              <Link href={`/tools/roadmap/${r.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
+              <Link href={`/tools/roadmap/${r.id}`} className="block bg-surface rounded-xl p-4 border border-border hover:border-border transition-all">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-foreground truncate mb-1">

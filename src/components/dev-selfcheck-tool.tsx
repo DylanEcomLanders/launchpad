@@ -43,8 +43,8 @@ function nextResult(current: SelfCheckResult): SelfCheckResult {
 
 const resultStyles: Record<SelfCheckResult, { label: string; bg: string; text: string }> = {
   "": { label: "\u2014", bg: "bg-surface-raised", text: "text-muted" },
-  pass: { label: "Pass", bg: "bg-emerald-50", text: "text-emerald-600" },
-  fail: { label: "Fail", bg: "bg-red-50", text: "text-red-500" },
+  pass: { label: "Pass", bg: "bg-success/10", text: "text-success" },
+  fail: { label: "Fail", bg: "bg-danger/10", text: "text-danger" },
   na: { label: "N/A", bg: "bg-surface-raised", text: "text-subtle" },
 };
 
@@ -224,17 +224,17 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="bg-surface border border-border rounded-lg p-3 text-center">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Pass Rate</p>
-            <p className={`text-xl font-bold ${passRate >= 90 ? "text-emerald-500" : passRate >= 70 ? "text-amber-500" : stats.checked === 0 ? "text-muted" : "text-red-500"}`}>
+            <p className={`text-xl font-bold ${passRate >= 90 ? "text-success" : passRate >= 70 ? "text-warning" : stats.checked === 0 ? "text-muted" : "text-danger"}`}>
               {stats.checked > 0 ? `${passRate}%` : "\u2014"}
             </p>
           </div>
-          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1">Pass</p>
-            <p className="text-xl font-bold text-emerald-600">{stats.pass}</p>
+          <div className="bg-success/10 border border-success/20 rounded-lg p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-success mb-1">Pass</p>
+            <p className="text-xl font-bold text-success">{stats.pass}</p>
           </div>
-          <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-red-300 mb-1">Fail</p>
-            <p className="text-xl font-bold text-red-500">{stats.fail}</p>
+          <div className="bg-danger/10 border border-danger/20 rounded-lg p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-danger mb-1">Fail</p>
+            <p className="text-xl font-bold text-danger">{stats.fail}</p>
           </div>
           <div className="bg-surface border border-border rounded-lg p-3 text-center">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Unchecked</p>
@@ -264,7 +264,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                     </span>
                   </div>
                   {catStat.fail > 0 && (
-                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-red-50 text-red-500 rounded-full">
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-danger/10 text-danger rounded-full">
                       {catStat.fail} fail
                     </span>
                   )}
@@ -294,7 +294,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                               <button
                                 onClick={() => setNotesOpen((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
                                 className={`p-1 rounded transition-colors ${
-                                  item.notes ? "text-blue-500" : "text-muted hover:text-subtle"
+                                  item.notes ? "text-info" : "text-muted hover:text-subtle"
                                 }`}
                                 title="Notes"
                               >
@@ -302,7 +302,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                               </button>
                               <button
                                 onClick={() => removeItem(item.id)}
-                                className="p-1 text-muted hover:text-red-400 transition-colors"
+                                className="p-1 text-muted hover:text-danger transition-colors"
                                 title="Remove"
                               >
                                 <TrashIcon className="size-3.5" />
@@ -374,8 +374,8 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
             disabled={stats.checked === 0}
             className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-md transition-all ${
               copiedReport
-                ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
-                : "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                ? "bg-success/10 border border-success/20 text-success"
+                : "bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
             }`}
           >
             {copiedReport ? "Copied Report!" : "Copy Report"}

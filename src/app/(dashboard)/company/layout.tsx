@@ -158,8 +158,8 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
                     onClick={() => pickTab(tab.id)}
                     className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-all ${
                       active
-                        ? "bg-white/[0.08] text-foreground font-medium ring-1 ring-white/[0.08]"
-                        : "text-subtle hover:text-foreground hover:bg-white/[0.04]"
+                        ? "bg-surface-raised text-foreground font-medium ring-1 ring-border"
+                        : "text-subtle hover:text-foreground hover:bg-surface-hover"
                     }`}
                   >
                     <Icon className="size-4" />
@@ -170,7 +170,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
               {/* Settings is outside /company so it stays a Link. */}
               <Link
                 href="/settings"
-                className="flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full text-subtle hover:text-foreground hover:bg-white/[0.04] transition-all"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full text-subtle hover:text-foreground hover:bg-surface-hover transition-all"
               >
                 <Cog6ToothIcon className="size-4" />
                 Settings

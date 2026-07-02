@@ -147,7 +147,7 @@ export default function EngagementTrashPage() {
                         typed: "",
                       })
                     }
-                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-danger bg-surface hover:bg-rose-500/15 border-rose-500/30 px-3 py-1.5 rounded"
+                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-danger bg-surface hover:bg-danger/10 border-danger/20 px-3 py-1.5 rounded"
                   >
                     <TrashIcon className="size-3" />
                     Delete forever
@@ -206,7 +206,7 @@ export default function EngagementTrashPage() {
                 type="button"
                 disabled={purgeStage.typed.trim() !== purgeStage.brand}
                 onClick={handlePurge}
-                className="text-[12px] font-semibold text-white bg-danger hover:bg-[#B71C1C] disabled:bg-border disabled:text-subtle disabled:cursor-not-allowed px-3 py-2 rounded"
+                className="text-[12px] font-semibold text-white bg-danger hover:bg-danger disabled:bg-border disabled:text-subtle disabled:cursor-not-allowed px-3 py-2 rounded"
               >
                 Delete forever
               </button>

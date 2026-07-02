@@ -21,11 +21,11 @@ import { AnnotationStrip, SectionHeader, Card } from "../components";
 
 const STATUS_TONE: Record<LeadStatus, string> = {
   new: "bg-surface-raised text-subtle border-border",
-  engaged: "bg-blue-50 text-blue-700 border-blue-200",
-  call_booked: "bg-purple-50 text-purple-700 border-purple-200",
-  proposal_sent: "bg-amber-50 text-amber-800 border-amber-200",
-  won: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  lost: "bg-rose-50 text-rose-700 border-rose-200",
+  engaged: "bg-info/10 text-info border-info/20",
+  call_booked: "bg-info/10 text-info border-info/20",
+  proposal_sent: "bg-warning/10 text-warning border-warning/20",
+  won: "bg-success/10 text-success border-success/20",
+  lost: "bg-danger/10 text-danger border-danger/20",
 };
 
 let csvSeq = 0;
@@ -108,7 +108,7 @@ export default function GrowthClient() {
           <div className="grid grid-cols-3 gap-3">
             {bridge.rows.map((r) => {
               const pct = Math.min(100, Math.round((r.used / r.pod.capacityTotal) * 100));
-              const tone = pct >= 100 ? "bg-rose-500" : pct >= 80 ? "bg-amber-500" : "bg-emerald-500";
+              const tone = pct >= 100 ? "bg-danger" : pct >= 80 ? "bg-warning" : "bg-success";
               return (
                 <div key={r.pod.id} className="rounded-lg border border-border bg-surface p-3">
                   <div className="text-[11px] font-medium text-subtle">{r.pod.tagline}</div>
@@ -122,10 +122,10 @@ export default function GrowthClient() {
               );
             })}
           </div>
-          <div className="flex flex-col justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-3 text-center">
-            <div className="text-3xl font-semibold tabular-nums text-emerald-700">~{bridge.aBuckets}</div>
-            <div className="text-[12px] font-medium text-emerald-700">A-buckets sellable</div>
-            <div className="mt-0.5 text-[10px] text-emerald-600">
+          <div className="flex flex-col justify-center rounded-lg border border-success/20 bg-success/10 px-5 py-3 text-center">
+            <div className="text-3xl font-semibold tabular-nums text-success">~{bridge.aBuckets}</div>
+            <div className="text-[12px] font-medium text-success">A-buckets sellable</div>
+            <div className="mt-0.5 text-[10px] text-success">
               {bridge.totalAvailable} pts open this month
             </div>
           </div>
@@ -139,11 +139,11 @@ export default function GrowthClient() {
         </h3>
         <div className="flex items-center gap-3">
           <span className="text-[12px] text-subtle">
-            Won pipeline: <span className="font-semibold text-emerald-700">£{wonValue.toLocaleString()}/mo</span>
+            Won pipeline: <span className="font-semibold text-success">£{wonValue.toLocaleString()}/mo</span>
           </span>
           <button
             onClick={() => setCsvOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-surface px-3 py-1.5 text-sm font-medium text-white hover:bg-foreground"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover"
           >
             <ArrowUpTrayIcon className="size-4" /> Import CSV
           </button>
@@ -190,13 +190,13 @@ export default function GrowthClient() {
                 <td className="px-4 py-2.5 text-right">
                   {l.status === "won" ? (
                     l.sentToIntake ? (
-                      <span className="inline-flex items-center gap-1 text-[12px] font-medium text-emerald-700">
+                      <span className="inline-flex items-center gap-1 text-[12px] font-medium text-success">
                         <CheckCircleIcon className="size-4" /> In intake
                       </span>
                     ) : (
                       <button
                         onClick={() => sendToIntake(l.id)}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[12px] font-medium text-emerald-700 hover:bg-emerald-100"
+                        className="inline-flex items-center gap-1.5 rounded-md border border-success/20 bg-success/10 px-2.5 py-1 text-[12px] font-medium text-success hover:bg-success/10"
                       >
                         <ArrowRightCircleIcon className="size-4" /> Send to intake
                       </button>
@@ -231,7 +231,7 @@ export default function GrowthClient() {
               value={csvText}
               onChange={(e) => setCsvText(e.target.value)}
               rows={6}
-              className="mt-4 w-full rounded-lg border border-border bg-surface px-3 py-2.5 font-mono text-[12px] shadow-[var(--shadow-soft)] focus:border-white focus:outline-none focus:ring-1 focus:ring-surface/10"
+              className="mt-4 w-full rounded-lg border border-border bg-surface px-3 py-2.5 font-mono text-[12px] shadow-[var(--shadow-soft)] focus:border-border focus:outline-none focus:ring-1 focus:ring-surface/10"
             />
             <div className="mt-4 flex justify-end gap-2">
               <button
@@ -242,7 +242,7 @@ export default function GrowthClient() {
               </button>
               <button
                 onClick={importCsv}
-                className="rounded-lg bg-surface px-4 py-1.5 text-sm font-medium text-white hover:bg-foreground"
+                className="rounded-lg bg-surface px-4 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover"
               >
                 Import
               </button>
@@ -252,7 +252,7 @@ export default function GrowthClient() {
       )}
 
       {toast && (
-        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-surface px-4 py-2.5 text-sm text-white shadow-[var(--shadow-elevated)]">
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground shadow-[var(--shadow-elevated)]">
           {toast}
         </div>
       )}

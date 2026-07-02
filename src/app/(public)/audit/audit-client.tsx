@@ -101,7 +101,7 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6" style={{ background: "white" }}>
+      <div className="min-h-screen bg-surface flex items-center justify-center px-6" style={{ background: "white" }}>
         <div className="max-w-md w-full text-center">
           <div className="w-16 h-16 bg-[#D1FF4C]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -120,14 +120,14 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* ── Nav ── */}
-      <nav className="w-full border-b border-foreground bg-white">
+      <nav className="w-full border-b border-foreground bg-surface">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
           <Logo height={18} className="text-foreground" />
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <div className="flex-1 flex flex-col items-center bg-white">
+      <div className="flex-1 flex flex-col items-center bg-surface">
         <div className="w-full max-w-5xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-12 text-center">
           {/* Badges */}
           <div className="flex items-center justify-center gap-3 mb-8">
@@ -161,7 +161,7 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
-                className="w-full px-4 py-3 bg-white border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
+                className="w-full px-4 py-3 bg-surface border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
               />
             </div>
 
@@ -173,7 +173,7 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-4 py-3 bg-white border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
+                className="w-full px-4 py-3 bg-surface border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
               />
             </div>
 
@@ -185,18 +185,18 @@ export default function AuditLandingPage({ initialPortfolioImages = [] }: { init
                 value={storeUrl}
                 onChange={(e) => setStoreUrl(e.target.value)}
                 placeholder="Enter your brand URL"
-                className="w-full px-4 py-3 bg-white border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
+                className="w-full px-4 py-3 bg-surface border border-foreground rounded-lg text-sm text-foreground outline-none placeholder:text-muted focus:border-surface transition-colors"
               />
             </div>
 
             {error && (
-              <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+              <p className="text-xs text-danger bg-danger/10 border border-danger/20 rounded-lg px-3 py-2">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading || !email.trim() || !storeUrl.trim()}
-              className="w-full py-3.5 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? "Submitting..." : (
                 <>

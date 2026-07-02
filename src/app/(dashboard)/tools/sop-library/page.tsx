@@ -231,7 +231,7 @@ export default function SOPLibraryPage() {
                 load();
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg ${
-                selected.draft ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-amber-600 border border-amber-200 hover:bg-amber-50"
+                selected.draft ? "bg-success text-background hover:bg-success/90" : "text-warning border border-warning/30 hover:bg-warning/10"
               }`}
             >
               {selected.draft ? "Publish" : "Unpublish"}
@@ -242,7 +242,7 @@ export default function SOPLibraryPage() {
             <button
               onClick={() => handleDelete(selected.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg ${
-                confirmDelete === selected.id ? "bg-red-500 text-white" : "text-red-400 border border-red-100 hover:bg-red-50"
+                confirmDelete === selected.id ? "bg-danger text-background" : "text-danger border border-danger/20 hover:bg-danger/10"
               }`}
             >
               <TrashIcon className="size-3" /> {confirmDelete === selected.id ? "Confirm Delete" : "Delete"}
@@ -381,7 +381,7 @@ export default function SOPLibraryPage() {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin size-5 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+          <div className="animate-spin size-5 border-2 border-border border-t-foreground rounded-full" />
         </div>
       )}
 
@@ -413,7 +413,7 @@ export default function SOPLibraryPage() {
                       </span>
                       <span className="text-[10px] text-muted">{readTime(sop.content)} min read</span>
                       {sop.loomUrl && <span className="text-[10px] text-muted">Loom</span>}
-                      {sop.draft && <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-900/30 text-amber-300">Draft</span>}
+                      {sop.draft && <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-warning/10 text-warning">Draft</span>}
                     </div>
                     {sop.description && <p className="text-xs text-muted mt-1.5 line-clamp-1">{sop.description}</p>}
                   </div>

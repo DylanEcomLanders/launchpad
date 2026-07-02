@@ -32,8 +32,8 @@ type Props = {
 };
 
 const priorityPill: Record<RoadmapPriority, string> = {
-  high: "bg-red-50 text-red-600",
-  medium: "bg-amber-50 text-amber-700",
+  high: "bg-danger/10 text-danger",
+  medium: "bg-warning/10 text-warning",
   low: "bg-surface-raised text-muted",
 };
 
@@ -122,7 +122,7 @@ export function RoadmapList({ portalId, readOnly = false }: Props) {
           ) : (
             <button
               onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-background bg-white rounded-lg hover:bg-foreground transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-background bg-foreground rounded-lg hover:bg-muted transition-colors"
             >
               <PlusIcon className="size-3.5" />
               Add roadmap item
@@ -211,7 +211,7 @@ function RoadmapRow({
             <span className="text-[10px] text-subtle">{formatMonth(item.target_month)}</span>
           )}
           {item.shipped_at && (
-            <span className="text-[10px] text-emerald-600 font-medium">Shipped {formatShippedDate(item.shipped_at)}</span>
+            <span className="text-[10px] text-success font-medium">Shipped {formatShippedDate(item.shipped_at)}</span>
           )}
         </div>
 
@@ -224,7 +224,7 @@ function RoadmapRow({
         )}
 
         {item.outcome && (
-          <p className="text-[11px] text-emerald-600 font-semibold mb-2">{item.outcome}</p>
+          <p className="text-[11px] text-success font-semibold mb-2">{item.outcome}</p>
         )}
 
         {linkChips.length > 0 && (
@@ -251,7 +251,7 @@ function RoadmapRow({
           <select
             value={item.stage}
             onChange={(e) => onMove(e.target.value as RoadmapStage)}
-            className="text-[11px] px-2 py-1 border border-border rounded-md bg-surface text-muted focus:border-white outline-none"
+            className="text-[11px] px-2 py-1 border border-border rounded-md bg-surface text-muted focus:border-ring outline-none"
           >
             {STAGE_ORDER.map((s) => (
               <option key={s} value={s}>{STAGE_LABELS[s]}</option>
@@ -266,7 +266,7 @@ function RoadmapRow({
           </button>
           <button
             onClick={onDelete}
-            className="p-1.5 text-subtle hover:text-red-600 transition-colors"
+            className="p-1.5 text-subtle hover:text-danger transition-colors"
             title="Delete"
           >
             <TrashIcon className="size-4" />
@@ -440,7 +440,7 @@ function RoadmapForm({
         <button
           onClick={handleSubmit}
           disabled={!canSave || saving}
-          className="px-4 py-2 text-xs font-semibold text-background bg-white rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
+          className="px-4 py-2 text-xs font-semibold text-background bg-foreground rounded-lg hover:bg-muted transition-colors disabled:opacity-40"
         >
           {saving ? "Saving…" : initial ? "Save changes" : "Add item"}
         </button>

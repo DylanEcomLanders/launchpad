@@ -224,7 +224,7 @@ export function QuickAddAgreementModal({
                 placeholder="First and last name"
               />
               {matchedPerson && (
-                <p className="text-[11px] text-[#92591A] mt-1.5 leading-relaxed">
+                <p className="text-[11px] text-warning mt-1.5 leading-relaxed">
                   This name matches an existing team member ({matchedPerson.full_name}
                   ). We&apos;ll {matchedHasContract ? "skip - they already have a contract" : "generate the contract for them"}.
                 </p>
@@ -323,7 +323,7 @@ export function QuickAddAgreementModal({
             </div>
 
             {error && (
-              <div className="px-3 py-2 bg-[#FDECEA] border border-[#F5BFBA] rounded-lg text-[13px] text-danger">
+              <div className="px-3 py-2 bg-danger/10 border border-danger/20 rounded-lg text-[13px] text-danger">
                 {error}
               </div>
             )}

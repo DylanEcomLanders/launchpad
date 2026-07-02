@@ -86,9 +86,9 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
     router.push("/tools/tests");
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
-  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>);
-  if (notFound || !test) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle mb-3">Test not found.</p><Link href="/tools/tests" className="text-[12px] uppercase tracking-wider text-emerald-300">← Back</Link></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-surface rounded-xl animate-pulse" />)}</div>);
+  if (notFound || !test) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle mb-3">Test not found.</p><Link href="/tools/tests" className="text-[12px] uppercase tracking-wider text-success">← Back</Link></div></div>);
 
   const days = daysRunning(test);
 
@@ -101,8 +101,8 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
             All tests
           </Link>
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
-              <BeakerIcon className="size-4 text-white" />
+            <div className="size-8 rounded-xl bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <BeakerIcon className="size-4 text-foreground" />
             </div>
             <h1 className="text-2xl font-semibold text-foreground truncate">
               {test.client_name || "Untitled"} {test.surface && `· ${test.surface}`}
@@ -118,17 +118,17 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {test.status === "drafting" && (
-            <button onClick={setLive} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700">
+            <button onClick={setLive} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success">
               <PlayIcon className="size-3.5" />
               Go live
             </button>
           )}
           {test.status === "live" && (
             <>
-              <button onClick={() => setConcluded("winner")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-600">Winner</button>
-              <button onClick={() => setConcluded("loser")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-rose-500 text-white hover:bg-rose-600">Loser</button>
-              <button onClick={() => setConcluded("inconclusive")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-zinc-500 text-white hover:bg-zinc-600">Inconclusive</button>
-              <button onClick={() => patch({ status: "killed", ended_at: nowISO() })} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:text-rose-300" title="Kill the test">
+              <button onClick={() => setConcluded("winner")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success">Winner</button>
+              <button onClick={() => setConcluded("loser")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-danger text-white hover:bg-danger">Loser</button>
+              <button onClick={() => setConcluded("inconclusive")} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface-raised text-foreground hover:bg-surface-hover">Inconclusive</button>
+              <button onClick={() => patch({ status: "killed", ended_at: nowISO() })} className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface text-muted hover:text-danger" title="Kill the test">
                 <StopIcon className="size-3.5 inline" />
               </button>
             </>
@@ -136,23 +136,23 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
           <select value={test.status} onChange={(e) => patch({ status: e.target.value as TestStatus })} className={`${inputClass} w-auto text-[12px]`}>
             {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
-          <button onClick={deleteTest} className="p-1.5 rounded-md text-subtle hover:text-rose-400"><TrashIcon className="size-4" /></button>
+          <button onClick={deleteTest} className="p-1.5 rounded-md text-subtle hover:text-danger"><TrashIcon className="size-4" /></button>
         </div>
       </div>
 
       {/* Live progress */}
       {test.status === "live" && (
-        <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-2xl p-5 ring-1 ring-emerald-500/20">
+        <div className="bg-success/10 rounded-2xl p-5 border border-success/20">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[10px] uppercase tracking-wider text-emerald-300 font-semibold">
+            <div className="text-[10px] uppercase tracking-wider text-success font-semibold">
               Live · {days !== null ? `${days} days` : ""}
             </div>
-            <div className="text-[11px] font-mono text-emerald-200">
+            <div className="text-[11px] font-mono text-success">
               {test.significance_reached_pct ?? 0}% / {test.significance_target_pct}%
             </div>
           </div>
           <div className="h-2 bg-surface rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${sigProgress(test)}%` }} />
+            <div className="h-full bg-success rounded-full transition-all" style={{ width: `${sigProgress(test)}%` }} />
           </div>
         </div>
       )}
@@ -191,7 +191,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
         </div>
         {test.outcome && (
           <div className="text-[12px] text-muted">
-            Called <span className="text-emerald-300 font-semibold">{OUTCOME_LABEL[test.outcome]}</span>
+            Called <span className="text-success font-semibold">{OUTCOME_LABEL[test.outcome]}</span>
             {test.ended_at && ` on ${new Date(test.ended_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
           </div>
         )}
@@ -207,7 +207,7 @@ export default function TestDetailPage({ params }: { params: Promise<{ id: strin
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (<div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5"><h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2><div className="space-y-3">{children}</div></div>);
+  return (<div className="bg-surface rounded-2xl border border-border p-5"><h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2><div className="space-y-3">{children}</div></div>);
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (<div><label className={labelClass}>{label}</label>{children}</div>);

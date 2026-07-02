@@ -78,7 +78,7 @@ export function EngagementLifecycle({
           90-day engagement (§1.9)
         </span>
         {day != null && (
-          <span className={`text-[11px] tabular-nums ${refreshIn != null && refreshIn <= 10 ? "font-semibold text-rose-700" : "text-subtle"}`}>
+          <span className={`text-[11px] tabular-nums ${refreshIn != null && refreshIn <= 10 ? "font-semibold text-danger" : "text-subtle"}`}>
             Day {Math.max(1, day)}/90
             {refreshIn != null && ` · refresh ${refreshIn <= 0 ? "due" : `in ${refreshIn}d`}`}
           </span>
@@ -96,12 +96,12 @@ export function EngagementLifecycle({
               <div
                 key={w.key}
                 style={{ width: `${(span / 90) * 100}%` }}
-                className={`flex items-center justify-center border-r border-white/70 px-1 text-center text-[9px] leading-tight last:border-r-0 ${
+                className={`flex items-center justify-center border-r border-border px-1 text-center text-[9px] leading-tight last:border-r-0 ${
                   active
-                    ? "bg-white text-background"
+                    ? "bg-foreground text-background"
                     : past
-                      ? "bg-border text-[#9A9A9A]"
-                      : "text-[#9A9A9A]"
+                      ? "bg-border text-muted"
+                      : "text-muted"
                 }`}
                 title={`${ENGAGEMENT_WINDOW_LABEL[w.key]} · days ${w.from}-${w.to}`}
               >
@@ -113,7 +113,7 @@ export function EngagementLifecycle({
         {/* today marker */}
         {day != null && day >= 1 && day <= 90 && (
           <div
-            className="absolute top-0 h-full w-0.5 bg-rose-500"
+            className="absolute top-0 h-full w-0.5 bg-danger"
             style={{ left: `${pctOf(day)}%` }}
             title={`Today — Day ${day}`}
           />

@@ -68,17 +68,17 @@ export default function BriefsListPage() {
     router.push(`/tools/briefs/${b.id}`);
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)]">
-              <DocumentDuplicateIcon className="size-5 text-white" />
+            <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+              <DocumentDuplicateIcon className="size-5 text-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold text-foreground">
               Briefs
             </h1>
           </div>
@@ -87,13 +87,13 @@ export default function BriefsListPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button onClick={() => createNew("hypothesis")} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-600">
+          <button onClick={() => createNew("hypothesis")} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface-raised border border-border text-foreground hover:bg-surface-hover">
             <PlusIcon className="size-3.5" /> Hypothesis
           </button>
-          <button onClick={() => createNew("design")} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-cyan-500 text-white hover:bg-cyan-600">
+          <button onClick={() => createNew("design")} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-surface-raised border border-border text-foreground hover:bg-surface-hover">
             <PlusIcon className="size-3.5" /> Design
           </button>
-          <button onClick={() => createNew("dev")} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-sky-500 text-white hover:bg-sky-600">
+          <button onClick={() => createNew("dev")} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground">
             <PlusIcon className="size-3.5" /> Dev
           </button>
         </div>
@@ -102,11 +102,11 @@ export default function BriefsListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search title, client, owner" className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search title, client, owner" className="w-full pl-9 pr-3 py-2 rounded-md bg-surface border border-border text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring" />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           {KIND_FILTERS.map((f) => (
-            <button key={f.value} onClick={() => setFilter(f.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${filter === f.value ? "bg-white text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>
+            <button key={f.value} onClick={() => setFilter(f.value)} className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${filter === f.value ? "bg-foreground text-background" : "bg-surface text-muted hover:bg-surface-raised"}`}>
               {f.label}
             </button>
           ))}
@@ -114,16 +114,16 @@ export default function BriefsListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border">
           <p className="text-sm text-subtle">{briefs.length === 0 ? "No briefs yet. Create one from the buttons above." : "No briefs match the current filter."}</p>
         </div>
       ) : (
         <ul className="space-y-2">
           {filtered.map((b) => (
             <li key={b.id}>
-              <Link href={`/tools/briefs/${b.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
+              <Link href={`/tools/briefs/${b.id}`} className="block bg-surface rounded-xl p-4 border border-border hover:bg-surface-hover transition-all">
                 <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -143,7 +143,7 @@ export default function BriefsListPage() {
                     </div>
                   </div>
                   {b.status !== "draft" && (
-                    <a href={`/brief-output/${b.output_slug}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-emerald-300 shrink-0">
+                    <a href={`/brief-output/${b.output_slug}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground shrink-0">
                       View
                       <ArrowTopRightOnSquareIcon className="size-3.5" />
                     </a>

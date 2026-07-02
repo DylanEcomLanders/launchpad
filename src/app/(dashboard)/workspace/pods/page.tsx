@@ -119,7 +119,7 @@ function CapStat({
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
         <span className="font-medium text-muted">{label}</span>
-        <span className={`tabular-nums ${over ? "font-semibold text-rose-600" : "text-muted"}`}>
+        <span className={`tabular-nums ${over ? "font-semibold text-danger" : "text-muted"}`}>
           {used % 1 === 0 ? used : used.toFixed(1)} / {total % 1 === 0 ? total : total.toFixed(0)} pts
           {showPct && total > 0 ? ` · ${Math.round((used / total) * 100)}%` : ""}
         </span>

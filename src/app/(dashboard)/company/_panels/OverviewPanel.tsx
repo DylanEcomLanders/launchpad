@@ -157,7 +157,7 @@ export default function OverviewPanel() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <div className="lg:col-span-2 bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Recent activity
           </h2>
@@ -185,7 +185,7 @@ export default function OverviewPanel() {
           )}
         </div>
 
-        <div className="bg-background border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <div className="bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-4">
             Jump to
           </h2>
@@ -219,7 +219,7 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="block bg-background border border-white/[0.04] rounded-xl p-5 hover:border-white/[0.12] transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
+      className="block bg-background border border-border rounded-xl p-5 hover:border-border transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
     >
       <div className="flex items-center gap-2 text-subtle mb-2">
         <Icon className="size-4" />

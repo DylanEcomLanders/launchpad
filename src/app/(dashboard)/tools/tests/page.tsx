@@ -63,17 +63,17 @@ export default function TestsListPage() {
     router.push(`/tools/tests/${t.id}`);
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
-              <BeakerIcon className="size-5 text-white" />
+            <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+              <BeakerIcon className="size-5 text-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               Tests
             </h1>
           </div>
@@ -90,7 +90,7 @@ export default function TestsListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-subtle" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface" className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search hypothesis, client, surface" className="w-full pl-9 pr-3 py-2 rounded-md bg-surface border border-border text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-ring" />
         </div>
         <div className="flex items-center gap-1.5">
           {TABS.map((t) => (
@@ -102,9 +102,9 @@ export default function TestsListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-background rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-surface rounded-xl animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border">
           <p className="text-sm text-subtle">{tab === "active" ? "No live or drafting tests right now." : "No concluded tests yet."}</p>
         </div>
       ) : (
@@ -113,7 +113,7 @@ export default function TestsListPage() {
             const days = daysRunning(t);
             return (
               <li key={t.id}>
-                <Link href={`/tools/tests/${t.id}`} className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all">
+                <Link href={`/tools/tests/${t.id}`} className="block bg-surface rounded-xl p-4 border border-border hover:border-border transition-all">
                   <div className="flex items-start gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -143,7 +143,7 @@ export default function TestsListPage() {
                             )}
                           </div>
                           <div className="h-1 bg-surface rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${sigProgress(t)}%` }} />
+                            <div className="h-full bg-success rounded-full transition-all" style={{ width: `${sigProgress(t)}%` }} />
                           </div>
                         </div>
                       )}

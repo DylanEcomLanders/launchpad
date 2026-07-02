@@ -244,7 +244,7 @@ const SLIDES = [
         </p>
         <Link
           href="/tools/discovery-audit"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold mt-4"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-success text-white text-sm font-semibold mt-4"
         >
           Open the Discovery Audit builder
           <ArrowTopRightOnSquareIcon className="size-4" />

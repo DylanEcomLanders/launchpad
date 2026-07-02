@@ -118,17 +118,17 @@ export default function NdaPage() {
         </div>
 
         {/* NDA Content */}
-        <div className="bg-white border border-foreground rounded-2xl p-8 md:p-12 shadow-sm">
+        <div className="bg-surface border border-border rounded-2xl p-8 md:p-12">
           {nda.signed ? (
             <>
               {/* Signed banner */}
-              <div className="flex items-center gap-3 mb-6 px-4 py-3 bg-emerald-50 rounded-xl">
-                <svg className="size-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <div className="flex items-center gap-3 mb-6 px-4 py-3 bg-success/10 rounded-xl">
+                <svg className="size-5 text-success shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                 </svg>
                 <div>
-                  <p className="text-sm font-semibold text-emerald-700">Agreement Signed</p>
-                  <p className="text-xs text-emerald-600">Signed by {nda.signedName} on {nda.signedDate}</p>
+                  <p className="text-sm font-semibold text-success">Agreement Signed</p>
+                  <p className="text-xs text-success">Signed by {nda.signedName} on {nda.signedDate}</p>
                 </div>
               </div>
 
@@ -164,7 +164,7 @@ export default function NdaPage() {
               </div>
 
               {/* Signature block */}
-              <div className="mt-10 pt-8 border-t border-foreground">
+              <div className="mt-10 pt-8 border-t border-border">
                 <div className="grid grid-cols-2 gap-8">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">Company</p>
@@ -236,7 +236,7 @@ export default function NdaPage() {
               </div>
 
               {/* Signature section */}
-              <div className="mt-10 pt-8 border-t border-foreground">
+              <div className="mt-10 pt-8 border-t border-border">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-4">Sign this Agreement</p>
 
                 <div className="space-y-4">
@@ -246,7 +246,7 @@ export default function NdaPage() {
                       type="text"
                       value={signName}
                       onChange={(e) => setSignName(e.target.value)}
-                      className="w-full px-4 py-2.5 text-sm border border-foreground rounded-lg focus:outline-none focus:border-subtle"
+                      className="w-full px-4 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-subtle"
                       placeholder={nda.memberName}
                     />
                   </div>
@@ -269,7 +269,7 @@ export default function NdaPage() {
                       onTouchStart={startDraw}
                       onTouchMove={draw}
                       onTouchEnd={endDraw}
-                      className="w-full border border-foreground rounded-lg cursor-crosshair bg-white touch-none"
+                      className="w-full border border-border rounded-lg cursor-crosshair bg-surface touch-none"
                       style={{ height: 150 }}
                     />
                   </div>
@@ -279,7 +279,7 @@ export default function NdaPage() {
                       type="checkbox"
                       checked={agreed}
                       onChange={(e) => setAgreed(e.target.checked)}
-                      className="mt-0.5 size-4 rounded border-foreground accent-surface"
+                      className="mt-0.5 size-4 rounded border-border accent-surface"
                     />
                     <span className="text-xs text-subtle leading-relaxed">
                       I, <strong>{signName || nda.memberName}</strong>, have read, understood, and agree to the terms of this Non-Disclosure Agreement.
@@ -289,7 +289,7 @@ export default function NdaPage() {
                   <button
                     onClick={handleSign}
                     disabled={!signName.trim() || !agreed || !signatureData || signing}
-                    className="w-full py-3 bg-surface text-white text-sm font-semibold rounded-xl hover:bg-border transition-colors disabled:opacity-30"
+                    className="w-full py-3 bg-surface text-white text-sm font-semibold rounded-xl hover:bg-background transition-colors disabled:opacity-30"
                   >
                     {signing ? "Signing..." : "Sign Agreement"}
                   </button>

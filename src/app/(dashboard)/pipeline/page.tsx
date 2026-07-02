@@ -109,7 +109,7 @@ export default function PipelinePage() {
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle">
             Pipeline is for admin / CRO. Closers don&apos;t see other closers&apos;
             leads (yet - per-owner views coming in a later phase).
@@ -125,10 +125,10 @@ export default function PipelinePage() {
       <header className="flex items-start justify-between gap-4 max-w-[1600px] mx-auto w-full">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
-              <SignalIcon className="size-5 text-white" />
+            <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+              <SignalIcon className="size-5 text-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold text-foreground">
               Pipeline
             </h1>
           </div>
@@ -147,9 +147,9 @@ export default function PipelinePage() {
 
       {/* Health strip */}
       <div className="grid grid-cols-3 gap-3 max-w-[1600px] mx-auto w-full">
-        <StatTile label="Active" value={stats.active} accent="emerald" />
-        <StatTile label="At risk" value={stats.atRisk} accent="rose" />
-        <StatTile label="Won this month" value={stats.wonThisMonth} accent="sky" />
+        <StatTile label="Active" value={stats.active} accent="success" />
+        <StatTile label="At risk" value={stats.atRisk} accent="danger" />
+        <StatTile label="Won this month" value={stats.wonThisMonth} accent="info" />
       </div>
 
       {/* Filters */}
@@ -160,7 +160,7 @@ export default function PipelinePage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search lead, brand, owner, source"
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40"
+            className="w-full pl-9 pr-3 py-2 rounded-md bg-surface border border-border text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -181,7 +181,7 @@ export default function PipelinePage() {
             onClick={() => setShowNurture((v) => !v)}
             className={`px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors ${
               showNurture
-                ? "bg-zinc-500/30 text-zinc-100 ring-1 ring-zinc-400/40"
+                ? "bg-surface-raised text-foreground ring-1 ring-border"
                 : "bg-surface text-muted hover:bg-surface-raised"
             }`}
           >
@@ -194,11 +194,11 @@ export default function PipelinePage() {
       {!hydrated ? (
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 max-w-[1600px] mx-auto w-full">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-96 bg-background rounded-xl animate-pulse" />
+            <div key={i} className="h-96 bg-surface rounded-xl animate-pulse" />
           ))}
         </div>
       ) : visibleLeads.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04] max-w-[1600px] mx-auto">
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border max-w-[1600px] mx-auto">
           <p className="text-sm text-subtle mb-4">
             {leads.length === 0
               ? "No leads yet. Spin one up to start the pipeline."
@@ -223,7 +223,7 @@ export default function PipelinePage() {
                 </div>
                 <div className="space-y-2 flex-1">
                   {stageLeads.length === 0 ? (
-                    <div className="bg-background/60 rounded-xl p-3 ring-1 ring-white/[0.03]">
+                    <div className="bg-surface rounded-xl p-3 border border-border">
                       <p className="text-[10px] italic text-subtle text-center">
                         Empty
                       </p>
@@ -248,19 +248,19 @@ function StatTile({
 }: {
   label: string;
   value: number;
-  accent: "emerald" | "rose" | "sky";
+  accent: "success" | "danger" | "info";
 }) {
   const colour: Record<typeof accent, string> = {
-    emerald: "from-emerald-500 to-teal-600 shadow-[0_8px_24px_rgba(16,185,129,0.3)]",
-    rose: "from-rose-500 to-red-600 shadow-[0_8px_24px_rgba(244,63,94,0.3)]",
-    sky: "from-sky-500 to-blue-600 shadow-[0_8px_24px_rgba(14,165,233,0.3)]",
+    success: "bg-success/10 text-success",
+    danger: "bg-danger/10 text-danger",
+    info: "bg-info/10 text-info",
   };
   return (
-    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
+    <div className="bg-surface rounded-xl p-4 border border-border flex items-center gap-3">
       <div
-        className={`size-9 rounded-lg bg-gradient-to-br ${colour[accent]} flex items-center justify-center shrink-0`}
+        className={`size-9 rounded-lg ${colour[accent]} flex items-center justify-center shrink-0`}
       >
-        <ChartBarSquareIcon className="size-4 text-white" />
+        <ChartBarSquareIcon className="size-4" />
       </div>
       <div>
         <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">
@@ -279,18 +279,18 @@ function LeadCard({ lead }: { lead: Lead }) {
   return (
     <Link
       href={`/pipeline/${lead.id}`}
-      className="block bg-background rounded-xl p-3 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all group"
+      className="block bg-surface rounded-xl p-3 border border-border hover:border-border transition-all group"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <span className="text-[13px] font-semibold text-foreground truncate group-hover:text-emerald-200">
+        <span className="text-[13px] font-semibold text-foreground truncate">
           {lead.brand_name || lead.full_name || "Untitled"}
         </span>
         {topRisk && (
           <span
             className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold shrink-0 ${
               topRisk.severity === "danger"
-                ? "bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30"
-                : "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30"
+                ? "bg-danger/10 text-danger ring-1 ring-danger/20"
+                : "bg-warning/10 text-warning ring-1 ring-warning/20"
             }`}
             title={risks.map((r) => r.label).join(" · ")}
           >
@@ -315,7 +315,7 @@ function LeadCard({ lead }: { lead: Lead }) {
         )}
       </div>
       {lead.next_action && (
-        <div className="mt-2 pt-2 border-t border-white/[0.04]">
+        <div className="mt-2 pt-2 border-t border-border">
           <div className="text-[10px] uppercase tracking-wider text-subtle mb-0.5">
             Next
           </div>

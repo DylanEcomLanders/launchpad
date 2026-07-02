@@ -105,20 +105,20 @@ export default function PodsPanel() {
       {/* Top callout: unlinked Persons. Only shows if there are some -
        * silent when everyone's slotted. */}
       {unlinked.length > 0 && (
-        <div className="bg-amber-500/[0.06] rounded-xl ring-1 ring-amber-500/20 p-4 flex items-start gap-3">
-          <UserGroupIcon className="size-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="bg-warning/[0.06] rounded-xl ring-1 ring-warning/20 p-4 flex items-start gap-3">
+          <UserGroupIcon className="size-5 text-warning shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-amber-100 mb-0.5">
+            <div className="text-sm font-semibold text-warning mb-0.5">
               {unlinked.length} {unlinked.length === 1 ? "person isn't" : "people aren't"} on a pod yet
             </div>
-            <div className="text-[12px] text-amber-200/80">
+            <div className="text-[12px] text-warning/80">
               {unlinked
                 .slice(0, 6)
                 .map((p) => p.preferred_name || p.full_name)
                 .join(" · ")}
               {unlinked.length > 6 && ` · +${unlinked.length - 6} more`}
             </div>
-            <div className="text-[11px] text-amber-200/60 mt-1">
+            <div className="text-[11px] text-warning/60 mt-1">
               Slot them into a pod below, or leave unassigned if they don't deliver work (founders, ops, etc.).
             </div>
           </div>
@@ -131,7 +131,7 @@ export default function PodsPanel() {
         </div>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground"
         >
           <PlusIcon className="size-3.5" />
           New pod
@@ -139,7 +139,7 @@ export default function PodsPanel() {
       </div>
 
       {pods.length === 0 ? (
-        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-12 text-center">
+        <div className="bg-background rounded-2xl ring-1 ring-border p-12 text-center">
           <UserGroupIcon className="size-8 text-subtle mx-auto mb-3" />
           <p className="text-sm text-foreground mb-1">No pods yet.</p>
           <p className="text-[12px] text-subtle">
@@ -196,9 +196,9 @@ function PodCard({
   }
 
   return (
-    <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="bg-background rounded-2xl ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
       {/* Header */}
-      <div className="p-5 pb-3 border-b border-white/[0.04]">
+      <div className="p-5 pb-3 border-b border-border">
         {editingIdentity ? (
           <div className="space-y-2">
             <input
@@ -227,7 +227,7 @@ function PodCard({
               </button>
               <button
                 onClick={saveIdentity}
-                className="p-1 rounded text-emerald-300 hover:text-emerald-200"
+                className="p-1 rounded text-success hover:text-success"
               >
                 <CheckIcon className="size-3.5" />
               </button>
@@ -254,7 +254,7 @@ function PodCard({
               </button>
               <button
                 onClick={onDelete}
-                className="p-1 rounded text-subtle hover:text-rose-400"
+                className="p-1 rounded text-subtle hover:text-danger"
                 title="Delete pod"
               >
                 <TrashIcon className="size-3.5" />
@@ -358,7 +358,7 @@ function SlotRow({
       <select
         value={member.role}
         onChange={(e) => handleRoleChange(e.target.value as PodMemberRole)}
-        className="h-8 px-2 pr-7 rounded-md bg-background ring-1 ring-white/[0.04] text-[11px] uppercase tracking-wider text-muted focus:outline-none focus:ring-white/[0.12] w-32 shrink-0 cursor-pointer"
+        className="h-8 px-2 pr-7 rounded-md bg-background ring-1 ring-border text-[11px] uppercase tracking-wider text-muted focus:outline-none focus:ring-ring w-32 shrink-0 cursor-pointer"
       >
         {ROLE_ORDER.map((r) => (
           <option key={r} value={r}>
@@ -376,7 +376,7 @@ function SlotRow({
       </div>
       <button
         onClick={handleRemove}
-        className="p-1 text-subtle hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="p-1 text-subtle hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
         title="Remove slot"
       >
         <TrashIcon className="size-3.5" />

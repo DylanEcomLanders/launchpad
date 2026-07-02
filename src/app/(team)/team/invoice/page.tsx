@@ -135,7 +135,7 @@ export default function TeamInvoicePage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-12">
         <div className="max-w-md w-full text-center">
-          <CheckCircleIcon className="size-14 text-emerald-500 mx-auto mb-4" />
+          <CheckCircleIcon className="size-14 text-success mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-3">
             Invoice received.
           </h1>
@@ -259,7 +259,7 @@ export default function TeamInvoicePage() {
             <label className="flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-subtle transition-colors bg-surface">
               {uploading ? (
                 <div className="flex items-center gap-2 text-subtle text-sm">
-                  <div className="size-4 border-2 border-border border-t-[#1B1B1B] rounded-full animate-spin" />
+                  <div className="size-4 border-2 border-border border-t-foreground rounded-full animate-spin" />
                   Uploading...
                 </div>
               ) : (
@@ -298,7 +298,7 @@ export default function TeamInvoicePage() {
 
         {/* Error */}
         {error && (
-          <div className="px-4 py-3 bg-[#2a1a1a] border border-[#4a2a2a] rounded-lg text-sm text-[#ff7a7a]">
+          <div className="px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
             {error}
           </div>
         )}

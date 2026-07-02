@@ -116,7 +116,7 @@ export default function NewExpensePage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger text-[#FCA5A5] rounded-lg text-sm">
+        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger text-danger rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -278,7 +278,7 @@ export default function NewExpensePage() {
                 </p>
               )}
               {fileMeta && (
-                <p className="text-[11px] text-emerald-700 mt-1 inline-flex items-center gap-1.5">
+                <p className="text-[11px] text-success mt-1 inline-flex items-center gap-1.5">
                   <DocumentArrowUpIcon className="size-3" /> {fileMeta.name} uploaded
                 </p>
               )}
@@ -305,7 +305,7 @@ export default function NewExpensePage() {
           <button
             type="submit"
             disabled={saving || uploading}
-            className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save expense

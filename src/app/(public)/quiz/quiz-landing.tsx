@@ -51,14 +51,14 @@ export default function QuizLanding() {
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* Nav */}
-      <nav className="w-full border-b border-foreground bg-white">
+      <nav className="w-full border-b border-foreground bg-surface">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-center">
           <Logo height={18} className="text-foreground" />
         </div>
       </nav>
 
       {/* Hero */}
-      <div className="flex-1 flex flex-col items-center bg-white">
+      <div className="flex-1 flex flex-col items-center bg-surface">
         <div className="w-full max-w-4xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-20 text-center">
           {/* Badges */}
           <div className="flex items-center justify-center gap-3 mb-8">
@@ -96,7 +96,7 @@ export default function QuizLanding() {
           {/* CTA */}
           <Link
             href="/quiz/1"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-surface text-white text-sm font-semibold rounded-lg hover:bg-border transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground/90 transition-colors"
             style={{ fontFamily: "var(--font-body)" }}
           >
             Start the quiz

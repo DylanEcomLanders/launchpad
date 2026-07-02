@@ -62,7 +62,7 @@ function buildSlides({
           <p className="text-lg leading-relaxed">
             Three months from today, your site should be converting measurably better. Twelve months from today, it should be compounding.
           </p>
-          <p className="text-base text-border">
+          <p className="text-base text-muted">
             That&apos;s the only outcome we&apos;re optimising for. Everything we do this quarter ladders up to it.
           </p>
         </SlideBody>
@@ -148,7 +148,7 @@ function buildSlides({
           <p className="text-lg leading-relaxed">
             You&apos;re in the system now. We&apos;ll see you on Slack today, and on the strategy call this week.
           </p>
-          <p className="text-base text-border mt-4">— {strategist || "Your strategist"} + the {safeBrand} pod</p>
+          <p className="text-base text-muted mt-4">— {strategist || "Your strategist"} + the {safeBrand} pod</p>
         </SlideBody>
       ),
     },

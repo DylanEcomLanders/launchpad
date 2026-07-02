@@ -159,7 +159,7 @@ function ToolkitStageBlock({ stage }: { stage: ToolkitStage }) {
           <ToolkitTileLink key={tile.title} tile={tile} />
         ))}
         {stage.tiles.length === 0 && (
-          <p className="py-3 text-xs text-border">No matching tools.</p>
+          <p className="py-3 text-xs text-muted">No matching tools.</p>
         )}
       </div>
     </div>

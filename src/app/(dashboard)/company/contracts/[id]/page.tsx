@@ -186,13 +186,13 @@ export default function ContractDetailPage() {
 
       {/* Signing URL */}
       {agreement.status !== "terminated" && (
-        <div className="mb-6 p-4 bg-background border border-white/[0.04] rounded-xl">
+        <div className="mb-6 p-4 bg-background border border-border rounded-xl">
           <div className={labelClass}>Signing link</div>
           <div className="flex gap-2">
             <input readOnly value={signingUrl} className={inputClass} />
             <button
               onClick={copySigningUrl}
-              className="inline-flex items-center gap-1.5 px-3 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors shrink-0"
             >
               {copied ? (
                 <>
@@ -211,7 +211,7 @@ export default function ContractDetailPage() {
              * modern browser does the rest. */}
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-white/[0.08] text-foreground text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-border text-foreground text-[13px] font-medium rounded-lg hover:ring-border transition-all shrink-0"
               title="Download PDF (Cmd+P → Save as PDF)"
             >
               <ArrowDownTrayIcon className="size-3.5" /> PDF
@@ -223,7 +223,7 @@ export default function ContractDetailPage() {
                 synced ??
                 "Push this agreement to Supabase. Fixes 'agreement not found' on the signing link"
               }
-              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-white/[0.08] text-foreground text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-border text-foreground text-[13px] font-medium rounded-lg hover:ring-border transition-all shrink-0 disabled:opacity-50"
             >
               {syncing ? "Syncing…" : synced ? synced : "Sync to cloud"}
             </button>
@@ -248,16 +248,16 @@ export default function ContractDetailPage() {
 
       {/* Counter-sign CTA */}
       {agreement.status === "team_signed" && !showCounterSign && (
-        <div className="mb-6 p-4 bg-[#FFE4D6] border border-[#F0BB8E] rounded-xl">
-          <div className="text-[13px] font-medium text-[#9A4A1F] mb-1">
+        <div className="mb-6 p-4 bg-warning/10 border border-warning/20 rounded-xl">
+          <div className="text-[13px] font-medium text-warning mb-1">
             {agreement.person_full_name} has signed
           </div>
-          <div className="text-[12px] text-[#7A4B0A] mb-3">
+          <div className="text-[12px] text-warning mb-3">
             Counter-sign to finalise the agreement.
           </div>
           <button
             onClick={() => setShowCounterSign(true)}
-            className="px-3 py-1.5 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
+            className="px-3 py-1.5 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
           >
             Counter-sign now
           </button>
@@ -266,7 +266,7 @@ export default function ContractDetailPage() {
 
       {/* Counter-sign form */}
       {showCounterSign && (
-        <div className="mb-6 p-4 bg-background border border-white rounded-xl">
+        <div className="mb-6 p-4 bg-background border border-border rounded-xl">
           <div className="text-[13px] font-medium text-foreground mb-4">
             Counter-sign
           </div>
@@ -305,7 +305,7 @@ export default function ContractDetailPage() {
               <button
                 onClick={counterSign}
                 disabled={!counterName.trim() || !counterSig || submitting}
-                className="px-3 py-1.5 bg-white text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
               >
                 {submitting ? "Signing..." : "Sign and finalise"}
               </button>
@@ -354,7 +354,7 @@ export default function ContractDetailPage() {
           {agreement.status === "active" && !showTerminate && (
             <button
               onClick={() => setShowTerminate(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-danger hover:bg-[#FCE4E4] rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-danger hover:bg-danger/10 rounded-lg transition-colors"
             >
               <XCircleIcon className="size-3.5" />
               Terminate
@@ -371,7 +371,7 @@ export default function ContractDetailPage() {
 
       {/* Terminate form */}
       {showTerminate && (
-        <div className="mt-4 p-4 bg-background border border-[#FCE4E4] rounded-xl">
+        <div className="mt-4 p-4 bg-background border border-danger/20 rounded-xl">
           <div className="text-[13px] font-medium text-danger mb-3">
             Terminate this agreement
           </div>
@@ -392,7 +392,7 @@ export default function ContractDetailPage() {
             <button
               onClick={terminate}
               disabled={submitting}
-              className="px-3 py-1.5 bg-danger text-white text-[13px] font-medium rounded-lg hover:bg-[#8B1F1F] transition-colors disabled:opacity-40"
+              className="px-3 py-1.5 bg-danger text-white text-[13px] font-medium rounded-lg hover:bg-danger transition-colors disabled:opacity-40"
             >
               {submitting ? "Terminating..." : "Confirm terminate"}
             </button>
@@ -458,11 +458,11 @@ function EngagementDetailsPanel({
   }
 
   return (
-    <div className="mb-6 bg-background rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="mb-6 bg-background rounded-2xl ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-surface-hover transition-colors"
       >
         <div>
           <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
@@ -478,7 +478,7 @@ function EngagementDetailsPanel({
       </button>
 
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t border-white/[0.04] space-y-4">
+        <div className="px-5 pb-5 pt-1 border-t border-border space-y-4">
           {/* Identity */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Field label="Full name">
@@ -587,7 +587,7 @@ function EngagementDetailsPanel({
           </div>
 
           {/* Engagement Schedule extras */}
-          <div className="pt-2 border-t border-white/[0.04]">
+          <div className="pt-2 border-t border-border">
             <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold mb-3">
               Engagement Schedule
             </div>
@@ -753,11 +753,11 @@ function ClausesEditor({
   }
 
   return (
-    <div className="mb-6 bg-background rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="mb-6 bg-background rounded-2xl ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-surface-hover transition-colors"
       >
         <div>
           <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
@@ -773,11 +773,11 @@ function ClausesEditor({
       </button>
 
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t border-white/[0.04] space-y-3">
+        <div className="px-5 pb-5 pt-1 border-t border-border space-y-3">
           {clauses.map((c, idx) => (
             <div
               key={c.id}
-              className="bg-black/30 rounded-lg ring-1 ring-white/[0.04] p-3"
+              className="bg-black/30 rounded-lg ring-1 ring-border p-3"
             >
               <div className="flex items-start gap-2 mb-2">
                 <span className="text-[10px] font-mono text-subtle pt-1.5 shrink-0 w-6 text-right">
@@ -791,7 +791,7 @@ function ClausesEditor({
                       patchClause(idx, { heading: e.target.value });
                     }
                   }}
-                  className="flex-1 h-8 px-2 bg-transparent text-[13px] font-semibold text-foreground focus:outline-none focus:bg-white/[0.04] rounded"
+                  className="flex-1 h-8 px-2 bg-transparent text-[13px] font-semibold text-foreground focus:outline-none focus:bg-surface-hover rounded"
                 />
                 {isDraft && (
                   <div className="flex items-center gap-1 shrink-0">
@@ -814,7 +814,7 @@ function ClausesEditor({
                     <button
                       onClick={() => removeClause(idx)}
                       title="Remove clause"
-                      className="px-1.5 text-subtle hover:text-rose-400"
+                      className="px-1.5 text-subtle hover:text-danger"
                     >
                       ×
                     </button>
@@ -830,7 +830,7 @@ function ClausesEditor({
                   }
                 }}
                 rows={Math.min(12, Math.max(3, c.body.split("\n").length))}
-                className="w-full ml-8 px-2 py-1.5 bg-transparent text-[12px] text-muted leading-relaxed focus:outline-none focus:bg-white/[0.04] rounded resize-y font-mono"
+                className="w-full ml-8 px-2 py-1.5 bg-transparent text-[12px] text-muted leading-relaxed focus:outline-none focus:bg-surface-hover rounded resize-y font-mono"
                 style={{ width: "calc(100% - 2rem)" }}
               />
             </div>
@@ -838,7 +838,7 @@ function ClausesEditor({
           {isDraft && (
             <button
               onClick={addClause}
-              className="w-full py-2 text-[12px] text-subtle hover:text-foreground hover:bg-white/[0.04] rounded-lg ring-1 ring-dashed ring-white/[0.08] transition-colors"
+              className="w-full py-2 text-[12px] text-subtle hover:text-foreground hover:bg-surface-hover rounded-lg ring-1 ring-dashed ring-border transition-colors"
             >
               + Add clause
             </button>

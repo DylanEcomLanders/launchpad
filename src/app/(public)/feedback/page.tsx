@@ -111,7 +111,7 @@ export default function FeedbackPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-surface flex flex-col">
         <header className="px-6 md:px-12 py-5">
           <Logo height={16} className="text-foreground" />
         </header>
@@ -140,7 +140,7 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       <header className="px-6 md:px-12 py-5">
         <Logo height={16} className="text-foreground" />
       </header>
@@ -205,7 +205,7 @@ export default function FeedbackPage() {
                   onClick={() => setRecommendScore(n)}
                   className={`flex-1 py-2.5 text-sm font-medium rounded-lg border-2 transition-all ${
                     recommendScore === n
-                      ? "border-surface bg-surface text-white"
+                      ? "border-surface bg-foreground text-background"
                       : "border-foreground text-subtle hover:border-muted"
                   }`}
                 >
@@ -269,12 +269,12 @@ export default function FeedbackPage() {
           {/* Submit */}
           <div>
             {error && (
-              <p className="text-xs text-red-500 mb-2">{error}</p>
+              <p className="text-xs text-danger mb-2">{error}</p>
             )}
             <button
               onClick={handleSubmit}
               disabled={!canSubmit || submitting}
-              className="w-full px-4 py-3 text-sm font-medium bg-surface text-white rounded-lg hover:bg-border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 text-sm font-medium bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting
                 ? videoBlob

@@ -78,15 +78,15 @@ function IaBox({
 }) {
   const cls =
     tone === "accent"
-      ? "border-white bg-white text-background"
+      ? "border-border bg-surface-raised text-foreground"
       : tone === "muted"
-        ? "border-dashed border-[#D5D5DA] bg-background text-subtle"
+        ? "border-dashed border-border bg-background text-subtle"
         : "border-border bg-surface text-foreground";
   return (
     <div className={`rounded-lg border px-3 py-2 text-center shadow-[var(--shadow-soft)] ${cls}`}>
       <div className="text-[13px] font-semibold leading-tight">{title}</div>
       {subtitle && (
-        <div className={`mt-0.5 text-[10px] ${tone === "accent" ? "text-white/70" : "text-subtle"}`}>
+        <div className={`mt-0.5 text-[10px] ${tone === "accent" ? "text-muted" : "text-subtle"}`}>
           {subtitle}
         </div>
       )}

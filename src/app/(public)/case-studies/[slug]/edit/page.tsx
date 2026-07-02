@@ -199,7 +199,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-raised">
-        <div className="size-6 border-2 border-muted border-t-[#1B1B1B] rounded-full animate-spin" />
+        <div className="size-6 border-2 border-muted border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
@@ -207,7 +207,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
   if (loadError || !study) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-raised">
-        <div className="text-sm text-red-600">{loadError || "Failed to load."}</div>
+        <div className="text-sm text-danger">{loadError || "Failed to load."}</div>
       </div>
     );
   }
@@ -216,7 +216,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
 
   return (
     <div className="min-h-screen bg-surface-raised">
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-border">
+      <header className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-border">
         <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center gap-4">
           <Link
             href="/sales-engine/case-studies"
@@ -250,7 +250,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
               >
                 <ClipboardIcon className="size-3" />
               </button>
-              {copied && <span className="text-[10px] text-green-600">Copied</span>}
+              {copied && <span className="text-[10px] text-success">Copied</span>}
             </div>
           </div>
 
@@ -270,8 +270,8 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
             onClick={togglePublish}
             className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
               study.settings.published
-                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                : "bg-surface text-white hover:bg-border"
+                ? "bg-success/10 text-success hover:bg-success/20"
+                : "bg-foreground text-background hover:bg-foreground/90"
             }`}
           >
             {study.settings.published ? "Published" : "Publish"}
@@ -667,7 +667,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                             },
                           }))
                         }
-                        className="text-muted hover:text-red-600 p-1 mt-1"
+                        className="text-muted hover:text-danger p-1 mt-1"
                       >
                         <TrashIcon className="size-4" />
                       </button>
@@ -1064,7 +1064,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                         techStack: prev.techStack.filter((x) => x !== t),
                       }))
                     }
-                    className="text-xs font-semibold px-3 py-1 bg-surface text-white rounded-full hover:bg-border transition-colors"
+                    className="text-xs font-semibold px-3 py-1 bg-foreground text-background rounded-full hover:bg-foreground/90 transition-colors"
                   >
                     {t} ×
                   </button>
@@ -1207,13 +1207,13 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                     type="button"
                     onClick={commitSlug}
                     disabled={!slugDirty || study.slug === routeSlug || !slugAvailable}
-                    className="px-4 py-2 bg-surface text-white text-xs font-semibold rounded-lg hover:bg-border disabled:opacity-40 transition-colors whitespace-nowrap"
+                    className="px-4 py-2 bg-foreground text-background text-xs font-semibold rounded-lg hover:bg-foreground/90 disabled:opacity-40 transition-colors whitespace-nowrap"
                   >
                     Apply
                   </button>
                 </div>
                 {!slugAvailable && (
-                  <p className="text-[11px] text-red-600 mt-1">Slug already taken</p>
+                  <p className="text-[11px] text-danger mt-1">Slug already taken</p>
                 )}
                 <p className="text-[10px] text-muted mt-1">
                   Public URL: {PUBLIC_BASE}/{study.slug}
@@ -1265,8 +1265,8 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                   onClick={togglePublish}
                   className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
                     study.settings.published
-                      ? "bg-white text-foreground border border-foreground hover:bg-surface-raised"
-                      : "bg-surface text-white hover:bg-border"
+                      ? "bg-surface text-foreground border border-border hover:bg-surface-raised"
+                      : "bg-foreground text-background hover:bg-foreground/90"
                   }`}
                 >
                   {study.settings.published ? "Unpublish" : "Publish"}
@@ -1277,7 +1277,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
         </div>
 
         <aside className="lg:sticky lg:top-[68px] self-start space-y-4">
-          <div className="bg-white border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
+          <div className="bg-surface border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">
               At a glance
             </div>
@@ -1291,11 +1291,11 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
             </div>
           </div>
 
-          <div className="bg-white border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
+          <div className="bg-surface border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">
               Public preview
             </div>
-            <div className="aspect-[4/3] rounded-lg overflow-hidden border border-border bg-white">
+            <div className="aspect-[4/3] rounded-lg overflow-hidden border border-border bg-surface">
               <iframe
                 src={`/case-studies/${study.slug}?draft=1`}
                 title="Public preview"
@@ -1313,7 +1313,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
             </Link>
           </div>
 
-          <div className="bg-white border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
+          <div className="bg-surface border border-border rounded-xl p-5 shadow-[var(--shadow-soft)]">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">
               Duplicate as new
             </div>
@@ -1353,14 +1353,14 @@ function SaveStatePill({ state, error }: { state: SaveState; error: string | nul
   if (state === "saving") {
     return (
       <div className="flex items-center gap-1.5 text-[11px] text-subtle">
-        <div className="size-3 border-2 border-muted border-t-[#1B1B1B] rounded-full animate-spin" />
+        <div className="size-3 border-2 border-muted border-t-foreground rounded-full animate-spin" />
         Saving…
       </div>
     );
   }
   if (state === "saved") {
     return (
-      <div className="flex items-center gap-1.5 text-[11px] text-green-600">
+      <div className="flex items-center gap-1.5 text-[11px] text-success">
         <CheckCircleIcon className="size-3.5" />
         Saved
       </div>
@@ -1368,7 +1368,7 @@ function SaveStatePill({ state, error }: { state: SaveState; error: string | nul
   }
   if (state === "error") {
     return (
-      <div className="text-[11px] text-red-600" title={error || ""}>
+      <div className="text-[11px] text-danger" title={error || ""}>
         Save failed
       </div>
     );

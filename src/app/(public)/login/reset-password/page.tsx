@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
   if (!ready) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-border border-t-muted rounded-full animate-spin" />
       </div>
     );
   }
@@ -110,16 +110,16 @@ export default function ResetPasswordPage() {
               </p>
               <Link
                 href="/"
-                className="inline-block mt-3 px-4 py-2 bg-white text-background text-sm font-semibold rounded-xl hover:bg-foreground transition-colors"
+                className="inline-block mt-3 px-4 py-2 bg-foreground text-background text-sm font-semibold rounded-xl hover:bg-foreground/90 transition-colors"
               >
                 Back to sign in
               </Link>
             </div>
           ) : done ? (
             <div className="text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/10 border border-success/20">
                 <svg
-                  className="w-6 h-6 text-emerald-300"
+                  className="w-6 h-6 text-success"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -150,7 +150,7 @@ export default function ResetPasswordPage() {
                   }}
                   placeholder="At least 8 characters"
                   autoFocus
-                  className="w-full px-4 py-3 bg-background border border-border focus:border-border rounded-xl text-sm text-white focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border focus:border-border rounded-xl text-sm text-foreground focus:outline-none transition-colors"
                 />
               </div>
               <div>
@@ -164,16 +164,16 @@ export default function ResetPasswordPage() {
                     setConfirm(e.target.value);
                     setError("");
                   }}
-                  className="w-full px-4 py-3 bg-background border border-border focus:border-border rounded-xl text-sm text-white focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border focus:border-border rounded-xl text-sm text-foreground focus:outline-none transition-colors"
                 />
                 {error && (
-                  <p className="text-xs text-red-300 mt-2">{error}</p>
+                  <p className="text-xs text-danger mt-2">{error}</p>
                 )}
               </div>
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full px-4 py-3 bg-white text-background text-sm font-semibold rounded-xl hover:bg-foreground disabled:opacity-60 transition-colors"
+                className="w-full px-4 py-3 bg-foreground text-background text-sm font-semibold rounded-xl hover:bg-foreground/90 disabled:opacity-60 transition-colors"
               >
                 {submitting ? "Updating..." : "Set new password"}
               </button>

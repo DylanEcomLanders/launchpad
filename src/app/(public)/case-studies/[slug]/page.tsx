@@ -114,7 +114,7 @@ function CaseStudyRender({
       />
 
       {isDraft && !study.settings.published && (
-        <div className="bg-yellow-100 border-b border-yellow-300 px-6 py-2 text-center text-xs text-yellow-900">
+        <div className="bg-warning/10 border-b border-warning/20 px-6 py-2 text-center text-xs text-warning">
           Draft preview — not published yet
         </div>
       )}
@@ -194,7 +194,7 @@ function CaseStudyRender({
                     return (
                       <div
                         key={img.filename || i}
-                        className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg overflow-hidden border border-border bg-white`}
+                        className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg overflow-hidden border border-border bg-surface`}
                         style={
                           useNaturalAspect
                             ? { aspectRatio: `${img.width} / ${img.height}` }
@@ -290,7 +290,7 @@ function CaseStudyRender({
                   <MotionItem
                     key={card.id}
                     delay={i * 0.08}
-                    className="bg-white border border-border rounded-xl p-6 shadow-[var(--shadow-soft)]"
+                    className="bg-surface border border-border rounded-xl p-6 shadow-[var(--shadow-soft)]"
                   >
                     <div
                       className="text-[10px] font-semibold uppercase tracking-[0.16em]"
@@ -386,7 +386,7 @@ function CaseStudyRender({
               }`}
             >
               {hasTestimonial && study.testimonial && (
-                <div className="bg-white border border-border rounded-xl p-8 shadow-[var(--shadow-soft)]">
+                <div className="bg-surface border border-border rounded-xl p-8 shadow-[var(--shadow-soft)]">
                   <Eyebrow color={sectionGrey}>The Client&apos;s Thoughts</Eyebrow>
                   <blockquote className="mt-5 text-lg md:text-xl font-semibold tracking-tight leading-snug text-foreground">
                     &ldquo;{study.testimonial.quote}&rdquo;
@@ -409,14 +409,14 @@ function CaseStudyRender({
               )}
 
               <div
-                className={`bg-surface text-white rounded-xl p-8 ${
+                className={`bg-foreground text-background rounded-xl p-8 ${
                   hasTestimonial
                     ? "flex flex-col justify-between min-h-[260px]"
                     : "flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-10"
                 }`}
               >
                 <div className={hasTestimonial ? "" : "md:flex-1"}>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-background/60">
                     Ready to start?
                   </div>
                   <h3 className="mt-4 text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
@@ -430,7 +430,7 @@ function CaseStudyRender({
                 >
                   <Link
                     href={study.cta.buttonHref || "/audit"}
-                    className="flex items-center justify-center px-4 py-3 bg-white text-foreground text-sm font-semibold rounded-lg hover:bg-surface-raised transition-colors whitespace-nowrap"
+                    className="flex items-center justify-center px-4 py-3 bg-background text-foreground text-sm font-semibold rounded-lg hover:bg-surface-raised transition-colors whitespace-nowrap"
                   >
                     {study.cta.buttonLabel || "Book a call"}
                     <span className="ml-2">↗</span>
@@ -460,7 +460,7 @@ function CaseStudyRender({
               {study.techStack.map((t) => (
                 <span
                   key={t}
-                  className="text-xs font-semibold px-3 py-1 bg-white text-foreground rounded-full border border-border"
+                  className="text-xs font-semibold px-3 py-1 bg-surface text-foreground rounded-full border border-border"
                 >
                   {t}
                 </span>
@@ -480,7 +480,7 @@ function CaseStudyRender({
                 <Link
                   key={r.id}
                   href={`/case-studies/${r.slug}`}
-                  className="group block bg-white border border-border rounded-xl p-6 hover:shadow-[var(--shadow-card)] transition-shadow"
+                  className="group block bg-surface border border-border rounded-xl p-6 hover:shadow-[var(--shadow-card)] transition-shadow"
                 >
                   <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
                     {r.meta.brandName}
@@ -533,7 +533,7 @@ function MetaItem({ label, value }: { label: string; value: string }) {
 function StatCard({ stat, delayMs = 0 }: { stat: HeadlineStat; delayMs?: number }) {
   const parsed = parseStatValue(stat.value);
   return (
-    <div className="relative bg-white border border-border rounded-xl px-5 py-6 shadow-[var(--shadow-soft)] h-full">
+    <div className="relative bg-surface border border-border rounded-xl px-5 py-6 shadow-[var(--shadow-soft)] h-full">
       {/* Win chip — every headline stat is an improvement */}
       <span
         className="absolute top-4 right-4 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[#E8F5EE] text-success text-[10px] font-semibold leading-none"
@@ -564,7 +564,7 @@ function StatCard({ stat, delayMs = 0 }: { stat: HeadlineStat; delayMs?: number 
 function ComparisonCard({ row }: { row: ResultComparison }) {
   const isUp = row.deltaDirection !== "down";
   return (
-    <div className="bg-white border border-border rounded-xl px-5 py-6 shadow-[var(--shadow-soft)]">
+    <div className="bg-surface border border-border rounded-xl px-5 py-6 shadow-[var(--shadow-soft)]">
       <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle truncate">
         {row.label}
       </div>
@@ -588,11 +588,11 @@ function HeroCollage({ images }: { images: { url: string; alt?: string; filename
   const img = images[0];
   if (!img) {
     return (
-      <div className="aspect-[4/3] rounded-xl border border-dashed border-foreground bg-white" />
+      <div className="aspect-[4/3] rounded-xl border border-dashed border-foreground bg-surface" />
     );
   }
   return (
-    <div className="rounded-xl overflow-hidden bg-white">
+    <div className="rounded-xl overflow-hidden bg-surface">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={img.url} alt={img.alt || ""} className="w-full h-auto block" />
     </div>

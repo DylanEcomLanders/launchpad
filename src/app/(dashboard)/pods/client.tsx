@@ -78,7 +78,7 @@ export default function PodsIndexClient() {
                 <Link
                   key={pod.id}
                   href={`/pods/${pod.id}`}
-                  className="block rounded-xl border border-border bg-surface p-5 hover:border-white transition-colors"
+                  className="block rounded-xl border border-border bg-surface p-5 hover:border-foreground transition-colors"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="min-w-0 flex-1 pr-2">
@@ -179,7 +179,7 @@ function NewPodForm({
         >
           Create
         </button>
-        <button onClick={onCancel} className="px-4 py-2 bg-surface-raised text-foreground rounded-lg text-sm font-medium hover:bg-[#EEE]">
+        <button onClick={onCancel} className="px-4 py-2 bg-surface-raised text-foreground rounded-lg text-sm font-medium hover:bg-surface-hover">
           Cancel
         </button>
       </div>

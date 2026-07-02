@@ -197,7 +197,7 @@ export default function RdDashboardClient() {
         </div>
         <button
           onClick={() => setNewInitiativeOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-foreground/90 transition-colors"
         >
           <PlusIcon className="size-4" />
           New initiative
@@ -272,7 +272,7 @@ export default function RdDashboardClient() {
           </div>
           <button
             onClick={() => setAddIdeaOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border text-foreground text-[12px] font-medium rounded-lg hover:border-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border text-foreground text-[12px] font-medium rounded-lg hover:bg-surface-hover transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add idea
@@ -328,7 +328,7 @@ function InitiativeCard({
   return (
     <Link
       href={`/rd/${initiative.id}`}
-      className="block bg-surface border border-border rounded-xl p-4 hover:border-white/30 hover:shadow-[var(--shadow-soft)] transition-all"
+      className="block bg-surface border border-border rounded-xl p-4 hover:bg-surface-hover hover:shadow-[var(--shadow-soft)] transition-all"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0 flex-1">
@@ -364,7 +364,7 @@ function IdeaCard({ idea }: { idea: Idea }) {
   return (
     <Link
       href={`/rd/ideas/${idea.id}`}
-      className="block bg-surface border border-border rounded-lg p-3 hover:border-white/30 transition-colors"
+      className="block bg-surface border border-border rounded-lg p-3 hover:bg-surface-hover transition-colors"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="text-[14px] font-medium text-foreground flex-1 min-w-0">
@@ -403,7 +403,7 @@ function EmptyState({
       <div className="text-[13px] text-subtle mb-5">{body}</div>
       <button
         onClick={cta.onClick}
-        className="inline-flex items-center px-4 py-2 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
+        className="inline-flex items-center px-4 py-2 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-foreground/90 transition-colors"
       >
         {cta.label}
       </button>

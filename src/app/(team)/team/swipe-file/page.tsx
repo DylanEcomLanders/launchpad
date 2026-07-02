@@ -106,7 +106,7 @@ export default function SwipeFilePage() {
             placeholder="https://example.com/great-page"
             required
             disabled={submitting}
-            className="flex-1 min-w-[260px] text-sm px-3 py-2 border border-border rounded-md focus:outline-none focus:border-subtle disabled:bg-[#F7F7F8]"
+            className="flex-1 min-w-[260px] text-sm px-3 py-2 border border-border rounded-md focus:outline-none focus:border-subtle disabled:bg-surface-raised"
           />
           <button
             type="submit"
@@ -116,7 +116,7 @@ export default function SwipeFilePage() {
             <PlusIcon className="size-3.5" />
             {submitting ? "Capturing…" : "Add to swipe file"}
           </button>
-          {error && <p className="basis-full text-xs text-red-600 mt-1">{error}</p>}
+          {error && <p className="basis-full text-xs text-danger mt-1">{error}</p>}
         </form>
 
         {/* Tag filter */}
@@ -138,7 +138,7 @@ export default function SwipeFilePage() {
                 onClick={() => setTagFilter(tagFilter === t ? "" : t)}
                 className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
                   tagFilter === t
-                    ? "bg-white text-background border-surface"
+                    ? "bg-foreground text-background border-surface"
                     : "bg-surface text-muted border-border hover:border-subtle"
                 }`}
               >
@@ -151,7 +151,7 @@ export default function SwipeFilePage() {
         {/* Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full" />
+            <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full" />
           </div>
         ) : visible.length === 0 ? (
           <div className="bg-surface border border-border rounded-lg py-14 text-center">
@@ -186,7 +186,7 @@ function SwipeCard({ entry, onClick }: { entry: SwipeEntry; onClick: () => void 
       onClick={onClick}
       className="group bg-surface border border-border rounded-lg overflow-hidden hover:border-surface hover:shadow-sm transition-all text-left flex flex-col"
     >
-      <div className="aspect-[16/10] bg-[#F7F7F8] overflow-hidden">
+      <div className="aspect-[16/10] bg-surface-raised overflow-hidden">
         {entry.desktopUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -279,9 +279,9 @@ function SwipeDetail({
         </button>
 
         {/* Screenshot pane */}
-        <div className="flex-1 bg-[#F7F7F8] flex flex-col min-h-0">
+        <div className="flex-1 bg-surface-raised flex flex-col min-h-0">
           <div className="flex items-center justify-center gap-1 p-3 border-b border-border bg-surface">
-            <div className="inline-flex items-center p-0.5 bg-[#EFEFF1] rounded-md">
+            <div className="inline-flex items-center p-0.5 bg-surface-raised rounded-md">
               {(["desktop", "mobile"] as const).map((v) => (
                 <button
                   key={v}
@@ -368,8 +368,8 @@ function SwipeDetail({
               }}
               className={`w-full flex items-center justify-center gap-1.5 text-xs font-medium px-3 py-2 rounded-md transition-colors ${
                 confirmDelete
-                  ? "bg-red-50 text-red-600 ring-1 ring-red-400"
-                  : "text-muted hover:text-red-500 hover:bg-red-50"
+                  ? "bg-danger/10 text-danger ring-1 ring-danger/20"
+                  : "text-muted hover:text-danger hover:bg-danger/10"
               }`}
             >
               <TrashIcon className="size-3.5" />

@@ -58,13 +58,39 @@ function ChannelTag({ channel }: { channel: Channel }) {
   );
 }
 
+/* Per-sender color palette for group-chat attribution. Stable hash
+ * → palette index so the same person always gets the same color
+ * across renders + sessions. Picked for readability against the
+ * dark inbox background. */
+const SENDER_COLORS = [
+  "#7DD3FC", // sky
+  "#86EFAC", // emerald
+  "#FCD34D", // amber
+  "#F9A8D4", // pink
+  "#A78BFA", // violet
+  "#FCA5A5", // rose
+  "#67E8F9", // cyan
+  "#FDBA74", // orange
+  "#BEF264", // lime
+  "#C4B5FD", // indigo
+] as const;
+function senderColor(name: string | undefined): string {
+  if (!name) return "#9CA3AF";
+  /* djb2-ish hash for stable, well-distributed bucket pick. */
+  let h = 5381;
+  for (let i = 0; i < name.length; i++) {
+    h = ((h << 5) + h + name.charCodeAt(i)) | 0;
+  }
+  return SENDER_COLORS[Math.abs(h) % SENDER_COLORS.length];
+}
+
 const timeShort = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
 /* Unlinked chat - same shape the /api/sales/chats endpoint returns
- * in the `unmatched` array. Inbox stores these client-side after
- * the fetch, renders them in their own section, and lets the user
- * promote them to leads. */
+ * in the `unmatched` array. Beeper-extended fields (unread_count,
+ * imgURL, network, chat_type) are optional - undefined on the
+ * Unipile path. */
 interface UnlinkedChat {
   id: string;
   attendee_handle: string;
@@ -72,6 +98,10 @@ interface UnlinkedChat {
   last_message_preview?: string;
   last_message_at?: string;
   last_message_direction?: "inbound" | "outbound";
+  unread_count?: number;
+  imgURL?: string | null;
+  network?: string;
+  chat_type?: "single" | "group";
 }
 
 type ChatChannel = "whatsapp" | "linkedin" | "email";
@@ -130,7 +160,9 @@ export function Inbox({
         id: string;
         type: string;
         mimetype?: string;
+        srcURL?: string;          // Beeper provides this; Unipile doesn't
       }>;
+      senderName?: string;        // who sent it (groups especially)
     }>;
     loading: boolean;
     error?: string;
@@ -140,7 +172,67 @@ export function Inbox({
    * chats by name and by message body preview. Case-insensitive. */
   const [chatSearch, setChatSearch] = useState("");
 
+  /* Composer state for the unlinked-chat preview pane. Lets Ajay
+   * reply directly in a Beeper-backed chat without first promoting
+   * it to a Lead (which would be tedious for casual outbound). */
+  const [unlinkedReply, setUnlinkedReply] = useState("");
+  const [sendingUnlinked, setSendingUnlinked] = useState(false);
+
+  async function sendUnlinkedReply(chatId: string) {
+    if (!unlinkedReply.trim() || sendingUnlinked) return;
+    setSendingUnlinked(true);
+    try {
+      const res = await fetch("/api/sales/outbound/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          /* Beeper send path: recipient = the Beeper chat id (starts
+           * with "!"). The send route detects Beeper config + this
+           * shape and dispatches via sendBeeperMessage. leadId is
+           * required by the route, so we pass the chat id as a
+           * stand-in - it's only used to record a touch which we
+           * skip for unlinked chats by passing leadId="". */
+          leadId: "unlinked",
+          channel: chatChannel,
+          body: unlinkedReply.trim(),
+          by: "Ajay",
+          recipient: chatId,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.ok) {
+        console.error("send failed", json);
+      } else {
+        setUnlinkedReply("");
+        /* Re-pull the thread so the sent message appears. */
+        const chat = unlinked.find((c) => c.id === chatId);
+        if (chat) loadPreview(chat);
+      }
+    } finally {
+      setSendingUnlinked(false);
+    }
+  }
+
+  /* Fire-and-forget chat action — mark read on open, archive on
+   * dismiss. We don't await or refresh because the server-side
+   * action only affects Beeper / WhatsApp state, not our local
+   * unmatched array. The chip auto-refreshes when fetchUnlinked
+   * runs next. */
+  async function chatAction(chatId: string, action: "read" | "archive" | "unarchive") {
+    try {
+      await fetch("/api/sales/chat-actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatId, action }),
+      });
+    } catch {
+      /* swallow - UX is informational, not load-bearing */
+    }
+  }
+
   async function loadPreview(chat: UnlinkedChat) {
+    /* Mark read in Beeper so the user's phone clears the badge too. */
+    chatAction(chat.id, "read");
     setPreview({
       chatId: chat.id,
       attendee_handle: chat.attendee_handle,
@@ -385,53 +477,118 @@ export function Inbox({
             </button>
           </div>
           {chatsError && (
-            <p className="px-3 pb-2 text-[11px] text-rose-300">{chatsError}</p>
+            <p className="px-3 pb-2 text-[11px] text-danger">{chatsError}</p>
           )}
           {!chatsLoading && unlinked.length === 0 && !chatsError && (
             <p className="px-3 pb-3 text-[11px] text-subtle">
               No unlinked {chatChannel} chats.
             </p>
           )}
-          {filteredUnlinked.map((chat) => (
-            <button
-              key={chat.id}
-              onClick={() => {
-                setSelectedUnlinkedId(chat.id);
-                onSelectLead("");
-                loadPreview(chat);
-              }}
-              className={`w-full text-left px-3 py-2.5 border-b border-surface transition-colors ${
-                selectedUnlinkedId === chat.id
-                  ? "bg-surface"
-                  : "hover:bg-surface"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted truncate">
-                  {chat.attendee_name || chat.attendee_handle}
-                </span>
-                <span className="ml-auto shrink-0 text-[9px] uppercase tracking-wider text-amber-400/80 bg-amber-500/10 px-1 py-0.5 rounded">
-                  New
-                </span>
+          {filteredUnlinked.map((chat) => {
+            const hasUnread = (chat.unread_count ?? 0) > 0;
+            const avatarSrc = chat.imgURL
+              ? `/api/sales/attachment?src=${encodeURIComponent(chat.imgURL)}`
+              : null;
+            return (
+              <div
+                key={chat.id}
+                className={`group relative border-b border-surface transition-colors ${
+                  selectedUnlinkedId === chat.id
+                    ? "bg-surface"
+                    : "hover:bg-surface"
+                }`}
+              >
+                <button
+                  onClick={() => {
+                    setSelectedUnlinkedId(chat.id);
+                    onSelectLead("");
+                    loadPreview(chat);
+                  }}
+                  className="w-full text-left px-3 py-2.5 flex items-start gap-2.5"
+                >
+                  {/* Avatar circle. Falls back to initial monogram
+                    * when no imgURL (most non-WhatsApp accounts). */}
+                  {avatarSrc ? (
+                    <img
+                      src={avatarSrc}
+                      alt=""
+                      className="size-9 rounded-full object-cover shrink-0 bg-border"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="size-9 rounded-full bg-border text-muted text-[12px] font-semibold flex items-center justify-center shrink-0">
+                      {(chat.attendee_name || chat.attendee_handle).slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-sm truncate ${
+                          hasUnread
+                            ? "font-semibold text-foreground"
+                            : "font-medium text-muted"
+                        }`}
+                      >
+                        {chat.attendee_name || chat.attendee_handle}
+                      </span>
+                      {chat.chat_type === "group" && (
+                        <span className="text-[9px] uppercase tracking-wider text-subtle bg-surface-raised px-1 py-0.5 rounded">
+                          group
+                        </span>
+                      )}
+                      {hasUnread && (
+                        <span className="ml-auto shrink-0 size-4 rounded-full bg-foreground text-background text-[10px] font-bold flex items-center justify-center">
+                          {chat.unread_count}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[10px] uppercase tracking-wider text-subtle">
+                        {chat.network ?? chatChannel}
+                      </span>
+                      {chat.last_message_at && (
+                        <span className="text-[11px] text-subtle ml-auto">
+                          {timeShort(chat.last_message_at)}
+                        </span>
+                      )}
+                    </div>
+                    {chat.last_message_preview && (
+                      <p
+                        className={`text-[12px] mt-0.5 line-clamp-1 ${
+                          hasUnread ? "text-muted" : "text-subtle"
+                        }`}
+                      >
+                        {chat.last_message_direction === "outbound" ? "You: " : ""}
+                        {chat.last_message_preview}
+                      </p>
+                    )}
+                  </div>
+                </button>
+                {/* Archive icon. Only visible on hover so it doesn't
+                  * clutter the resting view. */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    chatAction(chat.id, "archive");
+                    /* Optimistic: drop from local list so user sees
+                     * it disappear immediately. Next fetchUnlinked
+                     * will reflect the server state. */
+                    setUnlinked((prev) => prev.filter((u) => u.id !== chat.id));
+                    if (selectedUnlinkedId === chat.id) {
+                      setSelectedUnlinkedId(null);
+                      setPreview(null);
+                    }
+                  }}
+                  title="Archive"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-subtle hover:text-danger text-[14px] leading-none"
+                >
+                  ×
+                </button>
               </div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-[10px] uppercase tracking-wider text-subtle">
-                  {chatChannel}
-                </span>
-                {chat.last_message_at && (
-                  <span className="text-[11px] text-subtle ml-auto">
-                    {timeShort(chat.last_message_at)}
-                  </span>
-                )}
-              </div>
-              {chat.last_message_preview && (
-                <p className="text-[12px] text-subtle mt-1 line-clamp-1">
-                  {chat.last_message_direction === "outbound" ? "You: " : ""}
-                  {chat.last_message_preview}
-                </p>
-              )}
-            </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -459,7 +616,7 @@ export function Inbox({
                 <button
                   onClick={() => promoteChat(chat)}
                   disabled={promoting}
-                  className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-background text-[12px] font-semibold rounded-full hover:bg-foreground transition-colors disabled:opacity-50 shrink-0"
+                  className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-accent-foreground text-[12px] font-semibold rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50 shrink-0"
                 >
                   {promoting ? "Promoting…" : "Promote to lead"}
                 </button>
@@ -473,7 +630,7 @@ export function Inbox({
                   </p>
                 )}
                 {preview?.error && (
-                  <p className="text-center text-[12px] text-rose-300 py-8">
+                  <p className="text-center text-[12px] text-danger py-8">
                     {preview.error}
                   </p>
                 )}
@@ -491,35 +648,52 @@ export function Inbox({
                     className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}
                   >
                     <div className="max-w-[78%]">
-                      {m.sent_at && (
-                        <div className="text-[10px] text-subtle mb-1 px-1">
-                          {timeShort(m.sent_at)}
-                        </div>
-                      )}
-                      {/* Image attachments render as <img> via the
-                        * proxy route. WhatsApp media URLs require
-                        * auth so we can't src them directly. */}
+                      {/* Sender attribution. Outbound = always "You";
+                        * inbound shows the senderName Beeper supplies
+                        * (essential in group chats; redundant in 1-on-1
+                        * but cheap to leave on). Falls back to nothing
+                        * when senderName is missing. */}
+                      <div className="text-[10px] text-subtle mb-1 px-1 flex items-center gap-2">
+                        {m.direction === "inbound" && m.senderName && (
+                          <span
+                            className="font-semibold"
+                            style={{ color: senderColor(m.senderName) }}
+                          >
+                            {m.senderName}
+                          </span>
+                        )}
+                        {m.sent_at && <span>{timeShort(m.sent_at)}</span>}
+                      </div>
+                      {/* Image attachments render via /api/sales/attachment.
+                        * Beeper supplies a srcURL (mxc://...) so the
+                        * proxy uses ?src=. Unipile uses messageId +
+                        * attachmentId. The proxy accepts either. */}
                       {m.attachments
                         ?.filter(
                           (a) =>
                             a.type === "img" ||
                             (a.mimetype ?? "").startsWith("image/"),
                         )
-                        .map((a) => (
-                          <a
-                            key={a.id}
-                            href={`/api/sales/attachment?channel=${chatChannel}&messageId=${m.external_id}&attachmentId=${a.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block mb-1"
-                          >
-                            <img
-                              src={`/api/sales/attachment?channel=${chatChannel}&messageId=${m.external_id}&attachmentId=${a.id}`}
-                              alt="attachment"
-                              className="rounded-lg max-w-full max-h-64 object-cover border border-border"
-                            />
-                          </a>
-                        ))}
+                        .map((a) => {
+                          const src = (a as { srcURL?: string }).srcURL
+                            ? `/api/sales/attachment?src=${encodeURIComponent((a as { srcURL?: string }).srcURL!)}`
+                            : `/api/sales/attachment?channel=${chatChannel}&messageId=${m.external_id}&attachmentId=${a.id}`;
+                          return (
+                            <a
+                              key={a.id}
+                              href={src}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block mb-1"
+                            >
+                              <img
+                                src={src}
+                                alt="attachment"
+                                className="rounded-lg max-w-full max-h-64 object-cover border border-border"
+                              />
+                            </a>
+                          );
+                        })}
                       {/* Hide body when it's our [Image] placeholder
                         * AND we already rendered the actual image. */}
                       {!(
@@ -540,6 +714,34 @@ export function Inbox({
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Composer for unlinked Beeper chats. Sends straight
+                * to the chat without requiring a Lead promotion. */}
+              <div className="border-t border-surface-raised p-3">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    sendUnlinkedReply(chat.id);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="text"
+                    value={unlinkedReply}
+                    onChange={(e) => setUnlinkedReply(e.target.value)}
+                    placeholder={`Reply to ${displayName}…`}
+                    disabled={sendingUnlinked}
+                    className="flex-1 px-3 py-2 text-[13px] bg-surface border border-border rounded-md text-foreground placeholder:text-subtle focus:outline-none focus:border-border disabled:opacity-50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!unlinkedReply.trim() || sendingUnlinked}
+                    className="px-3 py-2 bg-accent text-accent-foreground text-[12px] font-semibold rounded-md hover:bg-accent/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {sendingUnlinked ? "Sending…" : "Send"}
+                  </button>
+                </form>
               </div>
             </div>
           );
@@ -788,7 +990,7 @@ function ThreadPane({
           <button
             onClick={submit}
             disabled={!body.trim() || !canSend}
-            className="shrink-0 size-9 rounded-lg bg-foreground text-background flex items-center justify-center hover:bg-white disabled:opacity-30 transition-colors"
+            className="shrink-0 size-9 rounded-lg bg-accent text-accent-foreground flex items-center justify-center hover:bg-accent/90 disabled:opacity-30 transition-colors"
           >
             <PaperAirplaneIcon className="size-4" />
           </button>
@@ -890,7 +1092,7 @@ function ContextPane({
               className="w-full flex items-start gap-2 text-left group"
             >
               {t.completed_at ? (
-                <CheckCircleSolid className="size-4 text-[#25D366] shrink-0 mt-0.5" />
+                <CheckCircleSolid className="size-4 text-success shrink-0 mt-0.5" />
               ) : (
                 <CheckCircleIcon className="size-4 text-subtle group-hover:text-muted shrink-0 mt-0.5" />
               )}
@@ -901,7 +1103,7 @@ function ContextPane({
                   {t.title}
                 </span>
                 <span
-                  className={`block text-[11px] ${overdue(t) ? "text-[#F97066] font-semibold" : "text-subtle"}`}
+                  className={`block text-[11px] ${overdue(t) ? "text-danger font-semibold" : "text-subtle"}`}
                 >
                   {overdue(t) ? "overdue · " : ""}
                   {timeShort(t.due_at)}

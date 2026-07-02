@@ -117,7 +117,7 @@ export default function MyWeekClient() {
           <button
             onClick={() => setWeekStart(mondayOf(new Date()))}
             className={`rounded-md border px-3 py-1.5 text-[12px] font-medium ${
-              isThisWeek ? "border-white bg-white text-background" : "border-border bg-surface text-foreground hover:border-white"
+              isThisWeek ? "border-foreground bg-foreground text-background" : "border-border bg-surface text-foreground hover:border-foreground"
             }`}
           >
             {weekLabel}
@@ -147,7 +147,7 @@ export default function MyWeekClient() {
                   <div className="uppercase tracking-wider">{DAY_LABELS[i]}</div>
                   <div className={`text-[11px] font-normal tabular-nums ${isToday ? "text-foreground" : "text-subtle"}`}>
                     {MONTHS[d.getMonth()]} {d.getDate()}
-                    {isToday && <span className="ml-1 inline-block size-1.5 rounded-full bg-rose-500 align-middle" />}
+                    {isToday && <span className="ml-1 inline-block size-1.5 rounded-full bg-danger align-middle" />}
                   </div>
                 </div>
               );
@@ -183,13 +183,13 @@ export default function MyWeekClient() {
                             setDraft("");
                           }
                         }}
-                        className="h-full min-h-[40px] w-full resize-none rounded-md border border-white bg-surface p-1.5 text-[12px] focus:outline-none"
+                        className="h-full min-h-[40px] w-full resize-none rounded-md border border-border bg-surface p-1.5 text-[12px] focus:outline-none"
                         placeholder="Block…"
                       />
                     ) : val ? (
                       <button
                         onClick={() => openEdit(key)}
-                        className="group relative flex h-full w-full items-start rounded-md border border-border bg-[#F3F6FF] p-1.5 text-left text-[12px] leading-tight text-foreground transition-colors hover:border-white"
+                        className="group relative flex h-full w-full items-start rounded-md border border-border bg-surface-raised p-1.5 text-left text-[12px] leading-tight text-foreground transition-colors hover:border-foreground"
                       >
                         <span className="whitespace-pre-wrap break-words">{val}</span>
                         <span
@@ -201,7 +201,7 @@ export default function MyWeekClient() {
                             delete next[key];
                             persist(next);
                           }}
-                          className="absolute right-0.5 top-0.5 hidden rounded p-0.5 text-subtle hover:text-rose-600 group-hover:block"
+                          className="absolute right-0.5 top-0.5 hidden rounded p-0.5 text-subtle hover:text-danger group-hover:block"
                           aria-label="Clear block"
                         >
                           <XMarkIcon className="size-3" />

@@ -87,9 +87,9 @@ export default function BriefDetailPage({ params }: { params: Promise<{ id: stri
     router.push("/tools/briefs");
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
-  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />)}</div>);
-  if (notFound || !brief) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle mb-3">Brief not found.</p><Link href="/tools/briefs" className="text-[12px] uppercase tracking-wider text-cyan-300 hover:text-cyan-200">← Back</Link></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!hydrated) return (<div className="p-6 space-y-3 max-w-5xl mx-auto">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-surface rounded-xl animate-pulse" />)}</div>);
+  if (notFound || !brief) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle mb-3">Brief not found.</p><Link href="/tools/briefs" className="text-[12px] uppercase tracking-wider text-muted hover:text-foreground">← Back</Link></div></div>);
 
   const sharePath = `/brief-output/${brief.output_slug}`;
 
@@ -102,8 +102,8 @@ export default function BriefDetailPage({ params }: { params: Promise<{ id: stri
             All briefs
           </Link>
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <div className="size-8 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)] shrink-0">
-              <DocumentDuplicateIcon className="size-4 text-white" />
+            <div className="size-8 rounded-xl bg-surface-raised border border-border flex items-center justify-center shrink-0">
+              <DocumentDuplicateIcon className="size-4 text-foreground" />
             </div>
             <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${KIND_TINT[brief.kind]}`}>
               {KIND_LABEL[brief.kind]}
@@ -123,7 +123,7 @@ export default function BriefDetailPage({ params }: { params: Promise<{ id: stri
               {copied ? "Copied" : "Copy link"}
             </button>
             <span>·</span>
-            <Link href={sharePath} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-emerald-300">
+            <Link href={sharePath} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground">
               Open output
               <ArrowTopRightOnSquareIcon className="size-3" />
             </Link>
@@ -133,7 +133,7 @@ export default function BriefDetailPage({ params }: { params: Promise<{ id: stri
           <select value={brief.status} onChange={(e) => patch({ status: e.target.value as BriefStatus })} className={`${inputClass} w-auto`}>
             {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
-          <button onClick={deleteBrief} className="p-1.5 rounded-md text-subtle hover:text-rose-400 hover:bg-rose-500/[0.1]"><TrashIcon className="size-4" /></button>
+          <button onClick={deleteBrief} className="p-1.5 rounded-md text-subtle hover:text-danger hover:bg-danger/10"><TrashIcon className="size-4" /></button>
         </div>
       </div>
 
@@ -247,9 +247,9 @@ export default function BriefDetailPage({ params }: { params: Promise<{ id: stri
               <ScoreField label="Impact" value={brief.hyp_impact ?? 7} onChange={(v) => patch({ hyp_impact: v })} />
               <ScoreField label="Confidence" value={brief.hyp_confidence ?? 6} onChange={(v) => patch({ hyp_confidence: v })} />
               <ScoreField label="Ease" value={brief.hyp_ease ?? 5} onChange={(v) => patch({ hyp_ease: v })} />
-              <div className="bg-emerald-500/15 ring-1 ring-emerald-500/30 rounded-md p-2 text-center">
+              <div className="bg-success/10 ring-1 ring-success/20 rounded-md p-2 text-center">
                 <div className="text-[9px] uppercase tracking-wider text-subtle">Score</div>
-                <div className="text-xl font-mono text-emerald-300">{iceScore(brief)}</div>
+                <div className="text-xl font-mono text-success">{iceScore(brief)}</div>
               </div>
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function BriefDetailPage({ params }: { params: Promise<{ id: stri
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (<div className="bg-background rounded-2xl ring-1 ring-white/[0.04] p-5"><h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2><div className="space-y-3">{children}</div></div>);
+  return (<div className="bg-surface rounded-2xl border border-border p-5"><h2 className="text-sm font-semibold text-foreground mb-4">{title}</h2><div className="space-y-3">{children}</div></div>);
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (<div><label className={labelClass}>{label}</label>{children}</div>);

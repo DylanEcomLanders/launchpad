@@ -37,12 +37,12 @@ export const CLIENT_HATCH =
 // ---------------------------------------------------------------------------
 
 const AVATAR_TONES = [
-  "bg-white text-background",
-  "bg-blue-100 text-blue-800",
-  "bg-emerald-100 text-emerald-800",
-  "bg-amber-100 text-amber-800",
-  "bg-purple-100 text-purple-800",
-  "bg-rose-100 text-rose-800",
+  "bg-foreground text-background",
+  "bg-info/10 text-info",
+  "bg-success/10 text-success",
+  "bg-warning/10 text-warning",
+  "bg-info/10 text-info",
+  "bg-danger/10 text-danger",
 ];
 
 function toneFor(id: string): string {
@@ -75,8 +75,8 @@ export function Avatar({
   return (
     <span
       title={title ?? name}
-      className={`inline-grid shrink-0 place-items-center rounded-full font-semibold ring-2 ring-white ${
-        placeholder ? "border border-dashed border-muted bg-surface-raised text-subtle" : toneFor(id)
+      className={`inline-grid shrink-0 place-items-center rounded-full font-semibold ring-2 ring-surface ${
+        placeholder ? "border border-dashed border-border bg-surface-raised text-subtle" : toneFor(id)
       }`}
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
@@ -128,15 +128,15 @@ export function AnnotationStrip({
       </button>
     );
   return (
-    <div className="mb-5 rounded-xl border border-blue-200 bg-blue-50/60 p-4 shadow-[var(--shadow-soft)]">
+    <div className="mb-5 rounded-xl border border-info/20 bg-info/10 p-4 shadow-[var(--shadow-soft)]">
       <div className="flex items-start gap-2.5">
-        <InformationCircleIcon className="mt-0.5 size-5 shrink-0 text-blue-600" />
+        <InformationCircleIcon className="mt-0.5 size-5 shrink-0 text-info" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-700">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-info">
               {title}
             </span>
-            <button onClick={() => setOpen(false)} className="text-blue-400 hover:text-blue-700">
+            <button onClick={() => setOpen(false)} className="text-info hover:text-foreground">
               <XMarkIcon className="size-4" />
             </button>
           </div>
@@ -175,11 +175,11 @@ export const STATE_META: Record<
   { label: string; cls: string; dot: string }
 > = {
   on_track: { label: "On track", cls: "bg-surface-raised text-subtle border-border", dot: "bg-muted" },
-  due_soon: { label: "Due soon", cls: "bg-amber-50 text-amber-800 border-amber-200", dot: "bg-amber-500" },
-  overdue_internal: { label: "Overdue", cls: "bg-rose-50 text-rose-700 border-rose-200", dot: "bg-rose-500" },
-  waiting_client: { label: "Waiting on client", cls: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500" },
-  blocked: { label: "Blocked", cls: "bg-orange-50 text-orange-800 border-orange-200", dot: "bg-orange-500" },
-  done: { label: "Done", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
+  due_soon: { label: "Due soon", cls: "bg-warning/10 text-warning border-warning/20", dot: "bg-warning" },
+  overdue_internal: { label: "Overdue", cls: "bg-danger/10 text-danger border-danger/20", dot: "bg-danger" },
+  waiting_client: { label: "Waiting on client", cls: "bg-info/10 text-info border-info/20", dot: "bg-info" },
+  blocked: { label: "Blocked", cls: "bg-warning/10 text-warning border-warning/20", dot: "bg-warning" },
+  done: { label: "Done", cls: "bg-success/10 text-success border-success/20", dot: "bg-success" },
 };
 
 export function StateBadge({ state }: { state: TaskState }) {
@@ -221,7 +221,7 @@ export function CapacityBar({
   label?: string;
 }) {
   const pct = Math.min(100, Math.round((used / total) * 100));
-  const tone = pct >= 100 ? "bg-rose-500" : pct >= 80 ? "bg-amber-500" : "bg-emerald-500";
+  const tone = pct >= 100 ? "bg-danger" : pct >= 80 ? "bg-warning" : "bg-success";
   return (
     <div>
       <div className="flex items-baseline justify-between">
@@ -267,7 +267,7 @@ export function PhaseTimeline({
           return (
             <div
               key={i}
-              className="relative h-full border-r border-white/70 last:border-r-0"
+              className="relative h-full border-r border-border last:border-r-0"
               style={{ width: `${widthPct}%`, backgroundColor: ramp.bg }}
               title={`${PHASE_LABEL[sp.phase]} · ${sp.days}d${
                 sp.clientDays ? ` (${sp.clientDays}d client-side)` : ""

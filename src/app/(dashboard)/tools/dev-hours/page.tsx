@@ -254,7 +254,7 @@ export default function DevHoursPage() {
               }}
               className={`shrink-0 flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-md border transition-all duration-200 ${
                 linkCopied
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  ? "bg-success/10 border-success/20 text-success"
                   : "bg-surface border-border text-subtle hover:border-muted hover:text-foreground"
               }`}
             >
@@ -275,11 +275,11 @@ export default function DevHoursPage() {
 
         {/* Error banner */}
         {error && (
-          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
             {error}
             <button
               onClick={() => setError(null)}
-              className="ml-3 text-red-500 hover:text-red-700"
+              className="ml-3 text-danger hover:text-foreground"
             >
               Dismiss
             </button>
@@ -699,11 +699,11 @@ export default function DevHoursPage() {
                           className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
                             entry.invoiced
                               ? "bg-white border-background"
-                              : "border-muted hover:border-white"
+                              : "border-muted hover:border-foreground"
                           }`}
                         >
                           {entry.invoiced && (
-                            <CheckIcon className="size-3 text-white" />
+                            <CheckIcon className="size-3 text-background" />
                           )}
                         </button>
                       </div>
@@ -740,11 +740,11 @@ export default function DevHoursPage() {
                             className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
                               entry.invoiced
                                 ? "bg-white border-background"
-                                : "border-muted hover:border-white"
+                                : "border-muted hover:border-foreground"
                             }`}
                           >
                             {entry.invoiced && (
-                              <CheckIcon className="size-3 text-white" />
+                              <CheckIcon className="size-3 text-background" />
                             )}
                           </button>
                           <button

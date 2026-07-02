@@ -515,7 +515,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setActiveModal("scope")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-subtle bg-surface-raised border border-border rounded-md hover:border-white hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-subtle bg-surface-raised border border-border rounded-md hover:border-foreground hover:text-foreground transition-colors"
             >
               Scope Doc Only
               <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -524,7 +524,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             </button>
             <button
               onClick={() => setActiveModal("roadmap")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-subtle bg-surface-raised border border-border rounded-md hover:border-white hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-subtle bg-surface-raised border border-border rounded-md hover:border-foreground hover:text-foreground transition-colors"
             >
               Roadmap Only
               <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -533,7 +533,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             </button>
             <button
               onClick={() => setActiveModal("agreement")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-subtle bg-surface-raised border border-border rounded-md hover:border-white hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-subtle bg-surface-raised border border-border rounded-md hover:border-foreground hover:text-foreground transition-colors"
             >
               Agreement Only
               <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -683,7 +683,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                       })}
                     </div>
                   )}
-                  <p className="mt-2 text-[10px] text-emerald-600 font-medium">
+                  <p className="mt-2 text-[10px] text-success font-medium">
                     Deadline buffer applied, dates include extra buffer days from Settings
                   </p>
                 </div>
@@ -956,7 +956,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                 >
                   {portalCreated ? (
                     <>
-                      <CheckIcon className="size-3.5 text-emerald-400" />
+                      <CheckIcon className="size-3.5 text-success" />
                       Redirecting to portal...
                     </>
                   ) : creatingPortal ? (

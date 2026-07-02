@@ -136,7 +136,7 @@ export default function ExecutionPage() {
     <div className="space-y-10">
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-[0_0_12px_rgba(6,182,212,0.6)]" />
+          <span className="size-2 rounded-full bg-info" />
           Tools
         </h2>
         <ToolCardGrid cards={EXECUTION_TOOLS} accent="cyan" />
@@ -144,7 +144,7 @@ export default function ExecutionPage() {
 
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-[0_0_12px_rgba(6,182,212,0.6)]" />
+          <span className="size-2 rounded-full bg-info" />
           Playbook notes
         </h2>
         <p className="text-[12px] text-subtle mb-4 max-w-2xl">
@@ -152,7 +152,7 @@ export default function ExecutionPage() {
         </p>
         <div className="space-y-3">
           {sections.length === 0 ? (
-            <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+            <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-border">
               <p className="text-sm text-subtle">
                 {isAdmin
                   ? "Add execution principles, brief flow, sprint cadence."
@@ -180,7 +180,7 @@ export default function ExecutionPage() {
           {isAdmin && (
             <button
               onClick={addSection}
-              className="w-full py-3 rounded-2xl text-[13px] text-subtle ring-1 ring-dashed ring-white/[0.08] hover:ring-cyan-500/40 hover:text-foreground hover:bg-cyan-500/[0.04] transition-all"
+              className="w-full py-3 rounded-2xl text-[13px] text-subtle ring-1 ring-dashed ring-border hover:ring-info/40 hover:text-foreground hover:bg-info/[0.04] transition-all"
             >
               + Add section
             </button>

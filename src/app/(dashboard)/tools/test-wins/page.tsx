@@ -63,16 +63,16 @@ export default function TestWinsPage() {
     await testWinsStore.update(winId, { status, updated_at: nowISO() });
   }
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <header>
         <div className="flex items-center gap-3 mb-2">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
-            <TrophyIcon className="size-5 text-white" />
+          <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+            <TrophyIcon className="size-5 text-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Test wins
           </h1>
         </div>
@@ -84,17 +84,17 @@ export default function TestWinsPage() {
       {/* Uncaptured winners callout */}
       {hydrated && uncapturedWinners.length > 0 && (
         <section>
-          <h2 className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-3">
+          <h2 className="text-[11px] uppercase tracking-wider text-success font-semibold mb-3">
             Winners not yet captured ({uncapturedWinners.length})
           </h2>
           <ul className="space-y-2">
             {uncapturedWinners.map((u) => (
-              <li key={u.test_id} className="bg-emerald-500/5 ring-1 ring-emerald-500/20 rounded-xl p-4 flex items-center gap-3">
-                <CheckCircleIcon className="size-5 text-emerald-400 shrink-0" />
+              <li key={u.test_id} className="bg-success/10 border border-success/20 rounded-xl p-4 flex items-center gap-3">
+                <CheckCircleIcon className="size-5 text-success shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-foreground flex items-center gap-2">
                     <span className="font-semibold">{u.client_name || "Unknown"}</span>
-                    {u.uplift_pct !== undefined && <span className="text-emerald-300 font-mono">+{u.uplift_pct}%</span>}
+                    {u.uplift_pct !== undefined && <span className="text-success font-mono">+{u.uplift_pct}%</span>}
                   </div>
                   <div className="text-[12px] text-muted truncate">{u.hypothesis || "(no hypothesis)"}</div>
                 </div>
@@ -114,15 +114,15 @@ export default function TestWinsPage() {
           Captured ({wins.length})
         </h2>
         {!hydrated ? (
-          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />)}</div>
+          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />)}</div>
         ) : wins.length === 0 ? (
-          <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+          <div className="bg-surface rounded-2xl p-12 text-center border border-border">
             <p className="text-sm text-subtle">No wins captured yet.</p>
           </div>
         ) : (
           <ul className="space-y-2">
             {wins.map((w) => (
-              <li key={w.id} className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04]">
+              <li key={w.id} className="bg-surface rounded-xl p-4 border border-border">
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -134,7 +134,7 @@ export default function TestWinsPage() {
                         {STATUS_LABEL[w.status]}
                       </span>
                       {w.uplift_pct !== undefined && (
-                        <span className="text-emerald-300 font-mono text-[12px]">+{w.uplift_pct}%</span>
+                        <span className="text-success font-mono text-[12px]">+{w.uplift_pct}%</span>
                       )}
                     </div>
                     <div className="text-[12px] text-muted line-clamp-2">{w.hypothesis || "(no hypothesis)"}</div>
@@ -147,7 +147,7 @@ export default function TestWinsPage() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => updateStatus(w.id, w.status === "anonymised" ? "captured" : "anonymised")}
-                      className="p-1.5 rounded-md text-subtle hover:text-amber-300"
+                      className="p-1.5 rounded-md text-subtle hover:text-warning"
                       title="Toggle anonymised"
                     >
                       <EyeSlashIcon className="size-4" />
@@ -155,7 +155,7 @@ export default function TestWinsPage() {
                     {w.status !== "archived" && (
                       <button
                         onClick={() => updateStatus(w.id, "archived")}
-                        className="p-1.5 rounded-md text-subtle hover:text-rose-400"
+                        className="p-1.5 rounded-md text-subtle hover:text-danger"
                         title="Archive"
                       >
                         <ArchiveBoxIcon className="size-4" />
@@ -163,7 +163,7 @@ export default function TestWinsPage() {
                     )}
                     <Link
                       href="/tools/case-studies"
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-cyan-500/15 text-cyan-200 hover:bg-cyan-500/25"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-info/10 text-info ring-1 ring-info/20 hover:bg-info/20"
                       title="Open case studies (promote there)"
                     >
                       Promote

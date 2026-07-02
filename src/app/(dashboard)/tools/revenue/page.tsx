@@ -144,8 +144,8 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="w-full max-w-xs">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center size-12 rounded-full bg-white mb-4">
-            <svg className="size-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+          <div className="inline-flex items-center justify-center size-12 rounded-full bg-surface-raised border border-border mb-4">
+            <svg className="size-5 text-foreground" viewBox="0 0 20 20" fill="currentColor">
               <path
                 fillRule="evenodd"
                 d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
@@ -169,12 +169,12 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
             autoFocus
             className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-1 transition-colors ${
               error
-                ? "border-red-300 focus:ring-red-200 focus:border-red-400"
+                ? "border-danger/40 focus:ring-danger/30 focus:border-danger/60"
                 : "border-border focus:ring-surface/10 focus:border-muted"
             }`}
           />
           {error && (
-            <p className="text-[11px] text-red-500 mt-1.5">{error}</p>
+            <p className="text-[11px] text-danger mt-1.5">{error}</p>
           )}
           <button
             type="submit"
@@ -258,7 +258,7 @@ export default function RevenuePage() {
       <div className="p-6 md:p-10">
         <div className="min-h-[60vh] flex items-center justify-center">
           <div className="text-center">
-            <p className="text-sm text-red-500 mb-3">{error || "No data"}</p>
+            <p className="text-sm text-danger mb-3">{error || "No data"}</p>
             <button
               onClick={() => loadData(password)}
               className="px-4 py-2 text-xs font-semibold border border-border rounded-lg hover:bg-surface-raised transition-colors"
@@ -335,7 +335,7 @@ export default function RevenuePage() {
             {growth !== 0 && (
               <span
                 className={`text-[11px] font-semibold ${
-                  growth > 0 ? "text-emerald-500" : "text-red-500"
+                  growth > 0 ? "text-success" : "text-danger"
                 }`}
               >
                 {growth > 0 ? "+" : ""}

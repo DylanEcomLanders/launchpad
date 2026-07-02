@@ -94,21 +94,21 @@ export default function TeamPaymentsPage() {
           <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-5">
             Payment structure.
           </h1>
-          <p className="text-base md:text-lg leading-relaxed text-border max-w-3xl">
+          <p className="text-base md:text-lg leading-relaxed text-muted max-w-3xl">
             A reference covering the payment structure for everyone working in a pod. Per-page rates by tier, the volume rebate, the rush fee, how retainers work, what doesn&apos;t pay, and the invoicing process. Read it once. Bookmark it. Search it whenever you need to remember a specific rule.
           </p>
         </div>
 
         {/* 01 — Principle */}
         <Section num="01 / Principle" tag="How the model works" title="How the model works.">
-          <p className="text-sm leading-relaxed text-border max-w-2xl">
+          <p className="text-sm leading-relaxed text-muted max-w-2xl">
             Every page you ship has a fee attached to it. Heavier pages pay more, lighter pages pay less, all four roles get paid for their work. Same rates across every project — no exceptions.
           </p>
         </Section>
 
         {/* 02 — Four tiers */}
         <Section num="02 / The tiers" tag="What counts as what" title="The four pricing tiers.">
-          <p className="section-lede mb-6 text-sm leading-relaxed text-border max-w-2xl">
+          <p className="section-lede mb-6 text-sm leading-relaxed text-muted max-w-2xl">
             Four tiers cover everything we build. The tier determines what the team earns per page.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-surface-raised border border-border rounded-lg overflow-hidden">
@@ -116,7 +116,7 @@ export default function TeamPaymentsPage() {
               <div key={t.name} className="bg-surface p-6 flex flex-col gap-2">
                 <div className="text-2xl font-bold text-foreground">{t.name}</div>
                 <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-subtle mb-2">{t.tag}</div>
-                <div className="pt-3 border-t border-dashed border-border text-xs leading-relaxed text-border">
+                <div className="pt-3 border-t border-dashed border-border text-xs leading-relaxed text-muted">
                   {t.examples}
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function TeamPaymentsPage() {
 
         {/* 03 — Per-role fees */}
         <Section num="03 / Per-role fees" tag="What each role earns per page" title="What each role earns per page.">
-          <p className="mb-6 text-sm leading-relaxed text-border max-w-2xl">
+          <p className="mb-6 text-sm leading-relaxed text-muted max-w-2xl">
             The team total splits across the four roles. Primary owns the core deliverable and earns more. Secondary handles revisions, asset prep, and stress-tests the primary&apos;s work.
           </p>
           <div className="border border-border rounded-lg overflow-hidden">
@@ -158,7 +158,7 @@ export default function TeamPaymentsPage() {
 
         {/* 04 — Volume rebate */}
         <Section num="04 / Volume rebate" tag="How 3+ page projects work" title="The volume rebate.">
-          <p className="mb-6 text-sm leading-relaxed text-border max-w-2xl">
+          <p className="mb-6 text-sm leading-relaxed text-muted max-w-2xl">
             Clients get a volume discount on 3+ page projects. The team&apos;s per-page fee drops by 10% on those projects; the agency absorbs the rest of the discount. Both sides share the cost.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-surface-raised border border-border rounded-lg overflow-hidden">
@@ -181,7 +181,7 @@ export default function TeamPaymentsPage() {
 
         {/* 05 — Worked examples */}
         <Section num="05 / Worked examples" tag="Three real project shapes" title="Three worked examples.">
-          <p className="mb-6 text-sm leading-relaxed text-border max-w-2xl">
+          <p className="mb-6 text-sm leading-relaxed text-muted max-w-2xl">
             Three project shapes with each role&apos;s take-home. The 4 Heavy pages example has the volume rebate applied.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-surface-raised border border-border rounded-lg overflow-hidden">
@@ -189,7 +189,7 @@ export default function TeamPaymentsPage() {
               <div key={ex.tag} className="bg-surface p-5 flex flex-col gap-2">
                 <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-subtle">{ex.tag}</div>
                 <div className="text-lg font-bold text-foreground mb-1">{ex.title}</div>
-                <div className="text-xs text-border mb-3 leading-relaxed">{ex.scope}</div>
+                <div className="text-xs text-muted mb-3 leading-relaxed">{ex.scope}</div>
                 <div className="border border-border rounded overflow-hidden">
                   {ex.rows.map((r, i) => (
                     <div
@@ -213,7 +213,7 @@ export default function TeamPaymentsPage() {
 
         {/* 06 — Rush fee */}
         <Section num="06 / Rush fee" tag="What happens on compressed projects" title="The rush fee.">
-          <p className="mb-6 text-sm leading-relaxed text-border max-w-2xl">
+          <p className="mb-6 text-sm leading-relaxed text-muted max-w-2xl">
             When a client needs a project faster than the Monday-kickoff cadence allows, it gets quoted as Rush — mid-week start, compressed timeline. A 50% surcharge is added; that surcharge goes straight to the team working the compressed hours.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-surface-raised border border-border rounded-lg overflow-hidden">
@@ -222,13 +222,13 @@ export default function TeamPaymentsPage() {
               <div className="text-3xl font-bold text-foreground">
                 £250<span className="text-sm font-normal text-subtle">/page</span>
               </div>
-              <div className="text-xs leading-relaxed text-border">
+              <div className="text-xs leading-relaxed text-muted">
                 Your normal per-page rate. Monday kickoff, Thursday delivery in bucket window.
               </div>
             </div>
             <div className="bg-surface p-6 flex flex-col gap-3">
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-subtle">Rush project — +50%</div>
-              <div className="text-3xl font-bold text-white">
+              <div className="text-3xl font-bold text-foreground">
                 £375<span className="text-sm font-normal text-subtle">/page</span>
               </div>
               <div className="text-xs leading-relaxed text-muted">
@@ -243,7 +243,7 @@ export default function TeamPaymentsPage() {
 
         {/* 07 — Retainers */}
         <Section num="07 / Retainers" tag="How Conversion Partnership clients work" title="How retainer pay works.">
-          <p className="mb-6 text-sm leading-relaxed text-border max-w-2xl">
+          <p className="mb-6 text-sm leading-relaxed text-muted max-w-2xl">
             Retainer clients are Dan&apos;s strategic clients. Any build work that lands on your pod board for a retainer client has already been scoped by Dan — you ship it, the standard per-page rate applies. Same tiers, same rebate, same model as one-off projects.
           </p>
           <h3 className="text-lg font-bold text-foreground mb-4 mt-8">
@@ -256,10 +256,10 @@ export default function TeamPaymentsPage() {
                 Build work coming from Dan&apos;s strategy
               </div>
               <ul className="space-y-1 mt-2">
-                <li className="text-xs leading-relaxed text-border">· Any page or build that lands on your pod board</li>
-                <li className="text-xs leading-relaxed text-border">· Paid at standard tier rates — same as one-off projects</li>
-                <li className="text-xs leading-relaxed text-border">· Volume rebate applies the same way</li>
-                <li className="text-xs leading-relaxed text-border">· Tier determined by page type, not by retainer status</li>
+                <li className="text-xs leading-relaxed text-muted">· Any page or build that lands on your pod board</li>
+                <li className="text-xs leading-relaxed text-muted">· Paid at standard tier rates — same as one-off projects</li>
+                <li className="text-xs leading-relaxed text-muted">· Volume rebate applies the same way</li>
+                <li className="text-xs leading-relaxed text-muted">· Tier determined by page type, not by retainer status</li>
               </ul>
             </div>
             <div className="bg-background p-6">
@@ -268,10 +268,10 @@ export default function TeamPaymentsPage() {
                 Strategy and planning hours
               </div>
               <ul className="space-y-1 mt-2">
-                <li className="text-xs leading-relaxed text-border">· Dan&apos;s roadmap work and strategy calls with the client</li>
-                <li className="text-xs leading-relaxed text-border">· Test design conversations</li>
-                <li className="text-xs leading-relaxed text-border">· Performance review meetings</li>
-                <li className="text-xs leading-relaxed text-border">· Covered by the retainer fee — strategist&apos;s time, not pod&apos;s</li>
+                <li className="text-xs leading-relaxed text-muted">· Dan&apos;s roadmap work and strategy calls with the client</li>
+                <li className="text-xs leading-relaxed text-muted">· Test design conversations</li>
+                <li className="text-xs leading-relaxed text-muted">· Performance review meetings</li>
+                <li className="text-xs leading-relaxed text-muted">· Covered by the retainer fee — strategist&apos;s time, not pod&apos;s</li>
               </ul>
             </div>
           </div>
@@ -279,7 +279,7 @@ export default function TeamPaymentsPage() {
 
         {/* 08 — How and when */}
         <Section num="08 / How and when" tag="Invoicing and payment" title="Invoicing and payment.">
-          <p className="mb-6 text-sm leading-relaxed text-border max-w-2xl">
+          <p className="mb-6 text-sm leading-relaxed text-muted max-w-2xl">
             Monthly cycle. We pay on the 28th of each month — invoice us at least 48 hours before that.
           </p>
           <div className="border border-border rounded-lg overflow-hidden">
@@ -311,10 +311,10 @@ export default function TeamPaymentsPage() {
           >
             <div className="flex flex-col gap-1">
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-subtle">Submit invoice</div>
-              <div className="text-base md:text-lg font-bold text-white">Open the invoice form</div>
+              <div className="text-base md:text-lg font-bold text-foreground">Open the invoice form</div>
               <div className="text-xs text-muted mt-1">Native form · attaches your PDF and lands with finance</div>
             </div>
-            <div className="font-mono text-xs uppercase tracking-[0.14em] text-white flex items-center gap-2 group-hover:gap-3 transition-all shrink-0">
+            <div className="font-mono text-xs uppercase tracking-[0.14em] text-foreground flex items-center gap-2 group-hover:gap-3 transition-all shrink-0">
               Open
               <span aria-hidden>→</span>
             </div>
@@ -326,7 +326,7 @@ export default function TeamPaymentsPage() {
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-border flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-subtle">
-          <div className="text-sm tracking-normal normal-case text-border font-sans max-w-md">
+          <div className="text-sm tracking-normal normal-case text-muted font-sans max-w-md">
             Questions on a specific project&apos;s pay, ask your pod&apos;s primary or Alister.
           </div>
           <div className="text-right">
@@ -376,10 +376,10 @@ function RebatePane({
   // Accent pane = dark anchor (LP pattern from /offer hero pricing card)
   const bg = accent ? "bg-surface" : "bg-surface";
   const tagColor = accent ? "text-subtle" : "text-subtle";
-  const bigColor = accent ? "text-white" : "text-foreground";
-  const rowColor = accent ? "text-white" : "text-foreground";
+  const bigColor = accent ? "text-foreground" : "text-foreground";
+  const rowColor = accent ? "text-foreground" : "text-foreground";
   const arrowColor = accent ? "text-subtle" : "text-subtle";
-  const divider = accent ? "border-white/10" : "border-border";
+  const divider = accent ? "border-border" : "border-border";
   return (
     <div className={`p-6 flex flex-col gap-3 ${bg}`}>
       <div className={`font-mono text-[10px] uppercase tracking-[0.14em] ${tagColor}`}>{tag}</div>
@@ -401,14 +401,14 @@ function ProcessRow({ num, what, when }: { num: string; what: string; when: stri
     <div className="grid grid-cols-1 md:grid-cols-[60px_1fr_1fr] gap-6 px-6 py-5 items-baseline bg-surface">
       <div className="text-3xl font-bold text-foreground leading-none">{num}</div>
       <div className="text-base font-semibold text-foreground leading-snug">{what}</div>
-      <div className="text-xs text-border leading-relaxed">{when}</div>
+      <div className="text-xs text-muted leading-relaxed">{when}</div>
     </div>
   );
 }
 
 function Aside({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-5 text-sm leading-relaxed text-border py-3.5 px-5 bg-background border-l-[3px] border-surface">
+    <p className="mt-5 text-sm leading-relaxed text-muted py-3.5 px-5 bg-background border-l-[3px] border-surface">
       {children}
     </p>
   );

@@ -161,12 +161,12 @@ export default function PodsClient() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
-                  tab === t ? "border-white text-foreground" : "border-transparent text-subtle hover:text-foreground"
+                  tab === t ? "border-border text-foreground" : "border-transparent text-subtle hover:text-foreground"
                 }`}
               >
                 {label}
                 {t === "strategy" && (
-                  <span className="ml-1.5 rounded-full bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white">
+                  <span className="ml-1.5 rounded-full bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-foreground">
                     New
                   </span>
                 )}
@@ -207,9 +207,9 @@ function OverviewTab({ onOpenPod }: { onOpenPod: (id: string) => void }) {
     <>
       <div className="mb-5 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
         <div className="mb-3 flex items-center gap-2">
-          <span className={`size-2 rounded-full ${anyTrouble ? "bg-amber-500" : "bg-emerald-500"}`} />
+          <span className={`size-2 rounded-full ${anyTrouble ? "bg-warning" : "bg-success"}`} />
           <span className="text-[11px] font-semibold uppercase tracking-wider text-subtle">Agency health</span>
-          <span className={`text-[12px] font-medium ${anyTrouble ? "text-amber-700" : "text-emerald-700"}`}>
+          <span className={`text-[12px] font-medium ${anyTrouble ? "text-warning" : "text-success"}`}>
             {anyTrouble ? "Watch" : "Healthy"}
           </span>
         </div>
@@ -220,7 +220,7 @@ function OverviewTab({ onOpenPod }: { onOpenPod: (id: string) => void }) {
             return (
               <div key={p.id} className="rounded-lg border border-border bg-surface p-3">
                 <div className="mb-1.5 flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-emerald-500" />
+                  <span className="size-1.5 rounded-full bg-success" />
                   <span className="text-[12px] font-semibold">{p.name}</span>
                 </div>
                 <div className="flex gap-4 text-[11px]">
@@ -247,7 +247,7 @@ function Mini({ label, value, bad }: { label: string; value: string | number; ba
   return (
     <div>
       <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
-      <div className={`text-sm font-semibold tabular-nums ${bad ? "text-rose-700" : "text-foreground"}`}>{value}</div>
+      <div className={`text-sm font-semibold tabular-nums ${bad ? "text-danger" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }
@@ -293,7 +293,7 @@ function PodCard({ pod, onOpen }: { pod: Pod; onOpen: () => void }) {
 
 function WeekCell({ label, used, cap }: { label: string; used: number; cap: number }) {
   const pct = Math.min(100, Math.round((used / cap) * 100));
-  const tone = used >= cap ? "bg-rose-400" : used >= cap * 0.8 ? "bg-amber-400" : "bg-emerald-400";
+  const tone = used >= cap ? "bg-danger" : used >= cap * 0.8 ? "bg-warning" : "bg-success";
   return (
     <div className="rounded-md border border-border bg-surface px-2 py-1.5">
       <div className="flex items-baseline justify-between">
@@ -311,7 +311,7 @@ function Stat({ label, value, bad }: { label: string; value: number; bad?: boole
   return (
     <div>
       <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
-      <div className={`text-lg font-semibold tabular-nums ${bad ? "text-rose-700" : "text-foreground"}`}>{value}</div>
+      <div className={`text-lg font-semibold tabular-nums ${bad ? "text-danger" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }
@@ -353,7 +353,7 @@ function PipelineTab({ onOpen }: { onOpen: (id: string) => void }) {
               <td className="px-4 py-2.5 text-[12px] text-subtle">{POD_BY_ID[p.podId]?.tagline}</td>
               <td className="px-4 py-2.5">
                 {shipped ? (
-                  <span className="text-[12px] font-medium text-emerald-700">Shipped</span>
+                  <span className="text-[12px] font-medium text-success">Shipped</span>
                 ) : (
                   <span className="inline-flex items-center gap-2">
                     <span className="text-[12px] text-foreground">{lead?.phase ? PHASE_LABEL[lead.phase] : "—"}</span>
@@ -460,9 +460,9 @@ function StrategyTab({ onOpenBrief }: { onOpenBrief: (clientId: string) => void 
                   <td className="px-4 py-2.5 text-[12px] text-subtle">{POD_BY_ID[t.podId]?.tagline}</td>
                   <td className="px-4 py-2.5 text-right">
                     {t.testResult?.status === "winner" ? (
-                      <span className="text-[12px] font-semibold text-emerald-700">Winner · +{t.testResult.lift}%</span>
+                      <span className="text-[12px] font-semibold text-success">Winner · +{t.testResult.lift}%</span>
                     ) : t.testResult?.status === "loser" ? (
-                      <span className="text-[12px] font-semibold text-rose-700">Lost · {t.testResult.lift}%</span>
+                      <span className="text-[12px] font-semibold text-danger">Lost · {t.testResult.lift}%</span>
                     ) : (
                       <span className="text-[12px] font-medium text-subtle">Awaiting results</span>
                     )}
@@ -578,9 +578,9 @@ function PodDetail({
         ) : (
           <div className="space-y-1.5">
             {blocked.map((t) => (
-              <div key={t.id} className="flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-[12px]">
-                <span className="text-orange-800">{t.title}{t.blockedReason ? ` — ${t.blockedReason}` : ""}</span>
-                <span className="text-orange-700">{MEMBER_BY_ID[t.assignedTo]?.name}</span>
+              <div key={t.id} className="flex items-center justify-between rounded-lg border border-warning/20 bg-warning/10 px-3 py-2 text-[12px]">
+                <span className="text-warning">{t.title}{t.blockedReason ? ` — ${t.blockedReason}` : ""}</span>
+                <span className="text-warning">{MEMBER_BY_ID[t.assignedTo]?.name}</span>
               </div>
             ))}
           </div>
@@ -676,7 +676,7 @@ function BigStat({ label, value, bad }: { label: string; value: number; bad?: bo
   return (
     <div className="rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
       <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
-      <div className={`mt-1 text-2xl font-semibold tabular-nums ${bad ? "text-rose-700" : "text-foreground"}`}>{value}</div>
+      <div className={`mt-1 text-2xl font-semibold tabular-nums ${bad ? "text-danger" : "text-foreground"}`}>{value}</div>
     </div>
   );
 }
@@ -696,13 +696,13 @@ function StatusControl({ status, onClick }: { status: TaskStatus; onClick: () =>
       className="shrink-0"
     >
       {status === "done" ? (
-        <CheckSolid className="size-5 text-emerald-500" />
+        <CheckSolid className="size-5 text-success" />
       ) : status === "in_progress" ? (
-        <span className="grid size-5 place-items-center rounded-full border-2 border-blue-500">
-          <span className="size-2 rounded-full bg-blue-500" />
+        <span className="grid size-5 place-items-center rounded-full border-2 border-info">
+          <span className="size-2 rounded-full bg-info" />
         </span>
       ) : (
-        <span className="block size-5 rounded-full border-2 border-[#D5D5DA]" />
+        <span className="block size-5 rounded-full border-2 border-border" />
       )}
     </button>
   );
@@ -731,11 +731,11 @@ function TaskRow({
   const d = daysUntil(task.dueDate);
   const dateTone =
     state === "overdue_internal"
-      ? "text-rose-700"
+      ? "text-danger"
       : state === "due_soon"
-        ? "text-amber-700"
+        ? "text-warning"
         : state === "waiting_client"
-          ? "text-blue-600 line-through"
+          ? "text-info line-through"
           : "text-subtle";
 
   return (
@@ -748,7 +748,7 @@ function TaskRow({
             {task.title}
           </span>
           {task.testResult?.status === "winner" && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700">
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success">
               <TrophyIcon className="size-3" /> +{task.testResult.lift}%
             </span>
           )}
@@ -756,7 +756,7 @@ function TaskRow({
         <div className="mt-1 flex items-center gap-2 text-[11px] text-subtle">
           {task.phase && <span>{PHASE_LABEL[task.phase]}</span>}
           {task.locked && <span>· Locked, cascades from primary</span>}
-          {task.blocked && task.blockedReason && <span className="text-orange-700">· {task.blockedReason}</span>}
+          {task.blocked && task.blockedReason && <span className="text-warning">· {task.blockedReason}</span>}
         </div>
       </button>
 
@@ -774,7 +774,7 @@ function TaskRow({
             onKeyDown={(e) => {
               if (e.key === "Enter") onCommitDate((e.target as HTMLInputElement).value || task.dueDate);
             }}
-            className="w-full rounded-md border border-white bg-surface px-1.5 py-1 text-[11px] focus:outline-none"
+            className="w-full rounded-md border border-border bg-surface px-1.5 py-1 text-[11px] focus:outline-none"
           />
         ) : (
           <button
@@ -869,7 +869,7 @@ function TaskPanel({
                 onSetDate(e.target.value || task.dueDate);
                 setEditingDate(false);
               }}
-              className="rounded-md border border-white bg-surface px-1.5 py-0.5 text-[12px] focus:outline-none"
+              className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-[12px] focus:outline-none"
             />
           ) : (
             <button onClick={() => setEditingDate(true)} className="font-medium text-foreground underline decoration-dotted underline-offset-2">
@@ -882,7 +882,7 @@ function TaskPanel({
           <button
             onClick={onToggleWaiting}
             className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
-              task.waitingOn === "client" ? "border-blue-200 bg-blue-50 text-blue-700" : "border-border bg-surface text-subtle hover:text-foreground"
+              task.waitingOn === "client" ? "border-info/20 bg-info/10 text-info" : "border-border bg-surface text-subtle hover:text-foreground"
             }`}
           >
             {task.waitingOn === "client" ? (
@@ -908,10 +908,10 @@ function TaskPanel({
                   onClick={() => onToggleMilestone(m.id)}
                   className="flex w-full items-center gap-2.5 rounded-lg border border-border bg-surface px-3 py-2 text-left hover:border-muted"
                 >
-                  {m.done ? <CheckSolid className="size-5 shrink-0 text-emerald-500" /> : <CheckCircleIcon className="size-5 shrink-0 text-muted" />}
+                  {m.done ? <CheckSolid className="size-5 shrink-0 text-success" /> : <CheckCircleIcon className="size-5 shrink-0 text-muted" />}
                   <span className={`flex-1 text-sm ${m.done ? "text-subtle line-through" : "text-foreground"}`}>{m.label}</span>
                   {m.triggersSecondary && (
-                    <span className="rounded-md border border-white bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white">
+                    <span className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-foreground">
                       Trigger
                     </span>
                   )}
@@ -924,16 +924,16 @@ function TaskPanel({
                 <div className="flex justify-center">
                   <ArrowDownIcon className="size-4 text-muted" />
                 </div>
-                <div className={`mt-1 rounded-lg border p-3 ${paired.locked ? "border-dashed border-[#D5D5DA] bg-background" : "border-emerald-200 bg-emerald-50"}`}>
+                <div className={`mt-1 rounded-lg border p-3 ${paired.locked ? "border-dashed border-border bg-background" : "border-success/20 bg-success/10"}`}>
                   <div className="flex items-center gap-2">
-                    {paired.locked ? <LockClosedIcon className="size-4 text-subtle" /> : <CheckCircleIcon className="size-4 text-emerald-600" />}
+                    {paired.locked ? <LockClosedIcon className="size-4 text-subtle" /> : <CheckCircleIcon className="size-4 text-success" />}
                     <span className="text-sm font-medium text-foreground">{paired.title}</span>
                   </div>
                   <div className="mt-1 pl-6 text-[12px]">
                     {paired.locked ? (
                       <span className="text-subtle">Locked — unlocks when client design approval is ticked</span>
                     ) : (
-                      <span className="font-medium text-emerald-700">
+                      <span className="font-medium text-success">
                         Ready · handed off to {MEMBER_BY_ID[paired.assignedTo]?.name} · due {fmtDayMonth(paired.dueDate)}
                       </span>
                     )}

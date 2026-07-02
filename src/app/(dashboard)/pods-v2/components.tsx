@@ -60,10 +60,10 @@ const BUCKET_COLOR: Record<Bucket, string> = {
 
 const STATUS_COLOR: Record<ProjectStatus, string> = {
   queued: "bg-surface-raised text-subtle border-border",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
-  in_review: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-  shipped: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  slipped: "bg-rose-500/10 text-rose-300 border-rose-500/30",
+  in_progress: "bg-info/10 text-info border-info/20",
+  in_review: "bg-warning/10 text-warning border-warning/20",
+  shipped: "bg-success/10 text-success border-success/20",
+  slipped: "bg-danger/10 text-danger border-danger/20",
 };
 
 const STATUS_LABEL: Record<ProjectStatus, string> = {
@@ -97,7 +97,7 @@ export function StatusBadge({ status }: { status: ProjectStatus }) {
 export function BrandWarmBadge({ active }: { active: boolean }) {
   if (!active) return null;
   return (
-    <span className="inline-flex items-center rounded-md border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-medium text-orange-700">
+    <span className="inline-flex items-center rounded-md border border-info/20 bg-info/10 px-1.5 py-0.5 text-[10px] font-medium text-info">
       Brand-warm
     </span>
   );
@@ -134,15 +134,15 @@ export function CapacityMeter({
   const pct = Math.min(100, Math.round((used / total) * 100));
   const tone =
     pct >= 100
-      ? "bg-rose-500"
+      ? "bg-danger"
       : pct >= 80
-        ? "bg-amber-500"
-        : "bg-emerald-500";
+        ? "bg-warning"
+        : "bg-success";
   const ring =
     pct >= 100
-      ? "border-rose-500/30 bg-rose-500/10"
+      ? "border-danger/20 bg-danger/10"
       : pct >= 80
-        ? "border-amber-500/30 bg-amber-500/10"
+        ? "border-warning/20 bg-warning/10"
         : "border-border bg-surface";
   return (
     <div className={`rounded-xl border p-3 ${ring}`}>
@@ -171,9 +171,9 @@ export function CapacityMeter({
               <span
                 className={
                   nextMonthUsed >= total
-                    ? "font-semibold text-rose-700"
+                    ? "font-semibold text-danger"
                     : nextMonthUsed >= total * 0.8
-                      ? "font-semibold text-amber-700"
+                      ? "font-semibold text-warning"
                       : "font-semibold text-foreground"
                 }
               >
@@ -186,10 +186,10 @@ export function CapacityMeter({
             <div
               className={`h-full transition-all ${
                 nextMonthUsed >= total
-                  ? "bg-rose-300"
+                  ? "bg-danger"
                   : nextMonthUsed >= total * 0.8
-                    ? "bg-amber-300"
-                    : "bg-emerald-300"
+                    ? "bg-warning"
+                    : "bg-success"
               }`}
               style={{ width: `${Math.min(100, Math.round((nextMonthUsed / total) * 100))}%` }}
             />
@@ -203,7 +203,7 @@ export function CapacityMeter({
         </div>
       )}
       {cycleRetainers != null && cycleRetainers > 0 && (
-        <div className="mt-1.5 text-[10px] text-emerald-700">
+        <div className="mt-1.5 text-[10px] text-success">
           {cycleRetainers} CE retainer{cycleRetainers === 1 ? "" : "s"} running · 90-day cycle queued
         </div>
       )}
@@ -226,15 +226,15 @@ function WeekCell({
   const pct = Math.min(100, Math.round((used / cap) * 100));
   const tone =
     used >= cap
-      ? "bg-rose-300"
+      ? "bg-danger"
       : used >= cap * 0.8
-        ? "bg-amber-300"
-        : "bg-emerald-300";
+        ? "bg-warning"
+        : "bg-success";
   const valueTone =
     used >= cap
-      ? "text-rose-700"
+      ? "text-danger"
       : used >= cap * 0.8
-        ? "text-amber-700"
+        ? "text-warning"
         : "text-foreground";
   return (
     <div className="rounded-md border border-border bg-surface px-2 py-1.5">
@@ -375,7 +375,7 @@ export function MemberRow({
         <div className="truncate text-[11px] text-subtle">
           {ROLE_LABEL[member.role]}
           {isOoo && (
-            <span className="ml-1 rounded border border-amber-500/30 bg-amber-500/10 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-amber-300">
+            <span className="ml-1 rounded border border-warning/20 bg-warning/10 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-warning">
               OOO{oooLabel ? ` ${oooLabel}` : ""}
             </span>
           )}
@@ -419,12 +419,12 @@ export function ProjectCard({
         <StatusBadge status={project.status} />
         {client && <BrandWarmBadge active={client.brand_warm} />}
         {project.is_rush && (
-          <span className="inline-flex items-center rounded-md border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">
+          <span className="inline-flex items-center rounded-md border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger">
             Rush
           </span>
         )}
         {midWeekKickoff && (
-          <span className="inline-flex items-center rounded-md border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[10px] font-medium text-rose-800">
+          <span className="inline-flex items-center rounded-md border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger">
             Mid-week kickoff
           </span>
         )}

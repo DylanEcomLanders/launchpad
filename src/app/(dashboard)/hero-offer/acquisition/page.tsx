@@ -155,7 +155,7 @@ export default function AcquisitionPage() {
     <div className="space-y-10">
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+          <span className="size-2 rounded-full bg-success" />
           Tools
         </h2>
         <ToolCardGrid cards={ACQUISITION_TOOLS} accent="emerald" />
@@ -163,7 +163,7 @@ export default function AcquisitionPage() {
 
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+          <span className="size-2 rounded-full bg-success" />
           Playbook notes
         </h2>
         <p className="text-[12px] text-subtle mb-4 max-w-2xl">
@@ -171,7 +171,7 @@ export default function AcquisitionPage() {
         </p>
         <div className="space-y-3">
           {sections.length === 0 ? (
-            <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+            <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-border">
               <p className="text-sm text-subtle">
                 {isAdmin
                   ? "Add the pitch principles, outreach playbook, and anything else needed to win deals."
@@ -199,7 +199,7 @@ export default function AcquisitionPage() {
           {isAdmin && (
             <button
               onClick={addSection}
-              className="w-full py-3 rounded-2xl text-[13px] text-subtle ring-1 ring-dashed ring-white/[0.08] hover:ring-emerald-500/40 hover:text-foreground hover:bg-emerald-500/[0.04] transition-all"
+              className="w-full py-3 rounded-2xl text-[13px] text-subtle ring-1 ring-dashed ring-border hover:ring-success/40 hover:text-foreground hover:bg-success/[0.04] transition-all"
             >
               + Add section
             </button>

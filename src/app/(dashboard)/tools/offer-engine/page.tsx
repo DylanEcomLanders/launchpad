@@ -173,7 +173,7 @@ export default function OfferEnginePage() {
 
         {/* Saved confirmation */}
         {savedSlug && (
-          <div className="mb-8 p-5 border border-white bg-background rounded-xl">
+          <div className="mb-8 p-5 border border-border bg-background rounded-xl">
             <div className="flex items-center gap-2 mb-3">
               <CheckIcon className="size-4 text-foreground" />
               <p className="text-sm font-semibold text-foreground">Proposal saved</p>
@@ -191,7 +191,7 @@ export default function OfferEnginePage() {
               <Link
                 href={`/proposal/${savedSlug}`}
                 target="_blank"
-                className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium text-background bg-white rounded-md hover:bg-foreground transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium text-background bg-foreground rounded-md hover:bg-foreground/90 transition-colors"
               >
                 Open
                 <ArrowTopRightOnSquareIcon className="size-3" />
@@ -276,13 +276,13 @@ export default function OfferEnginePage() {
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-700">{error}</div>
+              <div className="mb-4 p-3 bg-danger/10 border border-danger/20 rounded-md text-xs text-danger">{error}</div>
             )}
 
             <button
               onClick={handleGenerate}
               disabled={generating || !brandName.trim() || !notes.trim()}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-background bg-white rounded-lg hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-background bg-foreground rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generating ? (
                 <>
@@ -332,7 +332,7 @@ export default function OfferEnginePage() {
                     </Link>
                     <button
                       onClick={() => handleDelete(p.slug)}
-                      className="p-2 text-subtle hover:text-red-600 transition-colors"
+                      className="p-2 text-subtle hover:text-danger transition-colors"
                       title="Delete"
                     >
                       <TrashIcon className="size-4" />

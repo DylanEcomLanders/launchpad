@@ -168,11 +168,11 @@ export default function QuotesPage() {
 
       {/* New-link banner */}
       {newLink && (
-        <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-700 bg-emerald-900/20 px-4 py-3">
-          <span className="flex-1 truncate text-xs text-emerald-800">{newLink}</span>
+        <div className="mb-6 flex items-center gap-2 rounded-xl border border-success/20 bg-success/10 px-4 py-3">
+          <span className="flex-1 truncate text-xs text-success">{newLink}</span>
           <button
             onClick={() => copyLink(newLink, "new")}
-            className="shrink-0 text-xs font-medium text-emerald-700 hover:text-emerald-900"
+            className="shrink-0 text-xs font-medium text-success hover:text-success"
           >
             {copiedId === "new" ? "Copied" : "Copy link"}
           </button>
@@ -258,7 +258,7 @@ export default function QuotesPage() {
                       <button
                         onClick={() => removeLine(l.id)}
                         disabled={lines.length === 1}
-                        className="px-1 text-border hover:text-rose-500 disabled:opacity-30"
+                        className="px-1 text-muted hover:text-danger disabled:opacity-30"
                         title="Remove line"
                       >
                         ✕
@@ -331,7 +331,7 @@ export default function QuotesPage() {
                 <button
                   type="button"
                   onClick={() => setIncludes((prev) => [...prev, ""])}
-                  className="rounded-lg border border-dashed border-border px-3 py-1.5 text-sm text-muted hover:border-slate-400 hover:text-muted"
+                  className="rounded-lg border border-dashed border-border px-3 py-1.5 text-sm text-muted hover:border-border hover:text-foreground"
                 >
                   + Add item
                 </button>
@@ -352,18 +352,18 @@ export default function QuotesPage() {
               <button
                 disabled={saving}
                 onClick={generate}
-                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                className="rounded-lg bg-white text-background px-4 py-2 text-sm font-medium hover:bg-foreground disabled:opacity-50"
               >
                 {saving ? "Generating…" : "Generate quote link"}
               </button>
-              {error && <span className="text-xs font-medium text-rose-600">{error}</span>}
+              {error && <span className="text-xs font-medium text-danger">{error}</span>}
             </div>
           </div>
         </div>
       ) : (
         <button
           onClick={() => setBuilding(true)}
-          className="mb-8 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          className="mb-8 rounded-lg bg-white text-background px-4 py-2 text-sm font-medium hover:bg-foreground"
         >
           + New quote
         </button>
@@ -395,7 +395,7 @@ export default function QuotesPage() {
             {view === "trash" ? "Trash is empty." : "No quotes yet."}
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {shown.map((q) => {
               const t = quoteTotals(q.data.lines);
               const link = `${window.location.origin}/quote/${q.token}`;
@@ -407,7 +407,7 @@ export default function QuotesPage() {
                         {q.data.clientName}
                       </span>
                       {q.viewed_at && (
-                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                        <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
                           Viewed
                         </span>
                       )}
@@ -442,7 +442,7 @@ export default function QuotesPage() {
                             await trashQuote(q.id);
                             refresh();
                           }}
-                          className="text-xs text-border hover:text-rose-500"
+                          className="text-xs text-muted hover:text-danger"
                         >
                           Trash
                         </button>
@@ -463,7 +463,7 @@ export default function QuotesPage() {
                             await deleteQuote(q.id);
                             refresh();
                           }}
-                          className="text-xs text-rose-400 hover:text-rose-600"
+                          className="text-xs text-danger hover:text-danger"
                         >
                           Delete
                         </button>

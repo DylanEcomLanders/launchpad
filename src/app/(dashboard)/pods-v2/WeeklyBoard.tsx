@@ -201,13 +201,13 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
     <Link
       href={`/engagements/${clientId}`}
       className={`block rounded-lg border bg-surface p-2.5 shadow-[var(--shadow-soft)] transition-colors hover:border-muted ${
-        behind ? "border-l-2 border-l-rose-500 border-rose-200" : "border-border"
+        behind ? "border-l-2 border-l-danger border-danger/20" : "border-border"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-foreground">{task.title}</span>
         {behind && (
-          <span className="shrink-0 rounded-md bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-rose-300">
+          <span className="shrink-0 rounded-md bg-danger/10 px-1.5 py-0.5 text-[10px] font-semibold text-danger">
             {daysBehind}d behind
           </span>
         )}
@@ -219,7 +219,7 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
         <span className="text-[10px] text-subtle">· {clientName}</span>
       </div>
       <div className="mt-1.5 flex items-center justify-between text-[10px] tabular-nums">
-        <span className={behind ? "font-semibold text-rose-600" : "text-subtle"}>{reason}</span>
+        <span className={behind ? "font-semibold text-danger" : "text-subtle"}>{reason}</span>
         <span className="text-subtle">
           internal {fmt(internalDue(task))} · client {fmt(clientDue(task))}
         </span>
@@ -243,7 +243,7 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
               }}
               className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium focus:outline-none ${
                 task.slip_reason
-                  ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
+                  ? "border-danger/20 bg-danger/10 text-danger"
                   : "border-border bg-surface text-subtle"
               }`}
             >

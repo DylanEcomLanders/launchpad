@@ -22,15 +22,15 @@ export default async function PortfolioV2DetailPage({
   const next = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
 
   return (
-    <div className="min-h-screen bg-background text-white">
-      <header className="border-b border-white/10">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
-          <Link href="/portfolio-v2" className="text-white">
+          <Link href="/portfolio-v2" className="text-foreground">
             <Logo height={22} />
           </Link>
           <Link
             href="/portfolio-v2"
-            className="text-xs md:text-sm text-white/60 hover:text-white"
+            className="text-xs md:text-sm text-muted hover:text-foreground"
           >
             ← All work
           </Link>
@@ -40,7 +40,7 @@ export default async function PortfolioV2DetailPage({
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-12">
         {project.client && (
-          <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">
+          <div className="text-xs uppercase tracking-[0.2em] text-subtle mb-4">
             {project.client}
           </div>
         )}
@@ -52,7 +52,7 @@ export default async function PortfolioV2DetailPage({
             {project.tags.map((t) => (
               <span
                 key={t}
-                className="text-[11px] uppercase tracking-wide px-3 py-1 bg-white/5 text-white/70 rounded-full border border-white/10"
+                className="text-[11px] uppercase tracking-wide px-3 py-1 bg-surface text-muted rounded-full border border-border"
               >
                 {t}
               </span>
@@ -61,10 +61,10 @@ export default async function PortfolioV2DetailPage({
         )}
         {project.results && (
           <div className="mt-10 max-w-2xl">
-            <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-3">
+            <div className="text-xs uppercase tracking-[0.2em] text-subtle mb-3">
               Results
             </div>
-            <p className="text-lg md:text-xl text-white/90 leading-relaxed whitespace-pre-line">
+            <p className="text-lg md:text-xl text-muted leading-relaxed whitespace-pre-line">
               {project.results}
             </p>
           </div>
@@ -81,11 +81,11 @@ export default async function PortfolioV2DetailPage({
 
       {/* Notes */}
       {project.notes && (
-        <section className="max-w-3xl mx-auto px-6 md:px-10 py-16 border-t border-white/10">
-          <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">
+        <section className="max-w-3xl mx-auto px-6 md:px-10 py-16 border-t border-border">
+          <div className="text-xs uppercase tracking-[0.2em] text-subtle mb-4">
             Notes
           </div>
-          <p className="text-white/80 text-lg leading-relaxed whitespace-pre-line">
+          <p className="text-muted text-lg leading-relaxed whitespace-pre-line">
             {project.notes}
           </p>
         </section>
@@ -93,16 +93,16 @@ export default async function PortfolioV2DetailPage({
 
       {/* Prev / Next */}
       {(prev || next) && (
-        <section className="max-w-5xl mx-auto px-6 md:px-10 py-10 border-t border-white/10 flex items-center justify-between gap-4">
+        <section className="max-w-5xl mx-auto px-6 md:px-10 py-10 border-t border-border flex items-center justify-between gap-4">
           {prev ? (
             <Link
               href={`/portfolio-v2/${prev.slug}`}
               className="group flex-1"
             >
-              <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-1">
+              <div className="text-xs uppercase tracking-[0.2em] text-subtle mb-1">
                 Previous
               </div>
-              <div className="text-lg font-semibold group-hover:text-white text-white/80">
+              <div className="text-lg font-semibold group-hover:text-foreground text-muted">
                 ← {prev.name}
               </div>
             </Link>
@@ -112,10 +112,10 @@ export default async function PortfolioV2DetailPage({
               href={`/portfolio-v2/${next.slug}`}
               className="group flex-1 text-right"
             >
-              <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-1">
+              <div className="text-xs uppercase tracking-[0.2em] text-subtle mb-1">
                 Next
               </div>
-              <div className="text-lg font-semibold group-hover:text-white text-white/80">
+              <div className="text-lg font-semibold group-hover:text-foreground text-muted">
                 {next.name} →
               </div>
             </Link>
@@ -124,11 +124,11 @@ export default async function PortfolioV2DetailPage({
       )}
 
       {/* CTA */}
-      <section className="max-w-5xl mx-auto px-6 md:px-10 py-24 text-center border-t border-white/10">
+      <section className="max-w-5xl mx-auto px-6 md:px-10 py-24 text-center border-t border-border">
         <h2 className="text-3xl md:text-5xl font-semibold tracking-tight">
           Want results like this?
         </h2>
-        <p className="text-white/60 mt-4 max-w-xl mx-auto">
+        <p className="text-muted mt-4 max-w-xl mx-auto">
           Get a free, no-bullshit audit of your store. We&rsquo;ll show you exactly
           what&rsquo;s leaking money.
         </p>

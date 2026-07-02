@@ -528,7 +528,7 @@ function TrendChart({
                   />
                 </div>
                 <span className="text-2xs text-subtle whitespace-nowrap">{p.label}</span>
-                <span className="font-mono text-2xs tabular-nums text-border">{p.delivered}</span>
+                <span className="font-mono text-2xs tabular-nums text-muted">{p.delivered}</span>
               </div>
             );
           })}

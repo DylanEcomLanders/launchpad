@@ -100,7 +100,7 @@ function buildSlides(i: Inputs) {
         {i.highlights.trim() ? (
           <ul className="space-y-2 text-base">
             {bulletize(i.highlights).map((l, idx) => (
-              <li key={idx} className="text-border">• {l}</li>
+              <li key={idx} className="text-muted">• {l}</li>
             ))}
           </ul>
         ) : (
@@ -133,7 +133,7 @@ function buildSlides(i: Inputs) {
           <p className="text-lg leading-relaxed">
             We said measurable CR lift in 90 days or we keep working free. Look at the numbers. Lift achieved.
           </p>
-          <p className="text-base text-border">
+          <p className="text-base text-muted">
             This is the moment most agencies overpromise and underdeliver. We&apos;ve delivered. The system is working.
           </p>
         </SlideBody>
@@ -159,7 +159,7 @@ function buildSlides(i: Inputs) {
           <p className="text-lg leading-relaxed">
             A year ago, your site was converting at one number. Today, it&apos;s at another. Every month, every test, every page made the system smarter.
           </p>
-          <p className="text-base text-border">
+          <p className="text-base text-muted">
             That&apos;s what the Conversion Engine does. It compounds.
           </p>
         </SlideBody>
@@ -174,7 +174,7 @@ function buildSlides(i: Inputs) {
         {i.nextPhase.trim() ? (
           <ul className="space-y-2 text-base">
             {bulletize(i.nextPhase).map((l, idx) => (
-              <li key={idx} className="text-border">• {l}</li>
+              <li key={idx} className="text-muted">• {l}</li>
             ))}
           </ul>
         ) : (
@@ -191,7 +191,7 @@ function buildSlides(i: Inputs) {
         <p className="text-lg leading-relaxed">
           The hardest part of CRO is showing up every month. We&apos;ve shown up. The numbers show it. Let&apos;s keep going.
         </p>
-        <p className="text-base text-border mt-4">— The {safeBrand} pod at Ecom Landers</p>
+        <p className="text-base text-muted mt-4">— The {safeBrand} pod at Ecom Landers</p>
       </SlideBody>
     ),
   };

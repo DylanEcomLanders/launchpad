@@ -35,9 +35,9 @@ function uid(): string {
 
 const statusOptions: { id: ContentStatus; label: string; color: string }[] = [
   { id: "idea", label: "Idea", color: "bg-surface-raised text-muted" },
-  { id: "drafted", label: "Drafted", color: "bg-blue-50 text-blue-600" },
-  { id: "scheduled", label: "Scheduled", color: "bg-amber-50 text-amber-600" },
-  { id: "published", label: "Published", color: "bg-emerald-50 text-emerald-600" },
+  { id: "drafted", label: "Drafted", color: "bg-info/10 text-info" },
+  { id: "scheduled", label: "Scheduled", color: "bg-warning/10 text-warning" },
+  { id: "published", label: "Published", color: "bg-success/10 text-success" },
 ];
 
 const emptyPiece: Omit<ContentPiece, "id" | "createdAt"> = {
@@ -293,10 +293,10 @@ export default function FunnelPlannerPage() {
             {gaps.recommendations.map((rec, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3"
+                className="flex items-start gap-2 bg-warning/10 border border-warning/20 rounded-lg p-3"
               >
-                <ExclamationTriangleIcon className="size-4 text-amber-500 mt-0.5 shrink-0" />
-                <p className="text-xs text-amber-800">{rec}</p>
+                <ExclamationTriangleIcon className="size-4 text-warning mt-0.5 shrink-0" />
+                <p className="text-xs text-warning">{rec}</p>
               </div>
             ))}
           </div>
@@ -310,7 +310,7 @@ export default function FunnelPlannerPage() {
                 resetForm();
                 setShowForm(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-white text-background text-xs font-medium rounded-md hover:bg-foreground transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:bg-foreground/90 transition-colors"
             >
               <PlusIcon className="size-3.5" />
               Add Content
@@ -323,7 +323,7 @@ export default function FunnelPlannerPage() {
                   className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md border border-border bg-surface text-subtle hover:bg-surface-raised transition-colors"
                 >
                   {copied ? (
-                    <CheckIcon className="size-3.5 text-emerald-500" />
+                    <CheckIcon className="size-3.5 text-success" />
                   ) : (
                     <ClipboardDocumentIcon className="size-3.5" />
                   )}
@@ -377,7 +377,7 @@ export default function FunnelPlannerPage() {
                 onClick={() => setView("board")}
                 className={`p-1.5 ${
                   view === "board"
-                    ? "bg-white text-background"
+                    ? "bg-foreground text-background"
                     : "bg-surface text-subtle hover:bg-surface-raised"
                 }`}
               >
@@ -387,7 +387,7 @@ export default function FunnelPlannerPage() {
                 onClick={() => setView("list")}
                 className={`p-1.5 ${
                   view === "list"
-                    ? "bg-white text-background"
+                    ? "bg-foreground text-background"
                     : "bg-surface text-subtle hover:bg-surface-raised"
                 }`}
               >
@@ -411,7 +411,7 @@ export default function FunnelPlannerPage() {
             <div className="space-y-4">
               <div>
                 <label className={labelClass}>
-                  Title <span className="text-red-400">*</span>
+                  Title <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -558,7 +558,7 @@ export default function FunnelPlannerPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!form.title.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {editingId ? "Save Changes" : "Add to Plan"}
               </button>
@@ -639,7 +639,7 @@ export default function FunnelPlannerPage() {
                             </button>
                             <button
                               onClick={() => deletePiece(piece.id)}
-                              className="p-1 text-subtle hover:text-red-400 transition-colors"
+                              className="p-1 text-subtle hover:text-danger transition-colors"
                             >
                               <TrashIcon className="size-3" />
                             </button>
@@ -718,7 +718,7 @@ export default function FunnelPlannerPage() {
                               </button>
                               <button
                                 onClick={() => deletePiece(piece.id)}
-                                className="p-1.5 text-subtle hover:text-red-400 transition-colors"
+                                className="p-1.5 text-subtle hover:text-danger transition-colors"
                               >
                                 <TrashIcon className="size-3.5" />
                               </button>
@@ -784,7 +784,7 @@ export default function FunnelPlannerPage() {
                     {gaps.missing.map((m) => (
                       <span
                         key={m}
-                        className="text-[10px] font-medium px-2 py-1 rounded bg-red-50 text-red-400 border border-red-200"
+                        className="text-[10px] font-medium px-2 py-1 rounded bg-danger/10 text-danger border border-danger/20"
                       >
                         {m}
                       </span>

@@ -176,7 +176,7 @@ export default function StructurePanel() {
 
   if (people.length === 0) {
     return (
-      <div className="bg-background border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
+      <div className="bg-background border border-dashed border-border rounded-xl p-12 text-center">
         <div className="text-sm text-subtle mb-3">
           No people yet - add team members to see the org chart.
         </div>
@@ -191,7 +191,7 @@ export default function StructurePanel() {
   }
 
   return (
-    <div className="bg-background border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]" style={{ height: "75vh" }}>
+    <div className="bg-background border border-border rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]" style={{ height: "75vh" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -204,7 +204,7 @@ export default function StructurePanel() {
         <Background color="#E5E5EA" gap={16} />
         <Controls position="bottom-right" />
         <MiniMap nodeColor={(n) => deptColor((n.data as { person: Person })?.person?.department)} pannable zoomable />
-        <Panel position="top-left" className="bg-background border border-white/[0.04] rounded-lg p-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <Panel position="top-left" className="bg-background border border-border rounded-lg p-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           <div className="flex items-center gap-2">
             <button
               onClick={resetLayout}
@@ -214,7 +214,7 @@ export default function StructurePanel() {
             </button>
           </div>
         </Panel>
-        <Panel position="top-right" className="bg-background border border-white/[0.04] rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-w-[220px]">
+        <Panel position="top-right" className="bg-background border border-border rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-w-[220px]">
           <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle mb-2">
             Departments
           </div>
@@ -239,7 +239,7 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
   return (
     <div
       onClick={onOpen}
-      className="bg-background border border-white/[0.04] rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] hover:border-white/[0.12] transition-colors cursor-pointer"
+      className="bg-background border border-border rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] hover:border-border transition-colors cursor-pointer"
       style={{ width: NODE_W, height: NODE_H }}
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
@@ -270,7 +270,7 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
 
 function PreviewPanel({ person, onClose }: { person: Person; onClose: () => void }) {
   return (
-    <div className="absolute right-4 top-4 bg-background border border-white/[0.04] rounded-xl p-4 shadow-2xl w-72 z-10">
+    <div className="absolute right-4 top-4 bg-background border border-border rounded-xl p-4 shadow-2xl w-72 z-10">
       <div className="flex items-start gap-3 mb-3">
         {person.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -303,7 +303,7 @@ function PreviewPanel({ person, onClose }: { person: Person; onClose: () => void
       </div>
       <Link
         href={`/company/people/${person.id}`}
-        className="mt-3 block text-center text-sm bg-white text-background py-2 rounded-lg hover:opacity-90"
+        className="mt-3 block text-center text-sm bg-foreground text-background py-2 rounded-lg hover:opacity-90"
       >
         Open profile →
       </Link>

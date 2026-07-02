@@ -24,10 +24,14 @@ import {
   type RiskLevel,
 } from "@/lib/throughput/calc";
 
-const RISK_META: Record<RiskLevel, { label: string; tint: string; icon: typeof CheckCircleIcon }> = {
-  on_track: { label: "On track", tint: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30", icon: CheckCircleIcon },
-  behind: { label: "Behind", tint: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30", icon: ExclamationTriangleIcon },
-  critical: { label: "Critical", tint: "bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30", icon: ShieldExclamationIcon },
+/* Semantic token classes per risk level - the ONE place risk maps to colour. */
+const RISK_META: Record<
+  RiskLevel,
+  { label: string; pill: string; soft: string; solid: string; icon: typeof CheckCircleIcon }
+> = {
+  on_track: { label: "On track", pill: "bg-success/10 text-success ring-1 ring-success/20", soft: "bg-success/10 text-success", solid: "bg-success", icon: CheckCircleIcon },
+  behind: { label: "Behind", pill: "bg-warning/10 text-warning ring-1 ring-warning/20", soft: "bg-warning/10 text-warning", solid: "bg-warning", icon: ExclamationTriangleIcon },
+  critical: { label: "Critical", pill: "bg-danger/10 text-danger ring-1 ring-danger/20", soft: "bg-danger/10 text-danger", solid: "bg-danger", icon: ShieldExclamationIcon },
 };
 
 export default function ThroughputPage() {
@@ -57,16 +61,16 @@ export default function ThroughputPage() {
     return counts;
   }, [rows]);
 
-  if (!isAdmin) return (<div className="p-6"><div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
+  if (!isAdmin) return (<div className="p-6"><div className="bg-surface rounded-2xl p-8 text-center border border-border"><p className="text-sm text-subtle">Admin / CRO only.</p></div></div>);
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <header>
         <div className="flex items-center gap-3 mb-2">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)]">
-            <ChartBarSquareIcon className="size-5 text-white" />
+          <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+            <ChartBarSquareIcon className="size-5 text-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Throughput
           </h1>
         </div>
@@ -83,16 +87,16 @@ export default function ThroughputPage() {
       </div>
 
       {!hydrated ? (
-        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />)}</div>
       ) : rows.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border">
           <p className="text-sm text-subtle">
             No active clients yet (no signed proposals). Sign a proposal first to start tracking throughput.
           </p>
         </div>
       ) : (
-        <div className="bg-background rounded-2xl ring-1 ring-white/[0.04] overflow-hidden">
-          <div className="grid grid-cols-[1fr_80px_160px_160px_100px] gap-3 px-5 py-3 border-b border-white/[0.04] text-[10px] uppercase tracking-wider font-semibold text-subtle">
+        <div className="bg-surface rounded-2xl border border-border overflow-hidden">
+          <div className="grid grid-cols-[1fr_80px_160px_160px_100px] gap-3 px-5 py-3 border-b border-border text-[10px] uppercase tracking-wider font-semibold text-subtle">
             <div>Client</div>
             <div>Tier</div>
             <div>Pages this month</div>
@@ -101,7 +105,7 @@ export default function ThroughputPage() {
           </div>
           <ul>
             {rows.map((r) => (
-              <li key={r.client_name} className="grid grid-cols-[1fr_80px_160px_160px_100px] gap-3 px-5 py-3 border-b border-white/[0.04] items-center text-[13px] hover:bg-white/[0.02] transition-colors">
+              <li key={r.client_name} className="grid grid-cols-[1fr_80px_160px_160px_100px] gap-3 px-5 py-3 border-b border-border last:border-0 items-center text-[13px] hover:bg-surface-hover transition-colors">
                 <div className="text-foreground font-medium truncate">{r.client_name}</div>
                 <div className="text-muted">{r.tier}</div>
                 <ProgressCell actual={r.pages_shipped} target={r.pages_target} risk={r.pages_risk} />
@@ -119,19 +123,14 @@ export default function ThroughputPage() {
 function SummaryTile({ label, value, risk }: { label: string; value: number; risk: RiskLevel }) {
   const meta = RISK_META[risk];
   const Icon = meta.icon;
-  const gradient: Record<RiskLevel, string> = {
-    on_track: "from-emerald-500 to-teal-600 shadow-[0_8px_24px_rgba(16,185,129,0.3)]",
-    behind: "from-amber-500 to-orange-600 shadow-[0_8px_24px_rgba(245,158,11,0.3)]",
-    critical: "from-rose-500 to-red-600 shadow-[0_8px_24px_rgba(244,63,94,0.3)]",
-  };
   return (
-    <div className="bg-background rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
-      <div className={`size-9 rounded-lg bg-gradient-to-br ${gradient[risk]} flex items-center justify-center shrink-0`}>
-        <Icon className="size-4 text-white" />
+    <div className="bg-surface rounded-xl p-4 border border-border flex items-center gap-3">
+      <div className={`size-9 rounded-lg ${meta.soft} flex items-center justify-center shrink-0`}>
+        <Icon className="size-4" />
       </div>
       <div>
         <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">{label}</div>
-        <div className="text-2xl font-semibold text-foreground">{value}</div>
+        <div className="text-2xl font-semibold text-foreground tabular-nums">{value}</div>
       </div>
     </div>
   );
@@ -139,19 +138,15 @@ function SummaryTile({ label, value, risk }: { label: string; value: number; ris
 
 function ProgressCell({ actual, target, risk }: { actual: number; target: number; risk: RiskLevel }) {
   const pct = target === 0 ? 0 : Math.min(100, (actual / target) * 100);
-  const barTint: Record<RiskLevel, string> = {
-    on_track: "from-emerald-500 to-teal-500",
-    behind: "from-amber-500 to-orange-500",
-    critical: "from-rose-500 to-red-500",
-  };
+  const meta = RISK_META[risk];
   return (
     <div>
       <div className="text-[11px] text-muted mb-1">
         <span className="font-mono">{actual}</span>
         <span className="text-subtle"> / {target}</span>
       </div>
-      <div className="h-1.5 bg-surface rounded-full overflow-hidden">
-        <div className={`h-full bg-gradient-to-r ${barTint[risk]} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+      <div className="h-1.5 bg-surface-raised rounded-full overflow-hidden">
+        <div className={`h-full ${meta.solid} rounded-full transition-all`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -160,7 +155,7 @@ function ProgressCell({ actual, target, risk }: { actual: number; target: number
 function RiskPill({ risk }: { risk: RiskLevel }) {
   const meta = RISK_META[risk];
   return (
-    <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold inline-block ${meta.tint}`}>
+    <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold inline-block ${meta.pill}`}>
       {meta.label}
     </span>
   );

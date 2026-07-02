@@ -252,7 +252,7 @@ export function FontLibraryClient() {
 
       {/* Error banner */}
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 flex items-center justify-between">
+        <div className="mb-4 rounded-lg border border-danger/20 bg-danger/10 px-4 py-3 text-xs text-danger flex items-center justify-between">
           <span>{error}</span>
           <button onClick={() => setError("")}>
             <XMarkIcon className="size-4" />
@@ -338,7 +338,7 @@ function FilterChips({
               onClick={() => onChange(opt.value)}
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                 isActive
-                  ? "bg-white text-background border-surface"
+                  ? "bg-foreground text-background border-surface"
                   : "bg-surface text-foreground border-border hover:border-surface"
               }`}
             >
@@ -499,7 +499,7 @@ function FontCard({
                 onClick={() => setActiveIdx(i)}
                 className={`text-[10px] font-medium px-2 py-0.5 rounded-full border tabular-nums transition-colors ${
                   isActive
-                    ? "bg-white text-background border-surface"
+                    ? "bg-foreground text-background border-surface"
                     : "bg-surface text-subtle border-border hover:border-surface hover:text-foreground"
                 }`}
                 title={`${v.weight} ${v.style}`}
@@ -1000,7 +1000,7 @@ function PendingGroupCard({
         </span>
         <button
           onClick={onRemove}
-          className="text-subtle hover:text-red-600 shrink-0"
+          className="text-subtle hover:text-danger shrink-0"
           title="Remove this font"
         >
           <XMarkIcon className="size-4" />
@@ -1013,7 +1013,7 @@ function PendingGroupCard({
           <ul className="rounded border border-border divide-y divide-border">
             {group.files.map((p, i) => (
               <li key={i} className="flex items-center gap-2 px-2 py-1.5 text-[11px]">
-                <CheckCircleIcon className="size-3.5 text-emerald-500 shrink-0" />
+                <CheckCircleIcon className="size-3.5 text-success shrink-0" />
                 <span className="flex-1 truncate text-foreground">{p.file.name}</span>
                 <select
                   value={p.weight}
@@ -1038,7 +1038,7 @@ function PendingGroupCard({
                 </select>
                 <button
                   onClick={() => onFileRemove(i)}
-                  className="text-subtle hover:text-red-600"
+                  className="text-subtle hover:text-danger"
                   title="Remove this file"
                 >
                   <XMarkIcon className="size-3.5" />
@@ -1059,7 +1059,7 @@ function PendingGroupCard({
                 onClick={() => onChange({ category: c })}
                 className={`text-[11px] px-2.5 py-0.5 rounded-full border ${
                   group.category === c
-                    ? "bg-white text-background border-surface"
+                    ? "bg-foreground text-background border-surface"
                     : "bg-surface text-foreground border-border hover:border-surface"
                 }`}
               >
@@ -1079,7 +1079,7 @@ function PendingGroupCard({
                 onClick={() => toggleUsage(u)}
                 className={`text-[11px] px-2.5 py-0.5 rounded-full border ${
                   group.usage.includes(u)
-                    ? "bg-white text-background border-surface"
+                    ? "bg-foreground text-background border-surface"
                     : "bg-surface text-foreground border-border hover:border-surface"
                 }`}
               >
@@ -1274,7 +1274,7 @@ function FontDetailModal({
                   onClick={() => setCategory(c)}
                   className={`text-xs px-3 py-1 rounded-full border ${
                     category === c
-                      ? "bg-white text-background border-surface"
+                      ? "bg-foreground text-background border-surface"
                       : "bg-surface text-foreground border-border hover:border-surface"
                   }`}
                 >
@@ -1292,7 +1292,7 @@ function FontDetailModal({
                   onClick={() => toggleUsage(u)}
                   className={`text-xs px-3 py-1 rounded-full border ${
                     usage.includes(u)
-                      ? "bg-white text-background border-surface"
+                      ? "bg-foreground text-background border-surface"
                       : "bg-surface text-foreground border-border hover:border-surface"
                   }`}
                 >
@@ -1415,7 +1415,7 @@ function FontDetailModal({
                       </a>
                       <button
                         onClick={() => onDeleteFile(file)}
-                        className="text-[11px] text-subtle hover:text-red-600 inline-flex items-center gap-1"
+                        className="text-[11px] text-subtle hover:text-danger inline-flex items-center gap-1"
                       >
                         <TrashIcon className="size-3" />
                       </button>
@@ -1430,7 +1430,7 @@ function FontDetailModal({
         <div className="border-t border-border pt-5">
           <button
             onClick={onDelete}
-            className="text-xs font-medium text-red-600 hover:text-red-700 inline-flex items-center gap-1"
+            className="text-xs font-medium text-danger hover:text-danger inline-flex items-center gap-1"
           >
             <TrashIcon className="size-3" /> Delete font
           </button>
@@ -1498,7 +1498,7 @@ function Field({
     <div>
       <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle block mb-1.5">
         {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
+        {required && <span className="text-danger ml-0.5">*</span>}
       </span>
       {children}
       {hint && <p className="text-[10px] text-subtle mt-1">{hint}</p>}

@@ -84,7 +84,7 @@ export default function DiscoveryAuditsListPage() {
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-background rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-8 text-center border border-border">
           <p className="text-sm text-subtle">
             Discovery audits are a strategist tool. Speak to an admin if you
             need access.
@@ -100,10 +100,10 @@ export default function DiscoveryAuditsListPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
-              <DocumentMagnifyingGlassIcon className="size-5 text-white" />
+            <div className="size-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center">
+              <DocumentMagnifyingGlassIcon className="size-5 text-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold bg-gradient-to-br from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold text-foreground">
               Discovery Audits
             </h1>
           </div>
@@ -131,7 +131,7 @@ export default function DiscoveryAuditsListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search brand, contact, strategist"
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-background ring-1 ring-white/[0.06] text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-emerald-500/40"
+            className="w-full pl-9 pr-3 py-2 rounded-md bg-surface border border-border text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -155,11 +155,11 @@ export default function DiscoveryAuditsListPage() {
       {!hydrated ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-20 bg-background rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-background rounded-2xl p-12 text-center ring-1 ring-white/[0.04]">
+        <div className="bg-surface rounded-2xl p-12 text-center border border-border">
           <p className="text-sm text-subtle mb-4">
             {audits.length === 0
               ? "No audits yet. Start your first one to wow a warm lead."
@@ -168,7 +168,7 @@ export default function DiscoveryAuditsListPage() {
           {audits.length === 0 && (
             <button
               onClick={createNew}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
             >
               <PlusIcon className="size-4" />
               New audit
@@ -194,7 +194,7 @@ function AuditRow({ audit }: { audit: DiscoveryAudit }) {
     <li>
       <Link
         href={`/tools/discovery-audit/${audit.id}`}
-        className="block bg-background rounded-xl p-4 ring-1 ring-white/[0.04] hover:ring-emerald-500/30 transition-all"
+        className="block bg-surface rounded-xl p-4 border border-border hover:bg-surface-hover transition-all"
       >
         <div className="flex items-center gap-4">
           <div className="flex-1 min-w-0">
@@ -221,7 +221,7 @@ function AuditRow({ audit }: { audit: DiscoveryAudit }) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-emerald-300 shrink-0"
+              className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-subtle hover:text-foreground shrink-0"
             >
               View deck
               <ArrowTopRightOnSquareIcon className="size-3.5" />

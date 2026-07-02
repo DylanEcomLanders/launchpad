@@ -373,7 +373,7 @@ export default function ResearchPage() {
                     </button>
                     <button
                       onClick={() => deleteProfile(p.id)}
-                      className="p-1 text-muted hover:text-red-500 transition-colors"
+                      className="p-1 text-muted hover:text-danger transition-colors"
                     >
                       <TrashIcon className="size-3.5" />
                     </button>
@@ -428,7 +428,7 @@ export default function ResearchPage() {
             ) : (
               <button
                 onClick={cancelResearch}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-danger text-foreground text-sm font-medium rounded-md hover:bg-danger transition-colors"
               >
                 <XMarkIcon className="size-4" />
                 Cancel
@@ -449,9 +449,9 @@ export default function ResearchPage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-red-800 font-medium">Research failed</p>
-            <p className="text-xs text-red-600 mt-1">{error}</p>
+          <div className="bg-danger/10 border border-danger/20 rounded-lg p-4 mb-6">
+            <p className="text-sm text-danger font-medium">Research failed</p>
+            <p className="text-xs text-danger mt-1">{error}</p>
           </div>
         )}
 
@@ -490,12 +490,12 @@ export default function ResearchPage() {
                     <span
                       className={`text-[11px] ${
                         step.status === "done"
-                          ? "text-emerald-600"
+                          ? "text-success"
                           : step.status === "loading"
-                            ? "text-amber-500"
+                            ? "text-warning"
                             : step.status === "empty"
                               ? "text-subtle"
-                              : "text-red-500"
+                              : "text-danger"
                       }`}
                     >
                       {step.status === "loading" && "Searching..."}
@@ -507,12 +507,12 @@ export default function ResearchPage() {
                     <span
                       className={`size-2 rounded-full ${
                         step.status === "done"
-                          ? "bg-emerald-500"
+                          ? "bg-success"
                           : step.status === "loading"
-                            ? "bg-amber-400 animate-pulse"
+                            ? "bg-warning animate-pulse"
                             : step.status === "empty"
                               ? "bg-muted"
-                              : "bg-red-500"
+                              : "bg-danger"
                       }`}
                     />
                   </div>
@@ -524,7 +524,7 @@ export default function ResearchPage() {
             {analysisStarted && !isComplete && (
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex items-center gap-2">
-                  <div className="size-2 bg-violet-400 rounded-full animate-pulse" />
+                  <div className="size-2 bg-info rounded-full animate-pulse" />
                   <span className="text-xs text-subtle">{analysisMessage}</span>
                 </div>
               </div>
@@ -540,7 +540,7 @@ export default function ResearchPage() {
           >
             <pre className="text-xs text-muted font-mono whitespace-pre-wrap leading-relaxed">
               {streamText}
-              <span className="animate-pulse text-white">▊</span>
+              <span className="animate-pulse text-foreground">▊</span>
             </pre>
           </div>
         )}

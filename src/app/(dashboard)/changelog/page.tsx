@@ -30,15 +30,15 @@ import { inputClass } from "@/lib/form-styles";
 /* ── Config ── */
 
 const typeConfig: Record<ChangeType, { label: string; color: string; bg: string; icon: React.ElementType }> = {
-  added: { label: "Added", color: "text-emerald-700", bg: "bg-emerald-50", icon: SparklesIcon },
-  improved: { label: "Improved", color: "text-blue-700", bg: "bg-blue-50", icon: WrenchScrewdriverIcon },
-  fixed: { label: "Fixed", color: "text-amber-700", bg: "bg-amber-50", icon: BugAntIcon },
+  added: { label: "Added", color: "text-success", bg: "bg-success/10", icon: SparklesIcon },
+  improved: { label: "Improved", color: "text-info", bg: "bg-info/10", icon: WrenchScrewdriverIcon },
+  fixed: { label: "Fixed", color: "text-warning", bg: "bg-warning/10", icon: BugAntIcon },
   removed: { label: "Removed", color: "text-subtle", bg: "bg-surface-raised", icon: TrashIcon },
 };
 
 const priorityConfig: Record<RoadmapPriority, { label: string; icon: React.ElementType; dot: string; text: string }> = {
   next: { label: "Up Next", icon: RocketLaunchIcon, dot: "bg-surface", text: "text-foreground" },
-  planned: { label: "Planned", icon: ClockIcon, dot: "bg-amber-400", text: "text-amber-600" },
+  planned: { label: "Planned", icon: ClockIcon, dot: "bg-warning", text: "text-warning" },
   exploring: { label: "Exploring", icon: CheckCircleIcon, dot: "bg-muted", text: "text-subtle" },
 };
 
@@ -99,7 +99,7 @@ export default function ChangelogPage() {
         {tab === "roadmap" && (
           <button
             onClick={() => setShowAddRoadmap(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-surface text-sm rounded-md hover:bg-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-surface text-sm rounded-md hover:bg-foreground transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add Idea
@@ -246,7 +246,7 @@ function RoadmapCard({
           </select>
           <button
             onClick={async () => { await deleteRoadmapItem(item.id); onUpdate(); }}
-            className="p-1 text-subtle hover:text-red-500 transition-colors"
+            className="p-1 text-subtle hover:text-danger transition-colors"
             title="Remove"
           >
             <XMarkIcon className="size-3.5" />
@@ -318,7 +318,7 @@ function AddRoadmapForm({ onSave, onCancel }: { onSave: () => void; onCancel: ()
         </button>
         <button
           type="submit"
-          className="px-4 py-1.5 bg-foreground text-surface text-sm rounded-md hover:bg-white transition-colors"
+          className="px-4 py-1.5 bg-foreground text-surface text-sm rounded-md hover:bg-foreground transition-colors"
         >
           Add to Roadmap
         </button>

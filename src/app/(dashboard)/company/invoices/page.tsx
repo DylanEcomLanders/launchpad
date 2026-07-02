@@ -135,7 +135,7 @@ export default function InvoicesPage() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
         >
           <PlusIcon className="size-4" /> Upload invoice
         </button>
@@ -144,7 +144,7 @@ export default function InvoicesPage() {
       {!hydrated ? (
         <div className="h-48 bg-background rounded-xl animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-background border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
+        <div className="bg-background border border-dashed border-border rounded-xl p-12 text-center">
           <div className="text-sm text-subtle mb-3">
             {invoices.length === 0
               ? "No invoices yet — upload your first one."
@@ -153,14 +153,14 @@ export default function InvoicesPage() {
           {invoices.length === 0 && (
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
             >
               <DocumentArrowUpIcon className="size-4" /> Upload invoice
             </button>
           )}
         </div>
       ) : (
-        <div className="bg-background border border-white/[0.04] rounded-xl overflow-x-auto shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <div className="bg-background border border-border rounded-xl overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-background text-[11px] uppercase tracking-wider text-subtle">
               <tr>
@@ -177,7 +177,7 @@ export default function InvoicesPage() {
               {filtered.map((i) => {
                 const badge = INVOICE_STATUS_BADGE[i.status];
                 return (
-                  <tr key={i.id} className="border-t border-white/[0.04] hover:bg-background">
+                  <tr key={i.id} className="border-t border-border hover:bg-surface-hover">
                     <td className="px-4 py-3">
                       <Link
                         href={`/company/invoices/${i.id}`}
@@ -251,9 +251,9 @@ function SummaryCard({
   accent?: "red" | "green";
 }) {
   const color =
-    accent === "red" ? "text-danger" : accent === "green" ? "text-[#047857]" : "text-foreground";
+    accent === "red" ? "text-danger" : accent === "green" ? "text-success" : "text-foreground";
   return (
-    <div className="bg-background border border-white/[0.04] rounded-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+    <div className="bg-background border border-border rounded-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
       <div className="text-[11px] uppercase tracking-wider text-subtle mb-1">{label}</div>
       <div className={`text-2xl font-semibold ${color}`}>{fmtMoney(amount)}</div>
     </div>
@@ -446,7 +446,7 @@ function UploadInvoiceModal({
           <button
             type="submit"
             disabled={uploading}
-            className="px-3 py-2 bg-white text-background text-sm rounded-lg hover:opacity-90 disabled:opacity-50"
+            className="px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90 disabled:opacity-50"
           >
             {uploading ? "Saving…" : "Save invoice"}
           </button>

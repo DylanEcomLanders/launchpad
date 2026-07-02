@@ -155,19 +155,19 @@ export function PasscodeGate({
                 }}
                 placeholder="Enter to unlock"
                 autoFocus
-                className={`w-full px-3 py-2.5 bg-background border rounded-md text-sm text-foreground focus:outline-none transition-colors placeholder:text-border ${
+                className={`w-full px-3 py-2.5 bg-background border rounded-md text-sm text-foreground focus:outline-none transition-colors placeholder:text-muted ${
                   error
-                    ? "border-red-500/60 focus:border-red-500"
+                    ? "border-danger/60 focus:border-danger"
                     : "border-border focus:border-border"
                 }`}
               />
             </div>
             {error && (
-              <p className="text-[11px] text-red-400 mt-2">Incorrect passcode</p>
+              <p className="text-[11px] text-danger mt-2">Incorrect passcode</p>
             )}
             <button
               type="submit"
-              className="mt-4 w-full px-3 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 active:scale-[0.99] transition-all"
+              className="mt-4 w-full px-3 py-2.5 bg-accent text-accent-foreground text-sm font-semibold rounded-md hover:opacity-90 active:scale-[0.99] transition-all"
             >
               Unlock
             </button>

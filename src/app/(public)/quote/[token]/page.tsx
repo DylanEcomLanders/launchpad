@@ -42,12 +42,12 @@ export default async function PublicQuotePage({ params }: Props) {
   return (
     <div className="min-h-screen bg-surface-raised">
       {/* Branded header */}
-      <header className="border-b border-border bg-white px-6 py-5 md:px-12">
+      <header className="border-b border-border bg-surface px-6 py-5 md:px-12">
         <Logo height={16} className="text-foreground" />
       </header>
 
       {/* Hero */}
-      <section className="border-b border-border bg-white">
+      <section className="border-b border-border bg-surface">
         <div className="mx-auto max-w-2xl px-6 py-14 md:py-20">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
             Proposal · {dateStr}
@@ -56,7 +56,7 @@ export default async function PublicQuotePage({ params }: Props) {
             A conversion plan for {d.clientName}
           </h1>
           {d.intro && (
-            <p className="mt-5 text-[17px] leading-relaxed text-border">{d.intro}</p>
+            <p className="mt-5 text-[17px] leading-relaxed text-muted">{d.intro}</p>
           )}
         </div>
       </section>
@@ -70,8 +70,8 @@ export default async function PublicQuotePage({ params }: Props) {
           Here&apos;s exactly what&apos;s included and what it costs.
         </p>
 
-        <div className="overflow-hidden rounded-2xl border border-[#E8E8EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-          <div className="divide-y divide-[#F2F2F4]">
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+          <div className="divide-y divide-border">
             {d.lines.map((l) => (
               <div key={l.id} className="flex items-start justify-between gap-4 px-5 py-4">
                 <div className="min-w-0">
@@ -107,7 +107,7 @@ export default async function PublicQuotePage({ params }: Props) {
           </div>
 
           {/* Totals */}
-          <div className="border-t border-border bg-[#FBFBFD] px-5 py-4">
+          <div className="border-t border-border bg-surface-raised px-5 py-4">
             {totals.oneOff > 0 && (
               <div className="flex items-center justify-between py-1">
                 <span className="text-sm text-subtle">One-off total</span>
@@ -138,9 +138,9 @@ export default async function PublicQuotePage({ params }: Props) {
               {d.includes.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 rounded-xl border border-[#E8E8EC] bg-white px-4 py-3"
+                  className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3"
                 >
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
                     <svg viewBox="0 0 14 14" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M2.5 7.5 5.5 10.5 11.5 4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>

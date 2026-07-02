@@ -115,7 +115,7 @@ const TASK_TYPE_LABEL: Record<TaskType, string> = {
 };
 
 const TASK_TYPE_BADGE: Record<TaskType, string> = {
-  core_deliverable: "border-white/15 bg-surface text-foreground",
+  core_deliverable: "border-border bg-surface text-foreground",
   revision: "border-blue-200 bg-blue-50 text-blue-800",
   bug: "border-rose-500/30 bg-rose-500/10 text-rose-300",
   desktop_fix: "border-purple-200 bg-purple-50 text-purple-800",
@@ -174,9 +174,9 @@ const PRIORITY_LABEL: Record<TaskPriority, string> = {
 
 const PRIORITY_PILL: Record<TaskPriority, string> = {
   low: "border-border bg-surface text-subtle",
-  normal: "border-blue-200 bg-blue-50 text-blue-700",
-  high: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-  urgent: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+  normal: "border-info/20 bg-info/10 text-info",
+  high: "border-warning/20 bg-warning/10 text-warning",
+  urgent: "border-danger/20 bg-danger/10 text-danger",
 };
 
 const PRIORITY_ORDER: TaskPriority[] = ["low", "normal", "high", "urgent"];
@@ -516,7 +516,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         {isAdmin && (
           <Link
             href="/pods-v2/new-project"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-surface px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-foreground"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-foreground px-3 py-2 text-xs font-medium text-background shadow-[var(--shadow-soft)] transition-colors hover:opacity-90"
           >
             <PlusIcon className="size-3.5" />
             New project
@@ -655,14 +655,14 @@ export default function PodDetailClient({ podId }: { podId: string }) {
               setFilterClient("");
               setHideDone(false);
             }}
-            className="rounded-md px-2 py-1 text-[10px] text-rose-700 hover:bg-rose-500/10"
+            className="rounded-md px-2 py-1 text-[10px] text-subtle hover:bg-surface-hover hover:text-foreground"
           >
             Clear
           </button>
         )}
         <button
           onClick={() => setHotkeyHelpOpen((v) => !v)}
-          className="ml-auto rounded-md border border-border bg-surface px-2 py-1 text-[10px] text-subtle hover:border-white hover:text-foreground"
+          className="ml-auto rounded-md border border-border bg-surface px-2 py-1 text-[10px] text-subtle hover:border-subtle hover:text-foreground"
           title="Show keyboard shortcuts (?)"
         >
           ? Hotkeys
@@ -811,7 +811,7 @@ function SnapshotStat({
 }) {
   const cls =
     tone === "alert"
-      ? "bg-rose-50 text-rose-900"
+      ? "bg-danger/10 text-danger"
       : "bg-background text-foreground";
   return (
     <div className={`rounded-lg px-3 py-2 ${cls}`}>
@@ -989,9 +989,9 @@ function PrimaryTaskRow({
   const daysToDeadline = daysBetween(today, task.due_date);
   const deadlineTone =
     daysToDeadline < 0
-      ? "text-rose-700"
+      ? "text-danger"
       : daysToDeadline <= 3
-        ? "text-amber-700"
+        ? "text-warning"
         : "text-subtle";
 
   const dueLabel = `Due ${formatDayMonth(task.due_date)} · ${
@@ -1033,7 +1033,7 @@ function PrimaryTaskRow({
     <div
       data-task-id={task.id}
       tabIndex={-1}
-      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-background focus:bg-[#EEF2FF] focus:ring-2 focus:ring-surface/20 ${
+      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-background focus:bg-surface-hover focus:ring-2 focus:ring-ring/20 ${
         task.status === "done" ? "opacity-50" : ""
       }`}
       ref={ref}
@@ -1067,10 +1067,10 @@ function PrimaryTaskRow({
         }}
         className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
           task.status === "done"
-            ? "border-emerald-500 bg-emerald-500 text-white"
+            ? "border-success bg-success text-white"
             : task.status === "in_progress"
-              ? "border-blue-500 bg-surface text-blue-500"
-              : "border-border bg-surface hover:border-white"
+              ? "border-info bg-surface text-info"
+              : "border-border bg-surface hover:border-subtle"
         }`}
         title={`Current: ${task.status === "done" ? "Done" : task.status === "in_progress" ? "In progress" : "To do"}. Click to advance · Shift-click or right-click to step back.`}
       >
@@ -1079,7 +1079,7 @@ function PrimaryTaskRow({
             <path d="M10.28 3.28L4.5 9.06 1.72 6.28l1.06-1.06L4.5 6.94l4.72-4.72z" />
           </svg>
         )}
-        {task.status === "in_progress" && <span className="size-1.5 rounded-full bg-blue-500" />}
+        {task.status === "in_progress" && <span className="size-1.5 rounded-full bg-info" />}
       </button>
 
       {/* Title + client · project · phase/type tag */}
@@ -1092,7 +1092,7 @@ function PrimaryTaskRow({
           <span className="truncate">{task.title}</span>
           {task.cycle && (
             <span
-              className="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800"
+              className="shrink-0 rounded border border-border bg-surface-raised px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-muted"
               title={`Conversion Engine, Month ${task.cycle.month}, Week ${task.cycle.week} (${CYCLE_WEEK_LABEL[task.cycle.week]})`}
             >
               M{task.cycle.month} · W{task.cycle.week} · {CYCLE_WEEK_LABEL[task.cycle.week]}
@@ -1109,13 +1109,13 @@ function PrimaryTaskRow({
               }}
               className={`shrink-0 rounded border px-1 py-0 text-[9px] font-semibold uppercase tracking-wider hover:opacity-80 ${
                 task.test_result?.status === "winner"
-                  ? "border-emerald-300 bg-emerald-100 text-emerald-900"
+                  ? "border-success/20 bg-success/10 text-success"
                   : task.test_result?.status === "loser"
-                    ? "border-rose-300 bg-rose-100 text-rose-900"
+                    ? "border-danger/20 bg-danger/10 text-danger"
                     : task.test_result?.status === "inconclusive"
                       ? "border-border bg-background text-subtle"
                       : task.test_result?.status === "pending"
-                        ? "border-amber-200 bg-amber-50 text-amber-800"
+                        ? "border-warning/20 bg-warning/10 text-warning"
                         : "border-dashed border-border bg-surface text-subtle"
               }`}
               title="Click to edit test result"
@@ -1141,7 +1141,7 @@ function PrimaryTaskRow({
         <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-subtle">
           {client?.brand_warm && (
             <span
-              className="size-1 shrink-0 rounded-full bg-orange-500"
+              className="size-1 shrink-0 rounded-full bg-info"
               title="Brand-warm"
             />
           )}
@@ -1179,7 +1179,7 @@ function PrimaryTaskRow({
                 e.stopPropagation();
                 setPauseOpen((v) => !v);
               }}
-              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-subtle hover:border-white hover:text-foreground"
+              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-subtle hover:border-subtle hover:text-foreground"
               title="Click to resume"
             >
               ⏸ Waiting on {task.waiting_on === "client" ? "client" : "internal"}
@@ -1192,10 +1192,10 @@ function PrimaryTaskRow({
               }}
               className={`text-[11px] font-medium tabular-nums hover:underline ${
                 ageHours >= 48
-                  ? "text-rose-700"
+                  ? "text-danger"
                   : ageHours >= 24
-                    ? "text-amber-700"
-                    : "text-emerald-700"
+                    ? "text-warning"
+                    : "text-success"
               }`}
               title={`Opened ${new Date(task.created_at).toLocaleString()}, click to pause`}
             >
@@ -1206,11 +1206,11 @@ function PrimaryTaskRow({
           <span
             className={`text-[11px] font-medium tabular-nums ${
               daysToDeadline < 0
-                ? "text-rose-700"
+                ? "text-danger"
                 : daysToDeadline <= 3
-                  ? "text-amber-700"
+                  ? "text-warning"
                   : daysToDeadline <= 7
-                    ? "text-emerald-700"
+                    ? "text-success"
                     : "text-subtle"
             }`}
           >
@@ -1228,7 +1228,7 @@ function PrimaryTaskRow({
             className="opacity-0 transition-opacity group-hover:opacity-100"
             title="Delete task"
           >
-            <XMarkIcon className="size-3.5 text-subtle hover:text-rose-600" />
+            <XMarkIcon className="size-3.5 text-subtle hover:text-danger" />
           </button>
         )}
       </div>
@@ -1411,7 +1411,7 @@ function PhasePopover({
         ))}
       </div>
       {hasHistory && (
-        <div className="border-t border-border bg-[#FAFBFD] px-3 py-3">
+        <div className="border-t border-border bg-background px-3 py-3">
           <p className="text-[9px] font-semibold uppercase tracking-wider text-subtle mb-2">
             Phase history
           </p>
@@ -1472,7 +1472,7 @@ function MemberOooEditor({
           setOpen(false);
           onChange();
         }}
-        className="rounded bg-foreground text-surface px-1.5 py-0.5 text-[10px] font-medium text-white hover:bg-foreground"
+        className="rounded bg-foreground px-1.5 py-0.5 text-[10px] font-medium text-background hover:opacity-90"
       >
         Save
       </button>
@@ -1485,7 +1485,7 @@ function MemberOooEditor({
             setOpen(false);
             onChange();
           }}
-          className="rounded px-1.5 py-0.5 text-[10px] text-rose-700 hover:bg-rose-500/10"
+          className="rounded px-1.5 py-0.5 text-[10px] text-subtle hover:bg-surface-hover hover:text-foreground"
           title="Clear OOO, back at the desk"
         >
           Clear
@@ -1621,7 +1621,7 @@ function ClientMetricsEditor({
               });
               onSave();
             }}
-            className="rounded-lg bg-surface px-3 py-1.5 text-xs font-medium text-white hover:bg-foreground"
+            className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
           >
             Save
           </button>
@@ -1688,12 +1688,12 @@ function TestResultEditor({
                   className={`rounded-md border px-2 py-1.5 text-[11px] font-medium capitalize ${
                     status === s
                       ? s === "winner"
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                        ? "border-success/20 bg-success/10 text-success"
                         : s === "loser"
-                          ? "border-rose-500 bg-rose-50 text-rose-900"
+                          ? "border-danger/20 bg-danger/10 text-danger"
                           : s === "inconclusive"
-                            ? "border-white bg-background text-foreground"
-                            : "border-amber-500 bg-amber-50 text-amber-900"
+                            ? "border-border bg-background text-foreground"
+                            : "border-warning/20 bg-warning/10 text-warning"
                       : "border-border bg-surface text-subtle"
                   }`}
                 >
@@ -1752,7 +1752,7 @@ function TestResultEditor({
             {current && (
               <button
                 onClick={onClear}
-                className="text-[11px] text-rose-700 hover:underline"
+                className="text-[11px] text-danger hover:underline"
               >
                 Clear result
               </button>
@@ -1762,7 +1762,7 @@ function TestResultEditor({
                 href={shareHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] font-semibold text-emerald-700 hover:underline"
+                className="text-[11px] font-semibold text-foreground hover:underline"
               >
                 Share-card →
               </a>
@@ -1784,7 +1784,7 @@ function TestResultEditor({
                   notes: notes.trim() || undefined,
                 })
               }
-              className="rounded-lg bg-surface px-3 py-1.5 text-xs font-medium text-white hover:bg-foreground"
+              className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
             >
               Save
             </button>
@@ -1824,7 +1824,7 @@ function DesignHandoffModal({
         </p>
 
         <div className="mt-3 space-y-2">
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-white">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-subtle">
             <input
               type="checkbox"
               checked={figma}
@@ -1838,7 +1838,7 @@ function DesignHandoffModal({
               </div>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-white">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-subtle">
             <input
               type="checkbox"
               checked={assets}
@@ -1852,7 +1852,7 @@ function DesignHandoffModal({
               </div>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-white">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 hover:border-subtle">
             <input
               type="checkbox"
               checked={scope}
@@ -1880,7 +1880,7 @@ function DesignHandoffModal({
             disabled={!ready}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
               ready
-                ? "bg-foreground text-surface hover:bg-white"
+                ? "bg-foreground text-background hover:opacity-90"
                 : "cursor-not-allowed bg-border text-subtle"
             }`}
           >
@@ -1915,7 +1915,7 @@ function PausePopover({
           </div>
           <button
             onClick={onResume}
-            className="flex w-full items-center justify-center gap-1 border-t border-border px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+            className="flex w-full items-center justify-center gap-1 border-t border-border px-3 py-1.5 text-xs font-medium text-success hover:bg-success/10"
           >
             ▶ Resume
           </button>
@@ -1983,9 +1983,9 @@ function TaskStatusButton({
 }) {
   const cls =
     status === "done"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      ? "bg-success/10 text-success border-success/20"
       : status === "in_progress"
-        ? "bg-blue-50 text-blue-700 border-blue-200"
+        ? "bg-info/10 text-info border-info/20"
         : "bg-surface-raised text-subtle border-border";
   const label =
     status === "done" ? "Done" : status === "in_progress" ? "Live" : "Todo";
@@ -2116,7 +2116,7 @@ function AddTaskInline({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-border px-2 py-1.5 text-[11px] text-subtle hover:border-white hover:text-foreground"
+        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-border px-2 py-1.5 text-[11px] text-subtle hover:border-subtle hover:text-foreground"
       >
         <PlusIcon className="size-3" />
         Add for {member.name}
@@ -2135,7 +2135,7 @@ function AddTaskInline({
   }
 
   return (
-    <div className="rounded-lg border border-white/20 bg-background p-2.5">
+    <div className="rounded-lg border border-border bg-background p-2.5">
       <div className="flex items-center gap-2 pb-1.5 text-[11px] text-subtle">
         {isPrimaryMode ? (
           <>
@@ -2150,9 +2150,9 @@ function AddTaskInline({
 
       {isPrimaryMode ? (
         projectOptions.length === 0 ? (
-          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-[11px] text-amber-300">
+          <div className="rounded-md border border-warning/20 bg-warning/10 px-2.5 py-2 text-[11px] text-warning">
             No clients or projects on this pod yet. Create one via{" "}
-            <Link href="/pods-v2/new-project" className="font-medium underline hover:text-amber-900">
+            <Link href="/pods-v2/new-project" className="font-medium underline hover:text-foreground">
               + New project
             </Link>{" "}
             or assign an onboarding form from the Onboarding-in-purgatory list.
@@ -2315,7 +2315,7 @@ function AddTaskInline({
             onMutate();
           }}
           disabled={(isPrimaryMode && (!pairPartner || projectOptions.length === 0))}
-          className="rounded bg-foreground text-surface px-2 py-1 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
+          className="rounded bg-foreground px-2 py-1 text-[11px] font-medium text-background hover:opacity-90 disabled:opacity-50"
         >
           {isPrimaryMode ? "Add deliverable" : "Add"}
         </button>
@@ -2375,8 +2375,8 @@ function PodBlockersPanel({
           <p className="mt-0.5 text-xs text-subtle">
             Pod-wide blockers everyone needs to see, a missing asset, a sick teammate, a tool down.
             {pod.slack_channel_id && (
-              <span className="ml-1.5 inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
-                <span className="size-1 rounded-full bg-emerald-500" /> Slack
+              <span className="ml-1.5 inline-flex items-center gap-1 rounded border border-success/20 bg-success/10 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-success">
+                <span className="size-1 rounded-full bg-success" /> Slack
               </span>
             )}
           </p>
@@ -2417,12 +2417,12 @@ function PodBlockersPanel({
           )}
         </div>
         <div className="flex items-center gap-2 text-[11px] tabular-nums text-subtle">
-          <span className={active.length > 0 ? "font-semibold text-rose-700" : ""}>
+          <span className={active.length > 0 ? "font-semibold text-danger" : ""}>
             {active.length} active
           </span>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-foreground hover:border-white"
+            className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-foreground hover:border-subtle"
           >
             {open ? "Cancel" : "+ Raise blocker"}
           </button>
@@ -2430,7 +2430,7 @@ function PodBlockersPanel({
       </div>
 
       {open && (
-        <div className="mt-3 rounded-xl border border-white/20 bg-background p-3">
+        <div className="mt-3 rounded-xl border border-border bg-background p-3">
           <input
             autoFocus
             value={title}
@@ -2462,7 +2462,7 @@ function PodBlockersPanel({
             <button
               onClick={submit}
               disabled={!title.trim()}
-              className="rounded-md bg-surface px-2.5 py-1 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
+              className="rounded-md bg-foreground px-2.5 py-1 text-[11px] font-medium text-background hover:opacity-90 disabled:opacity-50"
             >
               Raise blocker
             </button>
@@ -2481,7 +2481,7 @@ function PodBlockersPanel({
           const ageMs = Date.now() - new Date(b.raised_at).getTime();
           const ageHours = Math.floor(ageMs / 3_600_000);
           const ageLabel = ageHours < 1 ? "just now" : ageHours < 24 ? `${ageHours}h ago` : `${Math.floor(ageHours / 24)}d ago`;
-          const tone = ageHours >= 48 ? "border-rose-300 bg-rose-50" : ageHours >= 24 ? "border-amber-300 bg-amber-50" : "border-border bg-surface";
+          const tone = ageHours >= 48 ? "border-danger/20 bg-danger/10" : ageHours >= 24 ? "border-warning/20 bg-warning/10" : "border-border bg-surface";
           return (
             <div key={b.id} className={`rounded-xl border ${tone} p-3 shadow-[var(--shadow-soft)]`}>
               <div className="flex items-start justify-between gap-3">
@@ -2506,7 +2506,7 @@ function PodBlockersPanel({
                       resolveBlocker(pod.id, b.id);
                       onMutate();
                     }}
-                    className="rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-emerald-700"
+                    className="rounded-md bg-success px-2 py-1 text-[11px] font-medium text-white hover:bg-success/90"
                   >
                     Resolve
                   </button>
@@ -2517,7 +2517,7 @@ function PodBlockersPanel({
                         onMutate();
                       }
                     }}
-                    className="text-subtle hover:text-rose-600"
+                    className="text-subtle hover:text-danger"
                     title="Delete"
                   >
                     <XMarkIcon className="size-3.5" />
@@ -2566,9 +2566,9 @@ interface ClientDeliverable {
 }
 
 const RISK_DOT: Record<RiskLevel, string> = {
-  red: "bg-rose-500",
-  amber: "bg-amber-400",
-  green: "bg-emerald-400",
+  red: "bg-danger",
+  amber: "bg-warning",
+  green: "bg-success",
   blocked: "bg-muted",
   shipped: "bg-muted",
 };
@@ -2666,7 +2666,7 @@ function ClientCard({
       : null;
 
   return (
-    <div className="group relative rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-white/30">
+    <div className="group relative rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-border">
       <div className="flex items-start justify-between gap-2">
         <Link href={engagementHref} className="block min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
@@ -2682,13 +2682,13 @@ function ClientCard({
               {tier.label}
             </span>
             {client.brand_warm && (
-              <span className="rounded border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-medium text-orange-700">
+              <span className="rounded border border-info/20 bg-info/10 px-1.5 py-0.5 text-[10px] font-medium text-info">
                 Brand-warm
               </span>
             )}
             {revisionCount > 2 && (
               <span
-                className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700"
+                className="rounded border border-danger/20 bg-danger/10 px-1.5 py-0.5 text-[10px] font-medium text-danger"
                 title={`${revisionCount} revision rounds, quality signal, this engagement may be struggling`}
               >
                 {revisionCount} revs
@@ -2716,7 +2716,7 @@ function ClientCard({
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
           onClick={() => setMetricsOpen(true)}
-          className="rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-white/30"
+          className="rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-border"
           title="Click to edit CVR baseline / current"
         >
           <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
@@ -2733,9 +2733,9 @@ function ClientCard({
                 <span
                   className={`ml-auto text-[10px] font-semibold ${
                     cvrDelta > 0
-                      ? "text-emerald-700"
+                      ? "text-success"
                       : cvrDelta < 0
-                        ? "text-rose-700"
+                        ? "text-danger"
                         : "text-subtle"
                   }`}
                 >
@@ -2750,7 +2750,7 @@ function ClientCard({
         </button>
         <button
           onClick={() => setMetricsOpen(true)}
-          className="rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-white/30"
+          className="rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-border"
           title="Click to edit AOV baseline / current"
         >
           <div className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
@@ -2767,9 +2767,9 @@ function ClientCard({
                 <span
                   className={`ml-auto text-[10px] font-semibold ${
                     aovDelta > 0
-                      ? "text-emerald-700"
+                      ? "text-success"
                       : aovDelta < 0
-                        ? "text-rose-700"
+                        ? "text-danger"
                         : "text-subtle"
                   }`}
                 >
@@ -2795,7 +2795,7 @@ function ClientCard({
             <span
               className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium tabular-nums ${
                 day > 75
-                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  ? "border-danger/20 bg-danger/10 text-danger"
                   : "border-border bg-background text-subtle"
               }`}
               title="Day in the 90-day engagement"
@@ -2813,9 +2813,9 @@ function ClientCard({
           <>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-subtle">
               <span>{liveDeliverables.length} live</span>
-              {atRisk > 0 && <span className="font-semibold text-rose-600">· {atRisk} at risk</span>}
-              {blockedCount > 0 && <span className="text-amber-700">· {blockedCount} blocked</span>}
-              {shippedCount > 0 && <span className="text-emerald-700">· {shippedCount} shipped</span>}
+              {atRisk > 0 && <span className="font-semibold text-danger">· {atRisk} at risk</span>}
+              {blockedCount > 0 && <span className="text-warning">· {blockedCount} blocked</span>}
+              {shippedCount > 0 && <span className="text-success">· {shippedCount} shipped</span>}
             </div>
 
             <div className="mt-1.5 space-y-1">
@@ -2829,7 +2829,7 @@ function ClientCard({
                   <span className="min-w-0 flex-1 truncate text-[11px] text-foreground">{d.task.title}</span>
                   <span
                     className={`shrink-0 text-[10px] tabular-nums ${
-                      d.risk === "red" ? "font-semibold text-rose-600" : "text-subtle"
+                      d.risk === "red" ? "font-semibold text-danger" : "text-subtle"
                     }`}
                   >
                     {d.reason}
@@ -2918,7 +2918,7 @@ function UnassignClientModal({
         <div className="mt-4 space-y-2">
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              mode === "move" ? "border-white bg-background" : "border-border"
+              mode === "move" ? "border-ring bg-background" : "border-border"
             } ${otherPods.length === 0 ? "opacity-50" : ""}`}
           >
             <input
@@ -2949,7 +2949,7 @@ function UnassignClientModal({
 
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              mode === "park" ? "border-white bg-background" : "border-border"
+              mode === "park" ? "border-ring bg-background" : "border-border"
             }`}
           >
             <input
@@ -2974,7 +2974,7 @@ function UnassignClientModal({
           <button
             onClick={submit}
             disabled={submitting || (mode === "move" && !targetPodId)}
-            className="rounded bg-foreground text-surface px-3 py-1.5 text-[11px] font-medium text-white hover:bg-foreground disabled:opacity-50"
+            className="rounded bg-foreground px-3 py-1.5 text-[11px] font-medium text-background hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Working…" : mode === "move" ? "Move client" : "Park client"}
           </button>

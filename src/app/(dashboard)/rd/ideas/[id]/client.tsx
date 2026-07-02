@@ -158,7 +158,7 @@ export default function IdeaDetailClient({ id }: { id: string }) {
         <div className="mt-10">
           <button
             onClick={() => setPromoteOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-foreground text-surface text-[13px] font-medium rounded-lg hover:bg-foreground/90 transition-colors"
           >
             <RocketLaunchIcon className="size-4" />
             Promote to Initiative
@@ -249,7 +249,7 @@ function InlineTextSingle({
   return (
     <input
       ref={inputRef}
-      className={`block w-full bg-surface border border-border rounded px-1 -mx-1 focus:outline-none focus:border-white ${className || ""}`}
+      className={`block w-full bg-surface border border-border rounded px-1 -mx-1 focus:outline-none focus:border-ring ${className || ""}`}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}

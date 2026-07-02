@@ -291,7 +291,7 @@ export default function ClientPortalPage() {
             }}
             className={`w-full flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
               showTrash
-                ? "bg-red-50 text-red-600"
+                ? "bg-danger/10 text-danger"
                 : "text-muted hover:bg-background hover:text-foreground"
             }`}
           >
@@ -369,27 +369,27 @@ export default function ClientPortalPage() {
             <div>
               {blockedPortals.length > 0 ? (
                 <>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-3">Blocked ({blockedPortals.length})</h3>
-                  <div className="border border-red-100 rounded-xl bg-red-50/30 divide-y divide-red-100 overflow-hidden">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-danger mb-3">Blocked ({blockedPortals.length})</h3>
+                  <div className="border border-danger/20 rounded-xl bg-danger/10 divide-y divide-danger/20 overflow-hidden">
                     {blockedPortals.map((p) => {
                       const daysBlocked = p.blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(p.blocker.since).getTime()) / 86400000)) : 0;
                       return (
-                        <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50 transition-colors">
+                        <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-danger/10 transition-colors">
                           <div className="flex items-center gap-2">
-                            <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+                            <span className="size-1.5 rounded-full bg-danger animate-pulse" />
                             <span className="text-xs font-medium text-foreground">{p.client_name}</span>
-                            <span className="text-[10px] text-red-500">{p.blocker?.reason}</span>
+                            <span className="text-[10px] text-danger">{p.blocker?.reason}</span>
                           </div>
-                          <span className="text-[10px] text-red-400">{daysBlocked}d</span>
+                          <span className="text-[10px] text-danger">{daysBlocked}d</span>
                         </Link>
                       );
                     })}
                   </div>
                 </>
               ) : (
-                <div className="flex items-center gap-2 px-4 py-3 border border-emerald-100 rounded-xl bg-emerald-50/30">
-                  <span className="size-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-xs text-emerald-700">No blocked clients</span>
+                <div className="flex items-center gap-2 px-4 py-3 border border-success/20 rounded-xl bg-success/10">
+                  <span className="size-1.5 rounded-full bg-success" />
+                  <span className="text-xs text-success">No blocked clients</span>
                 </div>
               )}
             </div>
@@ -402,13 +402,13 @@ export default function ClientPortalPage() {
                   {touchpoints.slice(0, 6).map((tp, i) => (
                     <Link key={i} href={`/tools/client-portal/${tp.portalId}`} className="flex items-center justify-between px-3.5 py-3 border border-border rounded-xl bg-surface hover:border-muted transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <span className={`size-1.5 rounded-full shrink-0 ${tp.daysAway < 0 ? "bg-red-500" : tp.daysAway <= 2 ? "bg-amber-500" : "bg-emerald-500"}`} />
+                        <span className={`size-1.5 rounded-full shrink-0 ${tp.daysAway < 0 ? "bg-danger" : tp.daysAway <= 2 ? "bg-warning" : "bg-success"}`} />
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-foreground truncate">{tp.client}</p>
                           {tp.description && <p className="text-[10px] text-subtle truncate">{tp.description}</p>}
                         </div>
                       </div>
-                      <span className={`text-[10px] font-medium shrink-0 ml-2 ${tp.daysAway < 0 ? "text-red-500" : tp.daysAway <= 2 ? "text-amber-600" : "text-subtle"}`}>
+                      <span className={`text-[10px] font-medium shrink-0 ml-2 ${tp.daysAway < 0 ? "text-danger" : tp.daysAway <= 2 ? "text-warning" : "text-subtle"}`}>
                         {tp.daysAway < 0 ? `${Math.abs(tp.daysAway)}d overdue` : tp.daysAway === 0 ? "Today" : `${tp.daysAway}d`}
                       </span>
                     </Link>
@@ -434,10 +434,10 @@ export default function ClientPortalPage() {
                       <Link
                         key={p.id}
                         href={`/tools/client-portal/${p.id}`}
-                        className={`flex items-center justify-between px-3.5 py-3 rounded-lg hover:bg-background transition-colors ${isBlocked ? "bg-red-50/40" : ""}`}
+                        className={`flex items-center justify-between px-3.5 py-3 rounded-lg hover:bg-background transition-colors ${isBlocked ? "bg-danger/10" : ""}`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          {isBlocked && <span className="size-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />}
+                          {isBlocked && <span className="size-1.5 rounded-full bg-danger animate-pulse shrink-0" />}
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">{p.client_name}</p>
                             <p className="text-[10px] text-muted">
@@ -449,7 +449,7 @@ export default function ClientPortalPage() {
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           {tpDays !== null && (
-                            <span className={`text-[10px] ${tpDays < 0 ? "text-red-500" : tpDays <= 2 ? "text-amber-500" : "text-muted"}`}>
+                            <span className={`text-[10px] ${tpDays < 0 ? "text-danger" : tpDays <= 2 ? "text-warning" : "text-muted"}`}>
                               {tpDays < 0 ? `${Math.abs(tpDays)}d overdue` : tpDays === 0 ? "Today" : `${tpDays}d`}
                             </span>
                           )}
@@ -457,14 +457,14 @@ export default function ClientPortalPage() {
                             <button
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(p.id); }}
                               onBlur={() => setConfirmDeleteId(null)}
-                              className="px-2 py-1 text-[10px] font-medium text-white bg-red-500 rounded hover:bg-red-600"
+                              className="px-2 py-1 text-[10px] font-medium text-white bg-danger rounded hover:bg-danger/90"
                             >
                               Confirm
                             </button>
                           ) : (
                             <button
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(p.id); }}
-                              className="p-1 text-muted hover:text-red-400 transition-colors"
+                              className="p-1 text-muted hover:text-danger transition-colors"
                             >
                               <TrashIcon className="size-3.5" />
                             </button>
@@ -528,7 +528,7 @@ export default function ClientPortalPage() {
                     <Link
                       key={p.id}
                       href={`/tools/client-portal/${p.id}`}
-                      className="block border border-border rounded-xl bg-surface p-5 hover:shadow-sm transition-all"
+                      className="block border border-border rounded-xl bg-surface p-5 hover:bg-surface-hover transition-all"
                     >
                       {/* Header */}
                       <div className="flex items-center justify-between mb-4">
@@ -552,17 +552,17 @@ export default function ClientPortalPage() {
                       <div className="flex items-center gap-6 text-xs text-muted">
                         {(p.results || []).filter(r => r.status === "live").length > 0 && (
                           <span className="flex items-center gap-1.5">
-                            <span className="size-1.5 rounded-full bg-emerald-500" />
+                            <span className="size-1.5 rounded-full bg-success" />
                             {(p.results || []).filter(r => r.status === "live").length} live
                           </span>
                         )}
                         {daysSinceUpdate !== null && (
-                          <span className={daysSinceUpdate > 3 ? "text-red-500" : ""}>
+                          <span className={daysSinceUpdate > 3 ? "text-danger" : ""}>
                             Last updated {daysSinceUpdate === 0 ? "today" : daysSinceUpdate === 1 ? "yesterday" : `${daysSinceUpdate}d ago`}
                           </span>
                         )}
                         {p.blocker && (
-                          <span className="text-red-500 font-medium">Blocked: {p.blocker.reason}</span>
+                          <span className="text-danger font-medium">Blocked: {p.blocker.reason}</span>
                         )}
                       </div>
                     </Link>
@@ -627,11 +627,11 @@ export default function ClientPortalPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setClientType("retainer")}
-                  className="border-2 border-border rounded-xl p-5 text-left hover:border-white transition-colors group"
+                  className="border-2 border-border rounded-xl p-5 text-left hover:border-foreground transition-colors group"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                      <BeakerIcon className="size-5 text-emerald-600" />
+                    <div className="size-10 rounded-lg bg-surface-raised border border-border flex items-center justify-center">
+                      <BeakerIcon className="size-5 text-foreground" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground group-hover:text-foreground">Retainer Client</p>
@@ -644,11 +644,11 @@ export default function ClientPortalPage() {
                 </button>
                 <button
                   onClick={() => setClientType("regular")}
-                  className="border-2 border-border rounded-xl p-5 text-left hover:border-white transition-colors group"
+                  className="border-2 border-border rounded-xl p-5 text-left hover:border-foreground transition-colors group"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                      <FunnelIcon className="size-5 text-blue-600" />
+                    <div className="size-10 rounded-lg bg-surface-raised border border-border flex items-center justify-center">
+                      <FunnelIcon className="size-5 text-foreground" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground group-hover:text-foreground">Project Client</p>
@@ -669,7 +669,7 @@ export default function ClientPortalPage() {
               <div className="flex items-center gap-2 mb-2">
                 <button onClick={() => setClientType(null)} className="text-[10px] text-muted hover:text-foreground">&larr; Back</button>
                 <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                  clientType === "retainer" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                  clientType === "retainer" ? "bg-info/10 text-info" : "bg-surface-raised text-muted"
                 }`}>
                   {clientType === "retainer" ? "Retainer" : "Project"}
                 </span>
@@ -776,7 +776,7 @@ export default function ClientPortalPage() {
       {showTrash && (
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <TrashIcon className="size-4 text-red-400" />
+            <TrashIcon className="size-4 text-danger" />
             <h2 className="text-sm font-semibold text-foreground">Trash</h2>
             <span className="text-xs text-muted">({trashedPortals.length} portals)</span>
           </div>
@@ -813,8 +813,8 @@ export default function ClientPortalPage() {
                       onClick={() => handlePermanentDelete(portal.id)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                         confirmPermanentId === portal.id
-                          ? "bg-red-500 text-white"
-                          : "text-red-500 border border-red-200 hover:bg-red-50"
+                          ? "bg-danger text-white"
+                          : "text-danger border border-danger/20 hover:bg-danger/10"
                       }`}
                     >
                       {confirmPermanentId === portal.id ? "Confirm Delete" : "Delete Forever"}
@@ -879,15 +879,15 @@ function PortalCard({
   return (
     <Link
       href={`/tools/client-portal/${portal.id}`}
-      className={`block border rounded-xl bg-surface hover:shadow-sm transition-all group ${
-        blocker ? "border-red-200 bg-red-50/20" : "border-border hover:border-muted"
+      className={`block border rounded-xl bg-surface hover:bg-surface-hover transition-all group ${
+        blocker ? "border-danger/20 bg-danger/10" : "border-border hover:border-muted"
       }`}
     >
       {/* Blocker strip */}
       {blocker && (
-        <div className="flex items-center gap-2 px-5 py-2 bg-red-50 border-b border-red-100 rounded-t-xl">
-          <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-[10px] font-semibold text-red-600 uppercase tracking-wider">
+        <div className="flex items-center gap-2 px-5 py-2 bg-danger/10 border-b border-danger/20 rounded-t-xl">
+          <span className="size-1.5 rounded-full bg-danger animate-pulse" />
+          <span className="text-[10px] font-semibold text-danger uppercase tracking-wider">
             Blocked {daysBlocked > 0 ? `${daysBlocked}d` : ""} — {blocker.reason}
           </span>
         </div>
@@ -899,7 +899,7 @@ function PortalCard({
           <div className="flex items-center gap-2.5 min-w-0">
             <h3 className="text-sm font-semibold text-foreground truncate">{portal.client_name}</h3>
             <span className={`shrink-0 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full ${
-              isRetainer ? "bg-blue-50 text-blue-600" : "bg-surface-raised text-muted"
+              isRetainer ? "bg-info/10 text-info" : "bg-surface-raised text-muted"
             }`}>
               {isRetainer ? "Retainer" : portal.project_type || "Project"}
             </span>
@@ -912,7 +912,7 @@ function PortalCard({
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCopyLink(portal.token); }}
               className="p-1.5 text-muted hover:text-foreground transition-colors"
             >
-              {copiedToken === portal.token ? <CheckIcon className="size-3.5 text-emerald-500" /> : <ClipboardDocumentIcon className="size-3.5" />}
+              {copiedToken === portal.token ? <CheckIcon className="size-3.5 text-success" /> : <ClipboardDocumentIcon className="size-3.5" />}
             </button>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(`/portal/${portal.token}`, '_blank'); }}
@@ -924,14 +924,14 @@ function PortalCard({
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
                 onBlur={() => onCancelDelete()}
-                className="px-2 py-1 text-[10px] font-medium text-white bg-red-500 rounded hover:bg-red-600"
+                className="px-2 py-1 text-[10px] font-medium text-white bg-danger rounded hover:bg-danger/90"
               >
                 Confirm
               </button>
             ) : (
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
-                className="p-1.5 text-muted hover:text-red-400 transition-colors"
+                className="p-1.5 text-muted hover:text-danger transition-colors"
               >
                 <TrashIcon className="size-3.5" />
               </button>
@@ -943,7 +943,7 @@ function PortalCard({
         <div className="flex items-center gap-6 mt-3 pt-3 border-t border-border">
           {/* Touchpoint */}
           <div className="flex items-center gap-1.5">
-            <span className={`size-1.5 rounded-full ${touchpointOverdue ? "bg-red-500" : touchpointDaysAway !== null && touchpointDaysAway <= 2 ? "bg-amber-500" : "bg-muted"}`} />
+            <span className={`size-1.5 rounded-full ${touchpointOverdue ? "bg-danger" : touchpointDaysAway !== null && touchpointDaysAway <= 2 ? "bg-warning" : "bg-muted"}`} />
             <span className="text-[11px] text-muted">
               {touchpoint?.date
                 ? `${touchpointOverdue ? "Overdue" : `${touchpointDaysAway}d`} · ${new Date(touchpoint.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`
@@ -954,14 +954,14 @@ function PortalCard({
           {/* Tests */}
           {runningTests > 0 && (
             <div className="flex items-center gap-1.5">
-              <BeakerIcon className="size-3 text-emerald-500" />
-              <span className="text-[11px] font-medium text-emerald-600">{runningTests} live</span>
+              <BeakerIcon className="size-3 text-success" />
+              <span className="text-[11px] font-medium text-success">{runningTests} live</span>
             </div>
           )}
           {/* Requests */}
           {openRequests > 0 && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-medium text-amber-600">{openRequests} request{openRequests !== 1 ? "s" : ""}</span>
+              <span className="text-[11px] font-medium text-warning">{openRequests} request{openRequests !== 1 ? "s" : ""}</span>
             </div>
           )}
           {/* Phase deadline */}

@@ -91,7 +91,7 @@ function buildSlides(i: Inputs) {
           {i.week1.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week1).map((l, idx) => (
-                <li key={idx} className="text-border">• {l}</li>
+                <li key={idx} className="text-muted">• {l}</li>
               ))}
             </ul>
           ) : (
@@ -107,7 +107,7 @@ function buildSlides(i: Inputs) {
           {i.week2.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week2).map((l, idx) => (
-                <li key={idx} className="text-border">• {l}</li>
+                <li key={idx} className="text-muted">• {l}</li>
               ))}
             </ul>
           ) : (
@@ -123,7 +123,7 @@ function buildSlides(i: Inputs) {
           {i.week3.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week3).map((l, idx) => (
-                <li key={idx} className="text-border">• {l}</li>
+                <li key={idx} className="text-muted">• {l}</li>
               ))}
             </ul>
           ) : (
@@ -139,7 +139,7 @@ function buildSlides(i: Inputs) {
           {i.week4.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.week4).map((l, idx) => (
-                <li key={idx} className="text-border">• {l}</li>
+                <li key={idx} className="text-muted">• {l}</li>
               ))}
             </ul>
           ) : (
@@ -155,7 +155,7 @@ function buildSlides(i: Inputs) {
           {i.wins.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.wins).map((l, idx) => (
-                <li key={idx} className="text-border">• {l}</li>
+                <li key={idx} className="text-muted">• {l}</li>
               ))}
             </ul>
           ) : (
@@ -171,7 +171,7 @@ function buildSlides(i: Inputs) {
           {i.lessons.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.lessons).map((l, idx) => (
-                <li key={idx} className="text-border">• {l}</li>
+                <li key={idx} className="text-muted">• {l}</li>
               ))}
             </ul>
           ) : (
@@ -187,7 +187,7 @@ function buildSlides(i: Inputs) {
           {i.nextMonth.trim() ? (
             <ul className="space-y-2 text-base">
               {bulletize(i.nextMonth).map((l, idx) => (
-                <li key={idx} className="text-border">• {l}</li>
+                <li key={idx} className="text-muted">• {l}</li>
               ))}
             </ul>
           ) : (
@@ -203,7 +203,7 @@ function buildSlides(i: Inputs) {
           <p className="text-lg leading-relaxed">
             Every test we ship makes the system smarter. Every page we build raises the bar. The number trends up, month over month.
           </p>
-          <p className="text-base text-border mt-4">— The {safeBrand} pod at Ecom Landers</p>
+          <p className="text-base text-muted mt-4">— The {safeBrand} pod at Ecom Landers</p>
         </SlideBody>
       ),
     },

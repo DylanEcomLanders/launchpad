@@ -127,7 +127,7 @@ export default function DesignSystemPage() {
                     setImages((prev) => prev.filter((_, idx) => idx !== i));
                     setImagePreviews((prev) => prev.filter((_, idx) => idx !== i));
                   }}
-                  className="absolute -top-1.5 -right-1.5 size-4 bg-red-500 text-white rounded-full text-[9px] flex items-center justify-center"
+                  className="absolute -top-1.5 -right-1.5 size-4 bg-danger text-white rounded-full text-[9px] flex items-center justify-center"
                 >
                   ×
                 </button>
@@ -153,14 +153,14 @@ export default function DesignSystemPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6">
-          <p className="text-xs text-red-600">{error}</p>
+        <div className="bg-danger/10 border border-danger/20 rounded-lg px-4 py-3 mb-6">
+          <p className="text-xs text-danger">{error}</p>
         </div>
       )}
 
       {generating && (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin size-6 border-2 border-border border-t-[#1A1A1A] rounded-full mr-3" />
+          <div className="animate-spin size-6 border-2 border-border border-t-foreground rounded-full mr-3" />
           <p className="text-sm text-muted">Analysing brand and generating design system...</p>
         </div>
       )}
@@ -286,7 +286,7 @@ export default function DesignSystemPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {result.design_direction?.length > 0 && (
               <div className="border border-border rounded-xl bg-surface p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-3">Design Direction</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-success mb-3">Design Direction</p>
                 <div className="space-y-2">
                   {result.design_direction.map((d, i) => (
                     <p key={i} className="text-xs text-muted leading-relaxed">• {d}</p>
@@ -296,7 +296,7 @@ export default function DesignSystemPage() {
             )}
             {result.avoid?.length > 0 && (
               <div className="border border-border rounded-xl bg-surface p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500 mb-3">Avoid</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-danger mb-3">Avoid</p>
                 <div className="space-y-2">
                   {result.avoid.map((a, i) => (
                     <p key={i} className="text-xs text-muted leading-relaxed">• {a}</p>

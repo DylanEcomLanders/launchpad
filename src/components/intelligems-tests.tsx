@@ -35,8 +35,8 @@ function calcLift(a: number, b: number): { value: string; positive: boolean } | 
 }
 
 function statusColor(s: string) {
-  if (s === "started") return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  if (s === "paused") return "bg-amber-50 text-amber-700 border-amber-200";
+  if (s === "started") return "bg-success/10 text-success border-success/20";
+  if (s === "paused") return "bg-warning/10 text-warning border-warning/20";
   if (s === "ended") return "bg-surface-raised text-muted border-border";
   return "bg-surface-raised text-subtle border-border";
 }
@@ -186,7 +186,7 @@ function TestCard({
         <div className="flex items-center gap-3">
           {selectable && (
             <div className={`size-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-              selected ? "bg-surface border-surface" : "border-[#D0D0D0]"
+              selected ? "bg-surface border-surface" : "border-border"
             }`}>
               {selected && <CheckCircleIcon className="size-4 text-white" />}
             </div>
@@ -249,7 +249,7 @@ function TestCard({
               <div className="text-right">
                 <span className="text-xs font-semibold text-foreground">{(v.conversion_rate * 100).toFixed(1)}%</span>
                 {cvrLift && (
-                  <span className={`ml-1 text-[10px] font-medium ${cvrLift.positive ? "text-emerald-600" : "text-red-500"}`}>
+                  <span className={`ml-1 text-[10px] font-medium ${cvrLift.positive ? "text-success" : "text-danger"}`}>
                     {cvrLift.value}
                   </span>
                 )}
@@ -257,7 +257,7 @@ function TestCard({
               <div className="text-right">
                 <span className="text-xs font-semibold text-foreground">${v.aov.toFixed(2)}</span>
                 {aovLift && (
-                  <span className={`ml-1 text-[10px] font-medium ${aovLift.positive ? "text-emerald-600" : "text-red-500"}`}>
+                  <span className={`ml-1 text-[10px] font-medium ${aovLift.positive ? "text-success" : "text-danger"}`}>
                     {aovLift.value}
                   </span>
                 )}
@@ -265,14 +265,14 @@ function TestCard({
               <div className="text-right">
                 <span className="text-xs font-semibold text-foreground">${v.rpv.toFixed(2)}</span>
                 {rpvLift && (
-                  <span className={`ml-1 text-[10px] font-medium ${rpvLift.positive ? "text-emerald-600" : "text-red-500"}`}>
+                  <span className={`ml-1 text-[10px] font-medium ${rpvLift.positive ? "text-success" : "text-danger"}`}>
                     {rpvLift.value}
                   </span>
                 )}
               </div>
               <div className="text-right">
                 {mainLift && (
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold ${mainLift.positive ? "bg-emerald-600/20 text-emerald-400" : "bg-red-600/20 text-red-400"}`}>
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold ${mainLift.positive ? "bg-success/15 text-success" : "bg-danger/15 text-danger"}`}>
                     {mainLift.value}
                   </span>
                 )}
@@ -336,7 +336,7 @@ export function IntelligemsTestCards({
 
   if (error) {
     return (
-      <div className="py-4 px-4 bg-red-50 text-red-600 text-xs rounded-lg border border-red-200">
+      <div className="py-4 px-4 bg-danger/10 text-danger text-xs rounded-lg border border-danger/20">
         Failed to load Intelligems data: {error}
       </div>
     );
@@ -431,7 +431,7 @@ export function IntelligemsTestCards({
                 ) : (
                   <div className="flex items-center gap-3 text-[10px] text-subtle">
                     <span>{assignment?.week || "No week assigned"}</span>
-                    {assignment?.figma_url && <span className="text-emerald-600">Figma linked ✓</span>}
+                    {assignment?.figma_url && <span className="text-success">Figma linked ✓</span>}
                     <span className="ml-auto text-muted">Click to edit</span>
                   </div>
                 )}

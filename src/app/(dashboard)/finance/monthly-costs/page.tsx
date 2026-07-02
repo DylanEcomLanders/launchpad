@@ -120,7 +120,7 @@ export default function MonthlyCostsPage() {
       </div>
 
       {loadError && (
-        <div className="rounded-lg border border-[#92400E] bg-amber-500/10 px-4 py-3 text-xs text-[#92400E]">
+        <div className="rounded-lg border border-warning/20 bg-warning/10 px-4 py-3 text-xs text-warning">
           Couldn&apos;t load saved costs. The{" "}
           <code className="font-mono">finance_monthly_costs</code> table may need
           migration 026 applied. You can still calculate below, but changes
@@ -131,7 +131,7 @@ export default function MonthlyCostsPage() {
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl border border-border bg-surface text-foreground p-5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-white/50 mb-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-subtle mb-1">
             Total per month
           </p>
           <p className="text-3xl font-bold tabular-nums">
@@ -249,7 +249,7 @@ export default function MonthlyCostsPage() {
           <button
             onClick={addCost}
             disabled={!draftName.trim()}
-            className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <PlusIcon className="size-4" />
             Add
@@ -361,7 +361,7 @@ export default function MonthlyCostsPage() {
                     className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded transition-colors ${
                       it.active
                         ? "text-subtle hover:bg-surface-raised"
-                        : "text-warning bg-amber-500/15"
+                        : "text-warning bg-warning/15"
                     }`}
                   >
                     {it.active ? "On" : "Off"}

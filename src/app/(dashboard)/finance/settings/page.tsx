@@ -124,7 +124,7 @@ export default function FinanceSettingsPage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-danger rounded-lg text-sm text-[#FCA5A5]">
+        <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger rounded-lg text-sm text-danger">
           {error}
         </div>
       )}
@@ -299,14 +299,14 @@ export default function FinanceSettingsPage() {
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
           {saved && (
-            <span className="inline-flex items-center gap-1.5 text-sm text-emerald-700">
+            <span className="inline-flex items-center gap-1.5 text-sm text-success">
               <CheckIcon className="size-4" /> Saved
             </span>
           )}
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-white text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save profile
@@ -329,12 +329,12 @@ export default function FinanceSettingsPage() {
             {migrating ? "Importing..." : "Import legacy data"}
           </button>
           {migrationResult && (
-            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
+            <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg text-sm text-success">
               Imported {migrationResult.companyInvoicesImported} from company_invoices,{" "}
               {migrationResult.expensesImported} from expenses.{" "}
               {migrationResult.skipped > 0 && `Skipped ${migrationResult.skipped} already-imported.`}
               {migrationResult.errors.length > 0 && (
-                <div className="mt-2 text-red-700">
+                <div className="mt-2 text-danger">
                   Errors: {migrationResult.errors.join("; ")}
                 </div>
               )}

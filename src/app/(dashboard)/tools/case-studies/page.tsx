@@ -21,7 +21,7 @@ export default function CaseStudiesPreview() {
             href="/case-studies"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-medium text-background hover:bg-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background hover:bg-muted transition-colors"
           >
             Open external
             <ArrowTopRightOnSquareIcon className="size-3.5" />

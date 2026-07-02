@@ -107,7 +107,7 @@ function dueLabel(dueInDays: number): string {
 }
 
 function toneDot(t: Tone): string {
-  return t === "red" ? "bg-danger" : t === "amber" ? "bg-[#FFB300]" : "bg-success";
+  return t === "red" ? "bg-danger" : t === "amber" ? "bg-warning" : "bg-success";
 }
 
 export default function EngagementsPage() {
@@ -185,7 +185,7 @@ export default function EngagementsPage() {
           </Link>
           <Link
             href="/engagements/new"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-2 rounded"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-surface bg-foreground hover:bg-foreground px-3 py-2 rounded"
           >
             <PlusIcon className="size-3.5" />
             New client
@@ -206,7 +206,7 @@ export default function EngagementsPage() {
           </p>
           <Link
             href="/engagements/new"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-2 rounded"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-surface bg-foreground hover:bg-foreground px-3 py-2 rounded"
           >
             <PlusIcon className="size-3.5" />
             New client
@@ -220,7 +220,7 @@ export default function EngagementsPage() {
         <span className="font-medium text-foreground">{allEngagements.length} clients</span>
         {totalOverdue > 0 && <span className="text-danger font-semibold">· {totalOverdue} overdue</span>}
         {totalBlocked > 0 && <span className="text-danger font-semibold">· {totalBlocked} blocked</span>}
-        {totalOverdue === 0 && totalBlocked === 0 && <span className="text-[#2E7D32]">· on track</span>}
+        {totalOverdue === 0 && totalBlocked === 0 && <span className="text-success">· on track</span>}
       </div>
 
       {/* Clients table — Google-Sheets-style: every client, where we are,
@@ -267,7 +267,7 @@ export default function EngagementsPage() {
                     <td className="px-3 py-3">
                       <span
                         className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[11px] font-medium ${
-                          isRetainer ? "border-white/15 bg-surface-raised text-foreground" : "border-blue-200 bg-blue-50 text-blue-700"
+                          isRetainer ? "border-border bg-surface-raised text-foreground" : "border-info/20 bg-info/10 text-info"
                         }`}
                       >
                         {typeLabel}
@@ -294,7 +294,7 @@ export default function EngagementsPage() {
                       <span className="inline-flex items-center justify-end gap-1.5 text-[11px] tabular-nums">
                         {health.overdue > 0 && <span className="font-semibold text-danger">{health.overdue} overdue</span>}
                         {health.blocked > 0 && <span className="font-semibold text-danger">{health.blocked} blocked</span>}
-                        {health.overdue === 0 && health.blocked === 0 && <span className="text-[#2E7D32]">on track</span>}
+                        {health.overdue === 0 && health.blocked === 0 && <span className="text-success">on track</span>}
                       </span>
                     </td>
                   </tr>

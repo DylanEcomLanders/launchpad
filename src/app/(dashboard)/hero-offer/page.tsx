@@ -116,24 +116,18 @@ const STAGES = [
     icon: MegaphoneIcon,
     label: "Acquisition",
     sub: "Win the deal: discovery audit, proposals, pitch deck, qualification.",
-    gradient: "from-emerald-500 to-teal-600",
-    glow: "rgba(16,185,129,0.18)",
   },
   {
     href: "/hero-offer/execution",
     icon: WrenchScrewdriverIcon,
     label: "Execution",
     sub: "Wow on delivery: briefs, monthly roadmap, kickoff deck.",
-    gradient: "from-cyan-500 to-teal-600",
-    glow: "rgba(6,182,212,0.18)",
   },
   {
     href: "/hero-offer/retention",
     icon: HeartIcon,
     label: "Retention",
     sub: "Make it last: monthly reports, milestone decks, renewals.",
-    gradient: "from-sky-500 to-blue-600",
-    glow: "rgba(14,165,233,0.18)",
   },
 ];
 
@@ -194,7 +188,7 @@ export default function TheOfferPage() {
         <div className="text-[10px] uppercase tracking-[0.3em] font-mono text-subtle mb-4">
           The Conversion Engine
         </div>
-        <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.02em] leading-[1.05] mb-4 bg-gradient-to-r from-white via-emerald-100 to-cyan-100 bg-clip-text text-transparent">
+        <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.02em] leading-[1.05] mb-4 text-foreground">
           We turn the traffic you already pay for into revenue.
         </h2>
         <p className="text-sm md:text-base text-muted leading-relaxed max-w-2xl">
@@ -213,11 +207,11 @@ export default function TheOfferPage() {
                 className={
                   featured
                     ? "rounded-3xl bg-surface-raised text-surface p-7 md:p-8 shadow-xl shadow-black/30"
-                    : "rounded-3xl ring-1 ring-white/[0.08] bg-white/[0.025] p-7 md:p-8"
+                    : "rounded-3xl ring-1 ring-border bg-surface p-7 md:p-8"
                 }
               >
                 <div className="flex items-center justify-between gap-2 mb-6">
-                  <h3 className={`text-lg font-semibold ${featured ? "" : "text-white/85"}`}>
+                  <h3 className={`text-lg font-semibold ${featured ? "" : "text-foreground"}`}>
                     {tier.name}
                   </h3>
                   {featured && tier.badge && (
@@ -227,22 +221,22 @@ export default function TheOfferPage() {
                   )}
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className={`text-5xl font-semibold tracking-[-0.03em] tabular-nums ${featured ? "" : "text-white/90"}`}>
+                  <span className={`text-5xl font-semibold tracking-[-0.03em] tabular-nums ${featured ? "" : "text-foreground"}`}>
                     {fmtK(tier.monthly)}
                   </span>
-                  <span className={`text-sm ${featured ? "text-surface/45" : "text-white/40"}`}>
+                  <span className={`text-sm ${featured ? "text-surface/45" : "text-subtle"}`}>
                     /mo
                   </span>
                 </div>
-                <p className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-surface/60" : "text-white/50"}`}>
+                <p className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-surface/60" : "text-muted"}`}>
                   {tier.blurb}
                 </p>
-                <div className={`h-px mb-6 ${featured ? "bg-surface/10" : "bg-white/10"}`} />
+                <div className={`h-px mb-6 ${featured ? "bg-surface/10" : "bg-border"}`} />
                 <ul className="space-y-3">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5">
-                      <CheckIcon className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-surface" : "text-white/35"}`} />
-                      <span className={`text-sm leading-snug ${featured ? "" : "text-white/70"}`}>
+                      <CheckIcon className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-surface" : "text-subtle"}`} />
+                      <span className={`text-sm leading-snug ${featured ? "" : "text-muted"}`}>
                         {f}
                       </span>
                     </li>
@@ -252,15 +246,15 @@ export default function TheOfferPage() {
             );
           })}
         </div>
-        <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/35 mt-6 text-center">
+        <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-subtle mt-6 text-center">
           90-day initial commitment · 10% off when paid up front
         </p>
       </section>
 
       {/* ── North Star · Guarantee · Who it's for ──────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="rounded-2xl bg-background ring-1 ring-white/[0.04] p-5">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+        <div className="rounded-2xl bg-background ring-1 ring-border p-5">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-success mb-2">
             North Star
           </div>
           <div className="text-base font-semibold text-foreground mb-1">Conversion rate.</div>
@@ -268,8 +262,8 @@ export default function TheOfferPage() {
             The one metric we measure ourselves on. CR up = revenue up at the same ad spend.
           </p>
         </div>
-        <div className="rounded-2xl bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-sky-500/10 ring-1 ring-emerald-500/20 p-5">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+        <div className="rounded-2xl bg-success/10 ring-1 ring-success/20 p-5">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-success mb-2">
             The guarantee
           </div>
           <div className="text-base font-semibold text-foreground mb-1">
@@ -279,8 +273,8 @@ export default function TheOfferPage() {
             You ship what we recommend. We hit the number.
           </p>
         </div>
-        <div className="rounded-2xl bg-background ring-1 ring-white/[0.04] p-5">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+        <div className="rounded-2xl bg-background ring-1 ring-border p-5">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-success mb-2">
             Who it&apos;s for
           </div>
           <div className="text-base font-semibold text-foreground mb-1">
@@ -304,13 +298,12 @@ export default function TheOfferPage() {
               <Link
                 key={s.href}
                 href={s.href}
-                className="group block bg-background rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] transition-all"
-                style={{ ["--glow" as string]: s.glow }}
+                className="group block bg-background rounded-2xl p-5 ring-1 ring-border hover:ring-border transition-all"
               >
                 <div
-                  className={`size-10 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-[0_8px_24px_var(--glow)] mb-4 transition-transform group-hover:scale-105`}
+                  className="size-10 rounded-xl bg-surface-raised border border-border flex items-center justify-center mb-4 transition-transform group-hover:scale-105"
                 >
-                  <Icon className="size-5 text-white" />
+                  <Icon className="size-5 text-foreground" />
                 </div>
                 <div className="text-[11px] uppercase tracking-wider font-semibold text-subtle mb-1">
                   {s.label}
@@ -331,9 +324,9 @@ export default function TheOfferPage() {
           {PLAYBOOK_GUIDE.map((g) => (
             <div
               key={g.eyebrow}
-              className="rounded-2xl bg-background ring-1 ring-white/[0.04] p-5"
+              className="rounded-2xl bg-background ring-1 ring-border p-5"
             >
-              <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+              <div className="text-[10px] uppercase tracking-wider font-semibold text-success mb-2">
                 {g.eyebrow}
               </div>
               <div className="text-base font-semibold text-foreground mb-1.5">{g.title}</div>
@@ -347,21 +340,21 @@ export default function TheOfferPage() {
       {isAdmin && (
         <Link
           href="/operations"
-          className="block bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-sky-500/10 rounded-2xl p-5 ring-1 ring-emerald-500/20 hover:ring-emerald-500/40 transition-all group"
+          className="block bg-success/10 rounded-2xl p-5 ring-1 ring-success/20 hover:ring-success/40 transition-all group"
         >
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-gradient-to-br from-emerald-500 via-cyan-500 to-sky-500 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)] shrink-0">
+            <div className="size-10 rounded-xl bg-success flex items-center justify-center shrink-0">
               <SparklesIcon className="size-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-0.5">
+              <div className="text-[11px] uppercase tracking-wider text-success font-semibold mb-0.5">
                 Operations
               </div>
               <div className="text-sm text-foreground">
                 Every operational tool the playbook turns into: pipeline, briefs, tests, reports, onboarding, lifecycle, cadence, brain library.
               </div>
             </div>
-            <ArrowTopRightOnSquareIcon className="size-4 text-subtle group-hover:text-emerald-300 transition-colors shrink-0" />
+            <ArrowTopRightOnSquareIcon className="size-4 text-subtle group-hover:text-success transition-colors shrink-0" />
           </div>
         </Link>
       )}
@@ -370,7 +363,7 @@ export default function TheOfferPage() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <ChatBubbleLeftRightIcon className="size-4 text-cyan-400" />
+            <ChatBubbleLeftRightIcon className="size-4 text-info" />
             <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
               Objection library
             </div>
@@ -378,7 +371,7 @@ export default function TheOfferPage() {
           {isAdmin && (
             <button
               onClick={addObjection}
-              className="text-[11px] uppercase tracking-wider font-semibold text-subtle hover:text-cyan-300 transition-colors"
+              className="text-[11px] uppercase tracking-wider font-semibold text-subtle hover:text-info transition-colors"
             >
               + Add objection
             </button>
@@ -394,7 +387,7 @@ export default function TheOfferPage() {
             ))}
           </div>
         ) : objections.length === 0 ? (
-          <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+          <div className="bg-background rounded-2xl p-6 text-center ring-1 ring-border">
             <p className="text-sm text-subtle">
               {isAdmin
                 ? "Capture every objection you hear and the response that lands. Click + Add objection above."
@@ -453,7 +446,7 @@ function ObjectionCard({
 
   if (editing) {
     return (
-      <div className="bg-background rounded-2xl p-5 space-y-3 ring-1 ring-cyan-500/30">
+      <div className="bg-background rounded-2xl p-5 space-y-3 ring-1 ring-info/30">
         <input
           value={qDraft}
           onChange={(e) => setQDraft(e.target.value)}
@@ -471,14 +464,14 @@ function ObjectionCard({
         <div className="flex items-center justify-between">
           <button
             onClick={onDelete}
-            className="text-[11px] uppercase tracking-wider text-subtle hover:text-rose-400"
+            className="text-[11px] uppercase tracking-wider text-subtle hover:text-danger"
           >
             Delete
           </button>
           <div className="flex items-center gap-2">
             <button
               onClick={onCancel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-white"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-subtle hover:text-foreground"
             >
               <XMarkIcon className="size-3.5" />
               Cancel
@@ -490,7 +483,7 @@ function ObjectionCard({
                   response: aDraft,
                 })
               }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-background hover:bg-foreground"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground"
             >
               <CheckIcon className="size-3.5" />
               Save
@@ -502,7 +495,7 @@ function ObjectionCard({
   }
 
   return (
-    <div className="bg-background rounded-2xl p-5 group ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
+    <div className="bg-background rounded-2xl p-5 group ring-1 ring-border hover:ring-info/30 transition-all">
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="font-semibold text-foreground text-sm">
           &ldquo;{objection.objection}&rdquo;

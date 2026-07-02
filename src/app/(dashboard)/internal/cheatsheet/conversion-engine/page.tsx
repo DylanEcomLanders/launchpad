@@ -276,7 +276,7 @@ export default function ConversionEngineCheatsheetPage() {
           saving={saving}
           className={`rounded-lg border px-4 py-3 mb-3 ${
             editing === "positioning"
-              ? "border-white bg-surface"
+              ? "border-border bg-surface"
               : "border-foreground bg-foreground text-surface"
           }`}
           textareaRows={3}
@@ -305,9 +305,9 @@ export default function ConversionEngineCheatsheetPage() {
                 saving={saving}
                 className={`rounded-lg border p-3 ${
                   isEditing
-                    ? "border-white bg-surface"
+                    ? "border-border bg-surface"
                     : overridden
-                      ? "border-border bg-amber-500/15"
+                      ? "border-border bg-warning/15"
                       : "border-border bg-surface"
                 }`}
                 textareaRows={8}
@@ -346,7 +346,7 @@ export default function ConversionEngineCheatsheetPage() {
                   <tr
                     key={i}
                     className={`border-b border-border last:border-0 align-top ${
-                      rowOverridden ? "bg-amber-500/15/60" : "hover:bg-background/60"
+                      rowOverridden ? "bg-warning/15" : "hover:bg-background/60"
                     }`}
                   >
                     <td className="px-3 py-2.5 text-[12px] font-medium text-foreground leading-snug">
@@ -382,7 +382,7 @@ export default function ConversionEngineCheatsheetPage() {
                     <td className="px-2 py-2.5">
                       <button
                         onClick={() => copy(obj.a, i)}
-                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-border text-muted hover:border-white hover:text-foreground transition-colors"
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-border text-muted hover:border-border hover:text-foreground transition-colors"
                       >
                         {copiedIdx === i ? (
                           <>
@@ -440,7 +440,7 @@ function EditableBlock({
   return (
     <div className={`group relative ${className}`}>
       {overridden && !isEditing && (
-        <span className="absolute top-1.5 right-12 text-[9px] font-semibold uppercase tracking-wider text-[#92400E] bg-amber-500/15 px-1.5 py-0.5 rounded">
+        <span className="absolute top-1.5 right-12 text-[9px] font-semibold uppercase tracking-wider text-[#92400E] bg-warning/15 px-1.5 py-0.5 rounded">
           Edited
         </span>
       )}
@@ -470,7 +470,7 @@ function EditableBlock({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={Math.max(textareaRows, draft.split("\n").length + 1)}
-            className="w-full font-mono text-[11px] leading-relaxed border border-border rounded-md p-2 focus:outline-none focus:border-white focus:ring-1 focus:ring-surface resize-y text-foreground bg-surface"
+            className="w-full font-mono text-[11px] leading-relaxed border border-border rounded-md p-2 focus:outline-none focus:border-border focus:ring-1 focus:ring-surface resize-y text-foreground bg-surface"
           />
           <div className="mt-1.5 flex items-center justify-end gap-2">
             <button
@@ -484,7 +484,7 @@ function EditableBlock({
             <button
               onClick={onSave}
               disabled={saving}
-              className="inline-flex items-center gap-1 text-[10px] font-semibold text-surface bg-foreground hover:bg-white px-2 py-1 rounded disabled:opacity-50"
+              className="inline-flex items-center gap-1 text-[10px] font-semibold text-surface bg-foreground hover:bg-foreground px-2 py-1 rounded disabled:opacity-50"
             >
               <CheckIcon className="size-3" />
               {saving ? "Saving…" : "Save"}
@@ -532,7 +532,7 @@ function InlineEditable({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           rows={Math.max(textareaRows, draft.split("\n").length + 1)}
-          className="w-full text-[12px] leading-snug border border-white rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-surface resize-y bg-surface"
+          className="w-full text-[12px] leading-snug border border-border rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-surface resize-y bg-surface"
         />
         <div className="mt-1 flex items-center justify-end gap-1.5">
           <button
@@ -546,7 +546,7 @@ function InlineEditable({
           <button
             onClick={onSave}
             disabled={saving}
-            className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-surface bg-foreground hover:bg-white px-1.5 py-0.5 rounded disabled:opacity-50"
+            className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-surface bg-foreground hover:bg-foreground px-1.5 py-0.5 rounded disabled:opacity-50"
           >
             <CheckIcon className="size-3" />
             {saving ? "Saving…" : "Save"}
@@ -576,7 +576,7 @@ function InlineEditable({
           <PencilSquareIcon className="size-3" />
         </button>
         {overridden && (
-          <span className="text-[8px] font-semibold uppercase tracking-wider text-[#92400E] bg-amber-500/15 px-1 py-0.5 rounded">
+          <span className="text-[8px] font-semibold uppercase tracking-wider text-[#92400E] bg-warning/15 px-1 py-0.5 rounded">
             edited
           </span>
         )}

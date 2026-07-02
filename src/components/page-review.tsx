@@ -202,13 +202,13 @@ export function PageReviewViewer({
               <>
                 <button
                   onClick={() => setShowApprovalForm(true)}
-                  className="px-3 py-1.5 text-[11px] font-medium text-emerald-400 border border-emerald-600/30 rounded-md hover:bg-emerald-600/10 transition-colors"
+                  className="px-3 py-1.5 text-[11px] font-medium text-success border border-success/30 rounded-md hover:bg-success/10 transition-colors"
                 >
                   Approve
                 </button>
                 <button
                   onClick={() => setShowApprovalForm(true)}
-                  className="px-3 py-1.5 text-[11px] font-medium text-amber-400 border border-amber-600/30 rounded-md hover:bg-amber-600/10 transition-colors"
+                  className="px-3 py-1.5 text-[11px] font-medium text-warning border border-warning/30 rounded-md hover:bg-warning/10 transition-colors"
                 >
                   Request Amends
                 </button>
@@ -224,13 +224,13 @@ export function PageReviewViewer({
                 />
                 <button
                   onClick={() => handleApproval("approved")}
-                  className="px-2.5 py-1.5 text-[10px] font-medium bg-emerald-500 text-white rounded-md hover:bg-emerald-600"
+                  className="px-2.5 py-1.5 text-[10px] font-medium bg-success text-white rounded-md hover:opacity-90"
                 >
                   Approve
                 </button>
                 <button
                   onClick={() => handleApproval("changes_requested")}
-                  className="px-2.5 py-1.5 text-[10px] font-medium bg-amber-500 text-white rounded-md hover:bg-amber-600"
+                  className="px-2.5 py-1.5 text-[10px] font-medium bg-warning text-white rounded-md hover:opacity-90"
                 >
                   Amends
                 </button>
@@ -247,7 +247,7 @@ export function PageReviewViewer({
         )}
 
         {review.status === "approved" && (
-          <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-600">
+          <span className="flex items-center gap-1 text-[11px] font-medium text-success">
             <CheckCircleIcon className="size-4" />
             Approved
           </span>
@@ -256,7 +256,7 @@ export function PageReviewViewer({
 
       {/* Status badge */}
       {review.status === "changes_requested" && (
-        <div className="px-3 py-2 bg-amber-600/15 border border-amber-600/30 rounded-lg text-xs text-amber-400 font-medium">
+        <div className="px-3 py-2 bg-warning/10 border border-warning/30 rounded-lg text-xs text-warning font-medium">
           Changes requested — review the pin feedback below
         </div>
       )}
@@ -275,7 +275,7 @@ export function PageReviewViewer({
               href={stagingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-medium text-[#2563EB] hover:underline"
+              className="text-[10px] font-medium text-info hover:underline"
             >
               Open in new tab
             </a>
@@ -311,7 +311,7 @@ export function PageReviewViewer({
                     className="absolute z-20"
                     style={{ left: `${pendingPin.x}%`, top: `${pendingPin.y}%` }}
                   >
-                    <div className="absolute -translate-x-1/2 -translate-y-1/2 size-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-lg animate-pulse">
+                    <div className="absolute -translate-x-1/2 -translate-y-1/2 size-6 rounded-full bg-info text-white flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-lg animate-pulse">
                       +
                     </div>
                     {/* Comment input popover */}
@@ -412,8 +412,8 @@ export function PageReviewViewer({
                     }}
                     className={`flex-shrink-0 p-1 rounded transition-colors ${
                       pin.resolved
-                        ? "text-emerald-500 hover:text-emerald-600"
-                        : "text-muted hover:text-emerald-500"
+                        ? "text-success hover:opacity-80"
+                        : "text-muted hover:text-success"
                     }`}
                     title={pin.resolved ? "Unresolve" : "Resolve"}
                   >
@@ -469,7 +469,7 @@ function PinMarker({
             {pin.submitted_by} · {new Date(pin.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </p>
           {pin.resolved && (
-            <span className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-medium text-emerald-600">
+            <span className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-medium text-success">
               <CheckIcon className="size-3" /> Resolved
             </span>
           )}

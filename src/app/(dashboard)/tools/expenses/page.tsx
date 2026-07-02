@@ -14,9 +14,9 @@ const frequencies = ["monthly", "yearly", "one-off"] as const;
 const statuses = ["needed", "review", "cut"] as const;
 
 const statusColors: Record<string, { bg: string; text: string; dot: string }> = {
-  needed: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
-  review: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500" },
-  cut: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500" },
+  needed: { bg: "bg-success/10", text: "text-success", dot: "bg-success" },
+  review: { bg: "bg-warning/10", text: "text-warning", dot: "bg-warning" },
+  cut: { bg: "bg-danger/10", text: "text-danger", dot: "bg-danger" },
 };
 
 function monthlyEquivalent(amount: number, frequency: string): number {
@@ -197,11 +197,11 @@ export default function ExpensesPage() {
 
         {/* Error banner */}
         {error && (
-          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
             {error}
             <button
               onClick={() => setError(null)}
-              className="ml-3 text-red-500 hover:text-red-700"
+              className="ml-3 text-danger hover:text-foreground"
             >
               Dismiss
             </button>
@@ -236,7 +236,7 @@ export default function ExpensesPage() {
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">
                     Needed
                   </p>
-                  <p className="text-lg font-semibold tabular-nums text-emerald-700">
+                  <p className="text-lg font-semibold tabular-nums text-success">
                     {summary.neededCount}
                   </p>
                 </div>
@@ -536,7 +536,7 @@ export default function ExpensesPage() {
                           </button>
                           <button
                             onClick={() => handleDelete(expense.id)}
-                            className="p-1 text-subtle hover:text-red-500 transition-colors"
+                            className="p-1 text-subtle hover:text-danger transition-colors"
                             title="Delete"
                           >
                             <TrashIcon className="size-3.5" />
@@ -578,7 +578,7 @@ export default function ExpensesPage() {
                             </button>
                             <button
                               onClick={() => handleDelete(expense.id)}
-                              className="p-1 text-subtle hover:text-red-500 transition-colors"
+                              className="p-1 text-subtle hover:text-danger transition-colors"
                             >
                               <TrashIcon className="size-3.5" />
                             </button>

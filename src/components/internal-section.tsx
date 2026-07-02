@@ -50,7 +50,7 @@ export function GateStatusPills({ project }: { project: PortalProject }) {
             key={key}
             className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
               isSubmitted
-                ? "bg-emerald-50 text-emerald-600"
+                ? "bg-success/10 text-success"
                 : "bg-surface-raised text-muted"
             }`}
           >
@@ -93,7 +93,7 @@ function ModalHeader({ gateKey, onClose }: { gateKey: string; onClose: () => voi
 
 function SubmittedBanner({ gate }: { gate: QAGate }) {
   return (
-    <div className="flex items-center gap-2 text-emerald-600">
+    <div className="flex items-center gap-2 text-success">
       <CheckIcon className="size-4" />
       <span className="text-sm font-medium">
         Submitted {gate.submitted_at ? new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
@@ -142,7 +142,7 @@ function ChecklistGateModal({
           <label
             key={i}
             className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-              item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-border hover:border-border"
+              item.checked ? "border-success/20 bg-success/5" : "border-border hover:border-border"
             } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
           >
             <input
@@ -153,7 +153,7 @@ function ChecklistGateModal({
                 if (isSubmitted) return;
                 onUpdate({ ...gate, items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it) });
               }}
-              className="size-4 mt-0.5 rounded border-border text-emerald-600 focus:ring-0 focus:ring-offset-0"
+              className="size-4 mt-0.5 rounded border-border text-success focus:ring-0 focus:ring-offset-0"
             />
             <span className={`text-sm ${item.checked ? "text-foreground" : "text-muted"}`}>{item.label}</span>
           </label>
@@ -187,7 +187,7 @@ function ChecklistGateModal({
                 onSubmit({ ...gate, status: "submitted", submitted_at: new Date().toISOString(), submitted_by: "team" });
               }}
               disabled={!complete}
-              className="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2.5 text-sm font-semibold bg-accent text-accent-foreground rounded-lg hover:opacity-90 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
             >
               Submit Handoff
             </button>
@@ -215,7 +215,7 @@ function DesignHandoffFormModal({
 
   const fieldClass = "w-full text-sm px-3 py-2.5 border border-border rounded-lg focus:outline-none focus:border-subtle placeholder:text-muted disabled:opacity-50 disabled:bg-background";
   const labelClass = "text-[11px] font-medium text-muted block mb-1.5";
-  const requiredDot = <span className="text-red-400 ml-0.5">*</span>;
+  const requiredDot = <span className="text-danger ml-0.5">*</span>;
 
   // Count how many fields are filled for progress
   const totalFields = 3 + gate.items.length; // figma + loom + checklist items (extras/fonts optional)
@@ -302,7 +302,7 @@ function DesignHandoffFormModal({
               <label
                 key={i}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-border hover:border-border"
+                  item.checked ? "border-success/20 bg-success/5" : "border-border hover:border-border"
                 } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
               >
                 <input
@@ -313,7 +313,7 @@ function DesignHandoffFormModal({
                     if (isSubmitted) return;
                     onUpdate({ ...gate, items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it) });
                   }}
-                  className="size-4 mt-0.5 rounded border-border text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                  className="size-4 mt-0.5 rounded border-border text-success focus:ring-0 focus:ring-offset-0"
                 />
                 <span className={`text-sm ${item.checked ? "text-foreground" : "text-muted"}`}>{item.label}</span>
               </label>
@@ -349,7 +349,7 @@ function DesignHandoffFormModal({
                 onSubmit({ ...gate, status: "submitted", submitted_at: new Date().toISOString(), submitted_by: "team" });
               }}
               disabled={!ready}
-              className="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2.5 text-sm font-semibold bg-accent text-accent-foreground rounded-lg hover:opacity-90 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
             >
               Submit Handoff
             </button>
@@ -388,7 +388,7 @@ function GateOverviewCard({
         locked
           ? "opacity-40 cursor-not-allowed border-border"
           : isSubmitted
-            ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
+            ? "border-success/20 bg-success/5 hover:border-success/30"
             : "border-border hover:border-border cursor-pointer"
       }`}
     >
@@ -400,8 +400,8 @@ function GateOverviewCard({
       {isSubmitted ? (
         <>
           <div className="flex items-center gap-1.5 mb-1">
-            <CheckIcon className="size-3.5 text-emerald-600" />
-            <span className="text-xs font-semibold text-emerald-600">Submitted</span>
+            <CheckIcon className="size-3.5 text-success" />
+            <span className="text-xs font-semibold text-success">Submitted</span>
           </div>
           <p className="text-[9px] text-muted">
             {gate.submitted_at && new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
@@ -417,7 +417,7 @@ function GateOverviewCard({
       )}
 
       {locked && lockReason && (
-        <p className="text-[9px] text-amber-500 mt-1.5">🔒 {lockReason}</p>
+        <p className="text-[9px] text-warning mt-1.5">🔒 {lockReason}</p>
       )}
     </button>
   );
@@ -579,7 +579,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
             </div>
             <button
               onClick={toggleCroBrief}
-              className={`relative w-10 h-5 rounded-full transition-colors ${gates.cro_brief_enabled ? "bg-emerald-400" : "bg-muted"}`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${gates.cro_brief_enabled ? "bg-success" : "bg-muted"}`}
             >
               <span className={`absolute top-0.5 left-0.5 size-4 bg-surface rounded-full shadow transition-transform ${gates.cro_brief_enabled ? "translate-x-5" : ""}`} />
             </button>
@@ -686,7 +686,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
                 <span className="text-[10px] text-muted">{new Date(entry.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
               </div>
               {!readOnly && (
-                <button onClick={() => deleteContext(entry.id)} className="text-muted hover:text-red-400">
+                <button onClick={() => deleteContext(entry.id)} className="text-muted hover:text-danger">
                   <TrashIcon className="size-3" />
                 </button>
               )}
@@ -713,9 +713,9 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
               {/* Mission Statement */}
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`size-2 rounded-full ${currentWeek.missionStatement ? "bg-emerald-500" : isMissionStatementDue(currentWeek) ? "bg-red-500 animate-pulse" : "bg-muted"}`} />
+                  <span className={`size-2 rounded-full ${currentWeek.missionStatement ? "bg-success" : isMissionStatementDue(currentWeek) ? "bg-danger animate-pulse" : "bg-muted"}`} />
                   <span className="text-xs font-medium text-foreground">Mission Statement</span>
-                  {isMissionStatementDue(currentWeek) && <span className="text-[9px] text-red-500 font-medium">Due today</span>}
+                  {isMissionStatementDue(currentWeek) && <span className="text-[9px] text-danger font-medium">Due today</span>}
                 </div>
                 {currentWeek.missionStatement ? (
                   <div className="bg-background rounded-lg p-3">
@@ -745,9 +745,9 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
               {/* Weekly Report */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`size-2 rounded-full ${currentWeek.weeklyReport ? "bg-emerald-500" : isWeeklyReportDue(currentWeek) ? "bg-red-500 animate-pulse" : "bg-muted"}`} />
+                  <span className={`size-2 rounded-full ${currentWeek.weeklyReport ? "bg-success" : isWeeklyReportDue(currentWeek) ? "bg-danger animate-pulse" : "bg-muted"}`} />
                   <span className="text-xs font-medium text-foreground">Weekly Report</span>
-                  {isWeeklyReportDue(currentWeek) && <span className="text-[9px] text-red-500 font-medium">Due today</span>}
+                  {isWeeklyReportDue(currentWeek) && <span className="text-[9px] text-danger font-medium">Due today</span>}
                 </div>
                 {currentWeek.weeklyReport ? (
                   <div className="bg-background rounded-lg p-3">
@@ -772,8 +772,8 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
                   <div key={w.weekStart} className="flex items-center justify-between px-3 py-2 border border-border rounded-lg">
                     <span className="text-xs text-muted">{getWeekLabel(w.weekStart)}</span>
                     <div className="flex items-center gap-3">
-                      <span className={`size-1.5 rounded-full ${w.missionStatement ? "bg-emerald-500" : "bg-muted"}`} title="Mission statement" />
-                      <span className={`size-1.5 rounded-full ${w.weeklyReport ? "bg-emerald-500" : "bg-muted"}`} title="Weekly report" />
+                      <span className={`size-1.5 rounded-full ${w.missionStatement ? "bg-success" : "bg-muted"}`} title="Mission statement" />
+                      <span className={`size-1.5 rounded-full ${w.weeklyReport ? "bg-success" : "bg-muted"}`} title="Weekly report" />
                     </div>
                   </div>
                 ))}

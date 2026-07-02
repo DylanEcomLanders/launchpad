@@ -365,11 +365,11 @@ export default function OutreachPage() {
 
         {/* Error */}
         {(error || seqError) && (
-          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
             {error || seqError}
             <button
               onClick={() => { setError(""); setSeqError(""); }}
-              className="ml-3 text-red-500 hover:text-red-700"
+              className="ml-3 text-danger hover:text-danger"
             >
               Dismiss
             </button>
@@ -378,9 +378,9 @@ export default function OutreachPage() {
 
         {/* Prefill banner */}
         {prefilled && (
-          <div className="mb-6 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center justify-between">
+          <div className="mb-6 px-4 py-3 bg-info/10 border border-info/20 rounded-lg text-sm text-info flex items-center justify-between">
             <span>Pre-filled from Prospect Scraper — review and generate.</span>
-            <button onClick={() => setPrefilled(false)} className="text-blue-500 hover:text-blue-700 text-xs font-medium">Dismiss</button>
+            <button onClick={() => setPrefilled(false)} className="text-info hover:text-info text-xs font-medium">Dismiss</button>
           </div>
         )}
 
@@ -451,7 +451,7 @@ export default function OutreachPage() {
                       onClick={() => setOutreachType(t.value)}
                       className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                         outreachType === t.value
-                          ? "bg-white text-background"
+                          ? "bg-foreground text-background"
                           : "text-subtle hover:text-foreground"
                       }`}
                     >
@@ -472,7 +472,7 @@ export default function OutreachPage() {
                       onClick={() => setTone(t.value)}
                       className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                         tone === t.value
-                          ? "bg-white text-background"
+                          ? "bg-foreground text-background"
                           : "text-subtle hover:text-foreground"
                       }`}
                     >
@@ -487,7 +487,7 @@ export default function OutreachPage() {
                 type="button"
                 onClick={generate}
                 disabled={!canSubmit}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -542,7 +542,7 @@ export default function OutreachPage() {
                           </button>
                           <button
                             onClick={() => handleDeleteSequence(seq.id)}
-                            className="p-1 text-muted hover:text-red-400 transition-colors"
+                            className="p-1 text-muted hover:text-danger transition-colors"
                           >
                             <TrashIcon className="size-3" />
                           </button>
@@ -561,7 +561,7 @@ export default function OutreachPage() {
                         <div className="flex items-center gap-2 shrink-0">
                           <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
                             step.generated
-                              ? "bg-emerald-100 text-emerald-600"
+                              ? "bg-success/10 text-success"
                               : "bg-surface-raised text-subtle"
                           }`}>
                             {step.generated ? "✓" : i + 1}
@@ -612,7 +612,7 @@ export default function OutreachPage() {
                         {seqSteps.length > 1 && (
                           <button
                             onClick={() => removeStep(step.id)}
-                            className="p-1 text-muted hover:text-red-400 transition-colors mt-3"
+                            className="p-1 text-muted hover:text-danger transition-colors mt-3"
                           >
                             <TrashIcon className="size-3.5" />
                           </button>
@@ -638,7 +638,7 @@ export default function OutreachPage() {
                 type="button"
                 onClick={generateAllSteps}
                 disabled={!canGenerateSequence}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-background text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {seqLoading ? (
                   <>
@@ -678,7 +678,7 @@ export default function OutreachPage() {
                     title="Copy subject line"
                   >
                     {copiedSubject ? (
-                      <CheckIcon className="size-3.5 text-emerald-600" />
+                      <CheckIcon className="size-3.5 text-success" />
                     ) : (
                       <ClipboardDocumentIcon className="size-3.5 text-subtle" />
                     )}
@@ -713,8 +713,8 @@ export default function OutreachPage() {
                 onClick={copyAll}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border transition-all duration-200 ${
                   copiedAll
-                    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                    : "bg-white border-background text-background hover:bg-foreground"
+                    ? "bg-success/10 border-success/20 text-success"
+                    : "bg-foreground border-foreground text-background hover:bg-foreground/90"
                 }`}
               >
                 {copiedAll ? (
@@ -758,7 +758,7 @@ export default function OutreachPage() {
                 )}
                 <button
                   onClick={copyFullSequence}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white text-background rounded-md hover:bg-foreground transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors"
                 >
                   <ClipboardDocumentIcon className="size-3" />
                   Copy All
@@ -781,8 +781,8 @@ export default function OutreachPage() {
                   return (
                     <div key={step.id} className="relative pl-12">
                       {/* Timeline dot */}
-                      <div className="absolute left-[11px] top-4 size-[18px] rounded-full bg-emerald-100 border-2 border-emerald-400 flex items-center justify-center">
-                        <CheckIcon className="size-2.5 text-emerald-600" />
+                      <div className="absolute left-[11px] top-4 size-[18px] rounded-full bg-success/10 border-2 border-success/40 flex items-center justify-center">
+                        <CheckIcon className="size-2.5 text-success" />
                       </div>
 
                       <div className="bg-surface border border-border rounded-lg overflow-hidden">

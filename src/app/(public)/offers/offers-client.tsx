@@ -128,14 +128,14 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
   return (
     <div className="min-h-screen bg-surface-raised flex flex-col">
       {/* ── Nav ── */}
-      <nav className="w-full border-b border-border bg-white">
+      <nav className="w-full border-b border-border bg-surface">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
           <Logo height={18} className="text-foreground" />
           <a
             href={CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs md:text-sm font-semibold px-4 py-2 bg-surface text-white rounded-full hover:bg-border transition-colors"
+            className="text-xs md:text-sm font-semibold px-4 py-2 bg-foreground text-background rounded-full hover:bg-foreground/90 transition-colors"
           >
             Book a call
           </a>
@@ -143,7 +143,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
       </nav>
 
       {/* ── Hero: Conversion Engine ── */}
-      <section className="bg-surface text-white relative overflow-hidden">
+      <section className="bg-foreground text-background relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-6 md:px-10 pt-24 pb-20 md:pt-36 md:pb-28 text-center relative">
           <span className="inline-flex items-center text-[11px] font-semibold uppercase tracking-[0.18em] bg-[#D1FF4C] text-foreground px-3 py-1.5 rounded-full">
             The flagship · Post-click partnership
@@ -157,7 +157,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             Engine.
           </h1>
           <p
-            className="text-xl md:text-3xl text-white leading-[1.3] mt-10 max-w-3xl mx-auto font-medium tracking-tight"
+            className="text-xl md:text-3xl text-background leading-[1.3] mt-10 max-w-3xl mx-auto font-medium tracking-tight"
             style={{ fontFamily: "var(--font-heading)" }}
           >
             Same ad spend.{" "}
@@ -198,7 +198,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             </a>
             <Link
               href="/deck"
-              className="inline-flex items-center gap-2 px-8 py-4 text-white/80 text-sm font-semibold rounded-full hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 px-8 py-4 text-background/80 text-sm font-semibold rounded-full hover:text-background transition-colors"
             >
               See the full deck →
             </Link>
@@ -222,7 +222,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
       </section>
 
       {/* ── The Gap (tension) ── */}
-      <section className="bg-background text-white border-t border-white/[0.06]">
+      <section className="bg-background text-foreground border-t border-border">
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-20 md:py-28">
           <div className="text-center mb-12 md:mb-16">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D1FF4C] mb-4">
@@ -238,7 +238,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/[0.06] rounded-2xl overflow-hidden border border-white/[0.06]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
             <div className="bg-background p-8 md:p-10">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-subtle mb-3">
                 Sample brand
@@ -281,14 +281,14 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
 
           <p className="text-center text-sm text-subtle leading-[1.6] mt-10 max-w-2xl mx-auto">
             Breakeven on the partnership = a{" "}
-            <strong className="text-white">0.11% CVR lift</strong>. Our 90-day target is{" "}
-            <strong className="text-white">0.5-2%</strong>.
+            <strong className="text-foreground">0.11% CVR lift</strong>. Our 90-day target is{" "}
+            <strong className="text-foreground">0.5-2%</strong>.
           </p>
         </div>
       </section>
 
       {/* ── Why a partner (positioning) ── */}
-      <section className="bg-white border-y border-border">
+      <section className="bg-surface border-y border-border">
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-20 md:py-28">
           <div className="text-center mb-14 md:mb-20">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-subtle mb-4">
@@ -305,7 +305,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
-            <div className="bg-white p-8 md:p-10">
+            <div className="bg-surface p-8 md:p-10">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-subtle mb-4">
                 Vendor
               </p>
@@ -313,7 +313,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
                 Briefed, builds the page, hands it back. You're the strategist.
               </p>
             </div>
-            <div className="bg-white p-8 md:p-10">
+            <div className="bg-surface p-8 md:p-10">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-subtle mb-4">
                 Agency
               </p>
@@ -321,11 +321,11 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
                 Writes reports and recommendations. Hands you a doc, not a result.
               </p>
             </div>
-            <div className="bg-surface text-white p-8 md:p-10">
+            <div className="bg-foreground text-background p-8 md:p-10">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D1FF4C] mb-4">
                 Conversion partner
               </p>
-              <p className="text-base text-white leading-[1.55]">
+              <p className="text-base text-background leading-[1.55]">
                 Diagnoses, strategises, builds, tests, compounds. One owner for the result.
               </p>
             </div>
@@ -370,7 +370,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             ].map((step) => (
               <div
                 key={step.label}
-                className="rounded-2xl bg-white border border-border p-8 md:p-10"
+                className="rounded-2xl bg-surface border border-border p-8 md:p-10"
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground mb-4 pb-3 border-b border-border">
                   {step.label}
@@ -389,7 +389,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
       </section>
 
       {/* ── Proof bar ── */}
-      <section className="bg-surface text-white">
+      <section className="bg-foreground text-background">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-20 md:py-28">
           <div className="text-center mb-14 md:mb-20">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D1FF4C] mb-4">
@@ -405,7 +405,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.06] rounded-2xl overflow-hidden border border-white/[0.06]">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-border rounded-2xl overflow-hidden border border-border">
             {[
               { vert: "Supplements", stat: "2.1% → 4.3%", note: "CVR · 90 days" },
               { vert: "Apparel", stat: "+£42K", note: "/mo recovered · PDP rebuild" },
@@ -413,7 +413,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
               { vert: "Pet food", stat: "+14%", note: "Checkout completion" },
               { vert: "Home goods", stat: "+£18", note: "Per order · post-purchase" },
             ].map((item) => (
-              <div key={item.vert} className="bg-surface p-6 md:p-8">
+              <div key={item.vert} className="bg-foreground p-6 md:p-8">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#D1FF4C] mb-3">
                   {item.vert}
                 </p>
@@ -431,7 +431,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
       </section>
 
       {/* ── Engine: what's included ── */}
-      <section className="bg-white border-y border-border">
+      <section className="bg-surface border-y border-border">
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-20 md:py-28">
           <div className="text-center mb-14 md:mb-20">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-subtle mb-4">
@@ -472,7 +472,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
               href={CALL_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-surface text-white text-sm font-semibold rounded-full hover:bg-border transition-colors"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-foreground text-background text-sm font-semibold rounded-full hover:bg-foreground/90 transition-colors"
             >
               Book a 30-min audit call
               <svg
@@ -521,14 +521,14 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             {funnelBuilds.map((build) => (
               <div
                 key={build.title}
-                className={`relative flex flex-col rounded-2xl border bg-white p-8 md:p-10 ${
+                className={`relative flex flex-col rounded-2xl border bg-surface p-8 md:p-10 ${
                   build.featured
                     ? "border-surface shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
                     : "border-border"
                 }`}
               >
                 {build.featured && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-[0.18em] bg-surface text-white px-3 py-1.5 rounded-full">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-[0.18em] bg-foreground text-background px-3 py-1.5 rounded-full">
                     Most picked
                   </span>
                 )}
@@ -564,8 +564,8 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
                     rel="noopener noreferrer"
                     className={`inline-flex items-center justify-center gap-2 w-full px-4 py-3.5 text-sm font-semibold rounded-full transition-colors ${
                       build.featured
-                        ? "bg-surface text-white hover:bg-border"
-                        : "border border-surface text-foreground hover:bg-surface hover:text-white"
+                        ? "bg-foreground text-background hover:bg-foreground/90"
+                        : "border border-surface text-foreground hover:bg-foreground hover:text-background"
                     }`}
                   >
                     Start a build
@@ -592,7 +592,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
 
       {/* ── Proof strip ── */}
       {portfolioImages.length > 0 && (
-        <section className="bg-white border-t border-border py-20 md:py-28">
+        <section className="bg-surface border-t border-border py-20 md:py-28">
           <div className="max-w-6xl mx-auto px-6 md:px-10 mb-12 md:mb-16 text-center">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-subtle mb-4">
               Recent work
@@ -649,7 +649,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             href={CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 mt-10 px-8 py-4 bg-surface text-white text-sm font-semibold rounded-full hover:bg-border transition-colors"
+            className="inline-flex items-center gap-2 mt-10 px-8 py-4 bg-foreground text-background text-sm font-semibold rounded-full hover:bg-foreground/90 transition-colors"
           >
             Book discovery call
             <svg
@@ -670,7 +670,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
       </section>
 
       {/* ── Footer ── */}
-      <footer className="bg-surface text-white">
+      <footer className="bg-foreground text-background">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 flex items-center justify-between gap-4 flex-wrap">
           <p
             className="text-sm md:text-base font-medium tracking-tight"

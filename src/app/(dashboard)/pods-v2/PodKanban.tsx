@@ -37,9 +37,9 @@ const PHASE_STAGE: Record<TaskPhase, number> = {
 };
 
 const RISK_DOT: Record<RiskLevel, string> = {
-  red: "bg-rose-500",
-  amber: "bg-amber-400",
-  green: "bg-emerald-400",
+  red: "bg-danger",
+  amber: "bg-warning",
+  green: "bg-success",
   blocked: "bg-muted",
   shipped: "bg-muted",
 };
@@ -139,7 +139,7 @@ export function PodKanban({
                         <button
                           onClick={() => advance(t)}
                           title={t.phase === "launch" ? "Mark shipped" : "Advance stage"}
-                          className="mt-1.5 inline-flex items-center gap-1 rounded border border-border bg-surface px-1.5 py-0.5 text-[9px] font-medium text-foreground transition-colors hover:border-white hover:bg-surface hover:text-white"
+                          className="mt-1.5 inline-flex items-center gap-1 rounded border border-border bg-surface px-1.5 py-0.5 text-[9px] font-medium text-foreground transition-colors hover:bg-surface-hover"
                         >
                           {t.phase === "launch" ? <CheckCircleIcon className="size-3" /> : <ArrowRightCircleIcon className="size-3" />}
                           {t.phase === "launch" ? "Ship" : "Advance"}

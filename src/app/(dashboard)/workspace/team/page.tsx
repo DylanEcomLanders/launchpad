@@ -149,7 +149,7 @@ export default function WorkspaceTeamAccess() {
           >
             People
           </SectionTitle>
-          <Card className="divide-y divide-slate-100">
+          <Card className="divide-y divide-border">
             {loading ? (
               <div className="px-5 py-8 text-center text-sm text-subtle">Loading…</div>
             ) : users.length === 0 ? (
@@ -183,7 +183,7 @@ export default function WorkspaceTeamAccess() {
                       value={u.role}
                       onChange={(e) => changeRole(u, e.target.value as AppUserRole)}
                       disabled={busy}
-                      className="shrink-0 rounded-md border border-border bg-black/40 px-2 py-1 text-xs text-foreground outline-none focus:border-border disabled:opacity-50"
+                      className="shrink-0 rounded-md border border-border bg-surface-raised px-2 py-1 text-xs text-foreground outline-none focus:border-border disabled:opacity-50"
                       title="Access level"
                     >
                       <option value="team">Member</option>
@@ -195,8 +195,8 @@ export default function WorkspaceTeamAccess() {
                       disabled={busy}
                       className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
                         u.active
-                          ? "text-subtle hover:text-rose-600"
-                          : "text-emerald-600 hover:text-emerald-700"
+                          ? "text-subtle hover:text-danger"
+                          : "text-success hover:text-success"
                       }`}
                     >
                       {u.active ? "Revoke" : "Restore"}
@@ -258,7 +258,7 @@ export default function WorkspaceTeamAccess() {
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                className="w-full rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
               >
                 {busy ? "Adding…" : "Add to team"}
               </button>

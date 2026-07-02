@@ -121,7 +121,7 @@ export function ReportIssueButton() {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                  className="w-full py-2.5 bg-accent text-accent-foreground text-sm rounded-md hover:opacity-90 transition-colors"
                 >
                   Submit
                 </button>

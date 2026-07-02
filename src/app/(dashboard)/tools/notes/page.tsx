@@ -246,7 +246,7 @@ export default function NotesPage() {
         </button>
         <div className="text-center">
           <p className="text-sm font-semibold text-foreground">{formatDate(currentDate)}</p>
-          {isToday && <p className="text-[10px] text-emerald-600 font-medium">Today</p>}
+          {isToday && <p className="text-[10px] text-success font-medium">Today</p>}
         </div>
         <button onClick={() => setCurrentDate(dateNav(currentDate, 1))} className="p-1 text-subtle hover:text-foreground transition-colors">
           <ChevronRightIcon className="size-5" />
@@ -255,7 +255,7 @@ export default function NotesPage() {
 
       {/* Quick jump to today */}
       {!isToday && (
-        <button onClick={() => setCurrentDate(todayKey())} className="text-xs text-[#2563EB] hover:underline mb-4 block">
+        <button onClick={() => setCurrentDate(todayKey())} className="text-xs text-info hover:underline mb-4 block">
           Jump to today
         </button>
       )}
@@ -263,13 +263,13 @@ export default function NotesPage() {
       {/* Record button */}
       <div className="mb-6">
         {recording ? (
-          <div className="border border-red-200 bg-red-50/30 rounded-xl p-4">
+          <div className="border border-danger/20 bg-danger/10 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-xs font-semibold text-red-600">Recording...</span>
+                <span className="size-2 rounded-full bg-danger animate-pulse" />
+                <span className="text-xs font-semibold text-danger">Recording...</span>
               </div>
-              <button onClick={stopRecording} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600">
+              <button onClick={stopRecording} className="flex items-center gap-1.5 px-3 py-1.5 bg-danger text-white text-xs font-medium rounded-lg hover:bg-danger/90">
                 <StopIcon className="size-3" /> Stop
               </button>
             </div>
@@ -308,7 +308,7 @@ export default function NotesPage() {
               <p className={`flex-1 text-sm leading-relaxed ${action.done ? "line-through text-muted" : "text-foreground"}`}>
                 {action.text}
               </p>
-              <button onClick={() => deleteAction(action.id)} className="p-0.5 text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => deleteAction(action.id)} className="p-0.5 text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity">
                 <TrashIcon className="size-3" />
               </button>
             </div>

@@ -19,9 +19,9 @@ const STATUS_LABELS: Record<IssueStatus, string> = {
 };
 
 const TYPE_COLORS: Record<IssueType, string> = {
-  bug: "bg-red-900 text-red-200",
-  "change-request": "bg-amber-900 text-amber-200",
-  idea: "bg-blue-900 text-blue-200",
+  bug: "bg-danger/10 text-danger",
+  "change-request": "bg-warning/10 text-warning",
+  idea: "bg-info/10 text-info",
 };
 
 export default function IssuesPage() {
@@ -191,7 +191,7 @@ export default function IssuesPage() {
 
                 <button
                   onClick={() => handleDelete(issue.id)}
-                  className="text-muted hover:text-red-500 transition-colors text-sm leading-none p-1"
+                  className="text-muted hover:text-danger transition-colors text-sm leading-none p-1"
                   title="Delete issue"
                 >
                   &times;

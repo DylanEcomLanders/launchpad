@@ -90,15 +90,15 @@ export function QuickLinks() {
       {/* Trigger */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-5 right-5 z-[60] flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface shadow-[0_4px_20px_rgba(0,0,0,0.25),0_2px_8px_rgba(0,0,0,0.15)] hover:bg-surface-raised hover:text-white hover:shadow-[0_6px_28px_rgba(0,0,0,0.3)] transition-all duration-200 group"
+        className="fixed bottom-5 right-5 z-[60] flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface border border-border hover:bg-surface-raised hover:text-foreground transition-all duration-200 group"
         title="Quick Links"
       >
         {open ? (
-          <XMarkIcon className="size-4 text-white" aria-label="Close quick links" />
+          <XMarkIcon className="size-4 text-foreground" aria-label="Close quick links" />
         ) : (
           <>
-            <Squares2X2Icon className="size-4 text-white/70 group-hover:text-white transition-colors" />
-            <span className="text-[11px] font-medium text-white/70 group-hover:text-white transition-colors hidden sm:inline">Quick Links</span>
+            <Squares2X2Icon className="size-4 text-muted group-hover:text-foreground transition-colors" />
+            <span className="text-[11px] font-medium text-muted group-hover:text-foreground transition-colors hidden sm:inline">Quick Links</span>
           </>
         )}
       </button>
@@ -107,7 +107,7 @@ export function QuickLinks() {
       {open && (
         <div
           ref={panelRef}
-          className="fixed bottom-16 right-5 z-[60] w-[240px] bg-surface rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-border overflow-hidden"
+          className="fixed bottom-16 right-5 z-[60] w-[240px] bg-surface-raised rounded-xl border border-border overflow-hidden"
           style={{
             animation: "quickLinksIn 0.15s ease-out",
           }}

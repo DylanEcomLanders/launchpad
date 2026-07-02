@@ -137,7 +137,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
           className="pointer-events-none absolute -right-32 -top-40 h-[480px] w-[480px] rounded-full opacity-60 blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(99,102,241,0.05) 40%, transparent 70%)",
+              "radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 40%, transparent 70%)",
           }}
         />
         <div
@@ -150,13 +150,13 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
         />
 
         <div className="relative">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">
             Internal · Sales Hub
           </p>
           <h1 className="mt-2 text-[28px] leading-tight font-semibold text-foreground">
             Conversion Engine
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/55">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
             The post-click partnership. Always quote both: lead with the buy-in,
             let the premium anchor it.
           </p>
@@ -165,36 +165,36 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
           <div className="mt-7 grid grid-cols-1 gap-4 md:max-w-3xl md:grid-cols-2">
             {/* Regular — the buy-in, highlighted as the recommended pick */}
             <div
-              className={`group relative overflow-hidden rounded-2xl p-[1px] transition-all ${
+              className={`group relative overflow-hidden rounded-2xl border p-[1px] transition-all ${
                 isPreviewing
-                  ? "bg-gradient-to-b from-[#34D399]/70 to-[#34D399]/10"
-                  : "bg-gradient-to-b from-indigo-400/60 via-indigo-500/20 to-transparent"
+                  ? "border-success/40"
+                  : "border-border"
               }`}
             >
               <div className="relative rounded-2xl bg-surface p-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-white/80">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
                     Regular
                   </span>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
                       isPreviewing
-                        ? "bg-[#34D399] text-background"
-                        : "bg-indigo-500/90 text-white"
+                        ? "bg-success text-background"
+                        : "bg-accent text-accent-foreground"
                     }`}
                   >
                     {isPreviewing ? "Previewing" : "Lead with this"}
                   </span>
                 </div>
-                <p className="font-heading text-4xl font-semibold text-white">
+                <p className="font-heading text-4xl font-semibold text-foreground">
                   {activeTier.price}
-                  <span className="ml-1.5 text-sm font-normal text-white/40">/mo</span>
+                  <span className="ml-1.5 text-sm font-normal text-subtle">/mo</span>
                 </p>
-                <p className="mt-3 text-[12px] leading-relaxed text-white/60">
+                <p className="mt-3 text-[12px] leading-relaxed text-muted">
                   The full Conversion Engine in its standard shape. Roadmap, monthly
                   builds, A/B test programme, monthly report, dedicated Slack.
                 </p>
-                <p className="mt-3 text-[11px] italic text-white/35">
+                <p className="mt-3 text-[11px] italic text-subtle">
                   &ldquo;Your full conversion team for less than one senior hire.&rdquo;
                 </p>
               </div>
@@ -203,32 +203,32 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
             {/* Pro — the anchor, quieter dark card */}
             <div
               className={`relative overflow-hidden rounded-2xl border bg-surface/60 p-5 transition-all ${
-                isPreviewing ? "border-[#34D399]/40" : "border-white/10"
+                isPreviewing ? "border-success/40" : "border-border"
               }`}
             >
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   Pro
                 </span>
-                <span className="rounded-full border border-white/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/45">
+                <span className="rounded-full border border-border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-subtle">
                   {isPreviewing ? "Previewing" : "Quote alongside"}
                 </span>
               </div>
-              <p className="font-heading text-4xl font-semibold text-white/90">
+              <p className="font-heading text-4xl font-semibold text-foreground">
                 {activeTier.anchor}
-                <span className="ml-1.5 text-sm font-normal text-white/35">/mo</span>
+                <span className="ml-1.5 text-sm font-normal text-subtle">/mo</span>
               </p>
-              <p className="mt-3 text-[12px] leading-relaxed text-white/50">
+              <p className="mt-3 text-[12px] leading-relaxed text-muted">
                 Same system, more of it. 48h design / 5d build, dedicated strategist,
                 ad-to-page alignment, quarterly reviews.
               </p>
-              <p className="mt-3 text-[11px] italic text-white/30">
+              <p className="mt-3 text-[11px] italic text-subtle">
                 &ldquo;For brands scaling past 8 figures who need speed and depth.&rdquo;
               </p>
             </div>
           </div>
 
-          <p className="mt-3 text-[11px] text-white/35">
+          <p className="mt-3 text-[11px] text-subtle">
             No tiers, no T1/T2. The Pro anchor ({activeTier.anchor}) exists so the
             buy-in feels like the deal, never quote it alone.
           </p>
@@ -239,7 +239,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
 
       {/* Preview action bar */}
       {isPreviewing && hydrated && (
-        <div className="mb-6 rounded-lg border border-success bg-emerald-500/15 p-3 flex items-center justify-between gap-3">
+        <div className="mb-6 rounded-lg border border-success bg-success/10 p-3 flex items-center justify-between gap-3">
           <p className="text-[12px] text-foreground">
             <span className="font-semibold">Previewing</span> Step {activeTier.step} ·{" "}
             <span className="font-semibold tabular-nums">{activeTier.price}</span> floor —{" "}
@@ -255,7 +255,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
             </button>
             <button
               onClick={handleLockIn}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-surface bg-foreground hover:bg-white px-2.5 py-1 rounded"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent-foreground bg-accent hover:bg-accent/90 px-2.5 py-1 rounded"
             >
               <CheckIcon className="size-3" />
               Lock in
@@ -291,9 +291,9 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
                 onClick={() => handleTileClick(i)}
                 className={`text-left rounded-lg border p-3 transition-all ${
                   isCurrent
-                    ? "border-white bg-surface"
+                    ? "border-accent bg-surface"
                     : isPreview
-                      ? "border-success bg-emerald-500/15 ring-2 ring-success/30"
+                      ? "border-success bg-success/10 ring-2 ring-success/30"
                       : "border-border bg-background hover:border-subtle hover:bg-surface"
                 }`}
               >
@@ -335,24 +335,24 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
             <RevenueProjectorWidget retainer={activeTier.value} />
           </div>
           <Link href="/conversion-pack" className="block h-full group">
-            <div className="relative rounded-lg overflow-hidden border border-white bg-background h-full flex flex-col hover:shadow-[var(--shadow-soft)] transition-all duration-150">
+            <div className="relative rounded-lg overflow-hidden border border-border bg-background h-full flex flex-col hover:shadow-[var(--shadow-soft)] transition-all duration-150">
               <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-white/45 bg-surface/5 backdrop-blur-sm px-1.5 py-0.5 rounded">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-subtle bg-surface/5 backdrop-blur-sm px-1.5 py-0.5 rounded">
                   10 slides
                 </span>
-                <ArrowTopRightOnSquareIcon className="size-3.5 text-white/55 group-hover:text-white transition-colors" />
+                <ArrowTopRightOnSquareIcon className="size-3.5 text-muted group-hover:text-foreground transition-colors" />
               </div>
               <div className="flex-1 p-3 pt-10">
                 <DeckCoverPreview backdropImages={previewImages} />
               </div>
               <div className="px-4 pb-3 pt-1 flex items-end justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-white leading-tight">The Deck</h3>
-                  <p className="text-[10px] text-white/45 italic mt-1 leading-snug">
+                  <h3 className="text-sm font-semibold text-foreground leading-tight">The Deck</h3>
+                  <p className="text-[10px] text-subtle italic mt-1 leading-snug">
                     Diagnosis · Projection · Offer · ROI
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 bg-foreground text-surface text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded shrink-0 group-hover:bg-success group-hover:text-white transition-colors">
+                <span className="inline-flex items-center gap-1 bg-accent text-accent-foreground text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded shrink-0 group-hover:bg-success group-hover:text-white transition-colors">
                   <PlayIcon className="size-2.5" />
                   Present
                 </span>
@@ -400,7 +400,7 @@ function Grid({ children }: { children: React.ReactNode }) {
 function Tile({ tile }: { tile: SectionTile }) {
   return (
     <Link key={tile.slug} href={tile.href} className="block h-full">
-      <div className="rounded-lg border border-border bg-surface p-4 hover:border-white hover:shadow-[var(--shadow-soft)] transition-all duration-150 h-full flex flex-col">
+      <div className="rounded-lg border border-border bg-surface p-4 hover:border-subtle hover:shadow-[var(--shadow-soft)] transition-all duration-150 h-full flex flex-col">
         <div className="flex items-start justify-between mb-2">
           <span className="text-muted">{tile.icon}</span>
           {tile.external ? (

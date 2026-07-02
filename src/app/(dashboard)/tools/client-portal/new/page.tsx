@@ -284,7 +284,7 @@ export default function NewPortalPage() {
             </div>
 
             {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-700">{error}</div>
+              <div className="mt-4 p-3 bg-danger/10 border border-danger/20 rounded-md text-xs text-danger">{error}</div>
             )}
 
             {/* Nav */}
@@ -342,7 +342,7 @@ function Stepper({ step, labels }: { step: number; labels: string[] }) {
           <div
             className={`flex items-center justify-center size-6 rounded-full text-[10px] font-semibold shrink-0 transition-colors ${
               i < step
-                ? "bg-emerald-500 text-white"
+                ? "bg-success text-white"
                 : i === step
                 ? "bg-white text-background"
                 : "bg-surface-raised text-subtle"
@@ -374,7 +374,7 @@ function TemplateCard({
   return (
     <button
       onClick={onPick}
-      className="text-left p-5 border border-border rounded-xl bg-surface hover:border-white hover:shadow-sm transition-all"
+      className="text-left p-5 border border-border rounded-xl bg-surface hover:bg-surface-hover transition-all"
     >
       <h3 className="text-base font-bold text-foreground mb-1">{title}</h3>
       <p className="text-xs font-medium text-muted mb-3">{subtitle}</p>
@@ -480,7 +480,7 @@ function PagesStep({ pages, setPages }: { pages: PageScopeRow[]; setPages: (p: P
             {pages.length > 1 && (
               <button
                 onClick={() => remove(i)}
-                className="mt-6 p-2 text-subtle hover:text-red-600 transition-colors"
+                className="mt-6 p-2 text-subtle hover:text-danger transition-colors"
                 title="Remove"
               >
                 <TrashIcon className="size-4" />
@@ -612,7 +612,7 @@ function RoadmapSeedStep({ seeds, setSeeds }: { seeds: RoadmapSeed[]; setSeeds: 
             {seeds.length > 1 && (
               <button
                 onClick={() => remove(i)}
-                className="mt-6 p-2 text-subtle hover:text-red-600 transition-colors"
+                className="mt-6 p-2 text-subtle hover:text-danger transition-colors"
                 title="Remove"
               >
                 <TrashIcon className="size-4" />

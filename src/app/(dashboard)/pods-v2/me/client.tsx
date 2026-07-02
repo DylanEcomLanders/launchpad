@@ -178,7 +178,7 @@ export default function MeClient() {
           Pick your name above to see your tasks.
         </div>
       ) : myTasks.length === 0 ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-12 text-center text-sm text-emerald-800">
+        <div className="rounded-xl border border-success/20 bg-success/10 px-4 py-12 text-center text-sm text-success">
           🎉 Nothing on your plate. Either the queue is genuinely empty or your tasks all show done.
         </div>
       ) : (
@@ -245,11 +245,11 @@ function Section({
   if (tasks.length === 0) return null;
   const dot =
     tone === "red"
-      ? "bg-rose-500"
+      ? "bg-danger"
       : tone === "amber"
-        ? "bg-amber-500"
+        ? "bg-warning"
         : tone === "blue"
-          ? "bg-blue-500"
+          ? "bg-info"
           : "bg-muted";
   return (
     <div>
@@ -305,13 +305,13 @@ function Section({
                 }}
                 className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
                   t.status === "in_progress"
-                    ? "border-blue-500 bg-surface"
-                    : "border-border bg-surface hover:border-white"
+                    ? "border-info bg-surface"
+                    : "border-border bg-surface hover:border-subtle"
                 }`}
                 title="Click to advance · Shift-click or right-click to step back"
               >
                 {t.status === "in_progress" && (
-                  <span className="size-1.5 rounded-full bg-blue-500" />
+                  <span className="size-1.5 rounded-full bg-info" />
                 )}
               </button>
               <div className="min-w-0 flex-1">
@@ -328,9 +328,9 @@ function Section({
                 <span
                   className={`shrink-0 text-[11px] tabular-nums ${
                     overdue
-                      ? "font-semibold text-rose-700"
+                      ? "font-semibold text-danger"
                       : due === today
-                        ? "font-semibold text-amber-700"
+                        ? "font-semibold text-warning"
                         : "text-subtle"
                   }`}
                 >

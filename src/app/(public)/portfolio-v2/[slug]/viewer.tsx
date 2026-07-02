@@ -18,13 +18,13 @@ export function PortfolioViewer({
     <>
       {hasMobile && (
         <div className="sticky top-4 z-30 flex justify-center mb-10">
-          <div className="inline-flex items-center gap-1 p-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full">
+          <div className="inline-flex items-center gap-1 p-1 bg-surface-raised backdrop-blur-xl border border-border rounded-full">
             <button
               onClick={() => setMode("desktop")}
               className={`px-5 py-1.5 text-xs font-semibold rounded-full transition-colors ${
                 mode === "desktop"
-                  ? "bg-white text-background"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-foreground text-background"
+                  : "text-muted hover:text-foreground"
               }`}
             >
               Desktop
@@ -33,8 +33,8 @@ export function PortfolioViewer({
               onClick={() => setMode("mobile")}
               className={`px-5 py-1.5 text-xs font-semibold rounded-full transition-colors ${
                 mode === "mobile"
-                  ? "bg-white text-background"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-foreground text-background"
+                  : "text-muted hover:text-foreground"
               }`}
             >
               Mobile
@@ -60,7 +60,7 @@ function Slice({ slice, eager }: { slice: PortfolioSlice; eager: boolean }) {
   const [loaded, setLoaded] = useState(false);
   return (
     <div
-      className="relative w-full overflow-hidden bg-white/5"
+      className="relative w-full overflow-hidden bg-surface"
       style={{
         aspectRatio: `${slice.width} / ${slice.height}`,
         backgroundImage: slice.blur ? `url(${slice.blur})` : undefined,

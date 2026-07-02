@@ -45,8 +45,8 @@ const SOCIAL_ICONS: Record<string, string> = {
 
 const OUTREACH_STATUS_LABELS: Record<OutreachStatus, { label: string; bg: string; text: string }> = {
   not_contacted: { label: "Not Contacted", bg: "bg-surface-raised", text: "text-subtle" },
-  contacted: { label: "Contacted", bg: "bg-blue-50", text: "text-blue-600" },
-  replied: { label: "Replied", bg: "bg-emerald-50", text: "text-emerald-600" },
+  contacted: { label: "Contacted", bg: "bg-info/10", text: "text-info" },
+  replied: { label: "Replied", bg: "bg-success/10", text: "text-success" },
 };
 
 // ── Component ───────────────────────────────────────────────────
@@ -460,7 +460,7 @@ export default function ProspectScraperPage() {
               <BookmarkIcon className="size-3.5" />
               Saved
               {savedProspects.length > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-surface text-white rounded-full">
+                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-surface text-foreground rounded-full">
                   {savedProspects.length}
                 </span>
               )}
@@ -473,18 +473,18 @@ export default function ProspectScraperPage() {
           <>
             {/* Missing API keys */}
             {missingKeys && (
-              <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-5">
-                <h3 className="text-sm font-semibold text-amber-800 mb-2">
+              <div className="mb-8 bg-warning/10 border border-warning/20 rounded-lg p-5">
+                <h3 className="text-sm font-semibold text-warning mb-2">
                   Serper API Key Required
                 </h3>
-                <p className="text-sm text-amber-700 mb-3">
+                <p className="text-sm text-warning mb-3">
                   This tool uses Serper.dev (Google Search API) to find Shopify
                   stores. Add this environment variable:
                 </p>
-                <div className="bg-amber-100/50 rounded-md p-3 font-mono text-xs text-amber-800">
+                <div className="bg-warning/10 rounded-md p-3 font-mono text-xs text-warning">
                   <p>SERPER_API_KEY=your_serper_api_key</p>
                 </div>
-                <p className="text-xs text-amber-600 mt-3">
+                <p className="text-xs text-warning mt-3">
                   Sign up free at{" "}
                   <a
                     href="https://serper.dev"
@@ -501,11 +501,11 @@ export default function ProspectScraperPage() {
 
             {/* Error */}
             {error && (
-              <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              <div className="mb-6 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
                 {error}
                 <button
                   onClick={() => setError("")}
-                  className="ml-3 text-red-500 hover:text-red-700"
+                  className="ml-3 text-danger hover:text-danger"
                 >
                   Dismiss
                 </button>
@@ -548,7 +548,7 @@ export default function ProspectScraperPage() {
                         onClick={() => setMaxResults(n)}
                         className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                           maxResults === n
-                            ? "bg-surface text-white"
+                            ? "bg-surface text-foreground"
                             : "text-subtle hover:text-surface"
                         }`}
                       >
@@ -563,7 +563,7 @@ export default function ProspectScraperPage() {
                 type="button"
                 onClick={handleSearch}
                 disabled={!canSearch}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-surface text-white text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-surface text-foreground text-sm font-medium rounded-md hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -615,7 +615,7 @@ export default function ProspectScraperPage() {
                       disabled={selectedEmails === 0}
                       className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md border transition-all duration-200 ${
                         copiedEmails
-                          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                          ? "bg-success/10 border-success/20 text-success"
                           : "bg-surface border-border text-subtle hover:border-muted hover:text-surface disabled:opacity-40 disabled:cursor-not-allowed"
                       }`}
                     >
@@ -635,7 +635,7 @@ export default function ProspectScraperPage() {
                       type="button"
                       onClick={exportCsv}
                       disabled={selectedCount === 0}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-surface text-white hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-surface text-foreground hover:bg-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <ArrowDownTrayIcon className="size-3" />
                       Export CSV
@@ -723,7 +723,7 @@ export default function ProspectScraperPage() {
                                       <a
                                         key={email}
                                         href={`mailto:${email}`}
-                                        className="block text-xs text-blue-600 hover:text-blue-800 truncate max-w-[180px]"
+                                        className="block text-xs text-info hover:text-info truncate max-w-[180px]"
                                       >
                                         {email}
                                       </a>
@@ -813,8 +813,8 @@ export default function ProspectScraperPage() {
                                   onClick={() => toggleSave(p)}
                                   className={`p-1.5 rounded-md transition-colors ${
                                     savedUrls.has(p.url)
-                                      ? "text-amber-500 hover:text-amber-600 bg-amber-50"
-                                      : "text-muted hover:text-amber-500 hover:bg-amber-50"
+                                      ? "text-warning hover:text-warning bg-warning/10"
+                                      : "text-muted hover:text-warning hover:bg-warning/10"
                                   }`}
                                   title={savedUrls.has(p.url) ? "Unsave prospect" : "Save prospect"}
                                 >
@@ -827,7 +827,7 @@ export default function ProspectScraperPage() {
                                 <button
                                   type="button"
                                   onClick={() => generateOutreach(p)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-surface text-white hover:bg-foreground transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-surface text-foreground hover:bg-foreground transition-colors"
                                   title="Generate outreach for this prospect"
                                 >
                                   <PaperAirplaneIcon className="size-3" />
@@ -877,13 +877,13 @@ export default function ProspectScraperPage() {
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-1">Not Contacted</p>
                 <p className="text-xl font-bold text-subtle">{savedStats.notContacted}</p>
               </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-center">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 mb-1">Contacted</p>
-                <p className="text-xl font-bold text-blue-600">{savedStats.contacted}</p>
+              <div className="bg-info/10 border border-info/20 rounded-lg p-3 text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-info mb-1">Contacted</p>
+                <p className="text-xl font-bold text-info">{savedStats.contacted}</p>
               </div>
-              <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1">Replied</p>
-                <p className="text-xl font-bold text-emerald-600">{savedStats.replied}</p>
+              <div className="bg-success/10 border border-success/20 rounded-lg p-3 text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-success mb-1">Replied</p>
+                <p className="text-xl font-bold text-success">{savedStats.replied}</p>
               </div>
             </div>
 
@@ -999,7 +999,7 @@ export default function ProspectScraperPage() {
                                   <a
                                     key={email}
                                     href={`mailto:${email}`}
-                                    className="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded"
+                                    className="text-[10px] text-info hover:text-info bg-info/10 px-2 py-0.5 rounded"
                                   >
                                     {email}
                                   </a>
@@ -1038,7 +1038,7 @@ export default function ProspectScraperPage() {
                               }}
                               className={`p-1.5 rounded-md transition-colors ${
                                 sp.notes || notesEditId === sp.id
-                                  ? "text-blue-500 bg-blue-50"
+                                  ? "text-info bg-info/10"
                                   : "text-muted hover:text-subtle"
                               }`}
                               title="Notes"
@@ -1047,7 +1047,7 @@ export default function ProspectScraperPage() {
                             </button>
                             <button
                               onClick={() => generateOutreachFromSaved(sp)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-surface text-white hover:bg-foreground transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-surface text-foreground hover:bg-foreground transition-colors"
                               title="Generate outreach"
                             >
                               <PaperAirplaneIcon className="size-3" />
@@ -1055,7 +1055,7 @@ export default function ProspectScraperPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteSaved(sp.id, sp.url)}
-                              className="p-1.5 text-muted hover:text-red-400 transition-colors rounded-md"
+                              className="p-1.5 text-muted hover:text-danger transition-colors rounded-md"
                               title="Remove"
                             >
                               <TrashIcon className="size-3.5" />
@@ -1077,7 +1077,7 @@ export default function ProspectScraperPage() {
                             />
                             <button
                               onClick={() => handleNotesSave(sp.id)}
-                              className="px-3 py-2 text-xs font-medium bg-surface text-white rounded-md hover:bg-foreground transition-colors"
+                              className="px-3 py-2 text-xs font-medium bg-surface text-foreground rounded-md hover:bg-foreground transition-colors"
                             >
                               Save
                             </button>

@@ -8,7 +8,7 @@ export default function PortalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <PageTransition>{children}</PageTransition>
     </div>
   );

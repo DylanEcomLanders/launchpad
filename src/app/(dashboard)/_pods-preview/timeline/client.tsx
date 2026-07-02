@@ -93,7 +93,7 @@ export default function TimelineClient() {
           <button
             onClick={() => setScope("all")}
             className={`rounded-md px-2.5 py-1.5 text-sm font-medium ${
-              scope === "all" ? "bg-white text-background" : "text-subtle hover:bg-surface-raised"
+              scope === "all" ? "bg-foreground text-background" : "text-subtle hover:bg-surface-raised"
             }`}
           >
             All pods
@@ -103,7 +103,7 @@ export default function TimelineClient() {
               key={p.id}
               onClick={() => setScope(p.id)}
               className={`rounded-md px-2.5 py-1.5 text-sm font-medium ${
-                scope === p.id ? "bg-white text-background" : "text-subtle hover:bg-surface-raised"
+                scope === p.id ? "bg-foreground text-background" : "text-subtle hover:bg-surface-raised"
               }`}
             >
               P{i + 1}
@@ -152,7 +152,7 @@ export default function TimelineClient() {
                     {PHASE_LABEL[p.phase]}
                   </span>
                   {isBottleneck && (
-                    <span className="rounded border border-rose-200 bg-rose-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-rose-700">
+                    <span className="rounded border border-danger/20 bg-danger/10 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-danger">
                       Bottleneck
                     </span>
                   )}
@@ -170,7 +170,7 @@ export default function TimelineClient() {
                 <div className="w-20 text-right text-[12px] tabular-nums text-foreground">
                   {p.days}d
                   {p.clientDays > 0 && (
-                    <span className="text-[10px] text-blue-600"> · {p.clientDays}d</span>
+                    <span className="text-[10px] text-info"> · {p.clientDays}d</span>
                   )}
                 </div>
               </div>
@@ -223,7 +223,7 @@ function Kpi({
   tone?: "default" | "amber" | "rose";
 }) {
   const valueTone =
-    tone === "rose" ? "text-rose-700" : tone === "amber" ? "text-amber-700" : "text-foreground";
+    tone === "rose" ? "text-danger" : tone === "amber" ? "text-warning" : "text-foreground";
   return (
     <div className="rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
       <div className="text-[11px] font-semibold uppercase tracking-wider text-subtle">{label}</div>
@@ -246,7 +246,7 @@ function TaskTimelineRow({ task }: { task: Task }) {
         </div>
         <div className="shrink-0 text-[12px] tabular-nums text-subtle">
           {total}d total
-          {clientDays > 0 && <span className="text-blue-600"> · {clientDays}d client</span>}
+          {clientDays > 0 && <span className="text-info"> · {clientDays}d client</span>}
         </div>
       </div>
       <PhaseTimeline spans={task.spans ?? []} />

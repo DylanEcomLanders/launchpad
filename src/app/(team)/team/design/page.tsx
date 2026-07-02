@@ -18,7 +18,7 @@ type Tab = "gallery" | "checklist";
 const galleryFilters: (PageType | "All")[] = ["All", "PDP", "Collection", "Landing Page", "Homepage"];
 
 const priorityStyles = {
-  required: { label: "Required", bg: "bg-surface", text: "text-white" },
+  required: { label: "Required", bg: "bg-surface", text: "text-foreground" },
   recommended: { label: "Recommended", bg: "bg-foreground", text: "text-subtle" },
   optional: { label: "Optional", bg: "bg-surface-raised", text: "text-subtle" },
 };
@@ -229,7 +229,7 @@ export default function DesignDevPage() {
                     {/* Checkbox */}
                     <div className="pt-0.5 shrink-0">
                       {isChecked ? (
-                        <CheckCircleIcon className="size-5 text-emerald-500" />
+                        <CheckCircleIcon className="size-5 text-success" />
                       ) : (
                         <div className="size-5 rounded-full border-2 border-muted" />
                       )}
@@ -266,8 +266,8 @@ export default function DesignDevPage() {
                 onClick={copyChecklist}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all ${
                   copied
-                    ? "bg-emerald-950 border border-emerald-900 text-emerald-400"
-                    : "bg-white text-background hover:bg-foreground"
+                    ? "bg-success/10 border border-success/20 text-success"
+                    : "bg-foreground text-background hover:bg-foreground"
                 }`}
               >
                 <ClipboardDocumentIcon className="size-4" />

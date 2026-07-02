@@ -18,7 +18,7 @@ function EmailSequenceNodeComponent({ data: rawData, selected }: NodeProps) {
         ${selected ? "border-[#C2410C] shadow-lg" : "border-[#FED7AA] shadow-sm hover:shadow-md"}
       `}
     >
-      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-[#C2410C] !border-2 !border-white" />
+      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-[#C2410C] !border-2 !border-surface" />
 
       {/* Header */}
       <div className="flex items-center justify-between px-3.5 py-2 border-b border-[#FDF2E9]">
@@ -66,7 +66,7 @@ function EmailSequenceNodeComponent({ data: rawData, selected }: NodeProps) {
             {esm.openRate != null && (
               <div>
                 <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">Open</p>
-                <p className={`text-xs font-semibold ${esm.openRate >= 30 ? "text-emerald-600" : esm.openRate < 15 ? "text-red-500" : "text-foreground"}`}>
+                <p className={`text-xs font-semibold ${esm.openRate >= 30 ? "text-success" : esm.openRate < 15 ? "text-danger" : "text-foreground"}`}>
                   {esm.openRate}%
                 </p>
               </div>
@@ -74,7 +74,7 @@ function EmailSequenceNodeComponent({ data: rawData, selected }: NodeProps) {
             {esm.clickRate != null && (
               <div>
                 <p className="text-[8px] text-muted uppercase tracking-wider mb-0.5">Click</p>
-                <p className={`text-xs font-semibold ${esm.clickRate >= 3 ? "text-emerald-600" : esm.clickRate < 1 ? "text-red-500" : "text-foreground"}`}>
+                <p className={`text-xs font-semibold ${esm.clickRate >= 3 ? "text-success" : esm.clickRate < 1 ? "text-danger" : "text-foreground"}`}>
                   {esm.clickRate}%
                 </p>
               </div>
@@ -83,7 +83,7 @@ function EmailSequenceNodeComponent({ data: rawData, selected }: NodeProps) {
         )}
       </div>
 
-      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-[#C2410C] !border-2 !border-white" />
+      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-[#C2410C] !border-2 !border-surface" />
     </div>
   );
 }

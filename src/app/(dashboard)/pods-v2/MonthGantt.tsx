@@ -358,7 +358,7 @@ export function MonthGantt({ projects, clientById, podName }: MonthGanttProps) {
           </span>
         ))}
         <span className="inline-flex items-center gap-1.5">
-          <span className="block size-3 rounded border border-rose-500 bg-surface" />
+          <span className="block size-3 rounded border border-danger bg-surface" />
           <span>Mid-week kickoff</span>
         </span>
       </div>

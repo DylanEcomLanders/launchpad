@@ -22,7 +22,6 @@ import {
   trashEngagement,
 } from "@/lib/engagement-trash";
 import {
-  BUCKETS,
   ENGAGEMENT_CYCLES,
   ENGAGEMENT_DELIVERABLES,
   assetCategoriesForKind,
@@ -52,6 +51,7 @@ import { MustDosRow } from "@/components/engagements/must-dos-row";
 import { GeneratedDocs } from "@/components/engagements/generated-docs";
 import { BriefIntakePanel } from "@/components/engagements/brief-intake-panel";
 import { StrategySandbox } from "@/components/engagements/strategy-sandbox";
+import { EngagementCard } from "@/components/engagements/engagement-card";
 import type { MustDoGate, PageType } from "@/lib/pods-v2/types";
 import { PAGE_LABEL } from "@/lib/pods-v2/types";
 
@@ -797,7 +797,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               setDeleteTyped("");
               setDeleteStage("confirm-1");
             }}
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-subtle hover:text-danger hover:bg-rose-500/15 px-2 py-1 rounded transition-colors"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-subtle hover:text-danger hover:bg-danger/10 px-2 py-1 rounded transition-colors"
           >
             <TrashIcon className="size-3" />
             Delete client
@@ -805,90 +805,31 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
         )}
       </div>
 
-      <header className="mb-5 pb-4 border-b border-border">
-        <div className="flex items-baseline justify-between gap-4 flex-wrap">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
-              {engagement.vertical}
-            </p>
-            <div className="flex items-baseline gap-3 mt-1">
-              <h1 className="text-2xl font-semibold text-foreground">
-                {engagement.brand}
-              </h1>
-              {(() => {
-                const isBucket = engagement.kind === "bucket";
-                const bucketDef = isBucket && engagement.bucket
-                  ? BUCKETS.find((b) => b.size === engagement.bucket)
-                  : null;
-                return (
-                  <span
-                    className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                      isBucket
-                        ? "text-[#1976D2] bg-[#E3F2FD]"
-                        : "text-surface bg-foreground"
-                    }`}
-                  >
-                    {isBucket ? bucketDef?.label ?? "Bucket" : "CE retainer"}
-                  </span>
-                );
-              })()}
-            </div>
-          </div>
-          <div className="flex items-baseline gap-3 text-[12px] text-muted flex-wrap">
-            {(() => {
-              const isBucket = engagement.kind === "bucket";
-              const bucketDef = isBucket && engagement.bucket
-                ? BUCKETS.find((b) => b.size === engagement.bucket)
-                : null;
-              const totalDays = isBucket ? (bucketDef?.workingDays ?? 0) : 90;
-              const totalLabel = isBucket ? "wd" : "";
-              return (
-                <span>
-                  Day <span className="font-semibold text-foreground tabular-nums">{currentDay}</span>
-                  /{totalDays}{totalLabel ? ` ${totalLabel}` : ""} · W{currentWeek}
-                </span>
-              );
-            })()}
-            <span className="text-foreground">·</span>
-            <span>
-              <span className="font-semibold text-foreground tabular-nums">{engagement.retainer}</span>
-              {engagement.kind === "retainer" ? "/mo" : ""}
-            </span>
-            <span className="text-foreground">·</span>
-            <span>Pod <span className="font-semibold text-foreground tabular-nums">{engagement.podNumber}</span></span>
-            <span className="text-foreground">·</span>
-            <span className="font-semibold tabular-nums">
-              {totalDone}/{totalAll} · {overallPct}%
-            </span>
-            {totalBlocked > 0 && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider bg-rose-500/15 text-rose-300 px-1.5 py-0.5 rounded">
-                {totalBlocked} blocked
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* V2 engagement hero — label/value Field grid + monochrome StatusGlyph
+          request rows (matches launchpad-v2-cards.html). The deep day/progress
+          + interactive plan live in EngagementDeliveryPlan below. */}
+      <EngagementCard engagement={engagement} />
 
       {/* Parked-engagement nudge. When the linked Client has no pod
        * assigned (engagement.podNumber === 0), the engagement is sat in
        * /pods-v2 purgatory. The PM needs to pick a pod via the
        * Assign-to-pod modal there to seed the build tasks. */}
       {engagement.podNumber === 0 && !inTeamRoute && (
-        <section className="mb-5 rounded-lg border border-[#FFB300] bg-[#FFF8E1] px-4 py-3 flex items-center justify-between gap-4">
+        <section className="mb-5 rounded-lg border border-warning/20 bg-warning/10 px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-baseline gap-3">
             <ExclamationTriangleIcon className="size-4 text-warning shrink-0" />
             <div>
               <p className="text-[12px] font-semibold text-warning">
                 Not assigned to a pod yet
               </p>
-              <p className="text-[11px] text-[#7A4A00] mt-0.5">
+              <p className="text-[11px] text-warning mt-0.5">
                 Pick a pod from purgatory to spin up the build tasks. The brief, intake, and roadmap are ready to go.
               </p>
             </div>
           </div>
           <Link
             href={podsHref}
-            className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-warning hover:bg-[#BF360C] px-3 py-1.5 rounded"
+            className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-warning hover:bg-warning px-3 py-1.5 rounded"
           >
             Assign to pod <ArrowTopRightOnSquareIcon className="size-3" />
           </Link>
@@ -937,7 +878,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               onClick={() => setTab(t)}
               className={`-mb-px border-b-2 px-4 py-2 text-[13px] font-medium capitalize transition-colors ${
                 tab === t
-                  ? "border-white text-foreground"
+                  ? "border-foreground text-foreground"
                   : "border-transparent text-subtle hover:text-foreground"
               }`}
             >
@@ -1024,7 +965,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
             const isActive = state === "active";
             const isComplete = state === "complete";
             const isView = viewCycle === cycle.number;
-            const statusDot = isActive ? "bg-success" : isComplete ? "bg-[#9E9E9E]" : "bg-border";
+            const statusDot = isActive ? "bg-success" : isComplete ? "bg-muted" : "bg-border";
             return (
               <button
                 key={cycle.number}
@@ -1032,16 +973,16 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
                   isView
                     ? "border-foreground bg-foreground text-surface"
-                    : "border-border bg-surface text-foreground hover:border-white"
+                    : "border-border bg-surface text-foreground hover:border-foreground"
                 }`}
               >
                 <span className={`size-1.5 rounded-full ${statusDot}`} />
                 <span className="text-[12px] font-semibold">{cycle.name}</span>
-                <span className={`text-[11px] tabular-nums ${isView ? "text-white/70" : "text-subtle"}`}>
+                <span className={`text-[11px] tabular-nums ${isView ? "text-surface/70" : "text-subtle"}`}>
                   {done}/{total}
                 </span>
                 {blocked > 0 && (
-                  <span className={`size-1.5 rounded-full ${isView ? "bg-[#FFCDD2]" : "bg-danger"}`} title={`${blocked} blocked`} />
+                  <span className={`size-1.5 rounded-full ${isView ? "bg-danger" : "bg-danger"}`} title={`${blocked} blocked`} />
                 )}
               </button>
             );
@@ -1125,7 +1066,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     const meta = state.artefactUrl ? docMeta(state.artefactUrl) : null;
                     const dotStyle: Record<DeliverableStatus, string> = {
                       done: "bg-success border-success",
-                      in_progress: "bg-[#FFB300] border-[#FFB300]",
+                      in_progress: "bg-warning border-warning",
                       blocked: "bg-danger border-danger",
                       todo: "bg-surface border-subtle",
                     };
@@ -1253,7 +1194,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                                 value={linkDraft}
                                 onChange={(e) => setLinkDraft(e.target.value)}
                                 placeholder="Paste URL..."
-                                className="flex-1 min-w-0 text-[12px] px-2 py-1 border border-white rounded focus:outline-none bg-surface"
+                                className="flex-1 min-w-0 text-[12px] px-2 py-1 border border-border rounded focus:outline-none bg-surface"
                                 autoFocus
                               />
                               <button
@@ -1263,7 +1204,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                                   else handleMarkDone(d.id, linkDraft);
                                 }}
                                 disabled={!linkDraft.trim()}
-                                className="shrink-0 text-[11px] font-semibold text-surface bg-foreground hover:bg-white px-2 py-1 rounded disabled:opacity-50"
+                                className="shrink-0 text-[11px] font-semibold text-surface bg-foreground hover:bg-foreground px-2 py-1 rounded disabled:opacity-50"
                               >
                                 {state.status === "done" ? "Save" : "Attach"}
                               </button>
@@ -1334,7 +1275,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                         </div>
                       </div>
                       {timelineOpen && hasPhaseHistory && (
-                        <div className="px-3 py-3 border-t border-border bg-[#FAFBFD]">
+                        <div className="px-3 py-3 border-t border-border bg-surface-raised">
                           <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle mb-2">
                             Phase timeline
                           </p>
@@ -1362,12 +1303,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 </div>
 
                 {canAdd && isAddingHere && (
-                  <div className="mt-3 rounded-md border border-white bg-surface p-3 space-y-2">
+                  <div className="mt-3 rounded-md border border-border bg-surface p-3 space-y-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <select
                         value={newDeliverableDraft.type}
                         onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, type: e.target.value }))}
-                        className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
+                        className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground bg-surface"
                         autoFocus
                       >
                         {(Object.keys(PAGE_LABEL) as PageType[]).map((t) => (
@@ -1378,12 +1319,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                         value={newDeliverableDraft.label}
                         onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, label: e.target.value }))}
                         placeholder="Variant label (optional, e.g. Whitening Strips)"
-                        className="flex-1 min-w-[180px] text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
+                        className="flex-1 min-w-[180px] text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground"
                       />
                       <select
                         value={newDeliverableDraft.owner}
                         onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, owner: e.target.value as OwnerRole }))}
-                        className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
+                        className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground bg-surface"
                       >
                         <option value="Pod">Pod</option>
                         <option value="Design">Design</option>
@@ -1399,7 +1340,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           type="date"
                           value={newDeliverableDraft.dueDate}
                           onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, dueDate: e.target.value }))}
-                          className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white bg-surface"
+                          className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground bg-surface"
                         />
                         {newDeliverableDraft.dueDate && (() => {
                           /* Live preview so the PM can see which Month
@@ -1424,7 +1365,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                         <button
                           onClick={handleAddCustomDeliverable}
                           disabled={!newDeliverableDraft.type || !newDeliverableDraft.dueDate}
-                          className="text-[12px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-[12px] font-semibold text-surface bg-foreground hover:bg-foreground px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Add deliverable
                         </button>
@@ -1457,27 +1398,27 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           </button>
         </div>
         {addingWin && (
-          <div className="mb-3 rounded-md border border-white bg-surface p-3 space-y-2">
+          <div className="mb-3 rounded-md border border-border bg-surface p-3 space-y-2">
             <input
               autoFocus
               value={winDraft.title}
               onChange={(e) => setWinDraft((d) => ({ ...d, title: e.target.value }))}
               placeholder="What shipped (e.g. New PDP layout, hero variant B)"
-              className="w-full text-[13px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
+              className="w-full text-[13px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground"
             />
             <div className="grid grid-cols-[1fr_120px] gap-2">
               <input
                 value={winDraft.metric}
                 onChange={(e) => setWinDraft((d) => ({ ...d, metric: e.target.value }))}
                 placeholder="Impact (e.g. +18% CVR, £4.2K extra MRR)"
-                className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white"
+                className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground"
               />
               <input
                 value={winDraft.day}
                 onChange={(e) => setWinDraft((d) => ({ ...d, day: e.target.value }))}
                 placeholder={`Day (current: ${currentDay})`}
                 inputMode="numeric"
-                className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white tabular-nums"
+                className="text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground tabular-nums"
               />
             </div>
             <textarea
@@ -1485,7 +1426,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               onChange={(e) => setWinDraft((d) => ({ ...d, notes: e.target.value }))}
               placeholder="Notes (optional)"
               rows={2}
-              className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-white resize-y"
+              className="w-full text-[12px] px-2 py-1.5 border border-border rounded focus:outline-none focus:border-foreground resize-y"
             />
             <div className="flex items-center justify-end gap-2">
               <button
@@ -1497,7 +1438,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
               <button
                 onClick={handleAddWin}
                 disabled={!winDraft.title.trim()}
-                className="text-[11px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                className="text-[11px] font-semibold text-surface bg-foreground hover:bg-foreground px-3 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Save win
               </button>
@@ -1523,7 +1464,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     </span>
                   </div>
                   {win.metric && (
-                    <p className="inline-flex items-center text-[11px] font-semibold text-success bg-emerald-500/15 px-1.5 py-0.5 rounded mb-1">
+                    <p className="inline-flex items-center text-[11px] font-semibold text-success bg-success/15 px-1.5 py-0.5 rounded mb-1">
                       {win.metric}
                     </p>
                   )}
@@ -1569,8 +1510,8 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 key={cat.id}
                 className={`rounded-lg border p-4 transition-all flex flex-col bg-surface ${
                   populated
-                    ? "border-border hover:border-white"
-                    : "border border-dashed border-[#D5D5DA] hover:border-white"
+                    ? "border-border hover:border-foreground"
+                    : "border border-dashed border-border hover:border-foreground"
                 }`}
               >
                 <div className="flex items-baseline justify-between mb-1">
@@ -1621,7 +1562,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     className={`inline-flex items-center gap-1 text-[12px] font-semibold ml-auto px-2 py-1 rounded transition-colors ${
                       populated
                         ? "text-muted hover:text-foreground font-medium"
-                        : "text-surface bg-foreground hover:bg-white"
+                        : "text-surface bg-foreground hover:bg-foreground"
                     }`}
                   >
                     <PlusIcon className="size-3" />
@@ -1668,17 +1609,17 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                   value={assetDraft.label}
                   onChange={(e) => setAssetDraft((d) => ({ ...d, label: e.target.value }))}
                   placeholder="Label"
-                  className="w-40 text-[12px] px-2 py-1 border border-border rounded focus:outline-none focus:border-white"
+                  className="w-40 text-[12px] px-2 py-1 border border-border rounded focus:outline-none focus:border-foreground"
                 />
                 <input
                   value={assetDraft.url}
                   onChange={(e) => setAssetDraft((d) => ({ ...d, url: e.target.value }))}
                   placeholder="https://..."
-                  className="flex-1 text-[12px] px-2 py-1 border border-border rounded focus:outline-none focus:border-white"
+                  className="flex-1 text-[12px] px-2 py-1 border border-border rounded focus:outline-none focus:border-foreground"
                 />
                 <button
                   onClick={() => handleAddAsset(activeCategory)}
-                  className="text-[10px] font-semibold text-surface bg-foreground px-2 py-1 rounded hover:bg-white inline-flex items-center gap-1"
+                  className="text-[10px] font-semibold text-surface bg-foreground px-2 py-1 rounded hover:bg-foreground inline-flex items-center gap-1"
                 >
                   <PlusIcon className="size-3" />
                   Add
@@ -1716,13 +1657,13 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 }
               }}
               placeholder="Drop a note (decisions, blockers, client asks). Cmd+Enter to save."
-              className="w-full text-[13px] px-3 py-2 border border-border rounded resize-y min-h-[60px] focus:outline-none focus:border-white placeholder:text-muted"
+              className="w-full text-[13px] px-3 py-2 border border-border rounded resize-y min-h-[60px] focus:outline-none focus:border-foreground placeholder:text-muted"
             />
             <div className="mt-2 flex items-center justify-end">
               <button
                 onClick={handleAddNote}
                 disabled={!noteDraft.trim()}
-                className="text-[12px] font-semibold text-surface bg-foreground hover:bg-white px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-[12px] font-semibold text-surface bg-foreground hover:bg-foreground px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add note
               </button>
@@ -1832,7 +1773,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                   <button
                     type="button"
                     onClick={() => setDeleteStage("confirm-2")}
-                    className="text-[12px] font-semibold text-white bg-danger hover:bg-[#B71C1C] px-3 py-2 rounded"
+                    className="text-[12px] font-semibold text-white bg-danger hover:bg-danger px-3 py-2 rounded"
                   >
                     Continue
                   </button>
@@ -1873,7 +1814,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     type="button"
                     disabled={deleteTyped.trim() !== engagement.brand}
                     onClick={handleConfirmDelete}
-                    className="text-[12px] font-semibold text-white bg-danger hover:bg-[#B71C1C] disabled:bg-border disabled:text-subtle disabled:cursor-not-allowed px-3 py-2 rounded"
+                    className="text-[12px] font-semibold text-white bg-danger hover:bg-danger disabled:bg-border disabled:text-subtle disabled:cursor-not-allowed px-3 py-2 rounded"
                   >
                     Move to trash
                   </button>
