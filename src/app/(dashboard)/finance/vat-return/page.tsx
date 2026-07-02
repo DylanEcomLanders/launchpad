@@ -21,6 +21,7 @@ import type {
   CompanyProfile,
 } from "@/lib/finance/types";
 import { inputClass, labelClass, selectClass } from "@/lib/form-styles";
+import { Table, THead, TBody, TR, TH, TD, Num } from "@/components/ui";
 
 type PeriodKey = "prev_quarter" | "current_quarter" | "tax_year" | "custom";
 
@@ -92,11 +93,11 @@ export default function VatReturnPage() {
   }
 
   if (!hydrated) {
-    return <div className="h-96 bg-surface rounded-lg border border-border animate-pulse" />;
+    return <div className="h-96 bg-surface rounded-md border border-border-faint animate-pulse" />;
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-foreground">VAT return</h2>
         <p className="text-sm text-subtle mt-0.5">
@@ -155,9 +156,9 @@ export default function VatReturnPage() {
         </div>
         <button
           onClick={downloadPack}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
         >
-          <ArrowDownTrayIcon className="size-4" /> Download VAT pack (.zip)
+          <ArrowDownTrayIcon className="size-3.5" /> Download VAT pack (.zip)
         </button>
       </div>
 
@@ -184,95 +185,95 @@ export default function VatReturnPage() {
       </div>
 
       {ret.reverseChargeTotal > 0 && (
-        <div className="bg-info/10 border border-info/20 rounded-lg px-4 py-3 text-sm text-info">
-          <strong>Reverse charge:</strong> {fmtMoney(ret.reverseChargeTotal)} of non-UK B2B sales in
+        <div className="bg-surface border border-border-faint rounded-md px-4 py-3 text-sm text-muted">
+          <strong className="text-foreground font-medium">Reverse charge:</strong> {fmtMoney(ret.reverseChargeTotal)} of non-UK B2B sales in
           this period are zero-VAT under reverse charge. The net value is included in Box 6; output
           VAT on those supplies is zero.
         </div>
       )}
 
-      <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 text-xs text-warning">
+      <div className="bg-surface border border-border-faint rounded-md p-4 text-xs text-status-approaching">
         <strong>Estimate only - confirm with accountant before filing.</strong> {ret.noteForAccountant}
       </div>
 
       {ret.sales.length > 0 && (
-        <details className="bg-surface border border-border rounded-lg" open>
+        <details className="bg-surface border border-border-faint rounded-md" open>
           <summary className="px-5 py-3 cursor-pointer text-sm font-medium text-foreground flex items-center justify-between">
             <span>Sales detail ({ret.sales.length})</span>
             <span className="text-xs font-normal text-subtle">
               Net {fmtMoney(ret.box6_totalSalesExVat)} · VAT {fmtMoney(ret.box1_vatOnSales)}
             </span>
           </summary>
-          <div className="overflow-x-auto border-t border-dashed border-border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dashed border-border">
-                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Invoice #</th>
-                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Date</th>
-                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Client</th>
-                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Treatment</th>
-                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Net</th>
-                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">VAT</th>
-                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Gross</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="overflow-x-auto border-t border-border">
+            <Table>
+              <THead>
+                <TR hover={false}>
+                  <TH>Invoice #</TH>
+                  <TH>Date</TH>
+                  <TH>Client</TH>
+                  <TH>Treatment</TH>
+                  <TH align="right">Net</TH>
+                  <TH align="right">VAT</TH>
+                  <TH align="right">Gross</TH>
+                </TR>
+              </THead>
+              <TBody>
                 {ret.sales.map((s, i) => (
-                  <tr key={i} className="border-b border-dashed border-border last:border-0">
-                    <td className="px-5 py-3 text-sm text-foreground font-medium">{s.invoice_number}</td>
-                    <td className="px-5 py-3 text-xs text-muted tabular-nums">{s.date}</td>
-                    <td className="px-5 py-3 text-sm text-foreground">{s.client_name}</td>
-                    <td className="px-5 py-3 text-xs text-muted">{s.treatment}</td>
-                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(s.net)}</td>
-                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(s.vat)}</td>
-                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(s.gross)}</td>
-                  </tr>
+                  <TR key={i}>
+                    <TD className="text-foreground">{s.invoice_number}</TD>
+                    <TD className="text-muted"><Num>{s.date}</Num></TD>
+                    <TD className="text-muted">{s.client_name}</TD>
+                    <TD className="text-muted">{s.treatment}</TD>
+                    <TD align="right" className="text-muted"><Num>{fmtMoney(s.net)}</Num></TD>
+                    <TD align="right" className="text-muted"><Num>{fmtMoney(s.vat)}</Num></TD>
+                    <TD align="right" className="text-muted"><Num>{fmtMoney(s.gross)}</Num></TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           </div>
         </details>
       )}
 
       {ret.purchases.length > 0 && (
-        <details className="bg-surface border border-border rounded-lg" open>
+        <details className="bg-surface border border-border-faint rounded-md" open>
           <summary className="px-5 py-3 cursor-pointer text-sm font-medium text-foreground flex items-center justify-between">
             <span>Purchases detail ({ret.purchases.length})</span>
             <span className="text-xs font-normal text-subtle">
               Net {fmtMoney(ret.box7_totalPurchasesExVat)} · VAT {fmtMoney(ret.box4_vatReclaimed)}
             </span>
           </summary>
-          <div className="overflow-x-auto border-t border-dashed border-border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dashed border-border">
-                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Date</th>
-                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Supplier</th>
-                  <th className="text-left px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Category</th>
-                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Net</th>
-                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">VAT</th>
-                  <th className="text-right px-5 py-3 text-2xs uppercase tracking-wider font-medium text-subtle">Gross</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="overflow-x-auto border-t border-border">
+            <Table>
+              <THead>
+                <TR hover={false}>
+                  <TH>Date</TH>
+                  <TH>Supplier</TH>
+                  <TH>Category</TH>
+                  <TH align="right">Net</TH>
+                  <TH align="right">VAT</TH>
+                  <TH align="right">Gross</TH>
+                </TR>
+              </THead>
+              <TBody>
                 {ret.purchases.map((p, i) => (
-                  <tr key={i} className="border-b border-dashed border-border last:border-0">
-                    <td className="px-5 py-3 text-xs text-muted tabular-nums">{p.date}</td>
-                    <td className="px-5 py-3 text-sm text-foreground font-medium">{p.supplier_name}</td>
-                    <td className="px-5 py-3 text-xs text-muted">{p.category}</td>
-                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(p.net)}</td>
-                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(p.vat)}</td>
-                    <td className="px-5 py-3 text-right text-sm text-foreground tabular-nums">{fmtMoney(p.gross)}</td>
-                  </tr>
+                  <TR key={i}>
+                    <TD className="text-muted"><Num>{p.date}</Num></TD>
+                    <TD className="text-foreground">{p.supplier_name}</TD>
+                    <TD className="text-muted">{p.category}</TD>
+                    <TD align="right" className="text-muted"><Num>{fmtMoney(p.net)}</Num></TD>
+                    <TD align="right" className="text-muted"><Num>{fmtMoney(p.vat)}</Num></TD>
+                    <TD align="right" className="text-muted"><Num>{fmtMoney(p.gross)}</Num></TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           </div>
         </details>
       )}
 
       {ret.sales.length === 0 && ret.purchases.length === 0 && (
-        <div className="bg-surface border border-border rounded-lg p-12 text-center">
+        <div className="bg-surface border border-border-faint rounded-md py-16 text-center">
           <p className="text-sm text-subtle">No invoices or expenses in this period.</p>
         </div>
       )}
@@ -297,13 +298,13 @@ function BoxRow({
 }) {
   const color =
     accent === "green"
-      ? "text-success"
+      ? "text-status-ontrack"
       : accent === "amber"
-        ? "text-warning"
+        ? "text-status-approaching"
         : "text-foreground";
   return (
     <div
-      className={`bg-surface border border-border rounded-lg p-5 flex items-center justify-between ${
+      className={`bg-surface border border-border-faint rounded-md p-5 flex items-center justify-between ${
         muted ? "opacity-60" : ""
       }`}
     >

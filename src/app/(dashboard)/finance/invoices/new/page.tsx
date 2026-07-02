@@ -44,7 +44,7 @@ const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-med
  * inside one p-5 surface card. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-surface border border-border rounded-lg p-5">
+    <section className="bg-surface border border-border-faint rounded-md p-5">
       <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
         {title}
       </h3>
@@ -251,12 +251,12 @@ export default function NewInvoicePage() {
       </div>
 
       {error && (
-        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
+        <div className="mb-4 px-4 py-3 bg-danger/10 border border-danger/20 rounded-md text-sm text-danger">
           {error}
         </div>
       )}
 
-      <div className="space-y-3 max-w-3xl">
+      <div className="space-y-6 max-w-3xl">
         <Section title="Invoice details">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>

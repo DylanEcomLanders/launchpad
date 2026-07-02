@@ -5,15 +5,18 @@ import { cn } from "./cn";
  *  ONE sanctioned place for fixed data-viz hues — keep them here, never inline. */
 type Tone = "neutral" | "success" | "warning" | "danger" | "dev" | "design" | "copy" | "strategy";
 
+/* Status dots use the MUTED status palette (Linear-calm), not the loud
+ * solid success/warning/danger — those alarm colours jar in a quiet table.
+ * See globals.css: --color-status-ontrack/approaching/late. */
 const DOT: Record<Tone, string> = {
   neutral: "bg-subtle",
-  success: "bg-success",
-  warning: "bg-warning",
-  danger: "bg-danger",
+  success: "bg-status-ontrack",
+  warning: "bg-status-approaching",
+  danger: "bg-status-late",
   dev: "bg-cat-dev",
   design: "bg-cat-design",
-  copy: "bg-warning",
-  strategy: "bg-success",
+  copy: "bg-status-approaching",
+  strategy: "bg-status-ontrack",
 };
 
 export function Badge({
