@@ -27,7 +27,36 @@ export interface DeliverableEstimate {
   devDays: number;
 }
 
+/* Company identity — the legal + contact backbone that contracts,
+ * invoices, and proposals should reference. Lives here as the single
+ * source of truth for "who Ecom Landers is". */
+export interface CompanyProfile {
+  legal_name: string;      // Registered legal entity name
+  trading_name: string;    // Public / trading-as name, if different
+  company_number: string;  // Companies House number
+  vat_number: string;
+  registered_address: string;
+  trading_address: string; // Where the team actually operates, if different
+  contact_email: string;
+  contact_phone: string;
+  website: string;
+}
+
+/* Brand basics surfaced to portals + proposals. */
+export interface BrandSettings {
+  logo_url: string;
+  brand_color: string; // hex
+}
+
 export interface BusinessSettings {
+  /* Company identity + brand (Company Settings surface) */
+  company?: CompanyProfile;
+  brand?: BrandSettings;
+
+  /* Public holidays (YYYY-MM-DD) skipped in deadline math alongside
+   * non-working days. Part of the operating calendar. */
+  publicHolidays?: string[];
+
   /* Team directory */
   team: TeamMember[];
 
@@ -77,6 +106,19 @@ export interface BusinessSettings {
 }
 
 export const DEFAULT_SETTINGS: BusinessSettings = {
+  company: {
+    legal_name: "",
+    trading_name: "",
+    company_number: "",
+    vat_number: "",
+    registered_address: "",
+    trading_address: "",
+    contact_email: "",
+    contact_phone: "",
+    website: "",
+  },
+  brand: { logo_url: "", brand_color: "" },
+  publicHolidays: [],
   team: [],
   deliverableEstimates: [
     { name: "PDP (Product Page)", designDays: 4, devDays: 4 },
