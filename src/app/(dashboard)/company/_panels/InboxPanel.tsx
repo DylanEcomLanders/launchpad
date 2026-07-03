@@ -325,7 +325,7 @@ export default function InboxPanel() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-32 bg-background rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-surface rounded-lg border border-border animate-pulse" />
         ))}
       </div>
     );
@@ -339,8 +339,8 @@ export default function InboxPanel() {
     kpiSuggestions.length;
 
   return (
-    <div className="space-y-4">
-      <div className="text-[11px] uppercase tracking-wider text-subtle">
+    <div className="space-y-3">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
         {totalActions === 0
           ? "Inbox clear"
           : `${totalActions} action${totalActions === 1 ? "" : "s"} waiting`}
@@ -361,7 +361,7 @@ export default function InboxPanel() {
             action={
               <Link
                 href={`/company/contracts/${a.id}`}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground"
+                className="inline-flex items-center px-3 py-1.5 rounded-md text-2xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
               >
                 Counter-sign
               </Link>
@@ -385,7 +385,7 @@ export default function InboxPanel() {
             action={
               <Link
                 href={`/company/people/${r.person.id}?tab=scoring`}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border"
+                className="inline-flex items-center px-3 py-1.5 rounded-md text-2xs font-medium bg-surface-raised text-foreground hover:opacity-90 transition-opacity"
               >
                 Review & lock
               </Link>
@@ -409,7 +409,7 @@ export default function InboxPanel() {
             action={
               <Link
                 href={`/company/people/${o.person.id}?tab=onboarding`}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border"
+                className="inline-flex items-center px-3 py-1.5 rounded-md text-2xs font-medium bg-surface-raised text-foreground hover:opacity-90 transition-opacity"
               >
                 Review
               </Link>
@@ -438,7 +438,7 @@ export default function InboxPanel() {
               action={
                 <button
                   onClick={() => logScoringBonus(b.person, b.period)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-2xs font-medium bg-success/10 text-success hover:bg-success/15 transition-colors"
                 >
                   <CheckCircleIcon className="size-3.5" />
                   Approve
@@ -471,7 +471,7 @@ export default function InboxPanel() {
               action={
                 <button
                   onClick={() => logKpiBonus(s)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-2xs font-medium bg-success/10 text-success hover:bg-success/15 transition-colors"
                 >
                   <CheckCircleIcon className="size-3.5" />
                   Approve
@@ -484,21 +484,21 @@ export default function InboxPanel() {
 
       {/* Cross-cutting links - the surfaces that aren't top tabs but
           still benefit from a click target somewhere obvious. */}
-      <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-subtle">
+      <div className="flex items-center gap-3 text-2xs uppercase tracking-wider text-subtle font-medium">
         <Link
           href="/company/contracts"
           className="hover:text-foreground transition-colors"
         >
           All contracts →
         </Link>
-        <span className="text-muted">·</span>
+        <span className="text-subtle">·</span>
         <Link
           href="/company/bonuses"
           className="hover:text-foreground transition-colors"
         >
           All bonuses →
         </Link>
-        <span className="text-muted">·</span>
+        <span className="text-subtle">·</span>
         <Link
           href="/company/invoices"
           className="hover:text-foreground transition-colors"
@@ -508,29 +508,29 @@ export default function InboxPanel() {
       </div>
 
       {/* Section 6 - Recent activity (log) */}
-      <div className="bg-background ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+      <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <div className="px-5 py-4 border-b border-dashed border-border flex items-center gap-2">
           <SparklesIcon className="size-4 text-subtle" />
-          <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
+          <h2 className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Recent activity
           </h2>
         </div>
         {activity.length === 0 ? (
-          <div className="px-5 py-6 text-xs text-subtle">
+          <div className="px-5 py-6 text-sm text-subtle">
             No recent activity.
           </div>
         ) : (
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-dashed divide-border">
             {activity.map((e) => (
-              <li key={e.id} className="px-5 py-2.5">
+              <li key={e.id} className="px-5 py-3">
                 <Link
                   href={e.href}
-                  className="flex items-center justify-between gap-3 text-sm group"
+                  className="flex items-center justify-between gap-3 group"
                 >
-                  <span className="text-foreground group-hover:underline">
+                  <span className="text-sm text-foreground group-hover:underline truncate">
                     {e.text}
                   </span>
-                  <span className="text-[11px] text-subtle whitespace-nowrap">
+                  <span className="text-2xs text-subtle whitespace-nowrap tabular-nums">
                     {fmtDateUK(e.ts.slice(0, 10))}
                   </span>
                 </Link>
@@ -557,22 +557,22 @@ function InboxSection({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-background ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+    <div className="bg-surface border border-border rounded-lg overflow-hidden">
+      <div className="px-5 py-4 border-b border-dashed border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon className="size-4 text-subtle" />
-          <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
+          <h2 className="text-2xs uppercase tracking-wider text-subtle font-medium">
             {title}
           </h2>
         </div>
-        <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
+        <span className="text-2xs uppercase tracking-wider text-subtle tabular-nums">
           {count === 0 ? "0" : count}
         </span>
       </div>
       {count === 0 ? (
-        <div className="px-5 py-6 text-xs text-subtle">{empty}</div>
+        <div className="px-5 py-6 text-sm text-subtle">{empty}</div>
       ) : (
-        <ul className="divide-y divide-border">{children}</ul>
+        <ul className="divide-y divide-dashed divide-border">{children}</ul>
       )}
     </div>
   );
@@ -594,7 +594,7 @@ function Row({
           {primary}
         </div>
         {secondary && (
-          <div className="text-xs text-subtle mt-0.5 truncate">
+          <div className="text-2xs text-subtle mt-1 truncate">
             {secondary}
           </div>
         )}

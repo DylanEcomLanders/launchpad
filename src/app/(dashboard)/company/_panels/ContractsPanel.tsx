@@ -1,25 +1,27 @@
 "use client";
 
 /* ── Contracts admin list ──
- * /company/contracts. All agreements (NDA + Contract) across all people,
- * grouped by status. Each row links into the detail page where Dylan
- * counter-signs and copies the signing URL to share with the team member.
+ * /company/contracts. All agreements (NDA + Contract) across all people
+ * in one flat data table, ordered by lifecycle status then recency. Each
+ * row links into the detail page where Dylan counter-signs and copies the
+ * signing URL to share with the team member.
  *
  * Header surfaces a "Templates" link (where the master clauses live)
- * and "Manage people" (back to /company/people) so this page is a
- * standalone hub for the agreement lifecycle.
+ * and "New agreement" so this page is a standalone hub for the
+ * agreement lifecycle.
  */
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { DocumentTextIcon, ShieldCheckIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { agreementStore } from "@/lib/agreements/data";
 import { peopleStore } from "@/lib/company/data";
 import type { Agreement, AgreementStatus } from "@/lib/agreements/types";
 import { AGREEMENT_STATUS_META, AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
 import type { Person } from "@/lib/company/types";
 import { QuickAddAgreementModal } from "@/components/agreements/quick-add-modal";
+import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
 
 const STATUS_ORDER: AgreementStatus[] = [
   "team_signed",
@@ -30,12 +32,27 @@ const STATUS_ORDER: AgreementStatus[] = [
   "terminated",
 ];
 
+/* Status = the only colour in the table body: a quiet Badge (subtle bg,
+ * muted text, one leading dot). Tones map to the MUTED status palette,
+ * never the loud danger/warning/success on the value. The label copy
+ * stays sourced from AGREEMENT_STATUS_META so it remains canonical. */
+type StatusTone = "success" | "warning" | "danger" | "neutral";
+const STATUS_TONE: Record<AgreementStatus, StatusTone> = {
+  draft: "neutral",
+  sent: "warning",
+  team_signed: "warning",
+  counter_signed: "neutral",
+  active: "success",
+  terminated: "danger",
+};
+
 export default function ContractsPanel() {
   const router = useRouter();
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | AgreementStatus>("all");
 
   useEffect(() => {
     Promise.all([agreementStore.getAll(), peopleStore.getAll()]).then(([a, p]) => {
@@ -83,10 +100,21 @@ export default function ContractsPanel() {
     return m;
   }, [agreements]);
 
+  /* Flatten into one ordered list: lifecycle order first (STATUS_ORDER),
+   * recency within each status. The table replaces the per-status card
+   * grids so all agreements read as one dense, ordered surface. */
+  const rows = useMemo(() => {
+    const flat: Agreement[] = [];
+    for (const status of STATUS_ORDER) flat.push(...grouped[status]);
+    if (statusFilter === "all") return flat;
+    return flat.filter((a) => a.status === statusFilter);
+  }, [grouped, statusFilter]);
+
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-6 md:px-10 py-12">
-        <div className="text-sm text-subtle">Loading agreements...</div>
+      <div className="space-y-6">
+        <div className="h-8 w-56 bg-surface rounded animate-pulse" />
+        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
       </div>
     );
   }
@@ -96,14 +124,14 @@ export default function ContractsPanel() {
   const awaitingTeam = grouped.sent.length;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 md:px-10 py-10 pb-24">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">
+          <h1 className="text-lg font-semibold text-foreground">
             Contracts & NDAs
           </h1>
-          <p className="text-[13px] text-subtle mt-1">
+          <p className="text-2xs text-subtle mt-0.5">
             {total} total · {awaitingCounter} awaiting your counter-sign ·{" "}
             {awaitingTeam} awaiting team member
           </p>
@@ -111,101 +139,107 @@ export default function ContractsPanel() {
         <div className="flex items-center gap-2">
           <Link
             href="/company/contracts/templates"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-background border border-border text-foreground text-[13px] font-medium rounded-lg hover:border-border transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <DocumentTextIcon className="size-4" />
+            <DocumentTextIcon className="size-3.5" />
             Templates
           </Link>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <PlusIcon className="size-4" />
+            <PlusIcon className="size-3.5" />
             New agreement
           </button>
         </div>
       </div>
 
       {total === 0 ? (
-        <div className="bg-background border border-dashed border-border rounded-2xl p-10 text-center">
-          <ShieldCheckIcon className="size-7 text-subtle mx-auto mb-3" />
-          <div className="text-[15px] font-medium text-foreground mb-1">
-            No agreements yet
-          </div>
-          <div className="text-[13px] text-subtle mb-5 max-w-md mx-auto">
-            Click <strong>New agreement</strong> above to spin up an NDA and contract
-            from just name, role, and compensation. Or convert a candidate at{" "}
-            <Link href="/company/hiring" className="underline">/company/hiring</Link>{" "}
-            for the full hiring flow.
-          </div>
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
+          <p className="text-sm text-subtle">No agreements yet.</p>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
+            className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <PlusIcon className="size-4" />
+            <PlusIcon className="size-3.5" />
             New agreement
           </button>
         </div>
       ) : (
-        STATUS_ORDER.map((status) => {
-          const list = grouped[status];
-          if (list.length === 0) return null;
-          const meta = AGREEMENT_STATUS_META[status];
-          return (
-            <section key={status} className="mb-8">
-              <div className="flex items-center gap-2 mb-3">
-                <span
-                  className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded"
-                  style={{ background: meta.bg, color: meta.fg }}
-                >
-                  {meta.label}
-                </span>
-                <span className="text-[11px] text-subtle">{list.length}</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {list.map((a) => {
-                  const person = peopleById.get(a.person_id);
-                  return (
-                    <Link
-                      key={a.id}
-                      href={`/company/contracts/${a.id}`}
-                      className="block bg-background ring-1 ring-border rounded-xl p-4 hover:ring-border hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
-                    >
-                      {/* Lead with the contract title (what THIS is), then
-                       * the person (who it's for). Was the other way round
-                       * which made the page read like a people directory. */}
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <DocumentTextIcon className="size-3.5 text-subtle shrink-0" />
-                            <div className="text-[13px] font-semibold text-foreground truncate">
-                              {a.template_body.title}
-                            </div>
-                          </div>
-                          <div className="text-[12px] text-muted truncate">
-                            For{" "}
-                            <span className="text-foreground font-medium">
-                              {a.person_full_name}
-                            </span>{" "}
-                            <span className="text-subtle">
-                              · {a.person_job_title || person?.job_title || "—"}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-surface-raised text-foreground shrink-0">
-                          {AGREEMENT_KIND_LABEL[a.kind]}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-subtle">
-                        Updated {fmtRel(a.updated_at)}
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })
+        <>
+          {/* Toolbar: count + status filter left, no search (small dataset). */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-subtle tabular-nums mr-1">
+                {rows.length} of {total}
+              </span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as "all" | AgreementStatus)}
+                className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[200px]"
+              >
+                <option value="all">All statuses</option>
+                {STATUS_ORDER.map((s) => (
+                  <option key={s} value={s}>
+                    {AGREEMENT_STATUS_META[s].label} ({grouped[s].length})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {rows.length === 0 ? (
+            <div className="bg-surface border border-border-faint rounded py-16 text-center">
+              <p className="text-sm text-subtle">No agreements match this filter.</p>
+            </div>
+          ) : (
+            <div className="bg-surface border border-border-faint rounded overflow-x-auto">
+              <Table>
+                <THead>
+                  <TR hover={false}>
+                    <TH>Agreement</TH>
+                    <TH>For</TH>
+                    <TH>Kind</TH>
+                    <TH>Status</TH>
+                    <TH align="right">Updated</TH>
+                  </TR>
+                </THead>
+                <TBody>
+                  {rows.map((a) => {
+                    const person = peopleById.get(a.person_id);
+                    return (
+                      <TR key={a.id}>
+                        <TD className="max-w-[280px]">
+                          <Link
+                            href={`/company/contracts/${a.id}`}
+                            className="text-foreground hover:underline truncate block"
+                          >
+                            {a.template_body.title}
+                          </Link>
+                        </TD>
+                        <TD className="text-muted truncate max-w-[200px]">
+                          {a.person_full_name}
+                          <span className="ml-1.5 text-2xs text-subtle">
+                            {a.person_job_title || person?.job_title || "-"}
+                          </span>
+                        </TD>
+                        <TD className="text-muted">{AGREEMENT_KIND_LABEL[a.kind]}</TD>
+                        <TD>
+                          <Badge tone={STATUS_TONE[a.status]}>
+                            {AGREEMENT_STATUS_META[a.status].label}
+                          </Badge>
+                        </TD>
+                        <TD align="right" className="text-muted">
+                          <Num>{fmtRel(a.updated_at)}</Num>
+                        </TD>
+                      </TR>
+                    );
+                  })}
+                </TBody>
+              </Table>
+            </div>
+          )}
+        </>
       )}
 
       <QuickAddAgreementModal
@@ -221,7 +255,7 @@ export default function ContractsPanel() {
 
 function fmtRel(iso: string): string {
   const ts = new Date(iso).getTime();
-  if (Number.isNaN(ts)) return "—";
+  if (Number.isNaN(ts)) return "-";
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";

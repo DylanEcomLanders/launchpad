@@ -28,9 +28,21 @@ import {
   DEPARTMENTS,
 } from "@/lib/company/types";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
-import { CANDIDATE_STATUS_BADGE } from "@/lib/company/ui";
 import { GenerateAgreementsModal } from "@/components/agreements/generate-modal";
 import type { Agreement } from "@/lib/agreements/types";
+
+/* Pipeline is a stage palette, so stage dots come from the sanctioned
+ * chart tokens (globals.css --color-chart-N) - never per-stage hex. The
+ * data-layer CANDIDATE_COLUMNS colour + CANDIDATE_STATUS_BADGE hex are
+ * intentionally not consumed here; presentation maps stage by meaning. */
+const STAGE_DOT: Record<CandidateStatus, string> = {
+  applied: "--color-chart-6",
+  screening: "--color-chart-1",
+  interview: "--color-chart-3",
+  offer: "--color-chart-8",
+  hired: "--color-success",
+  rejected: "--color-subtle",
+};
 
 export default function HiringPanel() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -154,28 +166,28 @@ export default function HiringPanel() {
   const selected = selectedId ? candidates.find((c) => c.id === selectedId) : null;
 
   if (!hydrated) {
-    return <div className="h-96 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-surface rounded-lg border border-border animate-pulse" />;
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       {/* Open roles strip */}
-      <div className="bg-background ring-1 ring-border rounded-xl p-4 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-subtle">
+      <div className="bg-surface border border-border rounded-lg p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Open roles
           </h2>
           <button
             onClick={() => setShowAddRole(true)}
-            className="inline-flex items-center gap-1 text-xs text-foreground hover:underline"
+            className="inline-flex items-center gap-1.5 text-2xs font-medium text-muted hover:text-foreground transition-colors"
           >
-            <PlusIcon className="size-3.5" /> Add role
+            <PlusIcon className="size-4" /> Add role
           </button>
         </div>
         {roles.filter((r) => r.status === "open").length === 0 ? (
-          <p className="text-xs text-subtle">No open roles. Add one to start collecting candidates.</p>
+          <p className="text-sm text-subtle">No open roles. Add one to start collecting candidates.</p>
         ) : (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-0.5">
             {roles
               .filter((r) => r.status === "open")
               .map((r) => {
@@ -185,20 +197,21 @@ export default function HiringPanel() {
                   <button
                     key={r.id}
                     onClick={() => setRoleFilter(active ? "all" : r.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs border ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-2xs font-medium transition-colors ${
                       active
-                        ? "bg-foreground text-background border-border"
-                        : "bg-background text-foreground ring-1 ring-border hover:ring-border"
+                        ? "bg-surface-raised text-foreground"
+                        : "text-muted hover:text-foreground hover:bg-surface-raised"
                     }`}
                   >
-                    {r.title} <span className="opacity-70">· {count}</span>
+                    {r.title}
+                    <span className="tabular-nums text-subtle">{count}</span>
                   </button>
                 );
               })}
             {roleFilter !== "all" && (
               <button
                 onClick={() => setRoleFilter("all")}
-                className="px-3 py-1.5 rounded-lg text-xs text-subtle hover:text-foreground"
+                className="px-3 py-1 rounded-md text-2xs font-medium text-subtle hover:text-foreground transition-colors"
               >
                 Clear filter
               </button>
@@ -208,13 +221,12 @@ export default function HiringPanel() {
       </div>
 
       {/* Kanban */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 overflow-x-auto pb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {CANDIDATE_COLUMNS.map((col) => (
           <KanbanColumn
             key={col.id}
             id={col.id}
             label={col.label}
-            color={col.color}
             cards={byColumn[col.id]}
             roles={roles}
             onAddClick={() => setComposeFor(col.id)}
@@ -225,16 +237,16 @@ export default function HiringPanel() {
       </div>
 
       {/* Rejected archive */}
-      <div className="mt-4">
+      <div>
         <button
           onClick={() => setShowRejected((s) => !s)}
-          className="flex items-center gap-1 text-sm text-subtle hover:text-foreground"
+          className="flex items-center gap-1.5 text-sm text-subtle hover:text-foreground transition-colors"
         >
           {showRejected ? <ChevronDownIcon className="size-4" /> : <ChevronRightIcon className="size-4" />}
           Rejected ({byColumn.rejected.length})
         </button>
         {showRejected && (
-          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {byColumn.rejected.map((c) => (
               <CandidateCard
                 key={c.id}
@@ -291,7 +303,6 @@ export default function HiringPanel() {
 function KanbanColumn({
   id,
   label,
-  color,
   cards,
   roles,
   onAddClick,
@@ -300,7 +311,6 @@ function KanbanColumn({
 }: {
   id: CandidateStatus;
   label: string;
-  color: string;
   cards: Candidate[];
   roles: OpenRole[];
   onAddClick: () => void;
@@ -310,10 +320,8 @@ function KanbanColumn({
   const [over, setOver] = useState(false);
   return (
     <div
-      className={`rounded-xl flex flex-col transition-colors ${
-        over
-          ? "bg-surface-raised border-2 border-dashed border-muted"
-          : "bg-background border border-border"
+      className={`rounded-lg flex flex-col border transition-colors ${
+        over ? "bg-surface-raised border-dashed border-ring" : "bg-surface border-border"
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -327,24 +335,24 @@ function KanbanColumn({
         if (cid) onMove(cid, id);
       }}
     >
-      <div className="px-3 py-3 border-b border-border">
+      <div className="px-3 py-3 border-b border-dashed border-border">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span
               className="shrink-0 size-2 rounded-full"
-              style={{ background: color }}
+              style={{ background: `var(${STAGE_DOT[id]})` }}
             />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-foreground truncate">
+            <span className="text-2xs font-medium uppercase tracking-wider text-foreground truncate">
               {label}
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[11px] font-medium text-subtle tabular-nums">
+            <span className="text-2xs font-medium text-subtle tabular-nums">
               {cards.length}
             </span>
             <button
               onClick={onAddClick}
-              className="text-subtle hover:text-foreground"
+              className="text-subtle hover:text-foreground transition-colors"
               title="Add candidate"
             >
               <PlusIcon className="size-4" />
@@ -363,7 +371,7 @@ function KanbanColumn({
           />
         ))}
         {cards.length === 0 && (
-          <div className="text-xs text-muted py-4 text-center">No candidates</div>
+          <div className="text-xs text-subtle py-4 text-center">No candidates</div>
         )}
       </div>
     </div>
@@ -382,7 +390,6 @@ function CandidateCard({
   onMove: (cid: string, status: CandidateStatus) => void;
 }) {
   const role = roles.find((r) => r.id === candidate.role_id);
-  const badge = CANDIDATE_STATUS_BADGE[candidate.status];
   return (
     <div
       draggable
@@ -391,17 +398,23 @@ function CandidateCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       onClick={onClick}
-      className="bg-background ring-1 ring-border rounded-lg p-3 cursor-pointer hover:ring-ring transition-all"
+      className="bg-surface-raised border border-border rounded-lg p-3 cursor-pointer hover:border-ring transition-colors"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="font-medium text-sm text-foreground truncate">{candidate.full_name}</div>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span
+            className="shrink-0 size-1.5 rounded-full"
+            style={{ background: `var(${STAGE_DOT[candidate.status]})` }}
+          />
+          <div className="font-medium text-sm text-foreground truncate">{candidate.full_name}</div>
+        </div>
         {candidate.status === "rejected" && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onMove(candidate.id, "applied");
             }}
-            className="text-[10px] text-subtle hover:text-foreground"
+            className="text-2xs text-subtle hover:text-foreground shrink-0"
             title="Restore"
           >
             ↺
@@ -409,16 +422,13 @@ function CandidateCard({
         )}
       </div>
       <div className="text-xs text-subtle truncate">{role?.title || "No role"}</div>
-      <div className="flex items-center gap-1.5 mt-2 text-[10px]">
+      <div className="flex items-center gap-1.5 mt-2 text-2xs">
         {candidate.source && (
-          <span
-            className="px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider"
-            style={{ background: badge.bg, color: badge.text }}
-          >
+          <span className="px-1.5 py-0.5 rounded bg-surface text-subtle font-medium uppercase tracking-wider">
             {candidate.source}
           </span>
         )}
-        <span className="text-muted">{fmtDateUK(candidate.date_added)}</span>
+        <span className="text-subtle">{fmtDateUK(candidate.date_added)}</span>
       </div>
     </div>
   );
@@ -460,8 +470,8 @@ function ComposeCandidateModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="bg-background rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Add candidate</h2>
+      <form onSubmit={submit} className="bg-surface-raised border border-border rounded-lg w-full max-w-md p-5">
+        <h2 className="text-lg font-medium text-foreground mb-4">Add candidate</h2>
         <div className="space-y-3">
           <div>
             <label className={labelClass}>Name</label>
@@ -494,11 +504,11 @@ function ComposeCandidateModal({
             />
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
-          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-subtle hover:text-foreground">
+        <div className="flex justify-end gap-2 mt-5">
+          <button type="button" onClick={onCancel} className="px-3 py-2 text-xs font-medium text-subtle hover:text-foreground transition-colors">
             Cancel
           </button>
-          <button type="submit" className="px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90">
+          <button type="submit" className="px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90">
             Add
           </button>
         </div>
@@ -531,8 +541,8 @@ function AddRoleModal({ onCancel, onSave }: { onCancel: () => void; onSave: (r: 
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="bg-background rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Add open role</h2>
+      <form onSubmit={submit} className="bg-surface-raised border border-border rounded-lg w-full max-w-md p-5">
+        <h2 className="text-lg font-medium text-foreground mb-4">Add open role</h2>
         <div className="space-y-3">
           <div>
             <label className={labelClass}>Title</label>
@@ -567,11 +577,11 @@ function AddRoleModal({ onCancel, onSave }: { onCancel: () => void; onSave: (r: 
             />
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
-          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-subtle hover:text-foreground">
+        <div className="flex justify-end gap-2 mt-5">
+          <button type="button" onClick={onCancel} className="px-3 py-2 text-xs font-medium text-subtle hover:text-foreground transition-colors">
             Cancel
           </button>
-          <button type="submit" className="px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90">
+          <button type="submit" className="px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90">
             Add
           </button>
         </div>
@@ -616,12 +626,12 @@ function CandidateSidePanel({
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex justify-end" onClick={onClose}>
       <div
-        className="bg-background w-full max-w-lg h-full overflow-y-auto shadow-2xl"
+        className="bg-surface-raised border-l border-border w-full max-w-lg h-full overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-background border-b border-border px-5 py-3 flex items-center justify-between z-10">
-          <h2 className="text-lg font-semibold text-foreground">{candidate.full_name}</h2>
-          <button onClick={onClose} className="text-subtle hover:text-foreground">
+        <div className="sticky top-0 bg-surface-raised border-b border-dashed border-border px-5 py-3 flex items-center justify-between z-10">
+          <h2 className="text-lg font-medium text-foreground">{candidate.full_name}</h2>
+          <button onClick={onClose} className="text-subtle hover:text-foreground transition-colors">
             <XMarkIcon className="size-5" />
           </button>
         </div>
@@ -696,7 +706,7 @@ function CandidateSidePanel({
           <div>
             <label className={labelClass}>CV</label>
             {candidate.cv_url ? (
-              <div className="flex items-center justify-between bg-background rounded-lg px-3 py-2 text-sm">
+              <div className="flex items-center justify-between bg-surface border border-border rounded-lg px-3 py-2 text-sm">
                 <span className="truncate text-foreground">{candidate.cv_name || "CV"}</span>
                 <div className="flex items-center gap-2">
                   <a
@@ -729,7 +739,7 @@ function CandidateSidePanel({
               placeholder="Markdown supported."
             />
           </div>
-          <div className="text-[11px] text-subtle pt-2 border-t border-border">
+          <div className="text-2xs text-subtle pt-2 border-t border-dashed border-border">
             Added {fmtDateUK(candidate.date_added)} · Updated {fmtDateUK(candidate.updated_at)}
           </div>
 
@@ -737,14 +747,14 @@ function CandidateSidePanel({
             {candidate.status === "hired" ? (
               <button
                 onClick={onConvert}
-                className="inline-flex items-center gap-1 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
               >
                 Convert to person
               </button>
             ) : null}
             <button
               onClick={onDelete}
-              className="px-3 py-2 text-sm text-danger hover:bg-danger/15 rounded-lg"
+              className="px-3 py-2 text-xs font-medium text-danger hover:bg-danger/10 rounded-md transition-colors"
             >
               Delete
             </button>
