@@ -29,7 +29,9 @@ import {
 import { templateStore, getTemplatesForKind, uid, nowISO } from "@/lib/agreements/data";
 import type { AgreementTemplate, Clause } from "@/lib/agreements/types";
 import { TEMPLATE_ROLE_LABEL } from "@/lib/agreements/types";
-import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
+import { inputClass, selectClass, textareaClass } from "@/lib/form-styles";
+
+const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-medium mb-2";
 
 export default function TemplatesEditorPage() {
   /* Multi-template editor. Loads every contract template and shows a
@@ -122,22 +124,22 @@ export default function TemplatesEditorPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 md:px-10 py-10 pb-32">
+    <div className="max-w-3xl mx-auto px-6 md:px-10 py-10 pb-32 space-y-6">
       {/* Back */}
       <Link
         href="/company/contracts"
-        className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-foreground transition-colors"
       >
         <ArrowLeftIcon className="size-4" />
         Back to contracts
       </Link>
 
       {/* Header */}
-      <div className="mb-6">
+      <div>
         <h1 className="text-2xl font-semibold text-foreground">
           Agreement templates
         </h1>
-        <p className="text-[13px] text-subtle mt-1 max-w-lg">
+        <p className="text-xs text-subtle mt-1 max-w-lg">
           Each role has its own template. Pick one below to edit. Edits apply to
           NEW agreements only - already-signed documents keep the clauses they
           were signed under.
@@ -148,77 +150,77 @@ export default function TemplatesEditorPage() {
        * loads into the editor body below. Switching tabs preserves
        * unsaved edits on the current template since templates state
        * is held in React. */}
-      <div className="mb-6 flex flex-wrap gap-1.5 p-1 bg-background ring-1 ring-border rounded-lg">
+      <div className="flex flex-wrap gap-1.5">
         {templates.map((t) => {
           const active = activeId === t.id;
           return (
             <button
               key={t.id}
               onClick={() => setActiveId(t.id)}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
+              className={`inline-flex items-center gap-2 h-8 px-3 rounded border text-xs font-medium transition-colors ${
                 active
-                  ? "bg-foreground text-background"
-                  : "text-muted hover:text-foreground hover:bg-surface-hover"
+                  ? "border-border bg-surface-raised text-foreground"
+                  : "border-border bg-surface text-muted hover:bg-surface-raised hover:text-foreground"
               }`}
             >
               <span>{TEMPLATE_ROLE_LABEL[t.template_role]}</span>
-              <span className={`text-[10px] font-mono ${active ? "text-subtle" : "text-subtle"}`}>
-                {t.revision}
-              </span>
+              <span className="text-2xs font-mono text-subtle">{t.revision}</span>
             </button>
           );
         })}
       </div>
 
       {/* Legal disclaimer */}
-      <div className="flex items-start gap-3 px-4 py-3 mb-6 bg-surface-raised border border-border rounded-lg text-[13px] text-foreground">
-        <ExclamationTriangleIcon className="size-4 shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3 px-4 py-3 bg-surface-raised border border-border rounded text-xs text-muted">
+        <ExclamationTriangleIcon className="size-4 shrink-0 mt-0.5 text-status-approaching" />
         <div>
-          <strong>Have a solicitor review the seeded clauses before using these
+          <strong className="text-foreground font-medium">Have a solicitor review the seeded clauses before using these
           for any real engagement.</strong>{" "}
           They&apos;re a sensible UK micro-agency starting point, not legal advice.
         </div>
       </div>
 
       {/* Document title + revision */}
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 mb-6">
-        <div>
-          <label className={labelClass}>Document title</label>
-          <input
-            className={inputClass}
-            value={current.body.title}
-            onChange={(e) => patchBody("title", e.target.value)}
-          />
+      <div className="bg-surface border border-border-faint rounded p-5">
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-3">
+          <div>
+            <label className={fieldLabel}>Document title</label>
+            <input
+              className={inputClass}
+              value={current.body.title}
+              onChange={(e) => patchBody("title", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className={fieldLabel}>Revision label</label>
+            <input
+              className={inputClass}
+              value={current.revision}
+              onChange={(e) => patchRevision(e.target.value)}
+              placeholder="e.g. v1.1 - tightened IP"
+            />
+          </div>
         </div>
-        <div>
-          <label className={labelClass}>Revision label</label>
-          <input
-            className={inputClass}
-            value={current.revision}
-            onChange={(e) => patchRevision(e.target.value)}
-            placeholder="e.g. v1.1 - tightened IP"
-          />
-        </div>
-      </div>
 
-      {/* Intro */}
-      <div className="mb-6">
-        <label className={labelClass}>Intro paragraph</label>
-        <textarea
-          className={`${textareaClass} min-h-[140px]`}
-          value={current.body.intro}
-          onChange={(e) => patchBody("intro", e.target.value)}
-        />
-        <PlaceholderHint />
+        {/* Intro */}
+        <div className="mt-6 pt-6 border-t border-dashed border-border">
+          <label className={fieldLabel}>Intro paragraph</label>
+          <textarea
+            className={`${textareaClass} min-h-[140px]`}
+            value={current.body.intro}
+            onChange={(e) => patchBody("intro", e.target.value)}
+          />
+          <PlaceholderHint />
+        </div>
       </div>
 
       {/* Clauses */}
-      <div className="mb-6">
+      <div className="bg-surface border border-border-faint rounded p-5">
         <div className="flex items-center justify-between mb-3">
-          <label className={labelClass}>Numbered clauses</label>
+          <label className={fieldLabel + " mb-0"}>Numbered clauses</label>
           <button
             onClick={addClause}
-            className="inline-flex items-center gap-1 text-[12px] text-foreground hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-muted hover:text-foreground"
           >
             <PlusIcon className="size-3.5" /> Add clause
           </button>
@@ -227,10 +229,10 @@ export default function TemplatesEditorPage() {
           {current.body.clauses.map((c, idx) => (
             <div
               key={c.id}
-              className="bg-background border border-border rounded-lg p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
+              className="bg-surface-raised border border-border rounded p-4"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="text-[11px] font-mono text-subtle mt-2 w-8 shrink-0">
+                <div className="text-2xs font-mono text-subtle mt-2 w-8 shrink-0">
                   {String(idx + 1).padStart(2, "0")}
                 </div>
                 <input
@@ -254,7 +256,7 @@ export default function TemplatesEditorPage() {
                 </select>
                 <button
                   onClick={() => removeClause(idx)}
-                  className="p-2 text-subtle hover:text-danger transition-colors"
+                  className="p-2 text-subtle hover:text-status-late transition-colors"
                   aria-label="Remove clause"
                 >
                   <TrashIcon className="size-4" />
@@ -271,8 +273,8 @@ export default function TemplatesEditorPage() {
       </div>
 
       {/* Outro */}
-      <div className="mb-8">
-        <label className={labelClass}>Outro paragraph</label>
+      <div className="bg-surface border border-border-faint rounded p-5">
+        <label className={fieldLabel}>Outro paragraph</label>
         <textarea
           className={`${textareaClass} min-h-[80px]`}
           value={current.body.outro}
@@ -280,13 +282,13 @@ export default function TemplatesEditorPage() {
         />
       </div>
 
-      {/* Save bar — sticks to the bottom of the viewport so long edits don't
+      {/* Save bar - sticks to the bottom of the viewport so long edits don't
           require scrolling back up to commit. */}
       <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-background/95 backdrop-blur border-t border-border z-10">
         <div className="max-w-3xl mx-auto px-6 md:px-10 py-3 flex items-center justify-between gap-4">
-          <div className="text-[12px] text-subtle">
+          <div className="text-xs text-subtle">
             {savedAt ? (
-              <span className="inline-flex items-center gap-1.5 text-success">
+              <span className="inline-flex items-center gap-1.5 text-status-ontrack">
                 <CheckIcon className="size-3.5" />
                 Saved
               </span>
@@ -299,7 +301,7 @@ export default function TemplatesEditorPage() {
           <button
             onClick={save}
             disabled={!dirty || saving}
-            className="px-4 py-2 bg-foreground text-background text-sm font-medium rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
+            className="inline-flex items-center h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors disabled:opacity-40"
           >
             {saving ? "Saving..." : "Save template"}
           </button>
@@ -311,7 +313,7 @@ export default function TemplatesEditorPage() {
 
 function PlaceholderHint() {
   return (
-    <p className="text-[11px] text-subtle mt-1.5 leading-relaxed">
+    <p className="text-2xs text-subtle mt-1.5 leading-relaxed">
       Use <code className="bg-surface-raised px-1 py-0.5 rounded">{"{{ placeholder }}"}</code>{" "}
       to inject person data. Available:{" "}
       <code className="bg-surface-raised px-1 py-0.5 rounded">person_full_name</code>,{" "}

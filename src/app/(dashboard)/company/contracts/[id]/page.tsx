@@ -21,11 +21,26 @@ import {
   ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { agreementStore, nowISO } from "@/lib/agreements/data";
-import type { Agreement } from "@/lib/agreements/types";
+import type { Agreement, AgreementStatus } from "@/lib/agreements/types";
 import { AGREEMENT_STATUS_META, AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
 import { RenderedDocument } from "@/components/agreements/rendered-document";
 import { SignaturePad } from "@/components/signature-pad";
-import { inputClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { Badge } from "@/components/ui";
+import { inputClass, textareaClass } from "@/lib/form-styles";
+
+const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-medium mb-2";
+
+/* Status → quiet Badge tone. Uses the muted-status palette (via Badge),
+ * never the loud AGREEMENT_STATUS_META hex pairs. */
+type BadgeTone = "neutral" | "success" | "warning" | "danger";
+const STATUS_TONE: Record<AgreementStatus, BadgeTone> = {
+  draft: "neutral",
+  sent: "warning",
+  team_signed: "warning",
+  counter_signed: "success",
+  active: "success",
+  terminated: "danger",
+};
 
 export default function ContractDetailPage() {
   const params = useParams();
@@ -139,12 +154,12 @@ export default function ContractDetailPage() {
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12">
         <Link
           href="/company/contracts"
-          className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeftIcon className="size-4" />
           Back to contracts
         </Link>
-        <div className="text-[15px] text-foreground">Agreement not found.</div>
+        <div className="text-sm text-foreground">Agreement not found.</div>
       </div>
     );
   }
@@ -152,47 +167,40 @@ export default function ContractDetailPage() {
   const meta = AGREEMENT_STATUS_META[agreement.status];
 
   return (
-    <div className="max-w-[940px] mx-auto px-4 md:px-8 py-8 pb-24">
+    <div className="max-w-[940px] mx-auto px-4 md:px-8 py-8 pb-24 space-y-6">
       {/* Back */}
       <Link
         href="/company/contracts"
-        className="inline-flex items-center gap-1.5 text-[13px] text-subtle hover:text-foreground transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs text-subtle hover:text-foreground transition-colors"
       >
         <ArrowLeftIcon className="size-4" />
         Back to contracts
       </Link>
 
       {/* Header */}
-      <div className="mb-6">
+      <div>
         <div className="flex items-center gap-2 mb-2">
-          <span
-            className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded"
-            style={{ background: meta.bg, color: meta.fg }}
-          >
-            {meta.label}
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-surface-raised text-foreground">
-            {AGREEMENT_KIND_LABEL[agreement.kind]}
-          </span>
+          <Badge tone={STATUS_TONE[agreement.status]}>{meta.label}</Badge>
+          <Badge tone="neutral">{AGREEMENT_KIND_LABEL[agreement.kind]}</Badge>
         </div>
         <h1 className="text-2xl font-semibold text-foreground">
           {agreement.person_full_name}
         </h1>
-        <div className="text-[13px] text-subtle mt-1">
-          {agreement.person_job_title || "—"} ·{" "}
+        <div className="text-xs text-subtle mt-1">
+          {agreement.person_job_title || "-"} ·{" "}
           {agreement.person_employment_type === "employee" ? "Employee" : "Contractor"}
         </div>
       </div>
 
       {/* Signing URL */}
       {agreement.status !== "terminated" && (
-        <div className="mb-6 p-4 bg-background border border-border rounded-xl">
-          <div className={labelClass}>Signing link</div>
+        <div className="p-5 bg-surface border border-border-faint rounded">
+          <div className={fieldLabel}>Signing link</div>
           <div className="flex gap-2">
             <input readOnly value={signingUrl} className={inputClass} />
             <button
               onClick={copySigningUrl}
-              className="inline-flex items-center gap-1.5 px-3 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors shrink-0"
             >
               {copied ? (
                 <>
@@ -211,7 +219,7 @@ export default function ContractDetailPage() {
              * modern browser does the rest. */}
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-border text-foreground text-[13px] font-medium rounded-lg hover:ring-border transition-all shrink-0"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors shrink-0"
               title="Download PDF (Cmd+P → Save as PDF)"
             >
               <ArrowDownTrayIcon className="size-3.5" /> PDF
@@ -223,12 +231,12 @@ export default function ContractDetailPage() {
                 synced ??
                 "Push this agreement to Supabase. Fixes 'agreement not found' on the signing link"
               }
-              className="inline-flex items-center gap-1.5 px-3 bg-background ring-1 ring-border text-foreground text-[13px] font-medium rounded-lg hover:ring-border transition-all shrink-0 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors shrink-0 disabled:opacity-50"
             >
-              {syncing ? "Syncing…" : synced ? synced : "Sync to cloud"}
+              {syncing ? "Syncing..." : synced ? synced : "Sync to cloud"}
             </button>
           </div>
-          <p className="text-[11px] text-subtle mt-2 leading-relaxed">
+          <p className="text-2xs text-subtle mt-2 leading-relaxed">
             Share this URL with{" "}
             <span className="text-foreground font-medium">{agreement.person_full_name}</span>{" "}
             via Slack, email, or however you usually reach them. They open it, read,
@@ -237,7 +245,7 @@ export default function ContractDetailPage() {
           {agreement.status === "draft" && (
             <button
               onClick={markAsSent}
-              className="inline-flex items-center gap-1.5 mt-3 text-[12px] text-foreground hover:underline"
+              className="inline-flex items-center gap-1.5 mt-3 text-xs text-muted hover:text-foreground"
             >
               <PaperAirplaneIcon className="size-3.5" />
               Mark as sent
@@ -248,16 +256,16 @@ export default function ContractDetailPage() {
 
       {/* Counter-sign CTA */}
       {agreement.status === "team_signed" && !showCounterSign && (
-        <div className="mb-6 p-4 bg-warning/10 border border-warning/20 rounded-xl">
-          <div className="text-[13px] font-medium text-warning mb-1">
+        <div className="p-5 bg-surface border border-border-faint rounded">
+          <div className="text-sm font-medium text-foreground mb-1">
             {agreement.person_full_name} has signed
           </div>
-          <div className="text-[12px] text-warning mb-3">
+          <div className="text-xs text-status-approaching mb-3">
             Counter-sign to finalise the agreement.
           </div>
           <button
             onClick={() => setShowCounterSign(true)}
-            className="px-3 py-1.5 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors"
+            className="inline-flex items-center h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
             Counter-sign now
           </button>
@@ -266,13 +274,13 @@ export default function ContractDetailPage() {
 
       {/* Counter-sign form */}
       {showCounterSign && (
-        <div className="mb-6 p-4 bg-background border border-border rounded-xl">
-          <div className="text-[13px] font-medium text-foreground mb-4">
+        <div className="p-5 bg-surface border border-border-faint rounded">
+          <div className="text-sm font-medium text-foreground mb-4">
             Counter-sign
           </div>
           <div className="space-y-3">
             <div>
-              <label className={labelClass}>Your full name</label>
+              <label className={fieldLabel}>Your full name</label>
               <input
                 className={inputClass}
                 value={counterName}
@@ -281,7 +289,7 @@ export default function ContractDetailPage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Signature</label>
+              <label className={fieldLabel}>Signature</label>
               <SignaturePad
                 value={counterSig}
                 onChange={setCounterSig}
@@ -289,7 +297,7 @@ export default function ContractDetailPage() {
               />
               <button
                 onClick={() => setCounterSig("")}
-                className="text-[11px] text-subtle hover:underline mt-1"
+                className="text-2xs text-subtle hover:underline mt-1"
                 type="button"
               >
                 Clear signature
@@ -298,14 +306,14 @@ export default function ContractDetailPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowCounterSign(false)}
-                className="px-3 py-1.5 text-[13px] text-subtle hover:text-foreground transition-colors"
+                className="px-3 py-1.5 text-xs text-subtle hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={counterSign}
                 disabled={!counterName.trim() || !counterSig || submitting}
-                className="px-3 py-1.5 bg-foreground text-background text-[13px] font-medium rounded-lg hover:bg-foreground transition-colors disabled:opacity-40"
+                className="inline-flex items-center h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors disabled:opacity-40"
               >
                 {submitting ? "Signing..." : "Sign and finalise"}
               </button>
@@ -335,17 +343,17 @@ export default function ContractDetailPage() {
       </div>
 
       {/* Footer actions */}
-      <div className="mt-6 flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <Link
             href={`/company/people/${agreement.person_id}`}
-            className="text-[12px] text-subtle hover:text-foreground hover:underline transition-colors"
+            className="text-xs text-subtle hover:text-foreground hover:underline transition-colors"
           >
             View person profile →
           </Link>
           <Link
             href="/company/contracts/templates"
-            className="text-[12px] text-subtle hover:text-foreground hover:underline transition-colors"
+            className="text-xs text-subtle hover:text-foreground hover:underline transition-colors"
           >
             Edit master clauses →
           </Link>
@@ -354,7 +362,7 @@ export default function ContractDetailPage() {
           {agreement.status === "active" && !showTerminate && (
             <button
               onClick={() => setShowTerminate(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-danger hover:bg-danger/10 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 rounded transition-colors"
             >
               <XCircleIcon className="size-3.5" />
               Terminate
@@ -362,7 +370,7 @@ export default function ContractDetailPage() {
           )}
           <button
             onClick={deleteAgreement}
-            className="text-[12px] text-subtle hover:text-danger hover:underline transition-colors"
+            className="text-xs text-subtle hover:text-danger hover:underline transition-colors"
           >
             Delete
           </button>
@@ -371,12 +379,12 @@ export default function ContractDetailPage() {
 
       {/* Terminate form */}
       {showTerminate && (
-        <div className="mt-4 p-4 bg-background border border-danger/20 rounded-xl">
-          <div className="text-[13px] font-medium text-danger mb-3">
+        <div className="p-5 bg-surface border border-border-faint rounded">
+          <div className="text-sm font-medium text-danger mb-3">
             Terminate this agreement
           </div>
           <textarea
-            className={`${textareaClass} text-[13px]`}
+            className={`${textareaClass} text-sm`}
             rows={3}
             value={terminateReason}
             onChange={(e) => setTerminateReason(e.target.value)}
@@ -385,14 +393,14 @@ export default function ContractDetailPage() {
           <div className="flex justify-end gap-2 mt-3">
             <button
               onClick={() => setShowTerminate(false)}
-              className="px-3 py-1.5 text-[13px] text-subtle hover:text-foreground transition-colors"
+              className="px-3 py-1.5 text-xs text-subtle hover:text-foreground transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={terminate}
               disabled={submitting}
-              className="px-3 py-1.5 bg-danger text-white text-[13px] font-medium rounded-lg hover:bg-danger transition-colors disabled:opacity-40"
+              className="inline-flex items-center h-8 px-3 rounded bg-danger text-white text-xs font-medium hover:bg-danger transition-colors disabled:opacity-40"
             >
               {submitting ? "Terminating..." : "Confirm terminate"}
             </button>
@@ -458,27 +466,27 @@ function EngagementDetailsPanel({
   }
 
   return (
-    <div className="mb-6 bg-background rounded-2xl ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="bg-surface border border-border-faint rounded overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-surface-hover transition-colors"
+        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors"
       >
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
+          <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Engagement details
           </div>
-          <div className="text-[13px] text-foreground mt-0.5">
+          <div className="text-xs text-foreground mt-0.5">
             {isDraft
               ? "Edit the base fields - the contract below updates live"
               : "Locked: contract is past draft status"}
           </div>
         </div>
-        <span className="text-subtle text-[18px]">{open ? "−" : "+"}</span>
+        <span className="text-subtle text-lg">{open ? "−" : "+"}</span>
       </button>
 
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t border-border space-y-4">
+        <div className="px-5 pb-5 pt-4 border-t border-dashed border-border space-y-4">
           {/* Identity */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Field label="Full name">
@@ -587,8 +595,8 @@ function EngagementDetailsPanel({
           </div>
 
           {/* Engagement Schedule extras */}
-          <div className="pt-2 border-t border-border">
-            <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold mb-3">
+          <div className="pt-4 border-t border-dashed border-border">
+            <div className="text-2xs uppercase tracking-wider text-subtle font-medium mb-3">
               Engagement Schedule
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -686,7 +694,7 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <label className={labelClass}>{label}</label>
+      <label className={fieldLabel}>{label}</label>
       {children}
     </div>
   );
@@ -753,34 +761,34 @@ function ClausesEditor({
   }
 
   return (
-    <div className="mb-6 bg-background rounded-2xl ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="bg-surface border border-border-faint rounded overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-surface-hover transition-colors"
+        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors"
       >
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
+          <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             Clauses ({clauses.length})
           </div>
-          <div className="text-[13px] text-foreground mt-0.5">
+          <div className="text-xs text-foreground mt-0.5">
             {isDraft
               ? "Edit clauses on THIS contract only - master template unchanged"
               : "Locked: contract is past draft status"}
           </div>
         </div>
-        <span className="text-subtle text-[18px]">{open ? "−" : "+"}</span>
+        <span className="text-subtle text-lg">{open ? "−" : "+"}</span>
       </button>
 
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t border-border space-y-3">
+        <div className="px-5 pb-5 pt-4 border-t border-dashed border-border space-y-3">
           {clauses.map((c, idx) => (
             <div
               key={c.id}
-              className="bg-black/30 rounded-lg ring-1 ring-border p-3"
+              className="bg-surface-raised border border-border rounded p-3"
             >
               <div className="flex items-start gap-2 mb-2">
-                <span className="text-[10px] font-mono text-subtle pt-1.5 shrink-0 w-6 text-right">
+                <span className="text-2xs font-mono text-subtle pt-1.5 shrink-0 w-6 text-right">
                   {String(idx + 1).padStart(2, "0")}
                 </span>
                 <input
@@ -791,7 +799,7 @@ function ClausesEditor({
                       patchClause(idx, { heading: e.target.value });
                     }
                   }}
-                  className="flex-1 h-8 px-2 bg-transparent text-[13px] font-semibold text-foreground focus:outline-none focus:bg-surface-hover rounded"
+                  className="flex-1 h-8 px-2 bg-transparent text-sm font-semibold text-foreground focus:outline-none focus:bg-surface rounded"
                 />
                 {isDraft && (
                   <div className="flex items-center gap-1 shrink-0">
@@ -814,7 +822,7 @@ function ClausesEditor({
                     <button
                       onClick={() => removeClause(idx)}
                       title="Remove clause"
-                      className="px-1.5 text-subtle hover:text-danger"
+                      className="px-1.5 text-subtle hover:text-status-late"
                     >
                       ×
                     </button>
@@ -830,7 +838,7 @@ function ClausesEditor({
                   }
                 }}
                 rows={Math.min(12, Math.max(3, c.body.split("\n").length))}
-                className="w-full ml-8 px-2 py-1.5 bg-transparent text-[12px] text-muted leading-relaxed focus:outline-none focus:bg-surface-hover rounded resize-y font-mono"
+                className="w-full ml-8 px-2 py-1.5 bg-transparent text-xs text-muted leading-relaxed focus:outline-none focus:bg-surface rounded resize-y font-mono"
                 style={{ width: "calc(100% - 2rem)" }}
               />
             </div>
@@ -838,7 +846,7 @@ function ClausesEditor({
           {isDraft && (
             <button
               onClick={addClause}
-              className="w-full py-2 text-[12px] text-subtle hover:text-foreground hover:bg-surface-hover rounded-lg ring-1 ring-dashed ring-border transition-colors"
+              className="w-full py-2 text-xs text-subtle hover:text-foreground hover:bg-surface-raised rounded border border-dashed border-border transition-colors"
             >
               + Add clause
             </button>
