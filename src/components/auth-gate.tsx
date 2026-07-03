@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
-import { Tackboard } from "@/components/tackboard";
 import { isStaging } from "@/lib/env";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
@@ -26,6 +25,15 @@ function setRoleCookie(role: "admin" | "cro" | "team") {
 }
 const CRO_PASSWORD = process.env.NEXT_PUBLIC_CRO_PASSWORD || "cro2025";
 const TEAM_PASSWORD = process.env.NEXT_PUBLIC_TEAM_PASSWORD || "team2026";
+
+/* Login control styling, driven entirely by the app's design tokens so the
+ * screen stays synergetic with the rest of Launchpad (dark surface, hairline
+ * borders, 4px radii). The right image panel is the only non-token element,
+ * an actual photograph. */
+const AUTH_INPUT =
+  "w-full px-4 py-3 bg-surface border border-border rounded text-sm text-foreground placeholder:text-subtle focus:outline-none focus:border-foreground/30 transition";
+const AUTH_BTN =
+  "w-full py-3 rounded bg-foreground text-background text-sm font-medium hover:bg-foreground/90 active:scale-[0.99] transition disabled:opacity-50 flex items-center justify-center gap-1.5";
 
 export type UserRole = "admin" | "cro" | "team";
 
@@ -113,7 +121,7 @@ function isTeamAllowedPath(pathname: string): boolean {
   );
 }
 
-type Mode = "credentials" | "magic" | "password";
+type Mode = "credentials" | "password";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(false);
@@ -125,28 +133,19 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [shaking, setShaking] = useState(false);
   const [entering, setEntering] = useState(false);
 
-  /* "credentials" is the new default: email + password via Supabase
-   * signInWithPassword. "magic" stays as a fallback for team members who
-   * haven't set a password yet, "password" is the shared admin access
-   * code (Dylan's existing flow). */
+  /* "credentials" is the default: email + password via Supabase
+   * signInWithPassword. "password" is the shared admin access code. */
   const [mode, setMode] = useState<Mode>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [linkSent, setLinkSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [notAllowed, setNotAllowed] = useState(false);
   const [credentialsError, setCredentialsError] = useState("");
 
-  /* Reset-password flow state. resetSent flips after we successfully
-   * email the recovery link; resetError surfaces wrong-email / network
-   * failures inline. */
-  const [resetSent, setResetSent] = useState(false);
-  const [resetError, setResetError] = useState("");
-
-  /* Finalise a magic-link session: confirm the email is on the allowlist,
-   * resolve the person, set role + identity + cookie. If the email isn't
-   * allowed we sign the Supabase session straight back out. */
-  const finaliseMagicSession = useCallback(async (authEmail: string, authId: string) => {
+  /* Finalise a Supabase session (password sign-in, or a returning session):
+   * confirm the email is on the allowlist, resolve the person, set role +
+   * identity + cookie. If the email isn't allowed we sign straight back out. */
+  const finaliseSession = useCallback(async (authEmail: string, authId: string) => {
     const user = await findAppUserByEmail(authEmail);
     if (!user) {
       setNotAllowed(true);
@@ -181,16 +180,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // 2. Live Supabase magic-link session (e.g. returning from the email link).
+      // 2. Live Supabase session (e.g. returning from an earlier sign-in).
       if (isSupabaseConfigured()) {
         try {
           const { data } = await supabase.auth.getSession();
           const session = data.session;
           if (session?.user?.email && !cancelled) {
-            const ok = await finaliseMagicSession(
-              session.user.email,
-              session.user.id,
-            );
+            const ok = await finaliseSession(session.user.email, session.user.id);
             if (ok) {
               setChecking(false);
               return;
@@ -206,12 +202,12 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
     boot();
 
-    // React to the magic-link redirect resolving after mount.
+    // React to a sign-in resolving after mount.
     let sub: { unsubscribe: () => void } | undefined;
     if (isSupabaseConfigured()) {
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_IN" && session?.user?.email) {
-          finaliseMagicSession(session.user.email, session.user.id);
+          finaliseSession(session.user.email, session.user.id);
         }
       });
       sub = data.subscription;
@@ -221,7 +217,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       cancelled = true;
       sub?.unsubscribe();
     };
-  }, [finaliseMagicSession]);
+  }, [finaliseSession]);
 
   // Guard: a member on an admin-only route is sent to their home (My Work).
   // The retired /team landing also bounces here (its tool sub-pages stay).
@@ -240,8 +236,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   /* Email + password sign-in. Supabase's signInWithPassword returns a
    * session; the onAuthStateChange handler picks it up and runs the
-   * same allowlist check + role/identity setup as the magic-link path
-   * (finaliseMagicSession). We only surface error states here. */
+   * same allowlist check + role/identity setup (finaliseSession). We only
+   * surface error states here. */
   const signInWithCredentials = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -278,73 +274,6 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       }
     },
     [email, password],
-  );
-
-  /* Forgot password - emails the user a reset link that lands on the
-   * /login/reset-password page with a recovery token. Same allowlist
-   * pre-check as sign-in so we don't email randos. */
-  const sendResetEmail = useCallback(async () => {
-    const normalized = email.trim().toLowerCase();
-    if (!normalized) {
-      setResetError("Enter your email first.");
-      return;
-    }
-    setResetError("");
-    setSending(true);
-    try {
-      const allowed = await findAppUserByEmail(normalized);
-      if (!allowed) {
-        setResetError("That email isn't on the team list.");
-        setSending(false);
-        return;
-      }
-      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(
-        normalized,
-        {
-          redirectTo: window.location.origin + "/login/reset-password",
-        },
-      );
-      if (resetErr) throw resetErr;
-      setResetSent(true);
-    } catch (err) {
-      console.error("[auth] sendResetEmail:", err);
-      setResetError("Couldn't send the reset link. Try again.");
-    } finally {
-      setSending(false);
-    }
-  }, [email]);
-
-  const sendMagicLink = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const normalized = email.trim().toLowerCase();
-      if (!normalized) return;
-      setNotAllowed(false);
-      setSending(true);
-      try {
-        // Pre-check the allowlist so we can give a clear "not invited" message
-        // instead of silently sending a link that won't grant access.
-        const allowed = await findAppUserByEmail(normalized);
-        if (!allowed) {
-          setNotAllowed(true);
-          setSending(false);
-          return;
-        }
-        const { error: otpErr } = await supabase.auth.signInWithOtp({
-          email: normalized,
-          options: { emailRedirectTo: window.location.origin + window.location.pathname },
-        });
-        if (otpErr) throw otpErr;
-        setLinkSent(true);
-      } catch (err) {
-        console.error("[auth] sendMagicLink:", err);
-        setError(true);
-        setTimeout(() => setError(false), 3000);
-      } finally {
-        setSending(false);
-      }
-    },
-    [email],
   );
 
   /* Shared entry transition for a resolved gate role. Sets the legacy
@@ -411,247 +340,128 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (checking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-border border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!authed) {
     return (
-      <div className={`min-h-screen relative overflow-hidden transition-all duration-500 ${entering ? "opacity-0 scale-110" : "opacity-100 scale-100"}`}>
-        {/* ── Tackboard as the login backdrop ── */}
-        <div className="absolute inset-0">
-          <Tackboard loginMode />
-        </div>
-
-        {/* Soft dark overlay behind the login card for contrast */}
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-
-        {/* ── Login content (centered floating card) ── */}
-        <div className="absolute inset-0 flex items-center justify-center px-6 pointer-events-none">
-          <div className="relative z-20 w-full max-w-sm pointer-events-auto">
-          {/* Logo / Brand */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-surface/10 border border-white/20 backdrop-blur-xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/el-logo.svg" alt="Ecom Landers" className="w-8 h-8 brightness-0 invert drop-shadow-sm" />
-            </div>
-            <h1 className="text-2xl font-semibold text-white drop-shadow-md">Launchpad</h1>
-            <p className="text-sm text-white/60 mt-1.5 drop-shadow-sm">Ecom Landers Command Centre</p>
-            {isStaging() && (
-              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/15 px-3 py-1 backdrop-blur-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-                <span className="text-2xs font-semibold uppercase tracking-wider text-warning drop-shadow-sm">
-                  Sandbox · not the live build
-                </span>
-              </div>
-            )}
+      <div
+        className={`min-h-screen flex bg-background transition-opacity duration-500 ${
+          entering ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        {/* ── Left: form ── */}
+        <div className="flex flex-1 flex-col justify-between px-6 py-12 sm:px-12 lg:px-16">
+          {/* Logo top-left */}
+          <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="Ecom Landers" className="h-5 brightness-0 invert" />
           </div>
 
-          {/* Frosted glass login card */}
-          <div className="bg-surface/10 border border-white/20 rounded-2xl p-6 backdrop-blur-2xl shadow-[0_8px_60px_rgba(0,0,0,0.3)]">
+          {/* Form bottom-left */}
+          <div className="w-full max-w-sm">
+            {isStaging() && (
+              <p className="mb-3 text-2xs font-semibold uppercase tracking-[0.14em] text-warning">
+                Sandbox build
+              </p>
+            )}
             {mode === "credentials" ? (
-              resetSent ? (
-                <div className="text-center py-4">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/20 border border-success/30 mb-4">
-                    <svg className="w-6 h-6 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 7 9 6 9-6M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9-4 9 4" /></svg>
-                  </div>
-                  <p className="text-sm text-white font-medium">Check your email</p>
-                  <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
-                    We sent a password reset link to<br />
-                    <span className="text-white/80">{email.trim().toLowerCase()}</span>
-                  </p>
-                  <button
-                    onClick={() => { setResetSent(false); setResetError(""); }}
-                    className="text-xs text-white/40 hover:text-white/70 mt-5 transition-colors"
-                  >
-                    Back to sign in
-                  </button>
-                </div>
-              ) : (
+              <>
+                <Heading
+                  title={<><span className="text-foreground/60">Welcome to</span> Launchpad</>}
+                  subtitle="The operating system for the ecomlanders team."
+                />
                 <form onSubmit={signInWithCredentials} className="space-y-4">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setNotAllowed(false); setCredentialsError(""); }}
+                    placeholder="Enter your email"
+                    autoFocus
+                    className={AUTH_INPUT}
+                  />
                   <div>
-                    <label className="block text-[11px] uppercase tracking-[0.12em] text-white/50 mb-2 font-medium">Email</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); setNotAllowed(false); setCredentialsError(""); }}
-                      placeholder="you@ecomlanders.com"
-                      autoFocus
-                      className="w-full px-4 py-3 bg-surface/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] uppercase tracking-[0.12em] text-white/50 mb-2 font-medium">Password</label>
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); setCredentialsError(""); }}
-                      placeholder="••••••••"
-                      className="w-full px-4 py-3 bg-surface/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
+                      placeholder="Enter your password"
+                      className={AUTH_INPUT}
                     />
                     {notAllowed && (
-                      <p className="text-xs text-warning mt-2 leading-relaxed">
+                      <p className="mt-2 text-xs text-warning leading-relaxed">
                         That email isn&apos;t on the team list. Ask an admin to invite you.
                       </p>
                     )}
-                    {credentialsError && (
-                      <p className="text-xs text-danger mt-2">{credentialsError}</p>
-                    )}
-                    {resetError && (
-                      <p className="text-xs text-warning mt-2">{resetError}</p>
-                    )}
+                    {credentialsError && <p className="mt-2 text-xs text-danger">{credentialsError}</p>}
                   </div>
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="w-full px-4 py-3 bg-white text-background text-sm font-semibold rounded-xl hover:bg-foreground active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)] disabled:opacity-60"
-                  >
-                    {sending ? "Signing in..." : "Sign in"}
+                  <button type="submit" disabled={sending} className={AUTH_BTN}>
+                    {sending ? (
+                      "Entering..."
+                    ) : (
+                      <>
+                        Enter Launchpad
+                        <svg
+                          className="size-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M7 17 17 7" />
+                          <path d="M8 7h9v9" />
+                        </svg>
+                      </>
+                    )}
                   </button>
-                  <div className="flex items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={sendResetEmail}
-                      disabled={sending}
-                      className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
-                    >
-                      Forgot password?
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMode("password"); setCredentialsError(""); setResetError(""); }}
-                      className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
-                    >
-                      Admin access
-                    </button>
-                  </div>
                 </form>
-              )
-            ) : mode === "magic" ? (
-              linkSent ? (
-                <div className="text-center py-4">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/20 border border-success/30 mb-4">
-                    <svg className="w-6 h-6 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 7 9 6 9-6M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9-4 9 4" /></svg>
-                  </div>
-                  <p className="text-sm text-white font-medium">Check your email</p>
-                  <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
-                    We sent a sign-in link to<br />
-                    <span className="text-white/80">{email.trim().toLowerCase()}</span>
-                  </p>
-                  <button
-                    onClick={() => { setLinkSent(false); setEmail(""); }}
-                    className="text-xs text-white/40 hover:text-white/70 mt-5 transition-colors"
-                  >
-                    Use a different email
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={sendMagicLink} className="space-y-4">
-                  <div>
-                    <label className="block text-[11px] uppercase tracking-[0.12em] text-white/50 mb-2 font-medium">Work email</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); setNotAllowed(false); }}
-                      placeholder="you@ecomlanders.com"
-                      autoFocus
-                      className="w-full px-4 py-3 bg-surface/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
-                    />
-                    {notAllowed && (
-                      <p className="text-xs text-warning mt-2 leading-relaxed">
-                        That email isn&apos;t on the team list yet. Ask an admin to invite you.
-                      </p>
-                    )}
-                    {error && (
-                      <p className="text-xs text-danger mt-2">Couldn&apos;t send the link. Try again.</p>
-                    )}
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="w-full px-4 py-3 bg-white text-background text-sm font-semibold rounded-xl hover:bg-foreground active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)] disabled:opacity-60"
-                  >
-                    {sending ? "Sending…" : "Email me a sign-in link"}
-                  </button>
-                  <div className="flex items-center justify-center gap-3 text-[11px] text-white/40">
-                    <button
-                      type="button"
-                      onClick={() => setMode("credentials")}
-                      className="hover:text-white/70 transition-colors"
-                    >
-                      Use password
-                    </button>
-                    <span className="text-white/20">·</span>
-                    <button
-                      type="button"
-                      onClick={() => setMode("password")}
-                      className="hover:text-white/70 transition-colors"
-                    >
-                      Admin access
-                    </button>
-                  </div>
-                </form>
-              )
+                <button
+                  type="button"
+                  onClick={() => setMode("password")}
+                  className="mt-4 text-sm text-muted transition-colors hover:text-foreground"
+                >
+                  Admin access
+                </button>
+              </>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-[11px] uppercase tracking-[0.12em] text-white/50 mb-2 font-medium">Access code</label>
-                  <div className={`relative ${shaking ? "animate-[shake_0.5s_ease-in-out]" : ""}`}>
+              <>
+                <Heading title="Admin access" subtitle="Enter your access code to continue." />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className={shaking ? "animate-[shake_0.5s_ease-in-out]" : ""}>
                     <input
                       type="password"
                       value={input}
-                      onChange={(e) => {
-                        setInput(e.target.value);
-                        setError(false);
-                      }}
+                      onChange={(e) => { setInput(e.target.value); setError(false); }}
                       placeholder="Enter access code"
                       autoFocus
-                      className={`w-full px-4 py-3 bg-surface/10 border rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm ${
-                        error
-                          ? "border-danger/50 focus:border-danger/70"
-                          : "border-white/15 focus:border-white/40"
-                      }`}
+                      className={`${AUTH_INPUT} ${error ? "border-danger/60 focus:border-danger" : ""}`}
                     />
-                    {input.length > 0 && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                        {Array.from({ length: Math.min(input.length, 8) }).map((_, i) => (
-                          <div key={i} className="w-1.5 h-1.5 rounded-full bg-surface/50 animate-[fadeIn_0.15s_ease-out]" />
-                        ))}
-                      </div>
-                    )}
                   </div>
-                  {error && (
-                    <p className="text-xs text-danger mt-2 flex items-center gap-1.5">
-                      <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" /></svg>
-                      Incorrect code
-                    </p>
-                  )}
-                </div>
-                <button
-                  type="submit"
-                  className="w-full px-4 py-3 bg-white text-background text-sm font-semibold rounded-xl hover:bg-foreground active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
-                >
-                  Continue
-                </button>
-                <div className="flex items-center justify-center text-[11px] text-white/40">
-                  <button
-                    type="button"
-                    onClick={() => setMode("credentials")}
-                    className="hover:text-white/70 transition-colors"
-                  >
-                    Email and password
+                  {error && <p className="text-xs text-danger">Incorrect code. Try again.</p>}
+                  <button type="submit" className={AUTH_BTN}>
+                    Continue
                   </button>
-                </div>
-              </form>
+                </form>
+                <button
+                  type="button"
+                  onClick={() => setMode("credentials")}
+                  className="mt-6 text-sm text-muted transition-colors hover:text-foreground"
+                >
+                  Back to sign in
+                </button>
+              </>
             )}
           </div>
+        </div>
 
-          {/* Footer */}
-          <p className="text-center text-[10px] text-white/30 mt-8 tracking-wider drop-shadow-sm">
-            ECOM LANDERS &middot; CONVERSION ENGINE
-          </p>
-          </div>
+        {/* ── Right: image with overlaid headline ── */}
+        <div className="relative hidden md:block md:w-[45%] m-3 rounded overflow-hidden border border-border-faint">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/login-final-v3.gif" alt="" className="absolute inset-0 h-full w-full object-cover" />
         </div>
       </div>
     );
@@ -663,5 +473,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         {children}
       </CurrentUserContext.Provider>
     </RoleContext.Provider>
+  );
+}
+
+function Heading({ title, subtitle }: { title: React.ReactNode; subtitle: string }) {
+  return (
+    <div className="mb-7">
+      <h1 className="text-xl font-medium text-foreground">{title}</h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{subtitle}</p>
+    </div>
   );
 }
