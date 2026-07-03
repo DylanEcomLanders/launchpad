@@ -337,6 +337,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     [input, enterAs],
   );
 
+  /* Non-live build indicator. Prefer the env var (isStaging), but also fall
+   * back to the hostname so the sandbox flags itself even when
+   * NEXT_PUBLIC_APP_ENV isn't set on that Vercel project. Never true on the
+   * live custom domain (ecomlanders.app). */
+  const isTestBuild =
+    isStaging() || (typeof window !== "undefined" && /sandbox/i.test(window.location.hostname));
+
   if (checking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -362,9 +369,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
           {/* Form bottom-left */}
           <div className="w-full max-w-sm">
-            {isStaging() && (
+            {isTestBuild && (
               <p className="mb-3 text-2xs font-semibold uppercase tracking-[0.14em] text-warning">
-                Sandbox build
+                Test Build
               </p>
             )}
             {mode === "credentials" ? (
