@@ -22,7 +22,6 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRole } from "@/components/auth-gate";
 import { PasscodeGate } from "@/components/passcode-gate";
@@ -33,12 +32,14 @@ import {
 } from "@heroicons/react/24/outline";
 import PeoplePanel from "./_panels/PeoplePanel";
 import ContractsPanel from "./_panels/ContractsPanel";
+import SettingsPanel from "./_panels/SettingsPanel";
 
-type Tab = "people" | "contracts";
+type Tab = "people" | "contracts" | "settings";
 
 const TABS: { id: Tab; label: string; icon: typeof UserGroupIcon; pathPrefix: string }[] = [
   { id: "people",    label: "People",    icon: UserGroupIcon,     pathPrefix: "/company/people" },
   { id: "contracts", label: "Contracts", icon: DocumentTextIcon,  pathPrefix: "/company/contracts" },
+  { id: "settings",  label: "Settings",  icon: Cog6ToothIcon,     pathPrefix: "/company/settings" },
 ];
 
 const COMPANY_PASSCODE =
@@ -50,6 +51,7 @@ const STORAGE_KEY = "launchpad-company-unlocked";
  * to overview. */
 function tabFromPath(pathname: string): Tab {
   if (pathname.startsWith("/company/contracts")) return "contracts";
+  if (pathname.startsWith("/company/settings")) return "settings";
   /* Everything else (incl. bare /company) lands on People, the default. */
   return "people";
 }
@@ -153,14 +155,6 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
                   </button>
                 );
               })}
-              {/* Settings is outside /company so it stays a Link. */}
-              <Link
-                href="/settings"
-                className="flex items-center gap-2 px-3 py-1.5 text-sm whitespace-nowrap rounded text-muted hover:text-foreground hover:bg-surface-raised transition-colors"
-              >
-                <Cog6ToothIcon className="size-4" />
-                Settings
-              </Link>
             </nav>
           </div>
         </div>
@@ -181,5 +175,6 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
  * switches just toggle which subtree is mounted. */
 function PanelFor({ tab }: { tab: Tab }) {
   if (tab === "contracts") return <ContractsPanel />;
+  if (tab === "settings") return <SettingsPanel />;
   return <PeoplePanel />;
 }

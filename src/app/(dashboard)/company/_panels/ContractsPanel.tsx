@@ -1,50 +1,60 @@
 "use client";
 
-/* ── Contracts admin list ──
- * /company/contracts. All agreements (NDA + Contract) across all people
- * in one flat data table, ordered by lifecycle status then recency. Each
- * row links into the detail page where Dylan counter-signs and copies the
- * signing URL to share with the team member.
- *
- * Header surfaces a "Templates" link (where the master clauses live)
- * and "New agreement" so this page is a standalone hub for the
- * agreement lifecycle.
+/* ── Contracts & NDAs: per-person compliance ──
+ * /company/contracts. One row PER PERSON (not per agreement) so it's
+ * instantly clear who has and hasn't signed. The NDA lives as a clause
+ * inside the contract, so a single signature covers both: one "Agreement"
+ * column per person. The cell links into the agreement detail page (view /
+ * counter-sign / copy signing URL). "Missing" flags a person with no
+ * agreement on file.
  */
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { DocumentTextIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { agreementStore } from "@/lib/agreements/data";
 import { peopleStore } from "@/lib/company/data";
+import { deptColor, initials } from "@/lib/company/ui";
 import type { Agreement, AgreementStatus } from "@/lib/agreements/types";
-import { AGREEMENT_STATUS_META, AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
 import type { Person } from "@/lib/company/types";
 import { QuickAddAgreementModal } from "@/components/agreements/quick-add-modal";
-import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
+import { Table, THead, TBody, TR, TH, TD, Badge } from "@/components/ui";
 
-const STATUS_ORDER: AgreementStatus[] = [
-  "team_signed",
-  "sent",
-  "draft",
-  "counter_signed",
-  "active",
-  "terminated",
-];
+type Tone = "success" | "warning" | "danger" | "neutral";
+type Compliance = { label: string; tone: Tone; viewId: string | null; signed: boolean };
 
-/* Status = the only colour in the table body: a quiet Badge (subtle bg,
- * muted text, one leading dot). Tones map to the MUTED status palette,
- * never the loud danger/warning/success on the value. The label copy
- * stays sourced from AGREEMENT_STATUS_META so it remains canonical. */
-type StatusTone = "success" | "warning" | "danger" | "neutral";
-const STATUS_TONE: Record<AgreementStatus, StatusTone> = {
-  draft: "neutral",
-  sent: "warning",
-  team_signed: "warning",
-  counter_signed: "neutral",
-  active: "success",
-  terminated: "danger",
+/* Higher rank = further along, so the "best" agreement wins when a person
+ * has more than one on file (e.g. an old draft plus a live contract). NDAs
+ * are folded into the contract now, but any legacy standalone NDA still
+ * counts toward "signed" so nobody reads as a false gap. */
+const STATUS_RANK: Record<AgreementStatus, number> = {
+  terminated: 0,
+  draft: 1,
+  sent: 2,
+  team_signed: 3,
+  counter_signed: 4,
+  active: 5,
 };
+
+/* "Signed" = the person has put pen to paper (team_signed or beyond). */
+function compliance(a: Agreement | null): Compliance {
+  if (!a) return { label: "Missing", tone: "danger", viewId: null, signed: false };
+  switch (a.status) {
+    case "active":
+    case "counter_signed":
+    case "team_signed":
+      return { label: "Signed", tone: "success", viewId: a.id, signed: true };
+    case "sent":
+      return { label: "Awaiting signature", tone: "warning", viewId: a.id, signed: false };
+    case "draft":
+      return { label: "Draft", tone: "neutral", viewId: a.id, signed: false };
+    case "terminated":
+      return { label: "Terminated", tone: "danger", viewId: a.id, signed: false };
+    default:
+      return { label: "Missing", tone: "danger", viewId: null, signed: false };
+  }
+}
 
 export default function ContractsPanel() {
   const router = useRouter();
@@ -52,7 +62,8 @@ export default function ContractsPanel() {
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<"all" | AgreementStatus>("all");
+  const [query, setQuery] = useState("");
+  const [gapFilter, setGapFilter] = useState<"all" | "outstanding">("all");
 
   useEffect(() => {
     Promise.all([agreementStore.getAll(), peopleStore.getAll()]).then(([a, p]) => {
@@ -64,76 +75,63 @@ export default function ContractsPanel() {
 
   function onQuickAddCreated(created: Agreement[]) {
     setQuickAddOpen(false);
-    /* Optimistic: merge the new agreements into local state so the
-     * list reflects the change without waiting for a refetch. */
     setAgreements((prev) => [...created, ...prev]);
-    /* If we created exactly one agreement, deep-link straight to its
-     * detail page (the user is most likely about to copy the signing
-     * URL). If we created two (typical NDA + contract case), stay on
-     * the list so they can copy both URLs at their own pace. */
-    if (created.length === 1) {
-      router.push(`/company/contracts/${created[0].id}`);
-    }
+    if (created.length === 1) router.push(`/company/contracts/${created[0].id}`);
   }
 
-  const peopleById = useMemo(() => {
-    const m = new Map<string, Person>();
-    for (const p of people) m.set(p.id, p);
-    return m;
-  }, [people]);
-
-  const grouped = useMemo(() => {
-    const m: Record<AgreementStatus, Agreement[]> = {
-      draft: [],
-      sent: [],
-      team_signed: [],
-      counter_signed: [],
-      active: [],
-      terminated: [],
-    };
-    for (const a of agreements) m[a.status].push(a);
-    /* Within a status, sort by most recently updated so the freshest
-     * rows surface first. */
-    for (const k of Object.keys(m) as AgreementStatus[]) {
-      m[k].sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""));
-    }
-    return m;
-  }, [agreements]);
-
-  /* Flatten into one ordered list: lifecycle order first (STATUS_ORDER),
-   * recency within each status. The table replaces the per-status card
-   * grids so all agreements read as one dense, ordered surface. */
+  /* One compliance row per current person: their best agreement of any kind
+   * (the combined contract+NDA doc, or a legacy standalone if that's all
+   * they have). */
   const rows = useMemo(() => {
-    const flat: Agreement[] = [];
-    for (const status of STATUS_ORDER) flat.push(...grouped[status]);
-    if (statusFilter === "all") return flat;
-    return flat.filter((a) => a.status === statusFilter);
-  }, [grouped, statusFilter]);
+    const best = new Map<string, Agreement | null>();
+    for (const p of people) best.set(p.id, null);
+    for (const a of agreements) {
+      if (!best.has(a.person_id)) continue;
+      const cur = best.get(a.person_id) ?? null;
+      if (!cur || STATUS_RANK[a.status] > STATUS_RANK[cur.status]) best.set(a.person_id, a);
+    }
+    return people
+      .filter((p) => p.status !== "left")
+      .map((p) => ({ person: p, agreement: compliance(best.get(p.id) ?? null) }));
+  }, [people, agreements]);
+
+  const stats = useMemo(() => {
+    const signed = rows.filter((r) => r.agreement.signed).length;
+    return { total: rows.length, signed, outstanding: rows.length - signed };
+  }, [rows]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (gapFilter === "outstanding" && r.agreement.signed) return false;
+      if (!q) return true;
+      return `${r.person.full_name} ${r.person.preferred_name || ""} ${r.person.job_title || ""}`
+        .toLowerCase()
+        .includes(q);
+    });
+  }, [rows, query, gapFilter]);
 
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="h-8 w-56 bg-surface rounded animate-pulse" />
-        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-24 bg-surface rounded border border-border-faint animate-pulse" />
+          <div className="h-24 bg-surface rounded border border-border-faint animate-pulse" />
+        </div>
+        <div className="h-64 bg-surface rounded border border-border-faint animate-pulse" />
       </div>
     );
   }
-
-  const total = agreements.length;
-  const awaitingCounter = grouped.team_signed.length;
-  const awaitingTeam = grouped.sent.length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-foreground">
-            Contracts & NDAs
-          </h1>
+          <h1 className="text-lg font-semibold text-foreground">Contracts &amp; NDAs</h1>
           <p className="text-2xs text-subtle mt-0.5">
-            {total} total · {awaitingCounter} awaiting your counter-sign ·{" "}
-            {awaitingTeam} awaiting team member
+            Signing status for everyone on the team. One agreement covers contract and NDA.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -154,92 +152,87 @@ export default function ContractsPanel() {
         </div>
       </div>
 
-      {total === 0 ? (
-        <div className="bg-surface border border-border-faint rounded py-16 text-center">
-          <p className="text-sm text-subtle">No agreements yet.</p>
-          <button
-            onClick={() => setQuickAddOpen(true)}
-            className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+      {/* Compliance stat tiles */}
+      <div className="grid grid-cols-2 gap-3">
+        <StatTile
+          label="Agreements signed"
+          value={`${stats.signed}`}
+          total={stats.total}
+          alert={stats.signed < stats.total}
+        />
+        <StatTile label="Outstanding" value={`${stats.outstanding}`} alert={stats.outstanding > 0} />
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-subtle tabular-nums mr-1">
+            {filtered.length} of {rows.length}
+          </span>
+          <select
+            value={gapFilter}
+            onChange={(e) => setGapFilter(e.target.value as typeof gapFilter)}
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
-            <PlusIcon className="size-3.5" />
-            New agreement
-          </button>
+            <option value="all">Everyone</option>
+            <option value="outstanding">Outstanding only</option>
+          </select>
+        </div>
+        <div className="relative w-full md:w-64">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
+          <input
+            placeholder="Search name or title"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-8 w-full pl-8 pr-3 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+          />
+        </div>
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
+          <p className="text-sm text-subtle">No team members yet.</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
+          <p className="text-sm text-subtle">No one matches this filter.</p>
         </div>
       ) : (
-        <>
-          {/* Toolbar: count + status filter left, no search (small dataset). */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-subtle tabular-nums mr-1">
-                {rows.length} of {total}
-              </span>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as "all" | AgreementStatus)}
-                className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[200px]"
-              >
-                <option value="all">All statuses</option>
-                {STATUS_ORDER.map((s) => (
-                  <option key={s} value={s}>
-                    {AGREEMENT_STATUS_META[s].label} ({grouped[s].length})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {rows.length === 0 ? (
-            <div className="bg-surface border border-border-faint rounded py-16 text-center">
-              <p className="text-sm text-subtle">No agreements match this filter.</p>
-            </div>
-          ) : (
-            <div className="bg-surface border border-border-faint rounded overflow-x-auto">
-              <Table>
-                <THead>
-                  <TR hover={false}>
-                    <TH>Agreement</TH>
-                    <TH>For</TH>
-                    <TH>Kind</TH>
-                    <TH>Status</TH>
-                    <TH align="right">Updated</TH>
-                  </TR>
-                </THead>
-                <TBody>
-                  {rows.map((a) => {
-                    const person = peopleById.get(a.person_id);
-                    return (
-                      <TR key={a.id}>
-                        <TD className="max-w-[280px]">
-                          <Link
-                            href={`/company/contracts/${a.id}`}
-                            className="text-foreground hover:underline truncate block"
-                          >
-                            {a.template_body.title}
-                          </Link>
-                        </TD>
-                        <TD className="text-muted truncate max-w-[200px]">
-                          {a.person_full_name}
-                          <span className="ml-1.5 text-2xs text-subtle">
-                            {a.person_job_title || person?.job_title || "-"}
-                          </span>
-                        </TD>
-                        <TD className="text-muted">{AGREEMENT_KIND_LABEL[a.kind]}</TD>
-                        <TD>
-                          <Badge tone={STATUS_TONE[a.status]}>
-                            {AGREEMENT_STATUS_META[a.status].label}
-                          </Badge>
-                        </TD>
-                        <TD align="right" className="text-muted">
-                          <Num>{fmtRel(a.updated_at)}</Num>
-                        </TD>
-                      </TR>
-                    );
-                  })}
-                </TBody>
-              </Table>
-            </div>
-          )}
-        </>
+        <div className="bg-surface border border-border-faint rounded overflow-x-auto">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Person</TH>
+                <TH>Title</TH>
+                <TH>Agreement</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {filtered.map((r) => (
+                <TR key={r.person.id}>
+                  <TD className="max-w-[240px]">
+                    <Link
+                      href={`/company/people/${r.person.id}`}
+                      className="flex items-center gap-2.5 text-foreground hover:underline truncate"
+                    >
+                      <span
+                        className="inline-flex items-center justify-center size-5 rounded-full text-4xs font-medium text-white shrink-0"
+                        style={{ background: deptColor(r.person.department) }}
+                      >
+                        {initials(r.person.full_name)}
+                      </span>
+                      <span className="truncate">{r.person.preferred_name || r.person.full_name}</span>
+                    </Link>
+                  </TD>
+                  <TD className="text-muted truncate max-w-[200px]">{r.person.job_title || "Not set"}</TD>
+                  <TD>
+                    <ComplianceCell c={r.agreement} />
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </div>
       )}
 
       <QuickAddAgreementModal
@@ -253,19 +246,35 @@ export default function ContractsPanel() {
   );
 }
 
-function fmtRel(iso: string): string {
-  const ts = new Date(iso).getTime();
-  if (Number.isNaN(ts)) return "-";
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return "today";
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks}w ago`;
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
+/* Signed/sent cells are clickable to view the document; "Missing" is inert. */
+function ComplianceCell({ c }: { c: Compliance }) {
+  const badge = <Badge tone={c.tone}>{c.label}</Badge>;
+  if (!c.viewId) return badge;
+  return (
+    <Link href={`/company/contracts/${c.viewId}`} className="inline-flex hover:opacity-80 transition-opacity">
+      {badge}
+    </Link>
+  );
+}
+
+function StatTile({
+  label,
+  value,
+  total,
+  alert,
+}: {
+  label: string;
+  value: string;
+  total?: number;
+  alert?: boolean;
+}) {
+  return (
+    <div className="bg-surface border border-border-faint rounded p-5">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
+      <div className={`mt-2 text-xl font-semibold tabular-nums ${alert ? "text-status-late" : "text-foreground"}`}>
+        {value}
+        {total !== undefined && <span className="text-subtle font-normal"> / {total}</span>}
+      </div>
+    </div>
+  );
 }

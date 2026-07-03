@@ -451,7 +451,7 @@ export function Sidebar() {
     // Footer / system.
     { label: shortcutsItem.label, href: shortcutsItem.href, group: "System", icon: shortcutsItem.icon, keywords: ["quick", "tools", "favorites"] },
     { label: "Changelog", href: "/changelog", group: "System" },
-    ...(role === "admin" ? [{ label: "Settings", href: "/settings", group: "System" }] : []),
+    ...(role === "admin" ? [{ label: "Settings", href: "/company/settings", group: "System" }] : []),
   ];
 
   /* Independent toggle — each section opens/closes on its own, so several
