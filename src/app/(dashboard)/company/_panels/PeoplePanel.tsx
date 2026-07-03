@@ -494,7 +494,12 @@ function PersonAvatar({
  * column (text-foreground, avatar + name); every other cell is muted.
  * Status is the only colour, via the Badge primitive. Pod is folded in
  * as a muted column with a tiny data-viz dept dot. */
-const ROLE_LABEL: Record<AppUserRole, string> = { admin: "Admin", cro: "CRO", team: "Member" };
+/* Two access levels only: Admin or Member. A legacy `cro` role displays as
+ * Member and collapses to `team` if the admin changes it. */
+const ACCESS_OPTIONS: { value: AppUserRole; label: string }[] = [
+  { value: "admin", label: "Admin" },
+  { value: "team", label: "Member" },
+];
 
 /* Inline access-role selector. Only people with an app_users account can have
  * a role; the rest show a muted dash (invite them first). */
@@ -506,15 +511,16 @@ function AccessCell({
   onChange: (id: string, role: AppUserRole) => void;
 }) {
   if (!appUser) return <span className="text-subtle">-</span>;
+  const value: AppUserRole = appUser.role === "admin" ? "admin" : "team";
   return (
     <select
-      value={appUser.role}
+      value={value}
       onChange={(e) => onChange(appUser.id, e.target.value as AppUserRole)}
       className="h-7 px-2 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
     >
-      {(Object.keys(ROLE_LABEL) as AppUserRole[]).map((r) => (
-        <option key={r} value={r}>
-          {ROLE_LABEL[r]}
+      {ACCESS_OPTIONS.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
         </option>
       ))}
     </select>
