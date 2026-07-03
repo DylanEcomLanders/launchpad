@@ -27,27 +27,18 @@ import { usePathname, useRouter } from "next/navigation";
 import { useRole } from "@/components/auth-gate";
 import { PasscodeGate } from "@/components/passcode-gate";
 import {
-  InboxIcon,
   UserGroupIcon,
-  BriefcaseIcon,
   Cog6ToothIcon,
-  Squares2X2Icon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
-import InboxPanel from "./_panels/InboxPanel";
 import PeoplePanel from "./_panels/PeoplePanel";
-import HiringPanel from "./_panels/HiringPanel";
-import PodsPanel from "./_panels/PodsPanel";
 import ContractsPanel from "./_panels/ContractsPanel";
 
-type Tab = "inbox" | "people" | "pods" | "contracts" | "hiring";
+type Tab = "people" | "contracts";
 
-const TABS: { id: Tab; label: string; icon: typeof InboxIcon; pathPrefix: string }[] = [
-  { id: "inbox",     label: "Inbox",     icon: InboxIcon,         pathPrefix: "/company" },
+const TABS: { id: Tab; label: string; icon: typeof UserGroupIcon; pathPrefix: string }[] = [
   { id: "people",    label: "People",    icon: UserGroupIcon,     pathPrefix: "/company/people" },
-  { id: "pods",      label: "Pods",      icon: Squares2X2Icon,    pathPrefix: "/company/pods" },
   { id: "contracts", label: "Contracts", icon: DocumentTextIcon,  pathPrefix: "/company/contracts" },
-  { id: "hiring",    label: "Hiring",    icon: BriefcaseIcon,     pathPrefix: "/company/hiring" },
 ];
 
 const COMPANY_PASSCODE =
@@ -58,14 +49,9 @@ const STORAGE_KEY = "launchpad-company-unlocked";
  * + initial render. Anything not matching a top-tab prefix falls back
  * to overview. */
 function tabFromPath(pathname: string): Tab {
-  if (pathname.startsWith("/company/people")) return "people";
-  if (pathname.startsWith("/company/pods")) return "pods";
   if (pathname.startsWith("/company/contracts")) return "contracts";
-  if (pathname.startsWith("/company/hiring")) return "hiring";
-  /* /company/structure still resolves to Inbox since it isn't a top
-   * tab anymore - the layout treats it as a detail route and renders
-   * {children}. */
-  return "inbox";
+  /* Everything else (incl. bare /company) lands on People, the default. */
+  return "people";
 }
 
 /* Detail routes own the body — layout yields to {children}. Anything
@@ -143,12 +129,12 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
         {/* Header sits flush with the page bg. Plain white title,
          * subtle active-tab tint, no gradient theatrics. */}
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
-            <h1 className="text-2xl font-semibold text-foreground mb-1">Admin</h1>
+          <div className="px-6 md:px-10 pt-6 pb-0">
+            <h1 className="text-2xl font-semibold text-foreground mb-1">Company</h1>
             <p className="text-sm text-subtle mb-5">
-              People, structure, hiring, contracts, settings - everything about running Ecom Landers itself.
+              Your team, their contracts, and how Ecom Landers is structured.
             </p>
-            <nav className="flex gap-1 overflow-x-auto pb-3">
+            <nav className="flex gap-0.5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {TABS.map((tab) => {
                 const active = activeTab === tab.id;
                 const Icon = tab.icon;
@@ -156,10 +142,10 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
                   <button
                     key={tab.id}
                     onClick={() => pickTab(tab.id)}
-                    className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-all ${
+                    className={`flex items-center gap-2 px-3 py-1.5 text-sm whitespace-nowrap rounded transition-colors ${
                       active
-                        ? "bg-surface-raised text-foreground font-medium ring-1 ring-border"
-                        : "text-subtle hover:text-foreground hover:bg-surface-hover"
+                        ? "bg-surface-raised text-foreground font-medium"
+                        : "text-muted hover:text-foreground hover:bg-surface-raised"
                     }`}
                   >
                     <Icon className="size-4" />
@@ -170,7 +156,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
               {/* Settings is outside /company so it stays a Link. */}
               <Link
                 href="/settings"
-                className="flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full text-subtle hover:text-foreground hover:bg-surface-hover transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm whitespace-nowrap rounded text-muted hover:text-foreground hover:bg-surface-raised transition-colors"
               >
                 <Cog6ToothIcon className="size-4" />
                 Settings
@@ -178,7 +164,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
             </nav>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 py-6 relative">
+        <div className="px-6 md:px-10 py-6 relative">
           {onDetail ? (
             children
           ) : (
@@ -194,16 +180,6 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
  * its useEffect hooks run on mount, not on every tab switch - tab
  * switches just toggle which subtree is mounted. */
 function PanelFor({ tab }: { tab: Tab }) {
-  switch (tab) {
-    case "people":
-      return <PeoplePanel />;
-    case "pods":
-      return <PodsPanel />;
-    case "contracts":
-      return <ContractsPanel />;
-    case "hiring":
-      return <HiringPanel />;
-    default:
-      return <InboxPanel />;
-  }
+  if (tab === "contracts") return <ContractsPanel />;
+  return <PeoplePanel />;
 }

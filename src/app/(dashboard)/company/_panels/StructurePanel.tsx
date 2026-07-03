@@ -18,6 +18,7 @@ import "@xyflow/react/dist/style.css";
 import { peopleStore, nowISO } from "@/lib/company/data";
 import { type Person, DEPARTMENTS } from "@/lib/company/types";
 import { initials, deptColor } from "@/lib/company/ui";
+import { EnvelopeIcon, MapPinIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
 const NODE_W = 220;
@@ -102,7 +103,7 @@ export default function StructurePanel() {
         source: p.reports_to!,
         target: p.id,
         type: "smoothstep",
-        style: { stroke: "#C5C5C5", strokeWidth: 1.5 },
+        style: { stroke: "var(--color-border)", strokeWidth: 1.5 },
       }));
   }, [people]);
 
@@ -171,18 +172,18 @@ export default function StructurePanel() {
   const previewPerson = previewId ? people.find((p) => p.id === previewId) : null;
 
   if (!hydrated) {
-    return <div className="h-96 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-surface rounded-lg border border-border animate-pulse" />;
   }
 
   if (people.length === 0) {
     return (
-      <div className="bg-background border border-dashed border-border rounded-xl p-12 text-center">
+      <div className="bg-surface border border-dashed border-border rounded-lg p-12 text-center">
         <div className="text-sm text-subtle mb-3">
           No people yet - add team members to see the org chart.
         </div>
         <Link
           href="/company/people"
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface text-background text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-xs font-medium rounded-md hover:opacity-90"
         >
           Go to People
         </Link>
@@ -191,7 +192,7 @@ export default function StructurePanel() {
   }
 
   return (
-    <div className="bg-background border border-border rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]" style={{ height: "75vh" }}>
+    <div className="bg-surface border border-border rounded-lg overflow-hidden" style={{ height: "75vh" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -201,28 +202,28 @@ export default function StructurePanel() {
         fitView
         proOptions={{ hideAttribution: true }}
       >
-        <Background color="#E5E5EA" gap={16} />
+        <Background color="var(--color-border)" gap={16} />
         <Controls position="bottom-right" />
         <MiniMap nodeColor={(n) => deptColor((n.data as { person: Person })?.person?.department)} pannable zoomable />
-        <Panel position="top-left" className="bg-background border border-border rounded-lg p-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+        <Panel position="top-left" className="bg-surface-raised border border-border rounded-lg p-2">
           <div className="flex items-center gap-2">
             <button
               onClick={resetLayout}
-              className="px-2 py-1 text-xs text-foreground hover:bg-background rounded"
+              className="px-2 py-1 text-2xs font-medium text-muted hover:text-foreground transition-colors rounded-md"
             >
               Reset layout
             </button>
           </div>
         </Panel>
-        <Panel position="top-right" className="bg-background border border-border rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-w-[220px]">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-subtle mb-2">
+        <Panel position="top-right" className="bg-surface-raised border border-border rounded-lg p-3 max-w-[220px]">
+          <div className="text-2xs uppercase tracking-wider font-medium text-subtle mb-2">
             Departments
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {DEPARTMENTS.map((d) => (
               <div key={d} className="flex items-center gap-2 text-xs">
                 <span className="size-2 rounded-full" style={{ background: deptColor(d) }} />
-                <span className="text-subtle">{d}</span>
+                <span className="text-muted">{d}</span>
               </div>
             ))}
           </div>
@@ -239,11 +240,11 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
   return (
     <div
       onClick={onOpen}
-      className="bg-background border border-border rounded-lg p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] hover:border-border transition-colors cursor-pointer"
+      className="bg-surface-raised border border-border rounded-lg p-3 hover:bg-surface-hover transition-colors cursor-pointer overflow-hidden"
       style={{ width: NODE_W, height: NODE_H }}
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-      <div className="absolute top-0 left-0 right-0 h-1 rounded-t" style={{ background: deptColor(person.department) }} />
+      <div className="absolute top-0 left-0 right-0 h-1" style={{ background: deptColor(person.department) }} />
       <div className="flex items-start gap-2 pt-1">
         {person.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -260,7 +261,7 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
           <div className="text-sm font-medium text-foreground truncate">
             {person.preferred_name || person.full_name}
           </div>
-          <div className="text-[11px] text-subtle truncate">{person.job_title || "—"}</div>
+          <div className="text-2xs text-subtle truncate">{person.job_title || "-"}</div>
         </div>
       </div>
       <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
@@ -270,7 +271,7 @@ function PersonNode({ data }: { data: { person: Person; onOpen: () => void } }) 
 
 function PreviewPanel({ person, onClose }: { person: Person; onClose: () => void }) {
   return (
-    <div className="absolute right-4 top-4 bg-background border border-border rounded-xl p-4 shadow-2xl w-72 z-10">
+    <div className="absolute right-4 top-4 bg-surface-raised border border-border rounded-lg p-4 w-72 z-10">
       <div className="flex items-start gap-3 mb-3">
         {person.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -284,26 +285,36 @@ function PreviewPanel({ person, onClose }: { person: Person; onClose: () => void
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-foreground truncate">{person.full_name}</div>
-          <div className="text-xs text-subtle truncate">{person.job_title || "—"}</div>
+          <div className="text-sm font-medium text-foreground truncate">{person.full_name}</div>
+          <div className="text-xs text-subtle truncate">{person.job_title || "-"}</div>
         </div>
-        <button onClick={onClose} className="text-subtle hover:text-foreground text-lg leading-none">
-          ×
+        <button onClick={onClose} className="text-subtle hover:text-foreground transition-colors">
+          <XMarkIcon className="size-4" />
         </button>
       </div>
-      <div className="space-y-1.5 text-xs text-subtle">
+      <div className="space-y-2 text-xs text-muted">
         {person.department && (
           <div className="flex items-center gap-1.5">
             <span className="size-2 rounded-full" style={{ background: deptColor(person.department) }} />
             {person.department}
           </div>
         )}
-        {person.email && <div>📧 {person.email}</div>}
-        {person.location && <div>📍 {person.location}</div>}
+        {person.email && (
+          <div className="flex items-center gap-1.5">
+            <EnvelopeIcon className="size-4 text-subtle shrink-0" />
+            <span className="truncate">{person.email}</span>
+          </div>
+        )}
+        {person.location && (
+          <div className="flex items-center gap-1.5">
+            <MapPinIcon className="size-4 text-subtle shrink-0" />
+            <span className="truncate">{person.location}</span>
+          </div>
+        )}
       </div>
       <Link
         href={`/company/people/${person.id}`}
-        className="mt-3 block text-center text-sm bg-foreground text-background py-2 rounded-lg hover:opacity-90"
+        className="mt-4 block text-center text-xs font-medium bg-foreground text-background py-2 rounded-md hover:opacity-90 transition-opacity"
       >
         Open profile →
       </Link>

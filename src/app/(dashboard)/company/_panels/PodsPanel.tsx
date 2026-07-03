@@ -84,7 +84,7 @@ export default function PodsPanel() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="h-64 bg-background rounded-2xl animate-pulse" />
+          <div key={i} className="h-64 bg-surface border border-border rounded-lg animate-pulse" />
         ))}
       </div>
     );
@@ -101,24 +101,24 @@ export default function PodsPanel() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {/* Top callout: unlinked Persons. Only shows if there are some -
        * silent when everyone's slotted. */}
       {unlinked.length > 0 && (
-        <div className="bg-warning/[0.06] rounded-xl ring-1 ring-warning/20 p-4 flex items-start gap-3">
+        <div className="bg-warning/10 border border-warning/20 rounded-lg p-5 flex items-start gap-3">
           <UserGroupIcon className="size-5 text-warning shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-warning mb-0.5">
+            <div className="text-sm font-medium text-warning mb-0.5">
               {unlinked.length} {unlinked.length === 1 ? "person isn't" : "people aren't"} on a pod yet
             </div>
-            <div className="text-[12px] text-warning/80">
+            <div className="text-xs text-warning/80">
               {unlinked
                 .slice(0, 6)
                 .map((p) => p.preferred_name || p.full_name)
                 .join(" · ")}
               {unlinked.length > 6 && ` · +${unlinked.length - 6} more`}
             </div>
-            <div className="text-[11px] text-warning/60 mt-1">
+            <div className="text-2xs text-warning/60 mt-1">
               Slot them into a pod below, or leave unassigned if they don't deliver work (founders, ops, etc.).
             </div>
           </div>
@@ -126,23 +126,23 @@ export default function PodsPanel() {
       )}
 
       <div className="flex items-center justify-between">
-        <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
+        <div className="text-2xs uppercase tracking-wider text-subtle font-medium tabular-nums">
           {pods.length} pod{pods.length === 1 ? "" : "s"}
         </div>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
         >
-          <PlusIcon className="size-3.5" />
+          <PlusIcon className="size-4" />
           New pod
         </button>
       </div>
 
       {pods.length === 0 ? (
-        <div className="bg-background rounded-2xl ring-1 ring-border p-12 text-center">
+        <div className="bg-surface border border-border rounded-lg p-12 text-center">
           <UserGroupIcon className="size-8 text-subtle mx-auto mb-3" />
           <p className="text-sm text-foreground mb-1">No pods yet.</p>
-          <p className="text-[12px] text-subtle">
+          <p className="text-xs text-subtle">
             Create your first pod above. Slot Persons from /company/people into Strategist / Designer / Developer / Copy roles. Kanban + KPIs read from here.
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function PodsPanel() {
         </div>
       )}
 
-      <p className="text-[11px] text-subtle italic">
+      <p className="text-2xs text-subtle italic">
         Pods defined here are the canonical roster. Kanban project assignment + KPI attribution + retention CSM all read from this. Renames in <Link href="/company/people" className="text-foreground hover:underline">/company/people</Link> propagate to every slot below.
       </p>
     </div>
@@ -196,9 +196,9 @@ function PodCard({
   }
 
   return (
-    <div className="bg-background rounded-2xl ring-1 ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+    <div className="bg-surface border border-border rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="p-5 pb-3 border-b border-border">
+      <div className="p-5 pb-3 border-b border-dashed border-border">
         {editingIdentity ? (
           <div className="space-y-2">
             <input
@@ -206,13 +206,13 @@ function PodCard({
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
               placeholder="Pod name"
-              className={`${inputClass} h-8 text-[14px] font-semibold`}
+              className={`${inputClass} h-8 text-sm font-medium`}
             />
             <input
               value={taglineDraft}
               onChange={(e) => setTaglineDraft(e.target.value)}
               placeholder="Tagline (e.g. Barnaby's pod)"
-              className={`${inputClass} h-7 text-[12px]`}
+              className={`${inputClass} h-8 text-xs`}
             />
             <div className="flex items-center justify-end gap-1">
               <button
@@ -238,10 +238,10 @@ function PodCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <UserGroupIcon className="size-4 text-subtle shrink-0" />
-                <h3 className="text-base font-semibold text-foreground truncate">{pod.name}</h3>
+                <h3 className="text-sm font-medium text-foreground truncate">{pod.name}</h3>
               </div>
               {pod.tagline && (
-                <p className="text-[12px] text-subtle mt-0.5 truncate">{pod.tagline}</p>
+                <p className="text-xs text-subtle mt-0.5 truncate">{pod.tagline}</p>
               )}
             </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -267,7 +267,7 @@ function PodCard({
       {/* Slots */}
       <div className="p-5 space-y-2">
         {sortedMembers.length === 0 ? (
-          <p className="text-[12px] italic text-subtle">No slots yet.</p>
+          <p className="text-xs italic text-subtle">No slots yet.</p>
         ) : (
           sortedMembers.map((member) => (
             <SlotRow key={member.id} member={member} onChange={onChange} />
@@ -276,8 +276,8 @@ function PodCard({
 
         {/* Add-slot row */}
         <details className="pt-2">
-          <summary className="text-[10px] uppercase tracking-wider text-subtle hover:text-foreground cursor-pointer inline-flex items-center gap-1">
-            <PlusIcon className="size-3" />
+          <summary className="text-2xs uppercase tracking-wider text-subtle hover:text-foreground cursor-pointer inline-flex items-center gap-1">
+            <PlusIcon className="size-3.5" />
             Add slot
           </summary>
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -285,7 +285,7 @@ function PodCard({
               <button
                 key={role}
                 onClick={() => handleAddSlot(role)}
-                className="px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-surface text-muted hover:bg-surface-raised hover:text-foreground"
+                className="px-2 py-1 rounded-md text-2xs uppercase tracking-wider bg-surface-raised text-muted hover:text-foreground transition-colors"
               >
                 + {ROLE_LABEL[role]}
               </button>
@@ -358,7 +358,7 @@ function SlotRow({
       <select
         value={member.role}
         onChange={(e) => handleRoleChange(e.target.value as PodMemberRole)}
-        className="h-8 px-2 pr-7 rounded-md bg-background ring-1 ring-border text-[11px] uppercase tracking-wider text-muted focus:outline-none focus:ring-ring w-32 shrink-0 cursor-pointer"
+        className="h-8 px-2 pr-7 rounded-md bg-surface-raised border border-border text-2xs uppercase tracking-wider text-muted focus:outline-none focus:border-foreground w-32 shrink-0 cursor-pointer appearance-none"
       >
         {ROLE_ORDER.map((r) => (
           <option key={r} value={r}>

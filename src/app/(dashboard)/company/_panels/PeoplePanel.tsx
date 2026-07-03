@@ -22,7 +22,6 @@ import {
   type EmploymentType,
   type PersonStatus,
   DEPARTMENTS,
-  DEPARTMENT_COLORS,
 } from "@/lib/company/types";
 import { getPods } from "@/lib/pods-v2/data";
 import type { Pod } from "@/lib/pods-v2/types";
@@ -31,19 +30,66 @@ import { inputClass, labelClass, selectClass } from "@/lib/form-styles";
 import { initials, deptColor, STATUS_BADGE } from "@/lib/company/ui";
 import { createContractDraftFromPerson } from "@/lib/agreements/data";
 import { useRouter } from "next/navigation";
+import { Table, THead, TBody, TR, TH, TD, Badge } from "@/components/ui";
 
 type View = "grid" | "table" | "byPod" | "byStatus";
+
+/* Status → Badge tone. Statuses run through the shared Badge primitive
+ * (quiet dot + muted text) exactly like the finance status badges. The
+ * tone maps onto the MUTED status palette inside Badge - never a loud
+ * alarm hue. The label still comes from STATUS_BADGE so copy stays in
+ * one place. */
+type StatusTone = "success" | "warning" | "danger" | "neutral";
+const STATUS_TONE: Record<PersonStatus, StatusTone> = {
+  onboarding: "warning",
+  active: "success",
+  on_leave: "warning",
+  notice: "danger",
+  offboarding: "neutral",
+  left: "neutral",
+};
+
+/* One status-pill atom, used identically in every view (card, pod row,
+ * status group, table). Repeating atoms must be one component - the
+ * shared Badge primitive carries the calm dot + muted text. */
+function StatusPill({ status }: { status: PersonStatus }) {
+  return <Badge tone={STATUS_TONE[status]}>{STATUS_BADGE[status].label}</Badge>;
+}
+
+/* Resolve the pod a person belongs to via pod_member_id. Returns null
+ * for humans not on a delivery pod. One implementation reused by the
+ * table, the card grid and the pod filter. */
+function podForPerson(person: Person, pods: Pod[]): Pod | null {
+  if (!person.pod_member_id) return null;
+  return (
+    pods.find((pd) => pd.members?.some((m) => m.id === person.pod_member_id)) ??
+    null
+  );
+}
+
+/* Department dot - the one dept colour atom. Department colour is
+ * data-viz (colour-coded by dept), so it keeps the existing
+ * DEPARTMENT_COLORS constant via deptColor(). */
+function DeptDot({ dept }: { dept?: string }) {
+  return (
+    <span
+      className="size-1.5 rounded-full shrink-0"
+      style={{ background: deptColor(dept) }}
+    />
+  );
+}
 
 export default function PeoplePanel() {
   const [people, setPeople] = useState<Person[]>([]);
   const [pods, setPods] = useState<Pod[]>([]);
   const [invitedEmails, setInvitedEmails] = useState<Set<string>>(new Set());
   const [hydrated, setHydrated] = useState(false);
-  const [view, setView] = useState<View>("grid");
+  const [view, setView] = useState<View>("table");
   const [query, setQuery] = useState("");
   const [deptFilter, setDeptFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | EmploymentType>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | PersonStatus>("all");
+  const [podFilter, setPodFilter] = useState<string>("all");
   const [showAdd, setShowAdd] = useState(false);
   const router = useRouter();
 
@@ -80,11 +126,19 @@ export default function PeoplePanel() {
       if (deptFilter !== "all" && p.department !== deptFilter) return false;
       if (typeFilter !== "all" && p.employment_type !== typeFilter) return false;
       if (statusFilter !== "all" && p.status !== statusFilter) return false;
+      if (podFilter !== "all") {
+        const pod = podForPerson(p, pods);
+        if (podFilter === "none") {
+          if (pod) return false;
+        } else if (pod?.id !== podFilter) {
+          return false;
+        }
+      }
       if (!q) return true;
       const hay = `${p.full_name} ${p.preferred_name || ""} ${p.job_title || ""} ${p.email || ""}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [people, query, deptFilter, typeFilter, statusFilter]);
+  }, [people, pods, query, deptFilter, typeFilter, statusFilter, podFilter]);
 
   async function handleAdd(
     person: Person,
@@ -113,119 +167,115 @@ export default function PeoplePanel() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Team stats strip - one-glance signal on the team's shape +
-       * who still needs inviting. Sits above the filters so admin
-       * sees the picture before drilling in. */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <StatTile label="Team total" value={stats.total} icon={<UserGroupIcon className="size-4 text-foreground" />} gradient="" />
-        <StatTile label="Active" value={stats.active} icon={<CheckBadgeIcon className="size-4 text-foreground" />} gradient="" />
-        <StatTile label="Onboarding" value={stats.onboarding} icon={<SparklesIcon className="size-4 text-foreground" />} gradient="" />
-        <StatTile label="Awaiting invite" value={stats.awaitingInvite} icon={<EnvelopeIcon className="size-4 text-foreground" />} gradient="" muted={stats.awaitingInvite === 0} />
+       * who still needs inviting. Sits above the toolbar so admin sees
+       * the picture before drilling in. Finance summary-card look. */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatTile label="Team total" value={stats.total} />
+        <StatTile label="Active" value={stats.active} />
+        <StatTile label="Onboarding" value={stats.onboarding} attention={stats.onboarding > 0} />
+        <StatTile label="Awaiting invite" value={stats.awaitingInvite} attention={stats.awaitingInvite > 0} />
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      {/* Toolbar: count + filters + view toggle + add on the left, one
+       * quiet row; search on the right. Matches the finance exemplar. */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative w-56">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
-            <input
-              type="text"
-              placeholder="Search…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={`${inputClass} pl-8`}
-            />
-          </div>
-          <div className="w-44">
-            <select
-              value={deptFilter}
-              onChange={(e) => setDeptFilter(e.target.value)}
-              className={selectClass}
-            >
-              <option value="all">All departments</option>
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="w-36">
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as "all" | EmploymentType)}
-              className={selectClass}
-            >
-              <option value="all">All types</option>
-              <option value="employee">Employee</option>
-              <option value="contractor">Contractor</option>
-            </select>
-          </div>
-          <div className="w-36">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | PersonStatus)}
-              className={selectClass}
-            >
-              <option value="all">All statuses</option>
-              <option value="onboarding">Onboarding</option>
-              <option value="active">Active</option>
-              <option value="on_leave">On leave</option>
-              <option value="notice">Notice</option>
-              <option value="offboarding">Offboarding</option>
-              <option value="left">Left</option>
-            </select>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg border border-border overflow-hidden">
-            <button
-              onClick={() => setView("grid")}
-              className={`p-2 ${view === "grid" ? "bg-foreground text-background" : "bg-background text-subtle"}`}
-              title="Grid view"
-            >
-              <Squares2X2Icon className="size-4" />
-            </button>
-            <button
-              onClick={() => setView("table")}
-              className={`p-2 ${view === "table" ? "bg-foreground text-background" : "bg-background text-subtle"}`}
-              title="Table view"
-            >
-              <ListBulletIcon className="size-4" />
-            </button>
-            <button
-              onClick={() => setView("byPod")}
-              className={`p-2 ${view === "byPod" ? "bg-foreground text-background" : "bg-background text-subtle"}`}
-              title="By pod"
-            >
-              <UsersIcon className="size-4" />
-            </button>
-            <button
-              onClick={() => setView("byStatus")}
-              className={`p-2 ${view === "byStatus" ? "bg-foreground text-background" : "bg-background text-subtle"}`}
-              title="By status"
-            >
-              <TagIcon className="size-4" />
-            </button>
+          <span className="text-xs text-subtle tabular-nums mr-1">
+            {filtered.length} of {people.length}
+          </span>
+          <select
+            value={deptFilter}
+            onChange={(e) => setDeptFilter(e.target.value)}
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+          >
+            <option value="all">All departments</option>
+            {DEPARTMENTS.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as "all" | EmploymentType)}
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+          >
+            <option value="all">All types</option>
+            <option value="employee">Employee</option>
+            <option value="contractor">Contractor</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as "all" | PersonStatus)}
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+          >
+            <option value="all">All statuses</option>
+            <option value="onboarding">Onboarding</option>
+            <option value="active">Active</option>
+            <option value="on_leave">On leave</option>
+            <option value="notice">Notice</option>
+            <option value="offboarding">Offboarding</option>
+            <option value="left">Left</option>
+          </select>
+          <select
+            value={podFilter}
+            onChange={(e) => setPodFilter(e.target.value)}
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground max-w-[180px]"
+          >
+            <option value="all">All pods</option>
+            {pods.map((pd) => (
+              <option key={pd.id} value={pd.id}>
+                {pd.name}
+              </option>
+            ))}
+            <option value="none">Not on a pod</option>
+          </select>
+          <div className="inline-flex items-center gap-0.5 h-8 p-0.5 bg-surface rounded border border-border">
+            {([
+              { key: "table", title: "Table view", icon: ListBulletIcon },
+              { key: "grid", title: "Grid view", icon: Squares2X2Icon },
+              { key: "byPod", title: "By pod", icon: UsersIcon },
+              { key: "byStatus", title: "By status", icon: TagIcon },
+            ] as { key: View; title: string; icon: typeof Squares2X2Icon }[]).map((v) => {
+              const active = view === v.key;
+              const Icon = v.icon;
+              return (
+                <button
+                  key={v.key}
+                  onClick={() => setView(v.key)}
+                  className={`p-1.5 rounded-sm transition-colors ${active ? "bg-surface-raised text-foreground" : "text-muted hover:text-foreground"}`}
+                  title={v.title}
+                >
+                  <Icon className="size-3.5" />
+                </button>
+              );
+            })}
           </div>
           <button
             onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <PlusIcon className="size-4" />
-            Add person
+            <PlusIcon className="size-3.5" /> Add person
           </button>
+        </div>
+        <div className="relative w-full md:w-64">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
+          <input
+            type="text"
+            placeholder="Search name, title or email"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-8 w-full pl-8 pr-3 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+          />
         </div>
       </div>
 
       {!hydrated ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-36 bg-background rounded-xl animate-pulse" />
-          ))}
-        </div>
+        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
       ) : filtered.length === 0 ? (
-        <EmptyState onAdd={() => setShowAdd(true)} hasFilter={!!query || deptFilter !== "all" || typeFilter !== "all" || statusFilter !== "all"} />
+        <EmptyState onAdd={() => setShowAdd(true)} hasFilter={!!query || deptFilter !== "all" || typeFilter !== "all" || statusFilter !== "all" || podFilter !== "all"} />
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map((p) => (
@@ -242,7 +292,7 @@ export default function PeoplePanel() {
       ) : view === "byStatus" ? (
         <ByStatusView people={filtered} />
       ) : (
-        <PeopleTable rows={filtered} />
+        <PeopleTable rows={filtered} pods={pods} />
       )}
 
       {showAdd && <AddPersonModal onCancel={() => setShowAdd(false)} onSave={handleAdd} />}
@@ -251,29 +301,23 @@ export default function PeoplePanel() {
 }
 
 /* StatTile - one of the 4 tiles at the top of the People panel.
- * Mirrors the Hero Offer / Operations tile aesthetic. */
+ * Finance summary-card look: card surface + faint border, no ring /
+ * shadow / gradient / icon chrome. An attention value (onboarding in
+ * flight, invites owed) uses the MUTED status palette, never a loud hue. */
 function StatTile({
   label,
   value,
-  icon,
-  gradient,
-  muted,
+  attention,
 }: {
   label: string;
   value: number;
-  icon: React.ReactNode;
-  gradient: string;
-  muted?: boolean;
+  attention?: boolean;
 }) {
+  const color = attention ? "text-status-approaching" : "text-foreground";
   return (
-    <div className="bg-background rounded-xl p-4 ring-1 ring-border flex items-center gap-3">
-      <div className={`size-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center shrink-0 ${gradient}`}>
-        {icon}
-      </div>
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-subtle font-semibold">{label}</div>
-        <div className={`text-2xl font-semibold ${muted ? "text-subtle" : "text-foreground"}`}>{value}</div>
-      </div>
+    <div className="bg-surface border border-border-faint rounded p-5">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
+      <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${color}`}>{value}</div>
     </div>
   );
 }
@@ -298,17 +342,6 @@ function tenureLabel(person: Person): string {
   return "";
 }
 
-/* Map STATUS_BADGE light tints to dark-mode palette (the source
- * STATUS_BADGE uses pastel backgrounds designed for light cards). */
-const DARK_STATUS_TINT: Record<string, string> = {
-  onboarding: "bg-info/15 text-info ring-1 ring-info/30",
-  active: "bg-success/15 text-success ring-1 ring-success/30",
-  on_leave: "bg-warning/15 text-warning ring-1 ring-warning/30",
-  notice: "bg-danger/15 text-danger ring-1 ring-danger/30",
-  offboarding: "bg-warning/15 text-warning ring-1 ring-warning/30",
-  left: "bg-surface-raised text-muted ring-1 ring-border",
-};
-
 function PersonCard({
   person,
   pods,
@@ -318,16 +351,11 @@ function PersonCard({
   pods: Pod[];
   isInvited: boolean;
 }) {
-  const status = STATUS_BADGE[person.status];
   const dept = person.department;
-  const deptHex = deptColor(dept);
   const tenure = tenureLabel(person);
 
   /* Find the pod this person is linked to via pod_member_id. */
-  const pod = useMemo(() => {
-    if (!person.pod_member_id) return null;
-    return pods.find((pd) => pd.members?.some((m) => m.id === person.pod_member_id)) ?? null;
-  }, [person.pod_member_id, pods]);
+  const pod = useMemo(() => podForPerson(person, pods), [person, pods]);
 
   const isLeadership = dept === "Leadership";
   const needsInvite = !!person.email && !isInvited && person.status !== "left";
@@ -335,44 +363,28 @@ function PersonCard({
   return (
     <Link
       href={`/company/people/${person.id}`}
-      className={`group block bg-background rounded-2xl p-5 ring-1 ring-border hover:ring-border shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all ${isLeadership ? "ring-success/20 hover:ring-success/40" : ""}`}
+      className="group block bg-surface border border-border-faint rounded p-5 hover:bg-surface-raised transition-colors"
     >
       <div className="flex items-start gap-3">
-        {/* Avatar tile - photo if available, else gradient initials.
-         * Department drives the colour so the team reads visually. */}
-        {person.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={person.avatar_url}
-            alt={person.full_name}
-            className="size-12 rounded-xl object-cover shrink-0 ring-1 ring-border"
-          />
-        ) : (
-          <div
-            className="size-12 rounded-xl flex items-center justify-center text-white text-sm font-semibold shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
-            style={{
-              background: `linear-gradient(135deg, ${deptHex} 0%, ${deptHex}99 100%)`,
-              boxShadow: `0 8px 24px ${deptHex}55`,
-            }}
-          >
-            {initials(person.full_name)}
-          </div>
-        )}
+        {/* Avatar tile - photo if available, else dept-coloured initials.
+         * Department colour is data-viz (deptColor / DEPARTMENT_COLORS),
+         * kept as a flat fill - no gradient / glow. */}
+        <PersonAvatar person={person} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-sm font-semibold text-foreground truncate">
               {person.preferred_name || person.full_name}
             </span>
             {isLeadership && (
-              <SparklesIcon className="size-3 text-success shrink-0" title="Leadership" />
+              <SparklesIcon className="size-3 text-subtle shrink-0" title="Leadership" />
             )}
           </div>
-          <div className="text-[12px] text-subtle truncate">{person.job_title || "No role set"}</div>
+          <div className="text-xs text-subtle truncate">{person.job_title || "No role set"}</div>
           {/* Meta row: department + pod + tenure. Compact, comma-sep style. */}
-          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[11px] text-subtle">
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-2xs text-subtle">
             {dept && (
               <span className="inline-flex items-center gap-1">
-                <span className="size-1.5 rounded-full" style={{ background: deptHex }} />
+                <DeptDot dept={dept} />
                 {dept}
               </span>
             )}
@@ -390,31 +402,31 @@ function PersonCard({
       </div>
 
       {/* Status row + invite chip. */}
-      <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
+      <div className="mt-4 pt-4 border-t border-dashed border-border flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${DARK_STATUS_TINT[person.status] ?? "bg-surface-raised text-muted"}`}>
-            {status.label}
-          </span>
-          <span className="text-[10px] uppercase tracking-wider text-subtle">
+          <StatusPill status={person.status} />
+          <span className="text-2xs uppercase tracking-wider text-subtle">
             {person.employment_type === "employee" ? "Employee" : "Contractor"}
           </span>
         </div>
-        {/* Invite signal: green check if invited, amber "Invite" if not.
-         * Only shows for staff with an email + not already left. */}
+        {/* Invite signal. Muted throughout - "Invited" reads as a quiet
+         * confirmation, "Invite" as a calm nudge (status-approaching),
+         * never a loud success/warning fill. Only shows for staff with
+         * an email + not already left. */}
         {person.email ? (
           isInvited ? (
-            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-success/15 text-success ring-1 ring-success/30">
+            <span className="inline-flex items-center gap-1 text-2xs uppercase tracking-wider font-medium text-subtle">
               <CheckBadgeIcon className="size-3" />
               Invited
             </span>
           ) : needsInvite ? (
-            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-warning/15 text-warning ring-1 ring-warning/30">
+            <span className="inline-flex items-center gap-1 text-2xs uppercase tracking-wider font-medium text-status-approaching">
               <EnvelopeIcon className="size-3" />
               Invite
             </span>
           ) : null
         ) : (
-          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-subtle">
+          <span className="inline-flex items-center gap-1 text-2xs uppercase tracking-wider text-subtle">
             <UserCircleIcon className="size-3" />
             No email
           </span>
@@ -424,64 +436,115 @@ function PersonCard({
   );
 }
 
-function PeopleTable({ rows }: { rows: Person[] }) {
+/* Avatar atom - photo or dept-coloured initials. One implementation
+ * reused across every view. Department colour is data-viz, applied as
+ * a flat fill via the existing deptColor() constant (no gradient/glow).
+ * size / radius vary by context via the `size` prop. */
+function PersonAvatar({
+  person,
+  size = "lg",
+}: {
+  person: Person;
+  size?: "lg" | "sm" | "xs";
+}) {
+  const box =
+    size === "lg"
+      ? "size-12 text-sm"
+      : size === "sm"
+        ? "size-9 text-xs"
+        : "size-7 text-2xs";
+  if (person.avatar_url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={person.avatar_url}
+        alt={person.full_name}
+        className={`${box} rounded-full object-cover shrink-0 border border-border`}
+      />
+    );
+  }
   return (
-    <div className="bg-background border border-border rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-      <table className="w-full text-sm">
-        <thead className="bg-background text-[11px] uppercase tracking-wider text-subtle">
-          <tr>
-            <th className="text-left px-4 py-3 font-semibold">Name</th>
-            <th className="text-left px-4 py-3 font-semibold">Title</th>
-            <th className="text-left px-4 py-3 font-semibold">Department</th>
-            <th className="text-left px-4 py-3 font-semibold">Type</th>
-            <th className="text-left px-4 py-3 font-semibold">Status</th>
-            <th className="text-left px-4 py-3 font-semibold">Email</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div
+      className={`${box} rounded-full flex items-center justify-center text-white font-semibold shrink-0`}
+      style={{ background: deptColor(person.department) }}
+    >
+      {initials(person.full_name)}
+    </div>
+  );
+}
+
+/* The People table - the hero surface. Built on the shared Table
+ * primitive (never a bespoke <table>). Person is the one identity
+ * column (text-foreground, avatar + name); every other cell is muted.
+ * Status is the only colour, via the Badge primitive. Pod is folded in
+ * as a muted column with a tiny data-viz dept dot. */
+function PeopleTable({ rows, pods }: { rows: Person[]; pods: Pod[] }) {
+  return (
+    <div className="bg-surface border border-border-faint rounded overflow-x-auto">
+      <Table>
+        <THead>
+          <TR hover={false}>
+            <TH>Person</TH>
+            <TH>Title</TH>
+            <TH>Department</TH>
+            <TH>Pod</TH>
+            <TH>Type</TH>
+            <TH>Status</TH>
+          </TR>
+        </THead>
+        <TBody>
           {rows.map((p) => {
-            const status = STATUS_BADGE[p.status];
+            const pod = podForPerson(p, pods);
             return (
-              <tr key={p.id} className="border-t border-border hover:bg-background">
-                <td className="px-4 py-3">
-                  <Link href={`/company/people/${p.id}`} className="font-medium text-foreground hover:underline">
-                    {p.preferred_name || p.full_name}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-subtle">{p.job_title || "—"}</td>
-                <td className="px-4 py-3 text-subtle">{p.department || "—"}</td>
-                <td className="px-4 py-3 text-subtle capitalize">{p.employment_type}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                    style={{ background: status.bg, color: status.text }}
+              <TR key={p.id}>
+                <TD className="max-w-[240px]">
+                  <Link
+                    href={`/company/people/${p.id}`}
+                    className="flex items-center gap-2.5 text-foreground hover:underline truncate"
                   >
-                    {status.label}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-subtle">{p.email || "—"}</td>
-              </tr>
+                    <PersonAvatar person={p} size="xs" />
+                    <span className="truncate">{p.preferred_name || p.full_name}</span>
+                  </Link>
+                </TD>
+                <TD className="text-muted truncate max-w-[180px]">
+                  {p.job_title || "Not set"}
+                </TD>
+                <TD className="text-muted">
+                  {p.department ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <DeptDot dept={p.department} />
+                      {p.department}
+                    </span>
+                  ) : (
+                    "Not set"
+                  )}
+                </TD>
+                <TD className="text-muted">{pod ? pod.name : "Not on a pod"}</TD>
+                <TD className="text-muted capitalize">{p.employment_type}</TD>
+                <TD>
+                  <StatusPill status={p.status} />
+                </TD>
+              </TR>
             );
           })}
-        </tbody>
-      </table>
+        </TBody>
+      </Table>
     </div>
   );
 }
 
 function EmptyState({ onAdd, hasFilter }: { onAdd: () => void; hasFilter: boolean }) {
   return (
-    <div className="bg-background border border-dashed border-border rounded-xl p-12 text-center">
-      <div className="text-sm text-subtle mb-3">
+    <div className="bg-surface border border-border-faint rounded py-16 text-center">
+      <p className="text-sm text-subtle">
         {hasFilter ? "No people match these filters." : "No people yet - add your first team member."}
-      </div>
+      </p>
       {!hasFilter && (
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+          className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
         >
-          <PlusIcon className="size-4" />
-          Add person
+          <PlusIcon className="size-3.5" /> Add person
         </button>
       )}
     </div>
@@ -534,7 +597,7 @@ function AddPersonModal({
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
       <form
         onSubmit={submit}
-        className="bg-background rounded-xl shadow-xl w-full max-w-md p-6"
+        className="bg-surface border border-border rounded w-full max-w-md p-5"
       >
         <h2 className="text-lg font-semibold text-foreground mb-4">Add person</h2>
         <div className="space-y-4">
@@ -608,7 +671,7 @@ function AddPersonModal({
             />
             <span>
               <span className="font-medium">Generate contract draft</span>
-              <span className="block text-subtle text-[11px] mt-0.5">
+              <span className="block text-subtle text-2xs mt-0.5">
                 Opens a contract review form pre-filled with role + employment type. You confirm comp + start date, then share the signing link.
               </span>
             </span>
@@ -618,13 +681,13 @@ function AddPersonModal({
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 text-sm text-subtle hover:text-foreground"
+            className="px-3 py-2 text-xs font-medium text-subtle hover:text-foreground"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+            className="px-3 py-2 bg-foreground text-background text-xs font-medium rounded hover:opacity-90"
           >
             Add
           </button>
@@ -664,7 +727,7 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
 
   if (pods.length === 0) {
     return (
-      <div className="bg-background border border-border rounded-xl p-8 text-center">
+      <div className="bg-surface border border-border-faint rounded p-8 text-center">
         <p className="text-sm text-subtle">
           No pods configured. Set up pods in /workspace, then link each
           Person to their pod member on their Overview tab.
@@ -678,15 +741,15 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
       {pods.map((pod) => (
         <div
           key={pod.id}
-          className="bg-background border border-border rounded-xl overflow-hidden"
+          className="bg-surface border border-border-faint rounded overflow-hidden"
         >
-          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">{pod.name}</h3>
-            <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
+          <div className="px-5 py-4 border-b border-dashed border-border flex items-center justify-between">
+            <h3 className="text-sm font-medium text-foreground">{pod.name}</h3>
+            <span className="text-2xs uppercase tracking-wider text-subtle tabular-nums">
               {pod.members.filter((m) => !m.is_placeholder).length} members
             </span>
           </div>
-          <ul className="divide-y divide-border">
+          <ul>
             {pod.members
               .filter((m) => !m.is_placeholder)
               .map((m) => {
@@ -694,7 +757,7 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
                 return (
                   <li
                     key={m.id}
-                    className="px-5 py-3 flex items-center justify-between gap-3"
+                    className="px-5 py-3 flex items-center justify-between gap-3 border-b border-dashed border-border last:border-0"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="text-sm text-foreground truncate">
@@ -711,14 +774,14 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-subtle mt-0.5 capitalize">
+                      <div className="text-2xs text-subtle mt-0.5 capitalize">
                         {m.role.replace(/_/g, " ")}
                       </div>
                     </div>
                     {linked ? (
-                      <PersonStatusPill person={linked} />
+                      <StatusPill status={linked.status} />
                     ) : (
-                      <span className="text-[10px] text-subtle uppercase tracking-wider">
+                      <span className="text-2xs text-subtle uppercase tracking-wider">
                         Unlinked
                       </span>
                     )}
@@ -730,18 +793,18 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
       ))}
 
       {unassigned.length > 0 && (
-        <div className="bg-background border border-border rounded-xl overflow-hidden md:col-span-2">
-          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">Not on a pod</h3>
-            <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
+        <div className="bg-surface border border-border-faint rounded overflow-hidden md:col-span-2">
+          <div className="px-5 py-4 border-b border-dashed border-border flex items-center justify-between">
+            <h3 className="text-sm font-medium text-foreground">Not on a pod</h3>
+            <span className="text-2xs uppercase tracking-wider text-subtle tabular-nums">
               {unassigned.length}
             </span>
           </div>
-          <ul className="divide-y divide-border">
+          <ul>
             {unassigned.map((p) => (
               <li
                 key={p.id}
-                className="px-5 py-3 flex items-center justify-between gap-3"
+                className="px-5 py-3 flex items-center justify-between gap-3 border-b border-dashed border-border last:border-0"
               >
                 <div className="min-w-0 flex-1">
                   <Link
@@ -750,11 +813,11 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
                   >
                     {p.preferred_name || p.full_name}
                   </Link>
-                  <div className="text-[11px] text-subtle mt-0.5">
+                  <div className="text-2xs text-subtle mt-0.5">
                     {p.job_title || "(no title)"}
                   </div>
                 </div>
-                <PersonStatusPill person={p} />
+                <StatusPill status={p.status} />
               </li>
             ))}
           </ul>
@@ -781,50 +844,28 @@ function ByStatusView({ people }: { people: Person[] }) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {STATUS_ORDER.map((s) => {
         const bucket = people.filter((p) => p.status === s);
         if (bucket.length === 0) return null;
-        const badge = STATUS_BADGE[s];
         return (
           <div
             key={s}
-            className="bg-background border border-border rounded-xl overflow-hidden"
+            className="bg-surface border border-border-faint rounded overflow-hidden"
           >
-            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span
-                  className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                  style={{ background: badge.bg, color: badge.text }}
-                >
-                  {badge.label}
-                </span>
-              </div>
-              <span className="text-[11px] uppercase tracking-wider text-subtle tabular-nums">
+            <div className="px-5 py-4 border-b border-dashed border-border flex items-center justify-between">
+              <StatusPill status={s} />
+              <span className="text-2xs uppercase tracking-wider text-subtle tabular-nums">
                 {bucket.length}
               </span>
             </div>
-            <ul className="divide-y divide-border">
+            <ul>
               {bucket.map((p) => (
                 <li
                   key={p.id}
-                  className="px-5 py-3 flex items-center gap-3"
+                  className="px-5 py-3 flex items-center gap-3 border-b border-dashed border-border last:border-0"
                 >
-                  {p.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.avatar_url}
-                      alt={p.full_name}
-                      className="size-9 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="size-9 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
-                      style={{ background: deptColor(p.department) }}
-                    >
-                      {initials(p.full_name)}
-                    </div>
-                  )}
+                  <PersonAvatar person={p} size="sm" />
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/company/people/${p.id}`}
@@ -832,7 +873,7 @@ function ByStatusView({ people }: { people: Person[] }) {
                     >
                       {p.preferred_name || p.full_name}
                     </Link>
-                    <div className="text-[11px] text-subtle mt-0.5">
+                    <div className="text-2xs text-subtle mt-0.5">
                       {p.job_title || "(no title)"} ·{" "}
                       {p.employment_type === "employee" ? "Employee" : "Contractor"}
                     </div>
@@ -844,17 +885,5 @@ function ByStatusView({ people }: { people: Person[] }) {
         );
       })}
     </div>
-  );
-}
-
-function PersonStatusPill({ person }: { person: Person }) {
-  const s = STATUS_BADGE[person.status];
-  return (
-    <span
-      className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded shrink-0"
-      style={{ background: s.bg, color: s.text }}
-    >
-      {s.label}
-    </span>
   );
 }
