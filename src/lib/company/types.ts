@@ -335,7 +335,7 @@ export const DEPARTMENTS = [
 ] as const;
 
 export const DEPARTMENT_COLORS: Record<string, string> = {
-  Leadership: "#1B1B1B",
+  Leadership: "#F97316",
   Design: "#7C3AED",
   Development: "#0EA5E9",
   "Account Management": "#16A34A",
