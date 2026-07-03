@@ -28,7 +28,23 @@ import {
   type InvoiceCategory,
 } from "@/lib/company/types";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
-import { INVOICE_STATUS_BADGE } from "@/lib/company/ui";
+import { Badge } from "@/components/ui";
+
+/* Status = a quiet Badge (subtle bg, muted text, one leading dot).
+ * All statuses share the pill shape; the dot carries the (muted) colour. */
+type StatusTone = "success" | "warning" | "danger" | "neutral";
+const STATUS_TONE: Record<InvoiceStatus, StatusTone> = {
+  pending: "warning",
+  paid: "success",
+  overdue: "danger",
+  disputed: "neutral",
+};
+const STATUS_LABEL: Record<InvoiceStatus, string> = {
+  pending: "Pending",
+  paid: "Paid",
+  overdue: "Overdue",
+  disputed: "Disputed",
+};
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -76,11 +92,11 @@ export default function InvoiceDetailPage() {
   }
 
   if (!hydrated) {
-    return <div className="h-32 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />;
   }
   if (!invoice) {
     return (
-      <div className="text-center py-12">
+      <div className="bg-surface border border-border-faint rounded py-16 text-center">
         <p className="text-sm text-subtle mb-3">Invoice not found.</p>
         <Link href="/company/invoices" className="text-sm text-foreground hover:underline">
           Back to invoices
@@ -90,16 +106,15 @@ export default function InvoiceDetailPage() {
   }
 
   const effectiveStatus = deriveInvoiceStatus(invoice);
-  const badge = INVOICE_STATUS_BADGE[effectiveStatus];
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <Link
           href="/company/invoices"
-          className="inline-flex items-center gap-1 text-sm text-subtle hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-sm text-subtle hover:text-foreground transition-colors"
         >
-          <ArrowLeftIcon className="size-4" /> Back
+          <ArrowLeftIcon className="size-4" /> Back to invoices
         </Link>
         <div className="flex items-center gap-2">
           {invoice.file_url && (
@@ -108,22 +123,40 @@ export default function InvoiceDetailPage() {
               target="_blank"
               rel="noopener noreferrer"
               download={invoice.file_name}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-foreground hover:bg-background rounded-md"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
             >
               <ArrowDownTrayIcon className="size-3.5" /> Download
             </a>
           )}
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/15 rounded-md"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-danger hover:bg-surface-raised transition-colors"
           >
             <TrashIcon className="size-3.5" /> Delete
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-background border border-border rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      {/* Header card: amount is the dominant value */}
+      <div className="bg-surface border border-border-faint rounded p-5">
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-lg font-semibold text-foreground">{invoice.supplier_name}</h2>
+          <Badge tone={STATUS_TONE[effectiveStatus]}>{STATUS_LABEL[effectiveStatus]}</Badge>
+        </div>
+        <p className="text-2xs text-subtle mt-1">
+          {invoice.invoice_number ? `${invoice.invoice_number} · ` : ""}Due{" "}
+          {fmtDateUK(invoice.due_date)}
+        </p>
+        <div className="mt-4 text-2xl font-semibold tabular-nums tracking-tight leading-none text-foreground">
+          {fmtMoney(invoice.amount, invoice.currency)}
+        </div>
+        {invoice.paid_date && (
+          <p className="text-2xs text-subtle mt-1.5">Paid {fmtDateUK(invoice.paid_date)}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="bg-surface border border-border-faint rounded overflow-hidden">
           {invoice.file_url ? (
             invoice.file_url.endsWith(".pdf") || invoice.file_name?.toLowerCase().endsWith(".pdf") ? (
               <iframe src={invoice.file_url} className="w-full h-[700px]" title="Invoice preview" />
@@ -138,44 +171,36 @@ export default function InvoiceDetailPage() {
           )}
         </div>
 
-        <div className="space-y-4">
-          <div className="bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">Status</h3>
-              <span
-                className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                style={{ background: badge.bg, color: badge.text }}
-              >
-                {badge.label}
-              </span>
-            </div>
+        <div className="space-y-3">
+          <div className="bg-surface border border-border-faint rounded p-5">
+            <h3 className="text-sm font-medium text-foreground mb-3">Status</h3>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => changeStatus("paid")}
                 disabled={invoice.status === "paid"}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-success/10 text-success rounded-lg hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
               >
                 <CheckCircleIcon className="size-3.5" /> Mark paid
               </button>
               <button
                 onClick={() => changeStatus("pending")}
                 disabled={invoice.status === "pending"}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-warning/15 text-warning rounded-lg hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
               >
                 Mark pending
               </button>
               <button
                 onClick={() => changeStatus("disputed")}
                 disabled={invoice.status === "disputed"}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-border text-subtle rounded-lg hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 transition-colors"
               >
                 <ExclamationCircleIcon className="size-3.5" /> Mark disputed
               </button>
             </div>
           </div>
 
-          <div className="bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">Details</h3>
+          <div className="bg-surface border border-border-faint rounded p-5 space-y-3">
+            <h3 className="text-sm font-medium text-foreground">Details</h3>
             <Field
               label="Supplier"
               value={invoice.supplier_name}
@@ -246,7 +271,7 @@ export default function InvoiceDetailPage() {
                 onChange={(e) => patch({ linked_person_id: e.target.value || undefined })}
                 className={selectClass}
               >
-                <option value="">— None —</option>
+                <option value="">- None -</option>
                 {people.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.full_name}
@@ -263,21 +288,22 @@ export default function InvoiceDetailPage() {
                 className={textareaClass}
               />
             </div>
-            <div className="text-xs text-subtle pt-2 border-t border-border">
-              Total: <span className="font-medium text-foreground">{fmtMoney(invoice.amount, invoice.currency)}</span>
-              {invoice.paid_date && <> · Paid {fmtDateUK(invoice.paid_date)}</>}
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-dashed border-border">
+              <span className="text-xs text-muted">Total</span>
+              <span className="text-sm font-medium tabular-nums text-foreground">
+                {fmtMoney(invoice.amount, invoice.currency)}
+              </span>
             </div>
           </div>
 
           {invoice.status_history && invoice.status_history.length > 0 && (
-            <div className="bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle mb-3">
-                Status history
-              </h3>
-              <ul className="space-y-1.5 text-xs text-subtle">
+            <div className="bg-surface border border-border-faint rounded p-5">
+              <h3 className="text-sm font-medium text-foreground mb-3">Status history</h3>
+              <ul className="space-y-1.5 text-xs text-muted">
                 {invoice.status_history.map((h) => (
                   <li key={h.id}>
-                    {fmtDateUK(h.changed_at)} · {h.old_status || "—"} → <span className="text-foreground">{h.new_status}</span>
+                    {fmtDateUK(h.changed_at)} · {h.old_status || "-"} to{" "}
+                    <span className="text-foreground">{h.new_status}</span>
                   </li>
                 ))}
               </ul>

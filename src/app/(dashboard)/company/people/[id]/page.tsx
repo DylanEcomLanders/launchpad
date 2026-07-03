@@ -46,9 +46,56 @@ import {
 } from "@/lib/company/scoring";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { personByKanbanName } from "@/lib/people/resolver";
-import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
-import { initials, deptColor, STATUS_BADGE, INVOICE_STATUS_BADGE } from "@/lib/company/ui";
+import { inputClass, selectClass, textareaClass } from "@/lib/form-styles";
+import { initials, deptColor } from "@/lib/company/ui";
+import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
 import { useRole } from "@/components/auth-gate";
+
+/* Field label + status-tone helpers used throughout this surface.
+ * Status values map to the MUTED status palette via the Badge primitive,
+ * never the loud danger/warning/success tokens. */
+const fieldLabel = "block text-2xs uppercase tracking-wider text-subtle font-medium mb-2";
+
+type BadgeTone = "neutral" | "success" | "warning" | "danger";
+
+const PERSON_STATUS_TONE: Record<string, BadgeTone> = {
+  onboarding: "neutral",
+  active: "success",
+  on_leave: "warning",
+  notice: "danger",
+  offboarding: "warning",
+  left: "neutral",
+};
+const PERSON_STATUS_LABEL: Record<string, string> = {
+  onboarding: "Onboarding",
+  active: "Active",
+  on_leave: "On leave",
+  notice: "Notice",
+  offboarding: "Offboarding",
+  left: "Left",
+};
+
+const INVOICE_STATUS_TONE: Record<string, BadgeTone> = {
+  pending: "warning",
+  paid: "success",
+  overdue: "danger",
+  disputed: "neutral",
+};
+const INVOICE_STATUS_LABEL: Record<string, string> = {
+  pending: "Pending",
+  paid: "Paid",
+  overdue: "Overdue",
+  disputed: "Disputed",
+};
+
+const AGREEMENT_STATUS_TONE: Record<string, BadgeTone> = {
+  draft: "neutral",
+  sent: "warning",
+  team_signed: "warning",
+  counter_signed: "success",
+  active: "success",
+  terminated: "danger",
+};
 
 type Tab =
   | "overview"
@@ -130,7 +177,7 @@ export default function PersonProfilePage() {
   }
 
   if (!hydrated) {
-    return <div className="h-32 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-32 bg-surface rounded border border-border-faint animate-pulse" />;
   }
   if (!person) {
     return (
@@ -143,7 +190,6 @@ export default function PersonProfilePage() {
     );
   }
 
-  const status = STATUS_BADGE[person.status];
   const isAdmin = role === "admin";
   const isOnboardingNow =
     person.status === "onboarding" || !!person.onboarding_started_at;
@@ -174,14 +220,14 @@ export default function PersonProfilePage() {
         </Link>
         <button
           onClick={handleDelete}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/15 rounded-md"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-danger hover:bg-surface-raised rounded transition-colors"
         >
           <TrashIcon className="size-3.5" />
           Delete
         </button>
       </div>
 
-      <div className="bg-background border border-border rounded-xl p-6 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <div className="bg-surface border border-border-faint rounded p-5 mb-6">
         <div className="flex items-start gap-4">
           <AvatarWithUpload person={person} onUpdate={patch} />
           <div className="flex-1 min-w-0">
@@ -190,15 +236,12 @@ export default function PersonProfilePage() {
               {person.preferred_name && person.preferred_name !== person.full_name && (
                 <span className="text-sm text-subtle">"{person.preferred_name}"</span>
               )}
-              <span
-                className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                style={{ background: status.bg, color: status.text }}
-              >
-                {status.label}
-              </span>
+              <Badge tone={PERSON_STATUS_TONE[person.status]}>
+                {PERSON_STATUS_LABEL[person.status]}
+              </Badge>
             </div>
             <div className="text-sm text-subtle">
-              {person.job_title || "—"}
+              {person.job_title || "-"}
               {person.department && (
                 <>
                   {" · "}
@@ -365,7 +408,7 @@ function OverviewTab({
     return out;
   }, [pods, allPeople, person.pod_member_id]);
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       <Section title="Personal">
         <Field label="Full name" value={person.full_name} onChange={(v) => onPatch({ full_name: v })} />
         <Field
@@ -403,7 +446,7 @@ function OverviewTab({
           value={person.reports_to || ""}
           options={["", ...others.map((p) => p.id)] as string[]}
           renderOption={(v) =>
-            v === "" ? "— None —" : others.find((p) => p.id === v)?.full_name || v
+            v === "" ? "None" : others.find((p) => p.id === v)?.full_name || v
           }
           onChange={(v) => onPatch({ reports_to: v || undefined })}
         />
@@ -470,7 +513,7 @@ function OverviewTab({
 
       <Section title="Notes" className="md:col-span-2">
         <div>
-          <label className={labelClass}>Notes</label>
+          <label className={fieldLabel}>Notes</label>
           <textarea
             value={person.notes || ""}
             onChange={(e) => onPatch({ notes: e.target.value })}
@@ -510,7 +553,7 @@ function FinancialTab({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       <Section title="Compensation">
         <FieldSelect
           label="Type"
@@ -518,7 +561,7 @@ function FinancialTab({
           options={["", "salary", "day_rate", "hourly", "monthly_retainer"]}
           renderOption={(v) =>
             !v
-              ? "— Select —"
+              ? "Select"
               : v === "day_rate"
               ? "Day rate"
               : v === "monthly_retainer"
@@ -545,7 +588,7 @@ function FinancialTab({
           value={person.payment_frequency || ""}
           options={["", "monthly", "weekly", "per_invoice"]}
           renderOption={(v) =>
-            !v ? "— Select —" : v === "per_invoice" ? "Per invoice" : v.charAt(0).toUpperCase() + v.slice(1)
+            !v ? "Select" : v === "per_invoice" ? "Per invoice" : v.charAt(0).toUpperCase() + v.slice(1)
           }
           onChange={(v) => onPatch({ payment_frequency: (v || undefined) as Person["payment_frequency"] })}
         />
@@ -554,7 +597,7 @@ function FinancialTab({
           value={person.payment_method || ""}
           options={["", "bank_transfer", "wise", "other"]}
           renderOption={(v) =>
-            !v ? "— Select —" : v === "bank_transfer" ? "Bank transfer" : v === "wise" ? "Wise" : "Other"
+            !v ? "Select" : v === "bank_transfer" ? "Bank transfer" : v === "wise" ? "Wise" : "Other"
           }
           onChange={(v) => onPatch({ payment_method: (v || undefined) as Person["payment_method"] })}
         />
@@ -566,7 +609,7 @@ function FinancialTab({
           value={person.tax_status || ""}
           options={["", "PAYE", "self_employed", "ltd_company"]}
           renderOption={(v) =>
-            !v ? "— Select —" : v === "self_employed" ? "Self-employed" : v === "ltd_company" ? "Ltd company" : "PAYE"
+            !v ? "Select" : v === "self_employed" ? "Self-employed" : v === "ltd_company" ? "Ltd company" : "PAYE"
           }
           onChange={(v) => onPatch({ tax_status: (v || undefined) as Person["tax_status"] })}
         />
@@ -581,7 +624,7 @@ function FinancialTab({
           onChange={(v) => onPatch({ utr_or_company_number: v || undefined })}
         />
         <div>
-          <label className={labelClass}>Bank details</label>
+          <label className={fieldLabel}>Bank details</label>
           <textarea
             value={person.bank_details || ""}
             onChange={(e) => onPatch({ bank_details: e.target.value })}
@@ -614,8 +657,8 @@ function FinancialTab({
         />
 
         {person.engagement_type === "core_retainer" && (
-          <div className="mt-4 pt-4 border-t border-border">
-            <div className="text-[11px] uppercase tracking-wider text-subtle mb-3">
+          <div className="mt-4 pt-4 border-t border-dashed border-border">
+            <div className="text-2xs uppercase tracking-wider text-subtle font-medium mb-3">
               Revenue-tier bonuses ({person.compensation_currency || "GBP"})
             </div>
             <p className="text-xs text-subtle mb-3">
@@ -647,7 +690,7 @@ function FinancialTab({
 
         {(person.engagement_type === "contractor_retainer" ||
           person.engagement_type === "contractor_per_page") && (
-          <div className="mt-4 pt-4 border-t border-border">
+          <div className="mt-4 pt-4 border-t border-dashed border-border">
             <p className="text-xs text-subtle">
               Bonuses + deductions for this contractor are auto-computed
               from kanban delivery data under the{" "}
@@ -678,32 +721,36 @@ function FinancialTab({
         {history.length === 0 ? (
           <div className="text-xs text-subtle py-3">No history yet.</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-[11px] uppercase tracking-wider text-subtle">
-              <tr>
-                <th className="text-left py-2 font-semibold">Date</th>
-                <th className="text-left py-2 font-semibold">Old</th>
-                <th className="text-left py-2 font-semibold">New</th>
-                <th className="text-left py-2 font-semibold">Reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((h) => (
-                <tr key={h.id} className="border-t border-border">
-                  <td className="py-2 text-subtle">{fmtDateUK(h.changed_at)}</td>
-                  <td className="py-2 text-subtle">
-                    {h.old_amount != null
-                      ? fmtMoney(h.old_amount, person.compensation_currency || "GBP")
-                      : "—"}
-                  </td>
-                  <td className="py-2 text-foreground font-medium">
-                    {fmtMoney(h.new_amount, person.compensation_currency || "GBP")}
-                  </td>
-                  <td className="py-2 text-subtle">{h.reason || "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <Table>
+              <THead>
+                <TR hover={false}>
+                  <TH className="!px-0">Date</TH>
+                  <TH className="!px-0">Old</TH>
+                  <TH className="!px-0">New</TH>
+                  <TH className="!px-0">Reason</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {history.map((h) => (
+                  <TR key={h.id}>
+                    <TD className="!px-0 text-muted"><Num>{fmtDateUK(h.changed_at)}</Num></TD>
+                    <TD className="!px-0 text-muted">
+                      {h.old_amount != null ? (
+                        <Num>{fmtMoney(h.old_amount, person.compensation_currency || "GBP")}</Num>
+                      ) : (
+                        "-"
+                      )}
+                    </TD>
+                    <TD className="!px-0 text-foreground">
+                      <Num>{fmtMoney(h.new_amount, person.compensation_currency || "GBP")}</Num>
+                    </TD>
+                    <TD className="!px-0 text-muted">{h.reason || "-"}</TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          </div>
         )}
       </Section>
     </div>
@@ -795,7 +842,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (
-              <div key={r.id} className="p-3 border border-border rounded-lg">
+              <div key={r.id} className="bg-surface-raised border border-border rounded p-5">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                   <input
                     type="date"
@@ -810,7 +857,7 @@ function PerformanceTab({
                     className={inputClass}
                   />
                   <input
-                    placeholder="Rating (1–5 or grade)"
+                    placeholder="Rating (1-5 or grade)"
                     value={r.rating}
                     onChange={(e) => updateReview(r.id, { rating: e.target.value })}
                     className={inputClass}
@@ -853,7 +900,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {goals.map((g) => (
-              <div key={g.id} className="p-3 border border-border rounded-lg">
+              <div key={g.id} className="bg-surface-raised border border-border rounded p-5">
                 <input
                   placeholder="Title"
                   value={g.title}
@@ -909,8 +956,8 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {notes.map((n) => (
-              <div key={n.id} className="p-3 border border-border rounded-lg">
-                <div className="text-[11px] text-subtle mb-2">{fmtDateUK(n.created_at)}</div>
+              <div key={n.id} className="bg-surface-raised border border-border rounded p-5">
+                <div className="text-2xs text-subtle mb-2">{fmtDateUK(n.created_at)}</div>
                 <input
                   placeholder="Author"
                   value={n.author}
@@ -987,12 +1034,12 @@ function InvoicesTab({ person }: { person: Person }) {
   }, [invoices]);
 
   if (!hydrated) {
-    return <div className="h-32 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-32 bg-surface rounded border border-border-faint animate-pulse" />;
   }
 
   if (invoices.length === 0) {
     return (
-      <div className="bg-background border border-border rounded-xl p-8 text-center">
+      <div className="bg-surface border border-border-faint rounded py-16 text-center">
         <p className="text-sm text-subtle mb-2">
           No invoices linked to {person.preferred_name || person.full_name} yet.
         </p>
@@ -1007,7 +1054,7 @@ function InvoicesTab({ person }: { person: Person }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Totals header - same three-cell summary as Financial tab */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <SummaryCard label="Total billed (GBP)" value={fmtMoney(totals.billed, "GBP")} />
@@ -1022,74 +1069,65 @@ function InvoicesTab({ person }: { person: Person }) {
       {/* Invoice table - same shape as /company/invoices but scoped to
           this person + cleaner (no supplier name column since theyre
           all this person). Each row links out to the invoice detail. */}
-      <div className="bg-background border border-border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
-            <tr>
-              <th className="text-left px-4 py-3 font-semibold">Invoice</th>
-              <th className="text-left px-4 py-3 font-semibold">Issued</th>
-              <th className="text-left px-4 py-3 font-semibold">Due</th>
-              <th className="text-left px-4 py-3 font-semibold">Amount</th>
-              <th className="text-left px-4 py-3 font-semibold">Status</th>
-              <th className="text-left px-4 py-3 font-semibold">File</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoices.map((i) => {
-              const badge = INVOICE_STATUS_BADGE[i.status];
-              return (
-                <tr
-                  key={i.id}
-                  className="border-t border-border hover:bg-background"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/company/invoices/${i.id}`}
-                      className="font-medium text-foreground hover:underline"
+      <div className="bg-surface border border-border-faint rounded overflow-x-auto">
+        <Table>
+          <THead>
+            <TR hover={false}>
+              <TH>Invoice</TH>
+              <TH>Issued</TH>
+              <TH>Due</TH>
+              <TH align="right">Amount</TH>
+              <TH>Status</TH>
+              <TH>File</TH>
+            </TR>
+          </THead>
+          <TBody>
+            {invoices.map((i) => (
+              <TR key={i.id}>
+                <TD>
+                  <Link
+                    href={`/company/invoices/${i.id}`}
+                    className="text-foreground hover:underline"
+                  >
+                    {i.invoice_number || "(no number)"}
+                  </Link>
+                </TD>
+                <TD className="text-muted"><Num>{fmtDateUK(i.issue_date)}</Num></TD>
+                <TD className="text-muted"><Num>{fmtDateUK(i.due_date)}</Num></TD>
+                <TD align="right" className="text-muted">
+                  <Num>{fmtMoney(i.amount, i.currency)}</Num>
+                </TD>
+                <TD>
+                  <Badge tone={INVOICE_STATUS_TONE[i.status] ?? "neutral"}>
+                    {INVOICE_STATUS_LABEL[i.status] ?? i.status}
+                  </Badge>
+                </TD>
+                <TD className="text-muted">
+                  {i.file_url ? (
+                    <a
+                      href={i.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-muted hover:text-foreground hover:underline text-xs"
                     >
-                      {i.invoice_number || "(no number)"}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-subtle">{fmtDateUK(i.issue_date)}</td>
-                  <td className="px-4 py-3 text-subtle">{fmtDateUK(i.due_date)}</td>
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    {fmtMoney(i.amount, i.currency)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                      style={{ background: badge.bg, color: badge.text }}
-                    >
-                      {badge.label}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {i.file_url ? (
-                      <a
-                        href={i.file_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-foreground hover:underline text-xs"
-                      >
-                        {i.file_name || "Open"}
-                      </a>
-                    ) : (
-                      <span className="text-subtle text-xs">No file</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      {i.file_name || "Open"}
+                    </a>
+                  ) : (
+                    <span className="text-subtle text-xs">No file</span>
+                  )}
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
       </div>
 
       <div className="text-right">
         <Link
           href="/company/invoices"
-          className="text-[11px] uppercase tracking-wider text-subtle hover:text-foreground"
+          className="text-2xs uppercase tracking-wider text-subtle hover:text-foreground"
         >
-          Manage all invoices →
+          Manage all invoices
         </Link>
       </div>
     </div>
@@ -1107,18 +1145,18 @@ function SummaryCard({
 }) {
   const valueColor =
     tone === "positive"
-      ? "text-success"
+      ? "text-status-ontrack"
       : tone === "warn"
-      ? "text-warning"
+      ? "text-status-approaching"
       : tone === "muted"
       ? "text-subtle"
       : "text-foreground";
   return (
-    <div className="bg-background border border-border rounded-xl p-4">
-      <div className="text-[10px] uppercase tracking-wider text-subtle mb-1">
+    <div className="bg-surface border border-border-faint rounded p-5">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
         {label}
       </div>
-      <div className={`text-xl font-semibold ${valueColor}`}>{value}</div>
+      <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${valueColor}`}>{value}</div>
     </div>
   );
 }
@@ -1203,19 +1241,19 @@ function OnboardingTab({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Clock + progress */}
-      <div className="bg-background border border-border rounded-xl p-5">
+      <div className="bg-surface border border-border-faint rounded p-5">
         <div className="flex items-baseline justify-between mb-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-subtle">
+            <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
               30-day clock
             </div>
             <div className="text-2xl font-semibold text-foreground mt-1">
               {allDone ? (
-                <span className="text-success">Onboarding complete</span>
+                <span className="text-status-ontrack">Onboarding complete</span>
               ) : daysRemaining === 0 ? (
-                <span className="text-warning">Day 30 reached</span>
+                <span className="text-status-approaching">Day 30 reached</span>
               ) : (
                 <>
                   Day {Math.min(daysIn, totalDays)} of {totalDays}{" "}
@@ -1232,7 +1270,7 @@ function OnboardingTab({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[11px] uppercase tracking-wider text-subtle">
+            <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
               Checklist
             </div>
             <div className="text-2xl font-semibold text-foreground mt-1 tabular-nums">
@@ -1240,9 +1278,9 @@ function OnboardingTab({
             </div>
           </div>
         </div>
-        <div className="h-2 bg-background rounded-full overflow-hidden">
+        <div className="h-2 bg-surface-raised rounded-full overflow-hidden">
           <div
-            className="h-full bg-success/70 transition-all"
+            className="h-full bg-status-ontrack transition-all"
             style={{ width: `${pctElapsed}%` }}
           />
         </div>
@@ -1250,19 +1288,19 @@ function OnboardingTab({
 
       {/* Status flip prompt - only show when all done + still in onboarding */}
       {allDone && person.status === "onboarding" && (
-        <div className="bg-success/10 border border-success/30 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-surface-raised border border-border rounded p-5 flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold text-foreground">
               All tasks complete. Ready to flip to active?
             </div>
             <div className="text-xs text-subtle mt-0.5">
-              Status: <strong>onboarding</strong> → <strong>active</strong>.
+              Status: <strong>onboarding</strong> to <strong>active</strong>.
               The Onboarding tab will hide afterwards.
             </div>
           </div>
           <button
             onClick={() => onPatch({ status: "active" })}
-            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-success text-white hover:bg-success"
+            className="px-3 py-2 rounded text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
           >
             Mark active
           </button>
@@ -1270,44 +1308,35 @@ function OnboardingTab({
       )}
 
       {/* Checklist */}
-      <div className="bg-background border border-border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
-            <tr>
-              <th className="text-left px-4 py-3 font-semibold w-12">Done</th>
-              <th className="text-left px-4 py-3 font-semibold">Task</th>
-              <th className="text-left px-4 py-3 font-semibold">Due</th>
-              <th className="text-left px-4 py-3 font-semibold">Completed</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="bg-surface border border-border-faint rounded overflow-x-auto">
+        <Table>
+          <THead>
+            <TR hover={false}>
+              <TH className="w-12">Done</TH>
+              <TH>Task</TH>
+              <TH>Due</TH>
+              <TH>Completed</TH>
+            </TR>
+          </THead>
+          <TBody>
             {checklist
               .slice()
               .sort((a, b) => a.order - b.order)
               .map((t) => (
-                <tr
-                  key={t.id}
-                  className={`border-t border-border hover:bg-background ${
-                    t.done_at ? "opacity-60" : ""
-                  }`}
-                >
-                  <td className="px-4 py-3">
+                <TR key={t.id} className={t.done_at ? "opacity-60" : ""}>
+                  <TD>
                     <button
                       onClick={() => toggleTask(t.id)}
-                      className="size-5 rounded border border-border hover:border-border flex items-center justify-center"
+                      className="size-5 rounded border border-border hover:bg-surface-raised flex items-center justify-center transition-colors"
                       title={t.done_at ? "Mark not done" : "Mark done"}
                     >
                       {t.done_at && (
-                        <CheckCircleIcon className="size-4 text-success" />
+                        <CheckCircleIcon className="size-4 text-status-ontrack" />
                       )}
                     </button>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div
-                      className={`text-foreground ${
-                        t.done_at ? "line-through" : "font-medium"
-                      }`}
-                    >
+                  </TD>
+                  <TD>
+                    <div className={t.done_at ? "text-foreground line-through" : "text-foreground"}>
                       {t.title}
                     </div>
                     {t.description && (
@@ -1315,28 +1344,24 @@ function OnboardingTab({
                         {t.description}
                       </div>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={
-                        isOverdue(t) ? "text-danger" : "text-subtle"
-                      }
-                    >
-                      {fmtDateUK(dueDateFor(t.due_offset_days))}
+                  </TD>
+                  <TD>
+                    <span className={isOverdue(t) ? "text-status-late" : "text-muted"}>
+                      <Num>{fmtDateUK(dueDateFor(t.due_offset_days))}</Num>
                     </span>
                     {isOverdue(t) && (
-                      <div className="text-[10px] uppercase tracking-wider text-danger mt-0.5">
+                      <div className="text-2xs uppercase tracking-wider text-status-late mt-0.5">
                         Overdue
                       </div>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-subtle">
-                    {t.done_at ? fmtDateUK(t.done_at) : "—"}
-                  </td>
-                </tr>
+                  </TD>
+                  <TD className="text-muted">
+                    {t.done_at ? <Num>{fmtDateUK(t.done_at)}</Num> : "-"}
+                  </TD>
+                </TR>
               ))}
-          </tbody>
-        </table>
+          </TBody>
+        </Table>
       </div>
     </div>
   );
@@ -1488,8 +1513,8 @@ function ScoringTab({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-background border border-border rounded-xl p-4 flex items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="bg-surface border border-border-faint rounded p-5 flex items-center justify-between gap-4">
         <div>
           <div className="text-sm font-semibold text-foreground">
             {isPerPage
@@ -1509,7 +1534,7 @@ function ScoringTab({
               if (e.target.value) addPeriod(e.target.value);
               e.target.value = "";
             }}
-            className="text-sm bg-background text-foreground border border-border rounded-md px-3 py-2 hover:border-border"
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
           >
             <option value="">+ Score new {isPerPage ? "build" : "month"}</option>
             {candidatePeriods.map((c) => (
@@ -1522,7 +1547,7 @@ function ScoringTab({
       </div>
 
       {periods.length === 0 ? (
-        <div className="bg-background border border-border rounded-xl p-8 text-center">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
           <p className="text-sm text-subtle mb-2">
             No scoring periods yet.
           </p>
@@ -1574,11 +1599,11 @@ function ScoringPeriodCard({
   const displayDelta = isLocked ? (period.final_delta_pct ?? 0) : projected;
 
   return (
-    <div className="bg-background border border-border rounded-xl overflow-hidden">
+    <div className="bg-surface border border-border-faint rounded overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-dashed border-border flex items-center justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-subtle">
+          <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             {scheme === "per_page" ? "Build" : "Month"}
           </div>
           <div className="text-base font-semibold text-foreground">
@@ -1586,15 +1611,15 @@ function ScoringPeriodCard({
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[11px] uppercase tracking-wider text-subtle">
+          <div className="text-2xs uppercase tracking-wider text-subtle font-medium">
             {isLocked ? "Locked" : "Projected"}
           </div>
           <div
-            className={`text-3xl font-semibold tabular-nums ${
+            className={`text-2xl font-semibold tabular-nums tracking-tight ${
               displayDelta > 0
-                ? "text-success"
+                ? "text-status-ontrack"
                 : displayDelta < 0
-                ? "text-danger"
+                ? "text-status-late"
                 : "text-foreground"
             }`}
           >
@@ -1602,7 +1627,7 @@ function ScoringPeriodCard({
             {displayDelta}%
           </div>
           {capped && !isLocked && (
-            <div className="text-[10px] uppercase tracking-wider text-warning mt-0.5">
+            <div className="text-2xs uppercase tracking-wider text-status-approaching mt-0.5">
               Capped (raw {sub.net > 0 ? "+" : ""}
               {sub.net}%)
             </div>
@@ -1618,77 +1643,71 @@ function ScoringPeriodCard({
             anything kanban can't see (renewal, no-show, complaint).
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
-              <tr>
-                <th className="text-left px-5 py-2 font-semibold">Lever</th>
-                <th className="text-left px-5 py-2 font-semibold">Reason</th>
-                <th className="text-left px-5 py-2 font-semibold">Source</th>
-                <th className="text-right px-5 py-2 font-semibold">Δ%</th>
-                <th className="text-right px-5 py-2 font-semibold w-12"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {period.entries.map((e) => (
-                <tr
-                  key={e.id}
-                  className="border-t border-border hover:bg-background"
-                >
-                  <td className="px-5 py-2.5 text-subtle capitalize">
-                    {e.lever}
-                  </td>
-                  <td className="px-5 py-2.5 text-foreground">
-                    {e.label}
-                    {e.reason && (
-                      <div className="text-xs text-subtle mt-0.5">
-                        {e.reason}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-5 py-2.5 text-subtle text-xs">
-                    {e.source === "manual"
-                      ? "PM manual"
-                      : e.source === "auto_kanban"
-                      ? "Auto · kanban"
-                      : "Auto · retention"}
-                  </td>
-                  <td
-                    className={`px-5 py-2.5 text-right tabular-nums font-medium ${
-                      e.delta_pct > 0
-                        ? "text-success"
-                        : "text-danger"
-                    }`}
-                  >
-                    {e.delta_pct > 0 ? "+" : ""}
-                    {e.delta_pct}%
-                  </td>
-                  <td className="px-5 py-2.5 text-right">
-                    {!isLocked && (
-                      <button
-                        onClick={() => onRemoveEntry(e.id)}
-                        className="text-subtle hover:text-danger"
-                        title="Remove entry"
-                      >
-                        <XCircleIcon className="size-4" />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <Table>
+              <THead>
+                <TR hover={false}>
+                  <TH>Lever</TH>
+                  <TH>Reason</TH>
+                  <TH>Source</TH>
+                  <TH align="right">Δ%</TH>
+                  <TH align="right" className="w-12"></TH>
+                </TR>
+              </THead>
+              <TBody>
+                {period.entries.map((e) => (
+                  <TR key={e.id}>
+                    <TD className="text-muted capitalize">{e.lever}</TD>
+                    <TD className="text-foreground">
+                      {e.label}
+                      {e.reason && (
+                        <div className="text-xs text-subtle mt-0.5">{e.reason}</div>
+                      )}
+                    </TD>
+                    <TD className="text-muted text-xs">
+                      {e.source === "manual"
+                        ? "PM manual"
+                        : e.source === "auto_kanban"
+                        ? "Auto - kanban"
+                        : "Auto - retention"}
+                    </TD>
+                    <TD
+                      align="right"
+                      className={e.delta_pct > 0 ? "text-status-ontrack" : "text-status-late"}
+                    >
+                      <Num>
+                        {e.delta_pct > 0 ? "+" : ""}
+                        {e.delta_pct}%
+                      </Num>
+                    </TD>
+                    <TD align="right">
+                      {!isLocked && (
+                        <button
+                          onClick={() => onRemoveEntry(e.id)}
+                          className="text-subtle hover:text-status-late transition-colors"
+                          title="Remove entry"
+                        >
+                          <XCircleIcon className="size-4" />
+                        </button>
+                      )}
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          </div>
         )}
       </div>
 
       {/* Add manual + lock */}
       {!isLocked && (
-        <div className="px-5 py-4 border-t border-border bg-background/50">
+        <div className="px-5 py-4 border-t border-dashed border-border bg-surface-raised">
           <ManualEntryForm onAdd={onAddManual} />
         </div>
       )}
 
       {/* Footer actions */}
-      <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+      <div className="px-5 py-3 border-t border-dashed border-border flex items-center justify-between">
         <div className="text-xs text-subtle">
           {isLocked
             ? `Locked ${period.locked_at ? fmtDateUK(period.locked_at.slice(0, 10)) : ""}. 5-day dispute window from lock date.`
@@ -1704,7 +1723,7 @@ function ScoringPeriodCard({
         ) : (
           <button
             onClick={onLock}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
           >
             <LockClosedIcon className="size-3.5" />
             Lock at invoice
@@ -1743,26 +1762,22 @@ function ManualEntryForm({
   return (
     <div className="flex items-end gap-2 flex-wrap">
       <div className="grow min-w-[180px]">
-        <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-          Reason (what happened)
-        </label>
+        <label className={fieldLabel}>Reason (what happened)</label>
         <input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="e.g. Client renewed, contractor went dark, complaint received"
-          className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
+          className={inputClass}
         />
       </div>
       <div className="w-32">
-        <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-          Lever
-        </label>
+        <label className={fieldLabel}>Lever</label>
         <select
           value={lever}
           onChange={(e) =>
             setLever(e.target.value as "speed" | "quality" | "retention")
           }
-          className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
+          className={selectClass}
         >
           <option value="speed">Speed</option>
           <option value="quality">Quality</option>
@@ -1770,21 +1785,19 @@ function ManualEntryForm({
         </select>
       </div>
       <div className="w-24">
-        <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-          Δ %
-        </label>
+        <label className={fieldLabel}>Δ %</label>
         <input
           type="number"
           value={delta}
           onChange={(e) => setDelta(e.target.value)}
           placeholder="+10"
-          className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2 tabular-nums"
+          className={`${inputClass} tabular-nums`}
         />
       </div>
       <button
         onClick={submit}
         disabled={!label.trim() || !delta}
-        className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border disabled:opacity-40 disabled:cursor-not-allowed"
+        className="h-[42px] px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         Add
       </button>
@@ -1885,7 +1898,7 @@ function KpisTab({ person }: { person: Person }) {
   }, [person.scoring_periods]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <SummaryCard
           label="Delivered"
@@ -1893,7 +1906,7 @@ function KpisTab({ person }: { person: Person }) {
         />
         <SummaryCard
           label="On-time rate"
-          value={stats.onTimeRate == null ? "—" : `${stats.onTimeRate}%`}
+          value={stats.onTimeRate == null ? "-" : `${stats.onTimeRate}%`}
           tone={
             stats.onTimeRate == null
               ? "neutral"
@@ -1925,7 +1938,7 @@ function KpisTab({ person }: { person: Person }) {
         />
         <SummaryCard
           label="Win rate"
-          value={stats.winRate == null ? "—" : `${stats.winRate}%`}
+          value={stats.winRate == null ? "-" : `${stats.winRate}%`}
           tone={stats.winRate != null && stats.winRate >= 30 ? "positive" : "neutral"}
         />
         <SummaryCard
@@ -1936,26 +1949,26 @@ function KpisTab({ person }: { person: Person }) {
       </div>
 
       {scoringRollup && (
-        <div className="bg-background border border-border rounded-xl p-5">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-subtle mb-2">
+        <div className="bg-surface border border-border-faint rounded p-5">
+          <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
             <SparklesIcon className="size-4" />
             Contractor scheme rollup
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <div className="text-xs text-subtle">Periods locked</div>
-              <div className="text-2xl font-semibold text-foreground tabular-nums">
+              <div className="mt-1 text-xl font-semibold text-foreground tabular-nums tracking-tight">
                 {scoringRollup.count}
               </div>
             </div>
             <div>
               <div className="text-xs text-subtle">Total Δ% applied</div>
               <div
-                className={`text-2xl font-semibold tabular-nums ${
+                className={`mt-1 text-xl font-semibold tabular-nums tracking-tight ${
                   scoringRollup.total > 0
-                    ? "text-success"
+                    ? "text-status-ontrack"
                     : scoringRollup.total < 0
-                    ? "text-danger"
+                    ? "text-status-late"
                     : "text-foreground"
                 }`}
               >
@@ -1966,11 +1979,11 @@ function KpisTab({ person }: { person: Person }) {
             <div>
               <div className="text-xs text-subtle">Average per period</div>
               <div
-                className={`text-2xl font-semibold tabular-nums ${
+                className={`mt-1 text-xl font-semibold tabular-nums tracking-tight ${
                   scoringRollup.avg > 0
-                    ? "text-success"
+                    ? "text-status-ontrack"
                     : scoringRollup.avg < 0
-                    ? "text-danger"
+                    ? "text-status-late"
                     : "text-foreground"
                 }`}
               >
@@ -2031,10 +2044,10 @@ function BonusesTab({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Totals header */}
       {totals.length === 0 ? (
-        <div className="bg-background border border-border rounded-xl p-4 text-xs text-subtle">
+        <div className="bg-surface border border-border-faint rounded p-5 text-xs text-subtle">
           No bonuses logged for {person.preferred_name || person.full_name} yet.
         </div>
       ) : (
@@ -2059,87 +2072,76 @@ function BonusesTab({
 
       {/* History */}
       {sorted.length > 0 && (
-        <div className="bg-background border border-border rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-border">
-            <h3 className="text-[11px] uppercase tracking-wider text-subtle font-semibold">
+        <div className="bg-surface border border-border-faint rounded overflow-hidden">
+          <div className="px-4 py-3 border-b border-border-faint">
+            <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium">
               History
             </h3>
           </div>
-          <table className="w-full text-sm">
-            <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
-              <tr>
-                <th className="text-left px-4 py-2 font-semibold">Paid</th>
-                <th className="text-left px-4 py-2 font-semibold">Kind</th>
-                <th className="text-left px-4 py-2 font-semibold">Reason</th>
-                <th className="text-right px-4 py-2 font-semibold">Amount</th>
-                <th className="text-left px-4 py-2 font-semibold">By</th>
-                <th className="text-right px-4 py-2 font-semibold w-12"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((b) => {
-                const today = new Date().toISOString().slice(0, 10);
-                const scheduled = b.paid_at > today;
-                return (
-                <tr
-                  key={b.id}
-                  className="border-t border-border hover:bg-background"
-                >
-                  <td className="px-4 py-2.5 text-subtle tabular-nums whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      {fmtDateUK(b.paid_at)}
-                      <span
-                        className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                          scheduled
-                            ? "bg-warning/15 text-warning"
-                            : "bg-success/15 text-success"
-                        }`}
-                      >
-                        {scheduled ? "Scheduled" : "Paid"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <span className="text-[10px] uppercase tracking-wider text-subtle">
-                      {b.kind === "contractor_scheme"
-                        ? "Scheme"
-                        : b.kind === "revenue_tier"
-                        ? `Tier${b.tier ? ` ${b.tier}k` : ""}`
-                        : "Ad-hoc"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-foreground">
-                    {b.scoring_period_id ? (
-                      <Link
-                        href={`/company/people/${person.id}?tab=scoring`}
-                        className="hover:underline"
-                      >
-                        {b.reason}
-                      </Link>
-                    ) : (
-                      b.reason
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-medium text-success tabular-nums whitespace-nowrap">
-                    {fmtMoney(b.amount, b.currency)}
-                  </td>
-                  <td className="px-4 py-2.5 text-subtle text-xs">
-                    {b.paid_by}
-                  </td>
-                  <td className="px-4 py-2.5 text-right">
-                    <button
-                      onClick={() => removeBonus(b.id)}
-                      className="text-subtle hover:text-danger"
-                      title="Remove entry"
-                    >
-                      <XCircleIcon className="size-4" />
-                    </button>
-                  </td>
-                </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <Table>
+              <THead>
+                <TR hover={false}>
+                  <TH>Paid</TH>
+                  <TH>Kind</TH>
+                  <TH>Reason</TH>
+                  <TH align="right">Amount</TH>
+                  <TH>By</TH>
+                  <TH align="right" className="w-12"></TH>
+                </TR>
+              </THead>
+              <TBody>
+                {sorted.map((b) => {
+                  const today = new Date().toISOString().slice(0, 10);
+                  const scheduled = b.paid_at > today;
+                  return (
+                    <TR key={b.id}>
+                      <TD className="text-muted whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Num>{fmtDateUK(b.paid_at)}</Num>
+                          <Badge tone={scheduled ? "warning" : "success"}>
+                            {scheduled ? "Scheduled" : "Paid"}
+                          </Badge>
+                        </div>
+                      </TD>
+                      <TD className="text-muted text-xs uppercase tracking-wider">
+                        {b.kind === "contractor_scheme"
+                          ? "Scheme"
+                          : b.kind === "revenue_tier"
+                          ? `Tier${b.tier ? ` ${b.tier}k` : ""}`
+                          : "Ad-hoc"}
+                      </TD>
+                      <TD className="text-foreground">
+                        {b.scoring_period_id ? (
+                          <Link
+                            href={`/company/people/${person.id}?tab=scoring`}
+                            className="hover:underline"
+                          >
+                            {b.reason}
+                          </Link>
+                        ) : (
+                          b.reason
+                        )}
+                      </TD>
+                      <TD align="right" className="text-muted whitespace-nowrap">
+                        <Num>{fmtMoney(b.amount, b.currency)}</Num>
+                      </TD>
+                      <TD className="text-muted text-xs">{b.paid_by}</TD>
+                      <TD align="right">
+                        <button
+                          onClick={() => removeBonus(b.id)}
+                          className="text-subtle hover:text-status-late transition-colors"
+                          title="Remove entry"
+                        >
+                          <XCircleIcon className="size-4" />
+                        </button>
+                      </TD>
+                    </TR>
+                  );
+                })}
+              </TBody>
+            </Table>
+          </div>
         </div>
       )}
     </div>
@@ -2177,30 +2179,26 @@ function LogBonusForm({
   }
 
   return (
-    <div className="bg-background border border-border rounded-xl p-5">
-      <h3 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-4">
+    <div className="bg-surface border border-border-faint rounded p-5">
+      <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium mb-4">
         Log a bonus payment
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
         <div className="md:col-span-1">
-          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-            Paid on
-          </label>
+          <label className={fieldLabel}>Paid on</label>
           <input
             type="date"
             value={paidAt}
             onChange={(e) => setPaidAt(e.target.value)}
-            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
+            className={inputClass}
           />
         </div>
         <div className="md:col-span-1">
-          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-            Kind
-          </label>
+          <label className={fieldLabel}>Kind</label>
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as BonusKind)}
-            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
+            className={selectClass}
           >
             <option value="adhoc">Ad-hoc</option>
             <option value="revenue_tier">Revenue tier</option>
@@ -2209,13 +2207,11 @@ function LogBonusForm({
         </div>
         {kind === "revenue_tier" && (
           <div className="md:col-span-1">
-            <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-              Tier
-            </label>
+            <label className={fieldLabel}>Tier</label>
             <select
               value={tier}
               onChange={(e) => setTier(parseInt(e.target.value) as 100 | 150 | 200)}
-              className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
+              className={selectClass}
             >
               <option value={100}>100k</option>
               <option value={150}>150k</option>
@@ -2224,27 +2220,23 @@ function LogBonusForm({
           </div>
         )}
         <div className={kind === "revenue_tier" ? "md:col-span-2" : "md:col-span-3"}>
-          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-            Reason
-          </label>
+          <label className={fieldLabel}>Reason</label>
           <input
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="What's it for?"
-            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2"
+            className={inputClass}
           />
         </div>
         <div className="md:col-span-1">
-          <label className="text-[10px] uppercase tracking-wider text-subtle block mb-1">
-            Amount ({currency})
-          </label>
+          <label className={fieldLabel}>Amount ({currency})</label>
           <input
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full text-sm bg-background text-foreground border border-border rounded-md px-3 py-2 tabular-nums"
+            className={`${inputClass} tabular-nums`}
           />
         </div>
       </div>
@@ -2254,12 +2246,12 @@ function LogBonusForm({
           value={paidBy}
           onChange={(e) => setPaidBy(e.target.value)}
           placeholder="Logged by"
-          className="text-xs bg-background text-subtle border border-border rounded-md px-2 py-1.5 w-32"
+          className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground w-32"
         />
         <button
           onClick={submit}
           disabled={!amount || !reason.trim()}
-          className="px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-4 py-2 rounded text-xs font-medium bg-foreground text-background hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
         >
           Log payment
         </button>
@@ -2320,17 +2312,17 @@ function InviteButton({ person }: { person: Person }) {
       <button
         onClick={() => setShowCredentials(true)}
         disabled={!canSet || checking}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-border text-foreground hover:bg-border disabled:opacity-40 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         {alreadyHasLogin ? "Reset login credentials" : "Set login credentials"}
       </button>
       {!person.email?.trim() && (
-        <p className="text-[11px] text-subtle mt-1">
+        <p className="text-2xs text-subtle mt-1">
           Add an email above to enable login setup.
         </p>
       )}
       {alreadyHasLogin && (
-        <p className="text-[11px] text-subtle mt-1">
+        <p className="text-2xs text-subtle mt-1">
           {person.full_name} already has a login. Click above to reset their password.
         </p>
       )}
@@ -2394,15 +2386,15 @@ function AccessLevelControl({ person }: { person: Person }) {
   }
 
   if (user === "loading") return null;
-  /* No email or no login yet — InviteButton already prompts to set
+  /* No email or no login yet - InviteButton already prompts to set
    * credentials, so stay quiet rather than double up the hint. */
   if (!email || !user) return null;
 
   const bucket = user.role === "team" ? "team" : "admin";
 
   return (
-    <div className="pt-3 mt-3 border-t border-border">
-      <div className="text-[10px] uppercase tracking-wider text-subtle mb-1.5">
+    <div className="pt-3 mt-3 border-t border-dashed border-border">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium mb-1.5">
         Access level
       </div>
       <div className="grid grid-cols-2 gap-1.5 max-w-[260px]">
@@ -2410,10 +2402,10 @@ function AccessLevelControl({ person }: { person: Person }) {
           type="button"
           onClick={() => change("team")}
           disabled={busy}
-          className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
+          className={`px-3 py-2 rounded border text-xs font-medium transition-colors disabled:opacity-50 ${
             bucket === "team"
-              ? "bg-foreground text-background"
-              : "bg-border text-muted hover:text-foreground"
+              ? "border-border bg-surface-raised text-foreground"
+              : "border-border bg-surface text-muted hover:text-foreground hover:bg-surface-raised"
           }`}
         >
           Member
@@ -2422,21 +2414,21 @@ function AccessLevelControl({ person }: { person: Person }) {
           type="button"
           onClick={() => change("admin")}
           disabled={busy}
-          className={`px-3 py-2 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-50 ${
+          className={`px-3 py-2 rounded border text-xs font-medium transition-colors disabled:opacity-50 ${
             bucket === "admin"
-              ? "bg-foreground text-background"
-              : "bg-border text-muted hover:text-foreground"
+              ? "border-border bg-surface-raised text-foreground"
+              : "border-border bg-surface text-muted hover:text-foreground hover:bg-surface-raised"
           }`}
         >
           Admin
         </button>
       </div>
-      <p className="text-[10px] text-subtle mt-1.5 leading-relaxed">
+      <p className="text-2xs text-subtle mt-1.5 leading-relaxed">
         {bucket === "team"
           ? "Member: My Tasks, Delivery, Hero Offer, Training, tools. No finance/admin."
           : "Admin: full access to every surface (finance + admin still need their own passcode)."}
       </p>
-      {note && <p className="text-[11px] text-success mt-1">{note}</p>}
+      {note && <p className="text-2xs text-status-ontrack mt-1">{note}</p>}
     </div>
   );
 }
@@ -2519,7 +2511,7 @@ function SetCredentialsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <form
         onSubmit={submit}
-        className="bg-background rounded-2xl ring-1 ring-border shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+        className="bg-surface rounded border border-border w-full max-w-md p-6"
       >
         <h2 className="text-lg font-semibold text-foreground mb-1">
           Set login credentials
@@ -2529,44 +2521,44 @@ function SetCredentialsModal({
         </p>
         <div className="space-y-3">
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Email</label>
+            <label className={fieldLabel}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring"
+              className={inputClass}
               required
             />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-subtle mb-1.5">Password</label>
+            <label className={fieldLabel}>Password</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="flex-1 h-9 px-3 bg-black/40 rounded-md text-[13px] text-foreground font-mono placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-ring"
+                className={`${inputClass} font-mono`}
                 required
                 minLength={8}
               />
               <button
                 type="button"
                 onClick={() => setPassword(generatePassword())}
-                className="px-2 h-9 text-[11px] text-subtle hover:text-foreground hover:bg-surface-hover rounded-md transition-colors"
+                className="px-3 rounded border border-border bg-surface text-xs text-subtle hover:text-foreground hover:bg-surface-raised transition-colors"
                 title="Generate new password"
               >
                 ↻
               </button>
             </div>
-            <p className="text-[10px] text-subtle mt-1">Min 8 chars. Auto-generated; edit if you prefer.</p>
+            <p className="text-2xs text-subtle mt-1">Min 8 chars. Auto-generated; edit if you prefer.</p>
           </div>
         </div>
         {result && (
           <div
-            className={`mt-4 p-3 rounded-lg text-[12px] ${
+            className={`mt-4 p-3 rounded border text-xs ${
               result.ok
-                ? "bg-success/[0.08] ring-1 ring-success/30 text-success"
-                : "bg-danger/[0.08] ring-1 ring-danger/30 text-danger"
+                ? "bg-surface-raised border-border text-status-ontrack"
+                : "bg-surface-raised border-border text-status-late"
             }`}
           >
             {result.msg}
@@ -2575,21 +2567,21 @@ function SetCredentialsModal({
                 <button
                   type="button"
                   onClick={() => copy("email")}
-                  className="px-2 py-1 text-[11px] bg-success/[0.12] hover:bg-success/[0.2] rounded transition-colors"
+                  className="px-2 py-1 text-2xs rounded border border-border bg-surface hover:bg-surface-raised text-muted hover:text-foreground transition-colors"
                 >
                   {copiedField === "email" ? "Copied" : "Copy email"}
                 </button>
                 <button
                   type="button"
                   onClick={() => copy("password")}
-                  className="px-2 py-1 text-[11px] bg-success/[0.12] hover:bg-success/[0.2] rounded transition-colors"
+                  className="px-2 py-1 text-2xs rounded border border-border bg-surface hover:bg-surface-raised text-muted hover:text-foreground transition-colors"
                 >
                   {copiedField === "password" ? "Copied" : "Copy password"}
                 </button>
                 <button
                   type="button"
                   onClick={() => copy("both")}
-                  className="px-2 py-1 text-[11px] bg-success/[0.12] hover:bg-success/[0.2] rounded transition-colors"
+                  className="px-2 py-1 text-2xs rounded border border-border bg-surface hover:bg-surface-raised text-muted hover:text-foreground transition-colors"
                 >
                   {copiedField === "both" ? "Copied" : "Copy both + link"}
                 </button>
@@ -2609,7 +2601,7 @@ function SetCredentialsModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-3 py-2 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-50"
+              className="px-3 py-2 bg-foreground text-background text-sm font-medium rounded hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {submitting ? "Setting..." : "Set credentials"}
             </button>
@@ -2650,9 +2642,9 @@ function Section({
   action?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-background border border-border rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] ${className}`}>
+    <div className={`bg-surface border border-border-faint rounded p-5 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-subtle">{title}</h3>
+        <h3 className="text-2xs uppercase tracking-wider text-subtle font-medium">{title}</h3>
         {action}
       </div>
       <div className="space-y-3">{children}</div>
@@ -2673,7 +2665,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className={labelClass}>{label}</label>
+      <label className={fieldLabel}>{label}</label>
       <input
         type={type}
         value={value}
@@ -2699,7 +2691,7 @@ function FieldSelect({
 }) {
   return (
     <div>
-      <label className={labelClass}>{label}</label>
+      <label className={fieldLabel}>{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -2707,7 +2699,7 @@ function FieldSelect({
       >
         {options.map((opt) => (
           <option key={opt} value={opt}>
-            {renderOption ? renderOption(opt) : opt || "— Select —"}
+            {renderOption ? renderOption(opt) : opt || "Select"}
           </option>
         ))}
       </select>
@@ -2776,7 +2768,7 @@ function AgreementsTab({ person }: { person: Person }) {
   }
 
   if (loading) {
-    return <div className="h-24 bg-background rounded-xl animate-pulse" />;
+    return <div className="h-24 bg-surface rounded border border-border-faint animate-pulse" />;
   }
 
   return (
@@ -2784,31 +2776,31 @@ function AgreementsTab({ person }: { person: Person }) {
       {/* Header row: always-visible + New agreement button.
        * Dylan can issue multiple contracts per person now (e.g. a
        * second contract after a role change, a separate NDA, etc.). */}
-      <div className="flex items-center justify-between mb-4 gap-3">
+      <div className="flex items-center justify-between mb-6 gap-3">
         <div>
-          <h3 className="text-[15px] font-semibold text-foreground">
+          <h3 className="text-base font-semibold text-foreground">
             Agreements ({agreements.length})
           </h3>
-          <p className="text-[11px] text-subtle mt-0.5">
+          <p className="text-2xs text-subtle mt-0.5">
             Every contract, NDA + status for {person.full_name}. New one picks
             from Leadership / Designer / Developer / Custom template.
           </p>
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background text-[12px] font-semibold rounded-md hover:bg-foreground"
+          className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
         >
-          + New agreement
+          <PlusIcon className="size-3.5" /> New agreement
         </button>
       </div>
 
       {agreements.length === 0 ? (
-        <div className="bg-background ring-1 ring-border rounded-2xl p-10 text-center">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
           <p className="text-sm text-foreground font-medium mb-1">
             No agreements yet for {person.full_name}.
           </p>
           <p className="text-xs text-subtle max-w-md mx-auto">
-            Click <span className="text-foreground font-medium">+ New agreement</span> above to generate a contract. Pick the template that fits the role - the master clauses get snapshotted onto this person&apos;s contract so future template edits don&apos;t rewrite it.
+            Click <span className="text-foreground font-medium">New agreement</span> above to generate a contract. Pick the template that fits the role - the master clauses get snapshotted onto this person&apos;s contract so future template edits don&apos;t rewrite it.
           </p>
         </div>
       ) : (
@@ -2818,31 +2810,28 @@ function AgreementsTab({ person }: { person: Person }) {
             return (
               <div
                 key={a.id}
-                className="flex items-center justify-between gap-3 bg-background ring-1 ring-border rounded-xl p-4 hover:ring-border transition-all group"
+                className="flex items-center justify-between gap-3 bg-surface border border-border-faint rounded p-5 hover:bg-surface-raised transition-colors group"
               >
                 <Link
                   href={`/company/contracts/${a.id}`}
                   className="flex items-center gap-3 flex-1 min-w-0"
                 >
-                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-surface-raised text-foreground shrink-0">
+                  <span className="inline-flex items-center px-2 py-0.5 text-2xs font-medium uppercase tracking-wider rounded-sm border border-border bg-surface-raised text-muted shrink-0">
                     {AGREEMENT_KIND_LABEL[a.kind]}
                   </span>
                   <div className="min-w-0">
-                    <div className="text-[14px] font-medium text-foreground truncate">
+                    <div className="text-sm font-medium text-foreground truncate">
                       {a.template_body.title}
                     </div>
-                    <div className="text-[11px] text-subtle mt-0.5 truncate">
+                    <div className="text-2xs text-subtle mt-0.5 truncate">
                       {a.template_revision}
                     </div>
                   </div>
                 </Link>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span
-                    className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded"
-                    style={{ background: meta.bg, color: meta.fg }}
-                  >
+                  <Badge tone={AGREEMENT_STATUS_TONE[a.status] ?? "neutral"}>
                     {meta.label}
-                  </span>
+                  </Badge>
                   {/* Per-agreement actions. Archive flips to
                    * terminated (audit-safe). Delete is destructive
                    * and confirms inline. Hidden until row hover so
@@ -2852,7 +2841,7 @@ function AgreementsTab({ person }: { person: Person }) {
                       <button
                         onClick={() => archiveAgreement(a)}
                         title="Archive (flips to terminated, kept for audit)"
-                        className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-foreground hover:bg-surface-hover rounded"
+                        className="px-2 py-0.5 text-2xs font-medium uppercase tracking-wider text-subtle hover:text-foreground hover:bg-surface rounded transition-colors"
                       >
                         Archive
                       </button>
@@ -2860,7 +2849,7 @@ function AgreementsTab({ person }: { person: Person }) {
                     <button
                       onClick={() => deleteAgreement(a)}
                       title="Delete permanently"
-                      className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-subtle hover:text-danger hover:bg-danger/[0.06] rounded"
+                      className="px-2 py-0.5 text-2xs font-medium uppercase tracking-wider text-subtle hover:text-danger rounded transition-colors"
                     >
                       Delete
                     </button>

@@ -25,7 +25,23 @@ import {
   type Person,
 } from "@/lib/company/types";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
-import { INVOICE_STATUS_BADGE } from "@/lib/company/ui";
+import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
+
+/* Status = the only colour in the table body: a quiet Badge (subtle bg,
+ * muted text, one leading dot). All statuses share the pill shape. */
+type StatusTone = "success" | "warning" | "danger" | "neutral";
+const STATUS_TONE: Record<InvoiceStatus, StatusTone> = {
+  pending: "warning",
+  paid: "success",
+  overdue: "danger",
+  disputed: "neutral",
+};
+const STATUS_LABEL: Record<InvoiceStatus, string> = {
+  pending: "Pending",
+  paid: "Paid",
+  overdue: "Overdue",
+  disputed: "Disputed",
+};
 
 type SortKey = "due_date" | "supplier_name" | "amount" | "status";
 
@@ -36,8 +52,10 @@ export default function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | InvoiceStatus>("all");
   const [query, setQuery] = useState("");
   const [showAdd, setShowAdd] = useState(false);
-  const [sortKey, setSortKey] = useState<SortKey>("due_date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  // Default sort: soonest due first. Header sort controls were removed in the
+  // decluttered toolbar pass; the list keeps this stable ordering.
+  const sortKey: SortKey = "due_date";
+  const sortDir: "asc" | "desc" = "asc";
 
   useEffect(() => {
     Promise.all([invoicesStore.getAll(), peopleStore.getAll()]).then(([inv, ppl]) => {
@@ -92,133 +110,119 @@ export default function InvoicesPage() {
     setShowAdd(false);
   }
 
-  function toggleSort(key: SortKey) {
-    if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-  }
-
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <SummaryCard label="Outstanding" amount={summary.outstanding} />
         <SummaryCard label="Overdue" amount={summary.overdue} accent="red" />
-        <SummaryCard label="Paid this month" amount={summary.paidThisMonth} accent="green" />
+        <SummaryCard label="Paid this month" amount={summary.paidThisMonth} />
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      {/* Toolbar: count + filters left, search right. One quiet row. */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative w-56">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
-            <input
-              placeholder="Search…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={`${inputClass} pl-8`}
-            />
-          </div>
-          <div className="w-40">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | InvoiceStatus)}
-              className={selectClass}
-            >
-              <option value="all">All statuses</option>
-              <option value="pending">Pending</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
-              <option value="disputed">Disputed</option>
-            </select>
-          </div>
+          <span className="text-xs text-subtle tabular-nums mr-1">
+            {filtered.length} of {enriched.length}
+          </span>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as "all" | InvoiceStatus)}
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+          >
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+            <option value="disputed">Disputed</option>
+          </select>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+          >
+            <PlusIcon className="size-3.5" /> Upload invoice
+          </button>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
-        >
-          <PlusIcon className="size-4" /> Upload invoice
-        </button>
+        <div className="relative w-full md:w-64">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
+          <input
+            placeholder="Search supplier or invoice #"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-8 w-full pl-8 pr-3 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+          />
+        </div>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-background rounded-xl animate-pulse" />
+        <div className="h-48 bg-surface rounded border border-border-faint animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-background border border-dashed border-border rounded-xl p-12 text-center">
-          <div className="text-sm text-subtle mb-3">
+        <div className="bg-surface border border-border-faint rounded py-16 text-center">
+          <p className="text-sm text-subtle">
             {invoices.length === 0
-              ? "No invoices yet — upload your first one."
+              ? "No invoices yet."
               : "No invoices match these filters."}
-          </div>
+          </p>
           {invoices.length === 0 && (
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm rounded-lg hover:opacity-90"
+              className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded border border-border bg-surface text-xs text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
             >
-              <DocumentArrowUpIcon className="size-4" /> Upload invoice
+              <DocumentArrowUpIcon className="size-3.5" /> Upload invoice
             </button>
           )}
         </div>
       ) : (
-        <div className="bg-background border border-border rounded-xl overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-background text-[11px] uppercase tracking-wider text-subtle">
-              <tr>
-                <Th onClick={() => toggleSort("supplier_name")}>Supplier</Th>
-                <th className="text-left px-4 py-3 font-semibold">Invoice #</th>
-                <th className="text-left px-4 py-3 font-semibold">Issue</th>
-                <Th onClick={() => toggleSort("due_date")}>Due</Th>
-                <Th onClick={() => toggleSort("amount")}>Amount</Th>
-                <Th onClick={() => toggleSort("status")}>Status</Th>
-                <th className="text-left px-4 py-3 font-semibold">File</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((i) => {
-                const badge = INVOICE_STATUS_BADGE[i.status];
-                return (
-                  <tr key={i.id} className="border-t border-border hover:bg-surface-hover">
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/company/invoices/${i.id}`}
-                        className="font-medium text-foreground hover:underline"
+        <div className="bg-surface border border-border-faint rounded overflow-x-auto">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Supplier</TH>
+                <TH>Invoice #</TH>
+                <TH>Issue</TH>
+                <TH>Due</TH>
+                <TH>Status</TH>
+                <TH align="right">Amount</TH>
+                <TH>File</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {filtered.map((i) => (
+                <TR key={i.id}>
+                  <TD className="max-w-[240px]">
+                    <Link
+                      href={`/company/invoices/${i.id}`}
+                      className="text-foreground hover:underline truncate block"
+                    >
+                      {i.supplier_name}
+                    </Link>
+                  </TD>
+                  <TD className="text-muted">{i.invoice_number || "-"}</TD>
+                  <TD className="text-muted"><Num>{fmtDateUK(i.issue_date)}</Num></TD>
+                  <TD className="text-muted"><Num>{fmtDateUK(i.due_date)}</Num></TD>
+                  <TD>
+                    <Badge tone={STATUS_TONE[i.status]}>{STATUS_LABEL[i.status]}</Badge>
+                  </TD>
+                  <TD align="right" className="text-muted">
+                    <Num>{fmtMoney(i.amount, i.currency)}</Num>
+                  </TD>
+                  <TD className="text-muted">
+                    {i.file_url ? (
+                      <a
+                        href={i.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-foreground hover:text-foreground inline-flex items-center gap-1"
                       >
-                        {i.supplier_name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-subtle">{i.invoice_number || "—"}</td>
-                    <td className="px-4 py-3 text-subtle">{fmtDateUK(i.issue_date)}</td>
-                    <td className="px-4 py-3 text-subtle">{fmtDateUK(i.due_date)}</td>
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      {fmtMoney(i.amount, i.currency)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                        style={{ background: badge.bg, color: badge.text }}
-                      >
-                        {badge.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {i.file_url ? (
-                        <a
-                          href={i.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-foreground hover:underline inline-flex items-center gap-1"
-                        >
-                          <DocumentIcon className="size-4" />
-                        </a>
-                      ) : (
-                        <span className="text-muted">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        <DocumentIcon className="size-4" />
+                      </a>
+                    ) : (
+                      <span className="text-subtle">-</span>
+                    )}
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
         </div>
       )}
 
@@ -233,14 +237,6 @@ export default function InvoicesPage() {
   );
 }
 
-function Th({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
-  return (
-    <th className="text-left px-4 py-3 font-semibold cursor-pointer select-none hover:text-foreground" onClick={onClick}>
-      {children}
-    </th>
-  );
-}
-
 function SummaryCard({
   label,
   amount,
@@ -248,14 +244,13 @@ function SummaryCard({
 }: {
   label: string;
   amount: number;
-  accent?: "red" | "green";
+  accent?: "red";
 }) {
-  const color =
-    accent === "red" ? "text-danger" : accent === "green" ? "text-success" : "text-foreground";
+  const color = accent === "red" ? "text-status-late" : "text-foreground";
   return (
-    <div className="bg-background border border-border rounded-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-      <div className="text-[11px] uppercase tracking-wider text-subtle mb-1">{label}</div>
-      <div className={`text-2xl font-semibold ${color}`}>{fmtMoney(amount)}</div>
+    <div className="bg-surface border border-border-faint rounded p-5">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
+      <div className={`mt-2 text-xl font-semibold tabular-nums tracking-tight ${color}`}>{fmtMoney(amount)}</div>
     </div>
   );
 }
@@ -342,8 +337,8 @@ function UploadInvoiceModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <form onSubmit={submit} className="bg-background rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
+    <div className="fixed inset-0 bg-background/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <form onSubmit={submit} className="bg-surface-raised border border-border rounded w-full max-w-2xl p-5 my-8">
         <h2 className="text-lg font-semibold text-foreground mb-4">Upload invoice</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -412,7 +407,7 @@ function UploadInvoiceModal({
               onChange={(e) => setLinkedPersonId(e.target.value)}
               className={selectClass}
             >
-              <option value="">— None —</option>
+              <option value="">- None -</option>
               {people.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.full_name}

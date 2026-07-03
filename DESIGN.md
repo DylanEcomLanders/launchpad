@@ -25,6 +25,8 @@ or shadow. Reference surface: `src/app/(dashboard)/finance/page.tsx` (the calibr
   No shadows as the primary elevation cue on dark surfaces — borders + background steps do the work.
 - Sub-cards (stat rows, mini-cards) sit on `bg-surface-raised` with a tighter radius than
   the parent. Never the same background as the parent card.
+- Modals/dialogs: floating panel = `bg-surface-raised border border-border rounded` + `p-5`, NO heavy
+  shadow (`shadow-xl` etc.). Scrim = `bg-background/70` (or `bg-black/40..50`), never a hard black.
 - NEVER: gradients on surfaces, glassmorphism, blur, glow on containers, double borders.
 
 ## 3. Spacing is rhythmic, not eyeballed

@@ -484,7 +484,7 @@ function ComposeCandidateModal({
           <div>
             <label className={labelClass}>Role</label>
             <select value={roleId} onChange={(e) => setRoleId(e.target.value)} className={selectClass}>
-              <option value="">— None —</option>
+              <option value="">None</option>
               {roles
                 .filter((r) => r.status === "open")
                 .map((r) => (
@@ -671,7 +671,7 @@ function CandidateSidePanel({
                 onChange={(e) => onPatch({ role_id: e.target.value || undefined })}
                 className={selectClass}
               >
-                <option value="">— None —</option>
+                <option value="">None</option>
                 {roles.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.title}

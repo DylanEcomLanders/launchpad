@@ -31,6 +31,7 @@ import { initials, deptColor, STATUS_BADGE } from "@/lib/company/ui";
 import { createContractDraftFromPerson } from "@/lib/agreements/data";
 import { useRouter } from "next/navigation";
 import { Table, THead, TBody, TR, TH, TD, Badge } from "@/components/ui";
+import { setAppUserRole, type AppUser, type AppUserRole } from "@/lib/auth/app-users";
 
 type View = "grid" | "table" | "byPod" | "byStatus";
 
@@ -83,6 +84,7 @@ export default function PeoplePanel() {
   const [people, setPeople] = useState<Person[]>([]);
   const [pods, setPods] = useState<Pod[]>([]);
   const [invitedEmails, setInvitedEmails] = useState<Set<string>>(new Set());
+  const [appUsers, setAppUsers] = useState<AppUser[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [view, setView] = useState<View>("table");
   const [query, setQuery] = useState("");
@@ -104,6 +106,7 @@ export default function PeoplePanel() {
     import("@/lib/auth/app-users")
       .then(({ listAppUsers }) => listAppUsers())
       .then((users) => {
+        setAppUsers(users);
         setInvitedEmails(new Set(users.map((u) => u.email.toLowerCase())));
       })
       .catch((err) => console.error("[people] failed to load app_users:", err));
@@ -139,6 +142,19 @@ export default function PeoplePanel() {
       return hay.includes(q);
     });
   }, [people, pods, query, deptFilter, typeFilter, statusFilter, podFilter]);
+
+  /* Access role is stored on the app_users account (matched to a person by
+   * email). setAppUserRole routes through the service-role endpoint; the
+   * person picks up the new role on their next sign-in. */
+  const appUserByEmail = useMemo(
+    () => new Map(appUsers.map((u) => [u.email.toLowerCase(), u])),
+    [appUsers],
+  );
+
+  async function handleRoleChange(id: string, role: AppUserRole) {
+    const ok = await setAppUserRole(id, role);
+    if (ok) setAppUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)));
+  }
 
   async function handleAdd(
     person: Person,
@@ -292,7 +308,7 @@ export default function PeoplePanel() {
       ) : view === "byStatus" ? (
         <ByStatusView people={filtered} />
       ) : (
-        <PeopleTable rows={filtered} pods={pods} />
+        <PeopleTable rows={filtered} pods={pods} appUserByEmail={appUserByEmail} onRoleChange={handleRoleChange} />
       )}
 
       {showAdd && <AddPersonModal onCancel={() => setShowAdd(false)} onSave={handleAdd} />}
@@ -478,7 +494,44 @@ function PersonAvatar({
  * column (text-foreground, avatar + name); every other cell is muted.
  * Status is the only colour, via the Badge primitive. Pod is folded in
  * as a muted column with a tiny data-viz dept dot. */
-function PeopleTable({ rows, pods }: { rows: Person[]; pods: Pod[] }) {
+const ROLE_LABEL: Record<AppUserRole, string> = { admin: "Admin", cro: "CRO", team: "Member" };
+
+/* Inline access-role selector. Only people with an app_users account can have
+ * a role; the rest show a muted dash (invite them first). */
+function AccessCell({
+  appUser,
+  onChange,
+}: {
+  appUser: AppUser | undefined;
+  onChange: (id: string, role: AppUserRole) => void;
+}) {
+  if (!appUser) return <span className="text-subtle">-</span>;
+  return (
+    <select
+      value={appUser.role}
+      onChange={(e) => onChange(appUser.id, e.target.value as AppUserRole)}
+      className="h-7 px-2 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+    >
+      {(Object.keys(ROLE_LABEL) as AppUserRole[]).map((r) => (
+        <option key={r} value={r}>
+          {ROLE_LABEL[r]}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function PeopleTable({
+  rows,
+  pods,
+  appUserByEmail,
+  onRoleChange,
+}: {
+  rows: Person[];
+  pods: Pod[];
+  appUserByEmail: Map<string, AppUser>;
+  onRoleChange: (id: string, role: AppUserRole) => void;
+}) {
   return (
     <div className="bg-surface border border-border-faint rounded overflow-x-auto">
       <Table>
@@ -490,11 +543,13 @@ function PeopleTable({ rows, pods }: { rows: Person[]; pods: Pod[] }) {
             <TH>Pod</TH>
             <TH>Type</TH>
             <TH>Status</TH>
+            <TH>Access</TH>
           </TR>
         </THead>
         <TBody>
           {rows.map((p) => {
             const pod = podForPerson(p, pods);
+            const appUser = p.email ? appUserByEmail.get(p.email.toLowerCase()) : undefined;
             return (
               <TR key={p.id}>
                 <TD className="max-w-[240px]">
@@ -523,6 +578,9 @@ function PeopleTable({ rows, pods }: { rows: Person[]; pods: Pod[] }) {
                 <TD className="text-muted capitalize">{p.employment_type}</TD>
                 <TD>
                   <StatusPill status={p.status} />
+                </TD>
+                <TD>
+                  <AccessCell appUser={appUser} onChange={onRoleChange} />
                 </TD>
               </TR>
             );
