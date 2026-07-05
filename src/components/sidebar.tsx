@@ -505,7 +505,7 @@ export function Sidebar() {
           <span className="text-subtle">{section.icon}</span>
           <span className="flex-1 text-sm font-medium">{section.title}</span>
         </div>
-        <div className="pl-3 mt-1 mb-1 space-y-1">
+        <div className="ml-[1.15rem] mt-1 mb-1 space-y-1 border-l border-border pl-2.5">
           {section.items.map((item) => {
             const active = !item.external && isActive(item.href);
             if (item.external) {
