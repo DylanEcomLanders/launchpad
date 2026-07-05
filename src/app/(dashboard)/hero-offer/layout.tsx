@@ -53,7 +53,7 @@ export default function HeroOfferLayout({
 
   return (
     <div className="min-h-full bg-background">
-      {/* Sticky tab strip — the only chrome the shell owns. Ghost pill tabs
+      {/* Sticky tab strip: the only chrome the shell owns. Ghost pill tabs
        * (kanban Results-Library style): active tab is a raised rounded pill,
        * the rest muted text. */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-md">

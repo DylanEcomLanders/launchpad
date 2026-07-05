@@ -1,7 +1,7 @@
 "use client";
 
-/* ── Hero Offer — the conversion-engine front page ──
- * Internal mirror of the public /pricing offer so the team + founder see what
+/* ── Hero Offer: the conversion-engine front page ──
+ * Internal mirror of the public /pricing offer so the team and founder see what
  * the prospect sees: the three tiers, the North Star / guarantee / fit, the
  * playbook's stages, and an editable objection library.
  * DESIGN.md craft bar: dark tokens, 4px rounding, border-border-faint cards,
@@ -71,7 +71,7 @@ export default function HeroOfferPage() {
           We turn the traffic you already pay for into revenue.
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          One programme. A full conversion team — design, dev, copy, CRO — embedded in your business on a monthly system. Not consultancy, not a vendor: a partnership built to compound.
+          One programme. A full conversion team (design, dev, copy, CRO) embedded in your business on a monthly system. Not consultancy, not a vendor: a partnership built to compound.
         </p>
       </header>
 
@@ -128,7 +128,7 @@ export default function HeroOfferPage() {
           <div className="flex size-9 shrink-0 items-center justify-center rounded border border-border-faint bg-surface-raised text-muted"><WrenchScrewdriverIcon className="size-4" /></div>
           <div className="min-w-0 flex-1">
             <div className="text-3xs font-semibold uppercase tracking-wider text-subtle">Operations</div>
-            <div className="mt-0.5 text-sm text-foreground">Every operational tool the playbook turns into — pipeline, briefs, tests, reports, onboarding, lifecycle, cadence.</div>
+            <div className="mt-0.5 text-sm text-foreground">Every operational tool the playbook turns into: pipeline, briefs, tests, reports, onboarding, lifecycle, cadence.</div>
           </div>
           <ArrowUpRightIcon className="size-4 shrink-0 text-subtle transition-colors group-hover:text-foreground" />
         </Link>
