@@ -1,7 +1,7 @@
 /* ── Offer › Price list ──
  * The clean, shareable price sheet. Same three tiers as the Hero Offer tab
  * (single source in lib/hero-offer/offer), presented as a reference: full
- * inclusions per tier + the commitment terms. Server component — static data,
+ * inclusions per tier plus the commitment terms. Server component, static data,
  * no interactivity.
  */
 

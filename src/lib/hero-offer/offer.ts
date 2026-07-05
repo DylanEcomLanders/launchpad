@@ -1,4 +1,4 @@
-/* ── Offer data — single source for the offer surface ──
+/* ── Offer data: single source for the offer surface ──
  * Tiers mirror /pricing exactly; the Hero Offer + Price list tabs both read
  * from here so the numbers can never drift apart. Stage resources drive the
  * Resources tab. Icons are plain component refs (no JSX), so this stays a
