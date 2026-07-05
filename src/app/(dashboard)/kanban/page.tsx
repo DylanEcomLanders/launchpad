@@ -91,9 +91,9 @@ const TICKET_CATEGORIES: {
   icon: typeof BugAntIcon;
   tone: string;
 }[] = [
-  { value: "ticket", label: "Ticket", icon: TicketIcon, tone: "text-sky-400" },
-  { value: "bug", label: "Bug", icon: BugAntIcon, tone: "text-amber-400" },
-  { value: "fire", label: "Fire", icon: FireIcon, tone: "text-red-400" },
+  { value: "ticket", label: "Ticket", icon: TicketIcon, tone: "text-muted" },
+  { value: "bug", label: "Bug", icon: BugAntIcon, tone: "text-status-approaching" },
+  { value: "fire", label: "Fire", icon: FireIcon, tone: "text-status-late" },
 ];
 
 /* Auto-assignment on entry to Launch + Testing. Aanchal owns the test
@@ -470,8 +470,8 @@ const STATUS_RANK: Record<StuckStatus, number> = {
 const LIVE_STYLE = {
   ring: "border-border",
   bg: "bg-surface",
-  edge: "border-l-emerald-500/70",
-  accent: "text-emerald-400",
+  edge: "border-l-status-ontrack/70",
+  accent: "text-status-ontrack",
   dot: "var(--color-status-ontrack)",
   label: "Live",
 };
@@ -487,16 +487,16 @@ const STUCK_STYLES: Record<StuckStatus, {
   stuck: {
     ring: "border-border",
     bg: "bg-surface",
-    edge: "border-l-rose-500/70",
-    accent: "text-rose-400",
+    edge: "border-l-status-late/70",
+    accent: "text-status-late",
     dot: "var(--color-status-late)",
     label: "Stuck",
   },
   approaching: {
     ring: "border-border",
     bg: "bg-surface",
-    edge: "border-l-amber-500/70",
-    accent: "text-amber-400",
+    edge: "border-l-status-approaching/70",
+    accent: "text-status-approaching",
     dot: "var(--color-status-approaching)",
     label: "Approaching",
   },
@@ -1758,7 +1758,7 @@ function PodProjectSwitch({
         <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
       </Pill>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-80 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+        <div className="absolute left-0 top-9 z-40 w-80 bg-background rounded ring-1 ring-panel-line overflow-hidden">
           <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
             Projects on this pod ({projects.length})
           </div>
@@ -1878,7 +1878,7 @@ function BoardColumns(props: BoardColumnsProps) {
               props.onSetDragOverCol(null);
               props.onSetDraggingId(null);
             }}
-            className="w-[312px] shrink-0 rounded-xl flex flex-col h-full overflow-hidden"
+            className="w-[312px] shrink-0 rounded flex flex-col h-full overflow-hidden"
           >
             <div className="px-2 py-2.5 shrink-0">
               <div className="flex items-center justify-between gap-2">
@@ -1909,7 +1909,7 @@ function BoardColumns(props: BoardColumnsProps) {
                           form?.scrollIntoView({ behavior: "smooth", block: "end" });
                         }, 50);
                       }}
-                      className="size-5 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-white/[0.06] transition-colors"
+                      className="size-5 inline-flex items-center justify-center rounded text-subtle hover:text-foreground hover:bg-white/[0.06] transition-colors"
                       title={`Add card to ${phase.label}`}
                     >
                       <PlusIcon className="size-3.5" />
@@ -1958,7 +1958,7 @@ function BoardColumns(props: BoardColumnsProps) {
                     phase.value === "tickets" ? (
                       // Category picker + title input, only on the Tickets
                       // column. Other phases get the plain title input below.
-                      <div className="flex flex-col gap-1.5 rounded-md bg-background border border-border p-1.5" data-add-form="true">
+                      <div className="flex flex-col gap-1.5 rounded bg-background border border-border p-1.5" data-add-form="true">
                         <div className="flex items-center gap-1">
                           {TICKET_CATEGORIES.map((c) => {
                             const Icon = c.icon;
@@ -2010,7 +2010,7 @@ function BoardColumns(props: BoardColumnsProps) {
                       // Non-tickets columns: deliverable category select +
                       // title input. Category is optional - blank just means
                       // an uncategorised card.
-                      <div className="flex flex-col gap-1.5 rounded-md bg-background border border-border p-1.5" data-add-form="true">
+                      <div className="flex flex-col gap-1.5 rounded bg-background border border-border p-1.5" data-add-form="true">
                         <div className="relative">
                           <select
                             value={props.newDeliverableCategoryDraft}
@@ -2061,7 +2061,7 @@ function BoardColumns(props: BoardColumnsProps) {
                   ) : (
                     <button
                       onClick={() => props.onSetAddingToPhase(phase.value)}
-                      className="w-full px-2.5 py-1.5 rounded-md text-3xs font-medium text-subtle hover:text-white hover:bg-surface-raised inline-flex items-center justify-center gap-1.5 transition-colors"
+                      className="w-full px-2.5 py-1.5 rounded text-3xs font-medium text-subtle hover:text-white hover:bg-surface-raised inline-flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <PlusIcon className="size-3.5" />
                       Add
@@ -2172,7 +2172,7 @@ function Card({
   // the primary designer knows it's signed off and needs sending to the
   // client. Once moved to External Rev (sent), green clears.
   const approved = d.phase === "internal-revisions" && !!d.approvedAt;
-  // The one small colour on the card — a Linear-style health mark. Muted
+  // The one small colour on the card, a Linear-style health mark. Muted
   // tones: green on-track/live, amber approaching, muted red when late.
   const statusDot =
     live || approved
@@ -2430,7 +2430,7 @@ function FilterSelect({
         <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
       </Pill>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-52 max-h-72 overflow-y-auto bg-background rounded-lg ring-1 ring-panel-line shadow-popover py-1">
+        <div className="absolute left-0 top-9 z-40 w-52 max-h-72 overflow-y-auto bg-background rounded ring-1 ring-panel-line py-1">
           {all.map((o) => (
             <button
               key={o.value}
@@ -2494,7 +2494,7 @@ interface ResultsBankGridProps {
 function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
   if (cards.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-surface px-6 py-16 text-center">
+      <div className="rounded border border-border bg-surface px-6 py-16 text-center">
         <p className="text-sm font-semibold text-foreground">No tests yet</p>
         <p className="mt-1 text-xs text-subtle">
           Conclude a launch-testing deliverable to build the bank.
@@ -2511,7 +2511,7 @@ function ResultsBankGrid({ cards, onOpen }: ResultsBankGridProps) {
           <button
             key={d.id}
             onClick={() => onOpen(d.id)}
-            className="text-left p-4 rounded-lg border border-border bg-surface hover:bg-surface-raised hover:border-white/[0.09] transition-colors"
+            className="text-left p-4 rounded border border-border bg-surface hover:bg-surface-raised hover:border-white/[0.09] transition-colors"
           >
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="text-3xs font-medium text-subtle truncate">
@@ -2646,7 +2646,7 @@ function OnboardingPreviewModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[85vh] rounded-xl border border-border bg-background flex flex-col overflow-hidden"
+        className="w-full max-w-3xl max-h-[85vh] rounded border border-border bg-background flex flex-col overflow-hidden"
       >
         <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border shrink-0">
           <div className="min-w-0">
@@ -2721,22 +2721,22 @@ function DarkConfirm({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl border border-border bg-background p-5 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+        className="w-full max-w-md rounded border border-border bg-background p-5"
       >
         <h3 className="text-base font-semibold text-foreground mb-2">{title}</h3>
         <p className="text-sm text-muted leading-relaxed mb-5">{message}</p>
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
+            className="px-3 py-1.5 rounded text-3xs font-semibold text-subtle hover:text-white transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-1.5 rounded-md text-3xs font-semibold transition-colors ${
+            className={`px-4 py-1.5 rounded text-3xs font-semibold transition-colors ${
               destructive
-                ? "bg-rose-500 text-white hover:bg-rose-400"
+                ? "bg-status-late text-white hover:bg-status-late"
                 : "bg-white text-background hover:bg-foreground"
             }`}
           >
@@ -2756,7 +2756,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl rounded-2xl bg-background border border-border p-6"
+        className="w-full max-w-2xl rounded bg-background border border-border p-6"
       >
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -2781,7 +2781,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
           working hours.
         </p>
 
-        <div className="rounded-lg border border-border divide-y divide-border">
+        <div className="rounded border border-border divide-y divide-border">
           <div className="grid grid-cols-3 px-4 py-2.5 text-3xs font-medium text-subtle">
             <span>Phase</span>
             <span className="text-right">Expected (internal)</span>
@@ -2813,7 +2813,7 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-3 text-3xs">
-          <div className="rounded-lg border border-border bg-surface p-3">
+          <div className="rounded border border-border bg-surface p-3">
             <p className="font-bold text-4xs text-subtle">
               On track
             </p>
@@ -2821,16 +2821,16 @@ function PhaseRulesModal({ onClose }: { onClose: () => void }) {
               Below the internal deadline. Neutral border.
             </p>
           </div>
-          <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
-            <p className="font-bold text-4xs text-amber-400">
+          <div className="rounded border border-status-approaching/40 bg-status-approaching/5 p-3">
+            <p className="font-bold text-4xs text-status-approaching">
               Approaching
             </p>
             <p className="mt-1 text-muted">
               Past internal deadline, before the client knows. Window to unblock.
             </p>
           </div>
-          <div className="rounded-lg border border-red-500/40 bg-red-500/5 p-3">
-            <p className="font-bold text-4xs text-red-400">
+          <div className="rounded border border-status-late/40 bg-status-late/5 p-3">
+            <p className="font-bold text-4xs text-status-late">
               Stuck
             </p>
             <p className="mt-1 text-muted">
@@ -2957,7 +2957,7 @@ function DarkDatePicker({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full inline-flex items-center gap-2 px-3 py-2 rounded-md bg-surface border border-border hover:border-border text-sm transition-colors"
+        className="w-full inline-flex items-center gap-2 px-3 py-2 rounded bg-surface border border-border hover:border-border text-sm transition-colors"
       >
         <CalendarIcon className="size-4 text-subtle shrink-0" />
         <span
@@ -2994,14 +2994,14 @@ function DarkDatePicker({
         <div
           ref={popRef}
           style={{ position: "fixed", top: popPos.top, left: popPos.left }}
-          className="z-[60] w-72 rounded-xl border border-border bg-background shadow-[0_8px_32px_rgba(0,0,0,0.6)] p-3"
+          className="z-[60] w-72 rounded border border-border bg-background p-3"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-3">
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
-              className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
+              className="size-7 inline-flex items-center justify-center rounded text-subtle hover:text-foreground hover:bg-surface transition-colors"
               aria-label="Previous month"
             >
               <ChevronLeftIcon className="size-3.5" />
@@ -3012,7 +3012,7 @@ function DarkDatePicker({
             <button
               type="button"
               onClick={() => shiftMonth(1)}
-              className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
+              className="size-7 inline-flex items-center justify-center rounded text-subtle hover:text-foreground hover:bg-surface transition-colors"
               aria-label="Next month"
             >
               <ChevronRightIcon className="size-3.5" />
@@ -3039,7 +3039,7 @@ function DarkDatePicker({
                   key={i}
                   type="button"
                   onClick={() => pickDay(day)}
-                  className={`size-8 inline-flex items-center justify-center rounded-md text-2xs tabular-nums transition-colors ${
+                  className={`size-8 inline-flex items-center justify-center rounded text-2xs tabular-nums transition-colors ${
                     isSelected
                       ? "bg-white text-background font-semibold"
                       : isToday
@@ -3072,7 +3072,7 @@ function DarkDatePicker({
                   onChange(undefined);
                   setOpen(false);
                 }}
-                className="text-3xs font-semibold text-subtle hover:text-rose-400 transition-colors"
+                className="text-3xs font-semibold text-subtle hover:text-status-late transition-colors"
               >
                 Clear
               </button>
@@ -3283,7 +3283,7 @@ function DetailModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-border"
+        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded bg-background border border-border"
       >
         <div className="px-6 pt-5 pb-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -3297,7 +3297,7 @@ function DetailModal({
           </div>
           <button
             onClick={onClose}
-            className="size-8 rounded-md text-subtle hover:text-foreground hover:bg-surface flex items-center justify-center shrink-0 transition-colors"
+            className="size-8 rounded text-subtle hover:text-foreground hover:bg-surface flex items-center justify-center shrink-0 transition-colors"
           >
             <XMarkIcon className="size-4" />
           </button>
@@ -3521,7 +3521,7 @@ function DetailModal({
                     );
                   })()}
                   {isLate && (
-                    <div className="mt-3 px-3 py-2 rounded-md bg-rose-500/10 border border-rose-500/30 text-3xs text-rose-300">
+                    <div className="mt-3 px-3 py-2 rounded bg-status-late/10 border border-status-late/30 text-3xs text-status-late">
                       External revisions ran long: Launch & Testing now lands
                       after the client deadline. Escalate or rescope.
                     </div>
@@ -3563,7 +3563,7 @@ function DetailModal({
                         {d.projectClientApprovedAt && (
                           <button
                             onClick={onResetClientApproval}
-                            className="text-4xs text-subtle hover:text-rose-400 transition-colors shrink-0"
+                            className="text-4xs text-subtle hover:text-status-late transition-colors shrink-0"
                             title="Reset client approval - Phase 2 dates go back to TBC"
                           >
                             Reset
@@ -3577,7 +3577,7 @@ function DetailModal({
                       </span>
                       <span
                         className={`tabular-nums ${
-                          isLate ? "text-rose-300" : "text-foreground"
+                          isLate ? "text-status-late" : "text-foreground"
                         }`}
                       >
                         {formatShortDate(clientDeadlineISO)}
@@ -3636,9 +3636,9 @@ function DetailModal({
               while open here, with an Undo button if the user wants it back. */}
           {canManage && d.phase === "tickets" && (
             <section
-              className={`rounded-xl border p-4 ${
+              className={`rounded border p-4 ${
                 d.completedAt
-                  ? "border-emerald-500/40 bg-emerald-500/5"
+                  ? "border-status-ontrack/40 bg-status-ontrack/5"
                   : "border-border bg-background"
               }`}
             >
@@ -3646,7 +3646,7 @@ function DetailModal({
                 <div className="min-w-0">
                   <p
                     className={`text-3xs font-bold ${
-                      d.completedAt ? "text-emerald-400" : "text-subtle"
+                      d.completedAt ? "text-status-ontrack" : "text-subtle"
                     }`}
                   >
                     {d.completedAt ? "Completed" : "Ticket status"}
@@ -3661,7 +3661,7 @@ function DetailModal({
                   {d.completedAt ? (
                     <button
                       onClick={onUncompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Reopen
@@ -3669,7 +3669,7 @@ function DetailModal({
                   ) : (
                     <button
                       onClick={onCompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Complete
@@ -3686,7 +3686,7 @@ function DetailModal({
                 <div className="min-w-0">
                   <p
                     className={`text-3xs font-medium ${
-                      d.approvedAt ? "text-emerald-400" : "text-subtle"
+                      d.approvedAt ? "text-status-ontrack" : "text-subtle"
                     }`}
                   >
                     {d.approvedAt ? "Approved - send to client" : "Internal sign-off"}
@@ -3700,7 +3700,7 @@ function DetailModal({
                 {d.approvedAt ? (
                   <button
                     onClick={onUndoApprove}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Undo
@@ -3709,14 +3709,14 @@ function DetailModal({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={onRequestRevisions}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
                     >
                       <ArrowUturnLeftIcon className="size-3" />
                       Request revisions
                     </button>
                     <button
                       onClick={onApproveInternal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <CheckCircleIcon className="size-3.5" />
                       Approve
@@ -3745,14 +3745,14 @@ function DetailModal({
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={onKickbackFromQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
                   >
                     <ArrowUturnLeftIcon className="size-3" />
                     Send back
                   </button>
                   <button
                     onClick={onApproveQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                   >
                     <CheckCircleIcon className="size-3.5" />
                     Approve
@@ -3786,7 +3786,7 @@ function DetailModal({
               ) : d.phase === "internal-revisions" && d.approvedAt ? (
                 <p className="text-sm text-foreground">
                   {d.designer || role.name}
-                  <span className="block text-4xs text-emerald-400 mt-1">
+                  <span className="block text-4xs text-status-ontrack mt-1">
                     Approved - send to client
                   </span>
                 </p>
@@ -3858,7 +3858,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste brief URL (Google Doc, Notion, SharePoint, etc.)"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
+                  className="flex-1 min-w-0 px-3 py-2 rounded bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
                 />
                 <button
                   type="button"
@@ -3866,7 +3866,7 @@ function DetailModal({
                     onUpdate({ brief: briefDraft.trim() || undefined });
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
+                  className="px-3 py-2 rounded bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -3876,7 +3876,7 @@ function DetailModal({
                     setBriefDraft(d.brief ?? "");
                     setEditingBrief(false);
                   }}
-                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
+                  className="px-3 py-2 rounded text-3xs font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -3899,7 +3899,7 @@ function DetailModal({
                   setBriefDraft("");
                   setEditingBrief(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Attach brief URL
@@ -3946,7 +3946,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="Paste Figma file or frame URL"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
+                  className="flex-1 min-w-0 px-3 py-2 rounded bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
                 />
                 <button
                   type="button"
@@ -3954,7 +3954,7 @@ function DetailModal({
                     onUpdate({ figmaUrl: figmaDraft.trim() || undefined });
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
+                  className="px-3 py-2 rounded bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
                 >
                   Save
                 </button>
@@ -3964,7 +3964,7 @@ function DetailModal({
                     setFigmaDraft(d.figmaUrl ?? "");
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white transition-colors"
+                  className="px-3 py-2 rounded text-3xs font-semibold text-subtle hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -3987,7 +3987,7 @@ function DetailModal({
                   setFigmaDraft("");
                   setEditingFigma(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Attach Figma URL
@@ -4010,7 +4010,7 @@ function DetailModal({
               }}
               placeholder="Context, edge cases, blockers - anything that doesn't fit the structured fields."
               rows={3}
-              className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted leading-relaxed"
+              className="w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted leading-relaxed"
             />
           </section>
             </>
@@ -4024,8 +4024,8 @@ function DetailModal({
               Test setup header above so the strategist isnt staring at two
               identical buttons. */}
           {needsConclude && !d.testResult && !concluding && (
-            <section className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
-              <p className="text-3xs font-bold text-amber-400">
+            <section className="rounded border border-status-approaching/40 bg-status-approaching/5 p-4">
+              <p className="text-3xs font-bold text-status-approaching">
                 Time to conclude
               </p>
               <p className="mt-1 text-sm text-foreground">
@@ -4036,7 +4036,7 @@ function DetailModal({
           )}
 
           {needsInterim && !concluding && (
-            <section className="rounded-lg border border-info/40 bg-info/5 p-4">
+            <section className="rounded border border-info/40 bg-info/5 p-4">
               <p className="text-3xs font-medium text-info">
                 Log an interim result
               </p>
@@ -4051,13 +4051,13 @@ function DetailModal({
                 onBlur={saveInterim}
                 placeholder="Interim notes"
                 rows={2}
-                className="mt-3 w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
+                className="mt-3 w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
               />
             </section>
           )}
 
           {concluding && (
-            <section className="rounded-lg border border-border bg-surface p-4 space-y-3">
+            <section className="rounded border border-border bg-surface p-4 space-y-3">
               <p className="text-3xs font-bold text-subtle">
                 Conclude test
               </p>
@@ -4068,7 +4068,7 @@ function DetailModal({
                     <button
                       key={o}
                       onClick={() => setOutcomeDraft(o)}
-                      className={`px-2.5 py-2 rounded-md text-3xs font-bold transition-colors ${
+                      className={`px-2.5 py-2 rounded text-3xs font-bold transition-colors ${
                         outcomeDraft === o
                           ? "text-background"
                           : "bg-background text-muted border border-border hover:text-white"
@@ -4090,7 +4090,7 @@ function DetailModal({
                   value={metricDraft}
                   onChange={(e) => setMetricDraft(e.target.value)}
                   placeholder="Metric"
-                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
+                  className="px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
                 <input
                   type="number"
@@ -4098,7 +4098,7 @@ function DetailModal({
                   value={upliftDraft}
                   onChange={(e) => setUpliftDraft(e.target.value)}
                   placeholder="Uplift %"
-                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
+                  className="px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
                 <input
                   type="number"
@@ -4106,7 +4106,7 @@ function DetailModal({
                   value={confidenceDraft}
                   onChange={(e) => setConfidenceDraft(e.target.value)}
                   placeholder="Confidence %"
-                  className="px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
+                  className="px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
                 />
               </div>
 
@@ -4115,19 +4115,19 @@ function DetailModal({
                 onChange={(e) => setNotesDraft(e.target.value)}
                 placeholder="Notes"
                 rows={3}
-                className="w-full px-3 py-2 rounded-md text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
+                className="w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
               />
 
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setConcluding(false)}
-                  className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-white"
+                  className="px-3 py-2 rounded text-3xs font-semibold text-subtle hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitConclude}
-                  className="px-3 py-2 rounded-md text-3xs font-semibold bg-white text-background hover:bg-foreground"
+                  className="px-3 py-2 rounded text-3xs font-semibold bg-white text-background hover:bg-foreground"
                 >
                   Save result
                 </button>
@@ -4136,7 +4136,7 @@ function DetailModal({
           )}
 
           {d.testResult && (
-            <section className="rounded-lg border border-border bg-surface p-4">
+            <section className="rounded border border-border bg-surface p-4">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <p className="text-3xs font-bold text-subtle">
                   Result
@@ -4244,7 +4244,7 @@ function DetailModal({
           )}
 
           {d.phase === "launch-testing" && (
-            <section className="rounded-lg border border-border bg-background p-4 space-y-3">
+            <section className="rounded border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <h3 className="text-3xs font-medium text-subtle">
                   Test setup
@@ -4270,7 +4270,7 @@ function DetailModal({
                       onClick={() =>
                         onUpdate({ liveStartedAt: MOCK_TODAY })
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
                     >
                       <span className="size-1.5 rounded-full bg-background" />
                       Set live
@@ -4280,7 +4280,7 @@ function DetailModal({
                     <button
                       type="button"
                       onClick={() => setConcluding(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-amber-500 text-background hover:bg-amber-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-approaching text-background hover:bg-status-approaching transition-colors"
                     >
                       Conclude test
                     </button>
@@ -4302,7 +4302,7 @@ function DetailModal({
                     }
                   }}
                   placeholder="https://..."
-                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
+                  className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
                 />
               </div>
 
@@ -4328,7 +4328,7 @@ function DetailModal({
                       onChange={(e) => updateMetric(i, { name: e.target.value })}
                       onBlur={blurCommit}
                       placeholder="Metric"
-                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
+                      className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
                     />
                     <input
                       value={m.baseline ?? ""}
@@ -4337,7 +4337,7 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Baseline"
-                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
+                      className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
                     />
                     <input
                       value={m.interim ?? ""}
@@ -4346,12 +4346,12 @@ function DetailModal({
                       }
                       onBlur={blurCommit}
                       placeholder="Interim"
-                      className="px-2.5 py-1.5 rounded-md text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
+                      className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
                     />
                     <button
                       type="button"
                       onClick={() => removeMetric(i)}
-                      className="size-7 inline-flex items-center justify-center rounded-md text-muted hover:text-muted hover:bg-surface transition-colors"
+                      className="size-7 inline-flex items-center justify-center rounded text-muted hover:text-muted hover:bg-surface transition-colors"
                       title="Remove metric"
                       aria-label="Remove metric"
                     >
@@ -4362,7 +4362,7 @@ function DetailModal({
                 <button
                   type="button"
                   onClick={addMetric}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-3xs font-semibold text-subtle hover:text-foreground hover:border-border transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded border border-dashed border-border text-3xs font-semibold text-subtle hover:text-foreground hover:border-border transition-colors"
                 >
                   <PlusIcon className="size-3" />
                   Add metric
@@ -4384,7 +4384,7 @@ function DetailModal({
                   }}
                   placeholder="What the running data is telling you."
                   rows={2}
-                  className="w-full px-3 py-2 rounded-md text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
+                  className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
                 />
               </div>
 
@@ -4396,7 +4396,7 @@ function DetailModal({
                   Screenshot
                 </label>
                 {d.screenshot ? (
-                  <div className="relative rounded-lg overflow-hidden border border-border">
+                  <div className="relative rounded overflow-hidden border border-border">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={d.screenshot}
@@ -4414,7 +4414,7 @@ function DetailModal({
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingScreenshot}
-                    className="w-full px-4 py-6 rounded-lg border border-dashed border-border bg-surface text-sm text-subtle hover:border-border hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
+                    className="w-full px-4 py-6 rounded border border-dashed border-border bg-surface text-sm text-subtle hover:border-border hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
                   >
                     {uploadingScreenshot ? "Uploading..." : "Upload a screenshot"}
                   </button>
@@ -4437,7 +4437,7 @@ function DetailModal({
           <section className="pt-2">
             <button
               onClick={onDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-semibold text-subtle hover:text-rose-400 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-semibold text-subtle hover:text-status-late transition-colors"
             >
               <XMarkIcon className="size-3.5" />
               Delete card
@@ -4476,7 +4476,7 @@ function SyncErrorToast() {
 
   if (!error) return null;
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg bg-rose-500/[0.95] text-white text-xs font-medium shadow-[0_20px_60px_rgba(0,0,0,0.4)] max-w-md">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded bg-status-late/[0.95] text-white text-xs font-medium max-w-md">
       <div className="font-semibold mb-0.5">Cloud save failed</div>
       <div className="text-2xs opacity-90 break-all">{error}</div>
     </div>
@@ -4513,7 +4513,7 @@ function SearchControl({
           window.setTimeout(() => inputRef.current?.focus(), 0);
         }}
         title="Search cards (/)"
-        className="size-7 inline-flex items-center justify-center rounded-md text-subtle hover:text-foreground hover:bg-surface transition-colors"
+        className="size-7 inline-flex items-center justify-center rounded text-subtle hover:text-foreground hover:bg-surface transition-colors"
       >
         <MagnifyingGlassIcon className="size-4" />
       </button>
@@ -4621,7 +4621,7 @@ function ProjectSwitch({
   }
 
   const Check = () => (
-    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+    <svg className="size-3.5 text-status-ontrack shrink-0" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
     </svg>
   );
@@ -4633,7 +4633,7 @@ function ProjectSwitch({
         <ChevronDownIcon className="size-3.5 text-subtle shrink-0" />
       </Pill>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-64 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+        <div className="absolute left-0 top-9 z-40 w-64 bg-background rounded ring-1 ring-panel-line overflow-hidden">
           {!adding ? (
             <>
               <div className="px-3 py-2 text-4xs text-subtle font-semibold border-b border-border-faint">
@@ -4665,7 +4665,7 @@ function ProjectSwitch({
                             setOpen(false);
                             onDelete(p.id);
                           }}
-                          className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-status-late hover:bg-status-late/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
                           title={`Delete ${p.name}`}
                         >
                           <XMarkIcon className="size-3.5" />
@@ -4706,7 +4706,7 @@ function ProjectSwitch({
                   if (e.key === "Escape") reset();
                 }}
                 placeholder={typeDraft === "retainer" ? "Retainer name" : "Project name"}
-                className="w-full h-8 px-2.5 rounded-md bg-surface border border-border text-2xs text-foreground focus:outline-none focus:border-subtle placeholder:text-subtle"
+                className="w-full h-8 px-2.5 rounded bg-surface border border-border text-2xs text-foreground focus:outline-none focus:border-subtle placeholder:text-subtle"
               />
               <Segmented
                 variant="ghost"
@@ -4725,13 +4725,13 @@ function ProjectSwitch({
               <div className="flex items-center gap-2 pt-0.5">
                 <button
                   onClick={submit}
-                  className="flex-1 h-7 rounded-md bg-foreground text-background text-3xs font-semibold hover:opacity-90 transition-opacity"
+                  className="flex-1 h-7 rounded bg-foreground text-background text-3xs font-semibold hover:opacity-90 transition-opacity"
                 >
                   Add project
                 </button>
                 <button
                   onClick={reset}
-                  className="h-7 px-3 rounded-md text-3xs font-medium text-muted hover:text-foreground transition-colors"
+                  className="h-7 px-3 rounded text-3xs font-medium text-muted hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
@@ -4776,7 +4776,7 @@ function ClientActionsMenu({
   }, [open]);
 
   const Check = () => (
-    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+    <svg className="size-3.5 text-status-ontrack shrink-0" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
     </svg>
   );
@@ -4786,7 +4786,7 @@ function ClientActionsMenu({
       <button
         onClick={() => setOpen((v) => !v)}
         title="Client actions"
-        className={`size-7 inline-flex items-center justify-center rounded-md border border-border transition-colors ${
+        className={`size-7 inline-flex items-center justify-center rounded border border-border transition-colors ${
           open ? "text-foreground bg-surface" : "text-subtle hover:text-foreground hover:bg-surface"
         }`}
       >
@@ -4797,7 +4797,7 @@ function ClientActionsMenu({
         </svg>
       </button>
       {open && (
-        <div className="absolute left-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+        <div className="absolute left-0 top-9 z-40 w-56 bg-background rounded ring-1 ring-panel-line overflow-hidden">
           {hasBrief && (
             <button
               onClick={() => {
@@ -4881,7 +4881,7 @@ function KanbanClientPicker({
   onDelete: (id: string) => void;
   onAddClient: () => void;
   /** "title" renders the trigger as the page H1 (the client IS the title,
-   *  so it doubles as the switcher — no duplicate picker). */
+   *  so it doubles as the switcher, no duplicate picker). */
   variant?: "pill" | "title";
 }) {
   const [open, setOpen] = useState(false);
@@ -4917,7 +4917,7 @@ function KanbanClientPicker({
       )}
       {open && (
         <div
-          className={`absolute z-40 w-72 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden ${
+          className={`absolute z-40 w-72 bg-background rounded ring-1 ring-panel-line overflow-hidden ${
             variant === "title" ? "left-0 top-12" : "right-0 top-9"
           }`}
         >
@@ -4941,7 +4941,7 @@ function KanbanClientPicker({
                   >
                     <div className="flex items-center gap-2">
                       {isActive ? (
-                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="size-3.5 text-status-ontrack shrink-0" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
                         </svg>
                       ) : (
@@ -4960,7 +4960,7 @@ function KanbanClientPicker({
                       setOpen(false);
                       onDelete(c.id);
                     }}
-                    className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="size-7 shrink-0 inline-flex items-center justify-center rounded text-subtle hover:text-status-late hover:bg-status-late/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
                     title={`Delete ${c.name}`}
                   >
                     <XMarkIcon className="size-3.5" />
@@ -5034,7 +5034,7 @@ function KanbanPodPicker({
       )}
       {open && (
         <div
-          className={`absolute z-40 w-72 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden ${
+          className={`absolute z-40 w-72 bg-background rounded ring-1 ring-panel-line overflow-hidden ${
             variant === "title" ? "left-0 top-12" : "right-0 top-9"
           }`}
         >
@@ -5057,7 +5057,7 @@ function KanbanPodPicker({
                   >
                     <div className="flex items-center gap-2">
                       {isActive ? (
-                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="size-3.5 text-status-ontrack shrink-0" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
                         </svg>
                       ) : (
@@ -5116,7 +5116,7 @@ function NewClientModal({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="bg-background rounded-2xl ring-1 ring-panel-line shadow-popover w-full max-w-md p-6"
+        className="bg-background rounded ring-1 ring-panel-line w-full max-w-md p-6"
       >
         <h2 className="text-lg font-semibold text-foreground mb-1">Add client</h2>
         <p className="text-xs text-subtle mb-5">
@@ -5130,7 +5130,7 @@ function NewClientModal({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Acme Skincare"
-          className="w-full h-10 px-3 bg-black/40 rounded-md text-sm text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+          className="w-full h-10 px-3 bg-black/40 rounded text-sm text-foreground placeholder:text-subtle focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
         />
         <div className="flex justify-end gap-2 mt-6">
           <button
@@ -5143,7 +5143,7 @@ function NewClientModal({
           <button
             type="submit"
             disabled={!name.trim()}
-            className="px-3 py-2 bg-white text-background text-sm font-semibold rounded-lg hover:bg-foreground disabled:opacity-40"
+            className="px-3 py-2 bg-white text-background text-sm font-semibold rounded hover:bg-foreground disabled:opacity-40"
           >
             Add client
           </button>
@@ -5156,7 +5156,7 @@ function NewClientModal({
 /* ── Overflow menu (…) ──
  * Tertiary controls that aren't worth always-visible header room:
  * card density (Cosy / Glance), Phase rules, room to grow. */
-/* View scope selector — collapses the old 4-wide segmented pill into a
+/* View scope selector: collapses the old 4-wide segmented pill into a
    single dropdown (By project / All projects / By pod / Results Library).
    Reclaims header width and drops the heaviest box, Linear-style. */
 const VIEW_MODE_OPTIONS = [
@@ -5196,7 +5196,7 @@ function ViewModeMenu({
         <ChevronDownIcon className="size-3.5 text-subtle" />
       </Pill>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-44 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden py-1">
+        <div className="absolute right-0 top-9 z-40 w-44 bg-background rounded ring-1 ring-panel-line overflow-hidden py-1">
           {VIEW_MODE_OPTIONS.map((o) => (
             <button
               key={o.v}
@@ -5229,7 +5229,7 @@ function OverflowMenu({
   density: "cosy" | "glance";
   onSetDensity: (d: "cosy" | "glance") => void;
   onOpenRules: () => void;
-  /** "Mine only" filter — a filter, so it lives in the Display menu. */
+  /** "Mine only" filter, so it lives in the Display menu. */
   mineOnly: boolean;
   onToggleMine: () => void;
   /** Hide the Mine row when there's no signed-in name to filter by. */
@@ -5267,7 +5267,7 @@ function OverflowMenu({
         Display
       </Pill>
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded-lg ring-1 ring-panel-line shadow-popover overflow-hidden">
+        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded ring-1 ring-panel-line overflow-hidden">
           {showMine && (
             <button
               onClick={onToggleMine}
