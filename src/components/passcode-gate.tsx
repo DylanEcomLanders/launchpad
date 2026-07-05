@@ -134,10 +134,7 @@ export function PasscodeGate({
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-6">
         {/* Clean, centered form in the main-login idiom (no image panel). */}
-        <div className="w-full max-w-sm">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Ecom Landers" className="mb-10 h-5 brightness-0 invert" />
-
+        <div className="w-full max-w-sm text-center">
           <p className="mb-4 inline-flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.14em] text-subtle">
             <LockClosedIcon className="size-3" />
             Restricted
@@ -149,7 +146,7 @@ export function PasscodeGate({
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 text-left">
             <div className={shaking ? "animate-[shake_0.5s_ease-in-out]" : ""}>
               <input
                 type="password"
