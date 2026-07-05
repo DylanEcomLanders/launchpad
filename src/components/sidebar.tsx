@@ -338,16 +338,8 @@ const navSections: NavSection[] = [
     items: [
       trainingItem,
       teamToolsItem,
+      submitInvoiceItem,
     ],
-  },
-  {
-    /* Submit Invoice: its own solo link so contractors aren't digging through
-     * a dropdown to file. Sub-nav lives on the page itself. */
-    title: "Submit Invoice",
-    icon: <PixelReceipt className="size-4" />,
-    group: "ops",
-    href: "/me/invoices",
-    items: [],
   },
   {
     title: "Company",
@@ -375,24 +367,8 @@ export function Sidebar() {
     }))
     .filter((s) => s.items.length > 0 || s.href);
 
-  /* Collapsible sections. On mount, open the section that holds the current
-   * route (so you land where you are); the rest start closed. Toggle is
-   * independent — several sections can be open at once. */
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => {
-      const activeTitle = visibleSections.find((s) =>
-        s.items.some(
-          (i) =>
-            !i.external &&
-            (pathname === i.href || pathname.startsWith(i.href + "/")),
-        ),
-      )?.title;
-      const openTitle = activeTitle ?? visibleSections[0]?.title;
-      return Object.fromEntries(
-        visibleSections.map((s) => [s.title, s.title === openTitle]),
-      );
-    },
-  );
+  /* Sections render open with no collapse toggle: the whole nav is visible at
+   * a glance, no arrows to click. */
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -448,12 +424,6 @@ export function Sidebar() {
     ...(role === "admin" ? [{ label: "Settings", href: "/company/settings", group: "System" }] : []),
   ];
 
-  /* Independent toggle — each section opens/closes on its own, so several
-   * can stay open at once (the section holding the active route is opened on
-   * mount; the rest start closed). */
-  function toggleSection(title: string) {
-    setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
-  }
 
   // Poll onboarding submissions every 5 minutes
   useEffect(() => {
@@ -529,26 +499,13 @@ export function Sidebar() {
         </div>
       );
     }
-    const open = openSections[section.title] ?? false;
     return (
       <div key={section.title}>
-        <button
-          onClick={() => toggleSection(section.title)}
-          className="w-full group flex items-center gap-3 px-2.5 py-2.5 rounded-md text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
-        >
-          <span className="text-subtle group-hover:text-muted transition-colors">
-            {section.icon}
-          </span>
-          <span className="flex-1 text-left text-sm font-medium">{section.title}</span>
-          {sectionHasActive && !open && (
-            <span className="size-1.5 rounded-full bg-foreground shrink-0" />
-          )}
-          <ChevronDownIcon
-            className={`size-3.5 text-subtle transition-transform ${open ? "" : "-rotate-90"}`}
-          />
-        </button>
-        {open && (
-          <div className="pl-3 mt-1 mb-1 space-y-1">
+        <div className="flex items-center gap-3 px-2.5 py-2.5 text-muted">
+          <span className="text-subtle">{section.icon}</span>
+          <span className="flex-1 text-sm font-medium">{section.title}</span>
+        </div>
+        <div className="pl-3 mt-1 mb-1 space-y-1">
           {section.items.map((item) => {
             const active = !item.external && isActive(item.href);
             if (item.external) {
@@ -592,7 +549,6 @@ export function Sidebar() {
             );
           })}
           </div>
-        )}
       </div>
     );
   }
