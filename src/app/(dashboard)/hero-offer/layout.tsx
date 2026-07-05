@@ -80,7 +80,7 @@ export default function HeroOfferLayout({
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10">{children}</div>
+      <div className="px-6 pb-20 pt-8 md:px-10">{children}</div>
     </div>
   );
 }
