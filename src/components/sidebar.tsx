@@ -37,7 +37,7 @@ interface NavSection {
   icon: React.ReactNode;
   items: NavItem[];
   /* When set, the section is a single top-level link (title navigates here,
-   * no collapse, items ignored) — for umbrellas whose sub-nav lives in tabs
+   * no collapse, items ignored) for umbrellas whose sub-nav lives in tabs
    * on the destination, e.g. Offer → /hero-offer. */
   href?: string;
   defaultOpen?: boolean;
@@ -56,6 +56,24 @@ const teamZones = [
   { label: "PH", flag: "\u{1F1F5}\u{1F1ED}", tz: "Asia/Manila" },
   { label: "NZ", flag: "\u{1F1F3}\u{1F1FF}", tz: "Pacific/Auckland" },
 ];
+
+function zoneTime(now: Date, tz: string): string {
+  return now.toLocaleTimeString("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+/* Full team-zone list, shared by the hover popovers in the sidebar clock. */
+function TeamZoneRows({ now }: { now: Date }) {
+  return (
+    <div className="space-y-1">
+      {teamZones.map((z) => (
+        <div key={z.tz} className="flex items-center justify-between text-3xs">
+          <span className="text-subtle">{z.flag} {z.label}</span>
+          <span className="tabular-nums text-muted">{zoneTime(now, z.tz)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 /* Sidebar follows the agency lifecycle (top-down): pin the daily drivers
  * (Mission Control, Tools, Workspace, Offer), then dropdowns for each lifecycle phase,
@@ -323,7 +341,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    /* Submit Invoice — its own solo link so contractors aren't digging through
+    /* Submit Invoice: its own solo link so contractors aren't digging through
      * a dropdown to file. Sub-nav lives on the page itself. */
     title: "Submit Invoice",
     icon: <PixelReceipt className="size-4" />,
@@ -646,40 +664,33 @@ export function Sidebar() {
           </div>
         </nav>
 
-        {/* Team Timezones — moved up off the footer. */}
+        {/* Team clock: one compact row; the full zone list reveals on hover. */}
         {!collapsed && (
-          <div className="mx-3 mt-3 mb-3 px-3 py-2 rounded-md bg-background border border-border shrink-0">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <ClockIcon className="size-3 text-subtle" />
-              <span className="text-4xs font-medium uppercase tracking-wider text-subtle">
-                Team
+          <div className="group relative mx-3 mt-3 mb-3 shrink-0">
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-background border border-border">
+              <ClockIcon className="size-3 shrink-0 text-subtle" />
+              <span className="text-4xs font-medium uppercase tracking-wider text-subtle">Team</span>
+              <span className="ml-auto flex items-center gap-1.5 text-3xs tabular-nums text-subtle">
+                {teamZones[0].flag} {zoneTime(now, teamZones[0].tz)}
               </span>
+              <ChevronDownIcon className="size-3 rotate-180 text-subtle transition-colors group-hover:text-muted" />
             </div>
-            <div className="space-y-1">
-              {teamZones.map((z) => (
-                <div
-                  key={z.tz}
-                  className="flex items-center justify-between text-3xs"
-                >
-                  <span className="text-subtle">
-                    {z.flag} {z.label}
-                  </span>
-                  <span className="tabular-nums text-subtle">
-                    {now.toLocaleTimeString("en-GB", {
-                      timeZone: z.tz,
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })}
-                  </span>
-                </div>
-              ))}
+            {/* Hover popover with every zone */}
+            <div className="pointer-events-none absolute bottom-full left-0 right-0 mb-2 translate-y-1 opacity-0 transition-all duration-150 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
+              <div className="rounded-md border border-border bg-surface-raised p-3">
+                <TeamZoneRows now={now} />
+              </div>
             </div>
           </div>
         )}
         {collapsed && (
-          <div className="py-2 flex justify-center shrink-0">
+          <div className="group relative flex justify-center py-2 shrink-0">
             <ClockIcon className="size-3.5 text-subtle" />
+            <div className="pointer-events-none absolute bottom-1 left-full z-50 ml-2 -translate-x-1 opacity-0 transition-all duration-150 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100">
+              <div className="w-40 rounded-md border border-border bg-surface-raised p-3">
+                <TeamZoneRows now={now} />
+              </div>
+            </div>
           </div>
         )}
 

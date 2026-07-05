@@ -3,6 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
 
+/* Mirror the main login (AuthGate) controls so the Finance / Admin gates read
+ * as the same sign-in surface, one step deeper. */
+const AUTH_INPUT =
+  "w-full px-4 py-3 bg-surface border border-border rounded text-sm text-foreground placeholder:text-subtle focus:outline-none focus:border-foreground/30 transition";
+const AUTH_BTN =
+  "w-full py-3 rounded bg-foreground text-background text-sm font-medium hover:bg-foreground/90 active:scale-[0.99] transition disabled:opacity-50 flex items-center justify-center gap-1.5";
+
 interface PasscodeGateProps {
   /** Shown as the eyebrow + h1 (e.g. "Finance", "Admin"). */
   title: string;
@@ -118,66 +125,79 @@ export function PasscodeGate({
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-5 h-5 border-2 border-border border-t-white rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-border border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!authed) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-6">
-        <div className="w-full max-w-[340px]">
-          {/* Eyebrow with lock chip + bold title — Well chrome pattern */}
-          <div className="text-center mb-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle mb-3 inline-flex items-center gap-1.5">
-              <LockClosedIcon className="size-2.5" />
-              Ecomlanders
-            </p>
-            <h1 className="text-2xl font-bold text-foreground">
-              {title}
-            </h1>
+      <div className="min-h-screen flex bg-background">
+        {/* ── Left: form (mirrors the main login) ── */}
+        <div className="flex flex-1 flex-col justify-between px-6 py-12 sm:px-12 lg:px-16">
+          {/* Logo top-left */}
+          <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="Ecom Landers" className="h-5 brightness-0 invert" />
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="bg-surface border border-border rounded-md p-5"
-          >
-            <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle mb-2">
-              Passcode
-            </label>
-            <div className={shaking ? "animate-[shake_0.4s_ease-in-out]" : ""}>
-              <input
-                type="password"
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  setError(false);
-                }}
-                placeholder="Enter to unlock"
-                autoFocus
-                className={`w-full px-3 py-2.5 bg-background border rounded-md text-sm text-foreground focus:outline-none transition-colors placeholder:text-muted ${
-                  error
-                    ? "border-danger/60 focus:border-danger"
-                    : "border-border focus:border-border"
-                }`}
-              />
-            </div>
-            {error && (
-              <p className="text-[11px] text-danger mt-2">Incorrect passcode</p>
-            )}
-            <button
-              type="submit"
-              className="mt-4 w-full px-3 py-2.5 bg-accent text-accent-foreground text-sm font-semibold rounded-md hover:opacity-90 active:scale-[0.99] transition-all"
-            >
-              Unlock
-            </button>
-          </form>
-
-          {idleTimeoutMs ? (
-            <p className="text-[10px] text-subtle mt-4 text-center uppercase tracking-[0.08em]">
-              Auto-locks after {Math.floor(idleTimeoutMs / 60000)} minutes idle
+          {/* Form bottom-left */}
+          <div className="w-full max-w-sm">
+            <p className="mb-4 inline-flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.14em] text-subtle">
+              <LockClosedIcon className="size-3" />
+              Restricted
             </p>
-          ) : null}
+            <div className="mb-7">
+              <h1 className="text-xl font-medium text-foreground">{title}</h1>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Enter the passcode to continue.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className={shaking ? "animate-[shake_0.5s_ease-in-out]" : ""}>
+                <input
+                  type="password"
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    setError(false);
+                  }}
+                  placeholder="Enter passcode"
+                  autoFocus
+                  className={`${AUTH_INPUT} ${error ? "border-danger/60 focus:border-danger" : ""}`}
+                />
+              </div>
+              {error && <p className="text-xs text-danger">Incorrect passcode. Try again.</p>}
+              <button type="submit" className={AUTH_BTN}>
+                Unlock
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M7 17 17 7" />
+                  <path d="M8 7h9v9" />
+                </svg>
+              </button>
+            </form>
+
+            {idleTimeoutMs ? (
+              <p className="mt-4 text-2xs uppercase tracking-[0.08em] text-subtle">
+                Auto-locks after {Math.floor(idleTimeoutMs / 60000)} minutes idle
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        {/* ── Right: image panel (same asset as the main login) ── */}
+        <div className="relative hidden md:block md:w-[45%] m-3 rounded overflow-hidden border border-border-faint">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/login-final-v3.gif" alt="" className="absolute inset-0 h-full w-full object-cover" />
         </div>
       </div>
     );
