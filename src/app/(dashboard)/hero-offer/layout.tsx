@@ -12,20 +12,14 @@
  */
 
 import { usePathname, useRouter } from "next/navigation";
-import {
-  TagIcon,
-  BanknotesIcon,
-  RectangleStackIcon,
-  InformationCircleIcon,
-} from "@heroicons/react/24/outline";
 
 type Tab = "offer" | "price" | "resources" | "info";
 
-const TABS: { id: Tab; label: string; icon: typeof TagIcon; href: string }[] = [
-  { id: "offer",     label: "Hero Offer", icon: TagIcon,               href: "/hero-offer" },
-  { id: "price",     label: "Price list", icon: BanknotesIcon,         href: "/hero-offer/price-list" },
-  { id: "resources", label: "Resources",  icon: RectangleStackIcon,    href: "/hero-offer/resources" },
-  { id: "info",      label: "Info",       icon: InformationCircleIcon, href: "/hero-offer/info" },
+const TABS: { id: Tab; label: string; href: string }[] = [
+  { id: "offer",     label: "Hero Offer", href: "/hero-offer" },
+  { id: "price",     label: "Price list", href: "/hero-offer/price-list" },
+  { id: "resources", label: "Resources",  href: "/hero-offer/resources" },
+  { id: "info",      label: "Info",       href: "/hero-offer/info" },
 ];
 
 function tabFromPath(pathname: string): Tab {
@@ -59,26 +53,25 @@ export default function HeroOfferLayout({
 
   return (
     <div className="min-h-full bg-background">
-      {/* Sticky tab strip — the only chrome the shell owns. Underline tabs,
-       * DESIGN.md craft (no pills, no tint). */}
-      <div className="sticky top-0 z-10 border-b border-border-faint bg-background/90 backdrop-blur-md">
+      {/* Sticky tab strip — the only chrome the shell owns. Ghost pill tabs
+       * (kanban Results-Library style): active tab is a raised rounded pill,
+       * the rest muted text. */}
+      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-md">
         <div className="px-6 md:px-10">
           <p className="pt-6 text-3xs font-semibold uppercase tracking-[0.14em] text-subtle">Offer</p>
-          <nav className="-mb-px mt-4 flex gap-6 overflow-x-auto">
+          <nav className="mt-4 flex gap-1 overflow-x-auto pb-3">
             {TABS.map((tab) => {
               const active = activeTab === tab.id;
-              const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => pickTab(tab.id)}
-                  className={`flex items-center gap-2 whitespace-nowrap border-b-2 pb-3 text-sm transition-colors ${
+                  className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                     active
-                      ? "border-foreground text-foreground"
-                      : "border-transparent text-subtle hover:text-foreground"
+                      ? "bg-surface-raised text-foreground"
+                      : "text-muted hover:text-foreground"
                   }`}
                 >
-                  <Icon className="size-4" />
                   {tab.label}
                 </button>
               );
