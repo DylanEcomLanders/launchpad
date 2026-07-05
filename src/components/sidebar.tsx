@@ -128,7 +128,7 @@ const missionControlItem = {
 /* Delivery KPIs — on-time / overdue / turnaround reporting off the ClickUp
  * board. Sits next to Project Delivery in the delivery cluster. */
 const kpiItem = {
-  label: "Delivery KPIs",
+  label: "KPIs",
   href: "/kpi",
   icon: <PixelChart className="size-4" />,
 };
@@ -143,6 +143,14 @@ const feedbackItem = {
   label: "Retention",
   href: "/retention",
   icon: <PixelPulse className="size-4" />,
+};
+/* Clients — the Client Command Centre (CSM home): client roster, engagements,
+ * compliance spine + cadence. Consolidates what Retention / client-health used
+ * to cover. Lives at /clients. */
+const clientsItem = {
+  label: "Clients",
+  href: "/clients",
+  icon: <PixelUsers className="size-4" />,
 };
 /* Tools — quick-access launcher for client assets + internal tooling. Used
  * to be called Mission Control; renamed when the kanban claimed that name. */
@@ -311,10 +319,9 @@ const navSections: NavSection[] = [
     group: "lifecycle",
     items: [
       { ...onboardingItem, roles: ADMIN_CRO },
+      { ...clientsItem, roles: ADMIN_CRO },
       missionControlItem,
       { ...kpiItem, roles: ADMIN_CRO },
-      { ...workspaceItem, roles: ADMIN_CRO },
-      { ...feedbackItem, roles: ADMIN_CRO },
     ],
   },
   {
@@ -400,6 +407,7 @@ export function Sidebar() {
     ...(role !== "team"
       ? [
           { label: onboardingItem.label, href: onboardingItem.href, group: "Pinned", icon: onboardingItem.icon, keywords: ["onboarding", "inbox", "new clients", "intake"] },
+          { label: clientsItem.label, href: clientsItem.href, group: "Pinned", icon: clientsItem.icon, keywords: ["clients", "command centre", "csm", "engagements", "accounts", "retention"] },
           { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery", "legacy"] },
           { label: kpiItem.label, href: kpiItem.href, group: "Pinned", icon: kpiItem.icon, keywords: ["metrics", "throughput", "on-time"] },
           { label: salesItem.label, href: salesItem.href, group: "Pinned", icon: salesItem.icon, keywords: ["pipeline", "leads", "deals", "outreach"] },
