@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { AuthGate } from "@/components/auth-gate";
 import { PageTransition } from "@/components/page-transition";
-import { FloatingNotes } from "@/components/floating-notes";
-import { QuickLinks } from "@/components/quick-links";
 import { Logo } from "@/components/logo";
 import { PitchNav } from "@/components/pitch-nav";
 import { ShortcutsNav, SHORTCUT_TABS } from "@/components/shortcuts-nav";
@@ -122,8 +120,6 @@ export default function DashboardLayout({
             <PageTransition>{children}</PageTransition>
           </main>
         </div>
-        <QuickLinks />
-        <FloatingNotes />
       </div>
     </AuthGate>
   );
