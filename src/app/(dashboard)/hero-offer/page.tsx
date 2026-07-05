@@ -11,44 +11,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  CheckIcon, PencilSquareIcon, XMarkIcon, MegaphoneIcon, WrenchScrewdriverIcon,
-  HeartIcon, ArrowUpRightIcon, PlusIcon, ChatBubbleLeftRightIcon,
+  CheckIcon, PencilSquareIcon, XMarkIcon, WrenchScrewdriverIcon,
+  ArrowUpRightIcon, PlusIcon, ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import { offerObjectionsStore, nextOrder, uid } from "@/lib/hero-offer/data";
 import type { OfferObjection } from "@/lib/hero-offer/types";
+import { TIERS, fmtK } from "@/lib/hero-offer/offer";
 import { inputClass, textareaClass } from "@/lib/form-styles";
-
-/* Mirrors /pricing exactly. */
-const TIERS = [
-  { name: "Entry", monthly: 5000, blurb: "The conversion engine at a starter cadence.", featured: false, features: ["2 page builds / month", "2 A/B tests / month", "Biweekly strategy calls", "Biweekly reporting"] },
-  { name: "Core", monthly: 10000, badge: "Most chosen", blurb: "Full conversion engine on a weekly rhythm.", featured: true, features: ["4 page builds / month", "4 A/B tests / month", "Weekly strategy calls", "Weekly reporting"] },
-  { name: "VIP", monthly: 15000, blurb: "Maximum velocity, aggressive test programme.", featured: false, features: ["6 page builds / month", "12 A/B tests / month", "Weekly strategy calls", "Priority turnaround", "Quarterly brand strategy"] },
-];
 
 const SIGNALS = [
   { key: "North Star", tone: false, title: "Conversion rate", body: "The one metric we measure ourselves on. CR up = revenue up at the same ad spend." },
   { key: "The guarantee", tone: true, title: "Measurable CR lift in 90 days, or we keep working free", body: "You ship what we recommend. We hit the number." },
   { key: "Who it's for", tone: false, title: "Shopify brands at £200k/mo+", body: "Paid-traffic dependent. Founders or CMOs with conversion ambition and the bandwidth to ship." },
 ];
-
-const STAGES = [
-  { href: "/hero-offer/acquisition", icon: MegaphoneIcon, label: "Acquisition", sub: "Win the deal: discovery audit, proposals, pitch deck, qualification." },
-  { href: "/hero-offer/execution", icon: WrenchScrewdriverIcon, label: "Execution", sub: "Wow on delivery: briefs, monthly roadmap, kickoff deck." },
-  { href: "/hero-offer/retention", icon: HeartIcon, label: "Retention", sub: "Make it last: monthly reports, milestone decks, renewals." },
-];
-
-const PLAYBOOK_GUIDE = [
-  { eyebrow: "What this playbook is", title: "The conversion engine, fully documented.", body: "Three stages — Acquisition · Execution · Retention — covering how we win the deal, wow on delivery, and make it last. Every tool the team needs to run the offer lives here." },
-  { eyebrow: "How it's organised", title: "Stages → Tools → Decks.", body: "Each stage has a small set of canonical tools — a working surface (briefs, roadmap, kickoff) or a presentable deck (pitch, milestone, monthly report). One source of truth, no scattered docs." },
-  { eyebrow: "Who maintains each section", title: "Founder owns the offer, leads own their stage.", body: "Dylan owns the offer + acquisition copy. Strategist owns execution. CSM owns retention. Anyone with admin can edit; badges show who last touched what." },
-  { eyebrow: "How to use it day to day", title: "Open the tool you need, ship.", body: "Sales call? Pitch deck + qualification script. New client? Kickoff deck. Monthly review? Monthly report. Day 30/90/180 check-in? Milestone deck. Every workflow already has a home here." },
-];
-
-function fmtK(n: number) {
-  const k = n / 1000;
-  return `£${Number.isInteger(k) ? k : k.toFixed(1)}k`;
-}
 
 export default function HeroOfferPage() {
   const role = useRole();
@@ -87,7 +63,7 @@ export default function HeroOfferPage() {
   }
 
   return (
-    <div className="space-y-10 px-6 pb-20 pt-10 md:px-10">
+    <div className="space-y-10">
       {/* ── Hero ── */}
       <header>
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">The conversion engine</p>
@@ -143,35 +119,8 @@ export default function HeroOfferPage() {
         ))}
       </section>
 
-      {/* ── Stage links ── */}
-      <section>
-        <p className="mb-3 text-3xs font-semibold uppercase tracking-wider text-subtle">Jump to a stage</p>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {STAGES.map((s) => (
-            <Link key={s.href} href={s.href} className="group rounded border border-border-faint bg-surface p-5 transition-colors hover:bg-surface-raised">
-              <div className="mb-4 flex size-9 items-center justify-center rounded border border-border-faint bg-surface-raised text-muted transition-colors group-hover:text-foreground">
-                <s.icon className="size-4" />
-              </div>
-              <div className="text-3xs font-semibold uppercase tracking-wider text-subtle">{s.label}</div>
-              <p className="mt-1 text-sm leading-relaxed text-foreground">{s.sub}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Playbook guide ── */}
-      <section>
-        <p className="mb-3 text-3xs font-semibold uppercase tracking-wider text-subtle">How the playbook works</p>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {PLAYBOOK_GUIDE.map((g) => (
-            <div key={g.eyebrow} className="rounded border border-border-faint bg-surface p-5">
-              <div className="mb-2 text-3xs font-semibold uppercase tracking-wider text-subtle">{g.eyebrow}</div>
-              <div className="text-sm font-semibold text-foreground">{g.title}</div>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted">{g.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Stages + the playbook rationale now live on the Resources and Info
+       * tabs; the Hero Offer tab stays the offer at a glance. */}
 
       {/* ── Operations hub (admin) ── */}
       {isAdmin && (

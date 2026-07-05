@@ -1,39 +1,45 @@
 "use client";
 
-/* ── Hero Offer TabShell ──
+/* ── Offer TabShell ──
  *
- * One umbrella, four tabs: Start here / Acquisition / Execution /
- * Retention. Tab clicks use router.replace with scroll: false so the
- * shared chrome stays mounted and the page content swaps quickly with
- * no scroll jump.
+ * One umbrella, four tabs: Hero Offer / Price list / Resources / Info.
+ * Acquisition, Execution + Retention are sections inside Resources, so the
+ * stage sub-routes light the Resources tab. Tab clicks use router.replace with
+ * scroll: false so the shared chrome stays mounted and content swaps quickly.
  *
- * Access: admin + cro can edit, team can read. The page panels gate
- * editing UI behind useRole() === "admin" so team members just see
- * the rendered content.
+ * The shell owns the page padding + width; every tab page renders bare
+ * (space-y only) so the rhythm stays identical across tabs.
  */
 
 import { usePathname, useRouter } from "next/navigation";
 import {
-  HomeIcon,
-  MegaphoneIcon,
-  WrenchScrewdriverIcon,
-  HeartIcon,
+  TagIcon,
+  BanknotesIcon,
+  RectangleStackIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
-type Tab = "start" | "acquisition" | "execution" | "retention";
+type Tab = "offer" | "price" | "resources" | "info";
 
-const TABS: { id: Tab; label: string; icon: typeof HomeIcon; href: string }[] = [
-  { id: "start",       label: "The Offer",   icon: HomeIcon,                href: "/hero-offer" },
-  { id: "acquisition", label: "Acquisition", icon: MegaphoneIcon,           href: "/hero-offer/acquisition" },
-  { id: "execution",   label: "Execution",   icon: WrenchScrewdriverIcon,   href: "/hero-offer/execution" },
-  { id: "retention",   label: "Retention",   icon: HeartIcon,               href: "/hero-offer/retention" },
+const TABS: { id: Tab; label: string; icon: typeof TagIcon; href: string }[] = [
+  { id: "offer",     label: "Hero Offer", icon: TagIcon,               href: "/hero-offer" },
+  { id: "price",     label: "Price list", icon: BanknotesIcon,         href: "/hero-offer/price-list" },
+  { id: "resources", label: "Resources",  icon: RectangleStackIcon,    href: "/hero-offer/resources" },
+  { id: "info",      label: "Info",       icon: InformationCircleIcon, href: "/hero-offer/info" },
 ];
 
 function tabFromPath(pathname: string): Tab {
-  if (pathname.startsWith("/hero-offer/acquisition")) return "acquisition";
-  if (pathname.startsWith("/hero-offer/execution")) return "execution";
-  if (pathname.startsWith("/hero-offer/retention")) return "retention";
-  return "start";
+  if (pathname.startsWith("/hero-offer/price-list")) return "price";
+  if (pathname.startsWith("/hero-offer/info")) return "info";
+  if (
+    pathname.startsWith("/hero-offer/resources") ||
+    pathname.startsWith("/hero-offer/acquisition") ||
+    pathname.startsWith("/hero-offer/execution") ||
+    pathname.startsWith("/hero-offer/retention")
+  ) {
+    return "resources";
+  }
+  return "offer";
 }
 
 export default function HeroOfferLayout({
@@ -52,32 +58,13 @@ export default function HeroOfferLayout({
   }
 
   return (
-    <div className="min-h-full bg-background relative">
-      {/* Soft accent blob - gives the page a quiet identity tint without
-       * dominating. Sits behind everything, fixed to scroll with the
-       * page chrome only. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[280px] opacity-40"
-        style={{
-          background:
-            "radial-gradient(60% 100% at 20% 0%, rgba(16,185,129,0.18), transparent 60%), radial-gradient(50% 100% at 80% 0%, rgba(14,165,233,0.14), transparent 60%)",
-        }}
-      />
-
-      {/* Header sits flush with the page bg, no border line. Tab strip
-       * carries the separation. */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
-          <h1 className="text-2xl font-semibold mb-1">
-            <span className="text-foreground">
-              Hero Offer
-            </span>
-          </h1>
-          <p className="text-sm text-subtle mb-5">
-            The conversion engine playbook: how to win the deal, how to wow on delivery, how to make it last.
-          </p>
-          <nav className="flex gap-1 overflow-x-auto pb-3">
+    <div className="min-h-full bg-background">
+      {/* Sticky tab strip — the only chrome the shell owns. Underline tabs,
+       * DESIGN.md craft (no pills, no tint). */}
+      <div className="sticky top-0 z-10 border-b border-border-faint bg-background/90 backdrop-blur-md">
+        <div className="px-6 md:px-10">
+          <p className="pt-6 text-3xs font-semibold uppercase tracking-[0.14em] text-subtle">Offer</p>
+          <nav className="-mb-px mt-4 flex gap-6 overflow-x-auto">
             {TABS.map((tab) => {
               const active = activeTab === tab.id;
               const Icon = tab.icon;
@@ -85,10 +72,10 @@ export default function HeroOfferLayout({
                 <button
                   key={tab.id}
                   onClick={() => pickTab(tab.id)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-all ${
+                  className={`flex items-center gap-2 whitespace-nowrap border-b-2 pb-3 text-sm transition-colors ${
                     active
-                      ? "bg-foreground text-background font-medium"
-                      : "text-subtle hover:text-foreground hover:bg-surface-hover"
+                      ? "border-foreground text-foreground"
+                      : "border-transparent text-subtle hover:text-foreground"
                   }`}
                 >
                   <Icon className="size-4" />
@@ -99,7 +86,8 @@ export default function HeroOfferLayout({
           </nav>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-6 py-6 relative">{children}</div>
+
+      <div className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10">{children}</div>
     </div>
   );
 }
