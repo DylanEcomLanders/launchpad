@@ -36,6 +36,10 @@ interface NavSection {
   title: string;
   icon: React.ReactNode;
   items: NavItem[];
+  /* When set, the section is a single top-level link (title navigates here,
+   * no collapse, items ignored) — for umbrellas whose sub-nav lives in tabs
+   * on the destination, e.g. Offer → /hero-offer. */
+  href?: string;
   defaultOpen?: boolean;
   roles?: ("admin" | "cro")[];
   badge?: string;
@@ -135,11 +139,6 @@ const myWorkItem = {
   label: "My Tasks",
   href: "/my-work",
   icon: <PixelChecklist className="size-4" />,
-};
-const offerItem = {
-  label: "Offer",
-  href: "/offer",
-  icon: <PixelTag className="size-4" />,
 };
 /* Old Delivery — the previous /workspace surface, kept around until
  * its in-flight projects are manually migrated to the Delivery kanban.
@@ -311,7 +310,8 @@ const navSections: NavSection[] = [
     title: "Offer",
     icon: <PixelTag className="size-4" />,
     group: "lifecycle",
-    items: [offerItem, heroOfferItem],
+    href: "/hero-offer",
+    items: [],
   },
   {
     title: "Team",
@@ -347,7 +347,7 @@ export function Sidebar() {
       ...s,
       items: s.items.filter((i) => !i.roles || i.roles.includes(role)),
     }))
-    .filter((s) => s.items.length > 0);
+    .filter((s) => s.items.length > 0 || s.href);
 
   /* Collapsible sections. On mount, open the section that holds the current
    * route (so you land where you are); the rest start closed. Toggle is
@@ -488,6 +488,11 @@ export function Sidebar() {
    * Items render with icon + label.
    * Collapsed sidebar shows a dot indicator for the group. */
   function renderSection(section: NavSection) {
+    /* Link-style section: the title itself is the destination (sub-nav lives
+     * in tabs there). Renders exactly like a top link so it lines up. */
+    if (section.href) {
+      return renderTopLink({ label: section.title, href: section.href, icon: section.icon });
+    }
     const sectionHasActive = section.items.some((i) => !i.external && isActive(i.href));
     if (collapsed) {
       return (
