@@ -272,11 +272,18 @@ export function computeTrend(items: DeliveryItem[], weeks: number): TrendPoint[]
     let onTime = 0;
     let late = 0;
     let delivered = 0;
+    let turnSum = 0;
+    let turnN = 0;
     for (const d of items) {
       if (!d.isDelivered) continue;
       const t = dayMs(d.deliveredAt);
       if (t === null || t < start || t >= end) continue;
       delivered++;
+      const started = dayMs(d.startedAt);
+      if (started !== null && t >= started) {
+        turnSum += (t - started) / MS_PER_DAY;
+        turnN++;
+      }
       const due = dayMs(d.dueDate);
       if (due === null) continue;
       if (t <= due) onTime++;
@@ -289,6 +296,7 @@ export function computeTrend(items: DeliveryItem[], weeks: number): TrendPoint[]
       label: `${sd.getUTCDate()} ${MONTHS[sd.getUTCMonth()]}`,
       onTimeRate: rated > 0 ? Math.round((onTime / rated) * 100) : null,
       delivered,
+      avgTurnaround: turnN > 0 ? Math.round((turnSum / turnN) * 10) / 10 : null,
     });
   }
   return points;

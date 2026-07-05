@@ -145,7 +145,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   /* Finalise a Supabase session (password sign-in, or a returning session):
    * confirm the email is on the allowlist, resolve the person, set role +
    * identity + cookie. If the email isn't allowed we sign straight back out. */
-  const finaliseSession = useCallback(async (authEmail: string, authId: string) => {
+  const finaliseSession = useCallback(async (authEmail: string, authId: string, fresh = false) => {
     const user = await findAppUserByEmail(authEmail);
     if (!user) {
       setNotAllowed(true);
@@ -160,6 +160,19 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     cacheCurrentUser(user);
     setRole(user.role);
     setCurrentUser(user);
+    /* Landing on a fresh sign-in: admins/CRO get the Overview home ("/"),
+     * members get My Tasks. A deep link to a specific page is respected, and
+     * restored sessions pass fresh=false so navigating to "/" always works. */
+    if (fresh && typeof window !== "undefined") {
+      const path = window.location.pathname;
+      if (path === "/" || path === "/team") {
+        const target = user.role === "team" ? "/my-work" : "/";
+        if (path !== target) {
+          window.location.replace(target);
+          return true;
+        }
+      }
+    }
     setAuthed(true);
     return true;
   }, []);
@@ -207,7 +220,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (isSupabaseConfigured()) {
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_IN" && session?.user?.email) {
-          finaliseSession(session.user.email, session.user.id);
+          finaliseSession(session.user.email, session.user.id, true);
         }
       });
       sub = data.subscription;
@@ -285,11 +298,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setRoleCookie(r);
     setEntering(true);
     setTimeout(() => {
-      if (r === "team") {
-        // Members land on My Tasks unless they deep-linked to an allowed path.
-        const path = typeof window !== "undefined" ? window.location.pathname : "/";
-        if (typeof window !== "undefined" && (path === "/team" || !isTeamAllowedPath(path))) {
-          window.location.replace("/my-work");
+      const path = typeof window !== "undefined" ? window.location.pathname : "/";
+      // Admins/CRO land on the Overview home ("/"); members on My Tasks. Deep
+      // links are respected, and members are kept out of admin-only routes.
+      const landHome = path === "/" || path === "/team";
+      const teamBlocked = r === "team" && !isTeamAllowedPath(path);
+      if (landHome || teamBlocked) {
+        const target = r === "team" ? "/my-work" : "/";
+        if (path !== target) {
+          window.location.replace(target);
           return;
         }
       }

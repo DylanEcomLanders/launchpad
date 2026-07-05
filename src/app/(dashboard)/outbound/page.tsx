@@ -2,48 +2,51 @@
 
 /* Outbound - SLA action queue for outbound leads.
  *
- * VISUAL BUILD ONLY. Rows are mock data held in local state; the internal-
- * column edits (owner / status / asset / link / feedback / first-responded)
- * mutate local state and persist nowhere yet. Wiring to come:
- *   - outbound_leads_mirror  (one-way reflection of the lead-gen sheet)
- *   - outbound_leads_internal (this editable layer, joined on lead_email)
+ * VISUAL BUILD ONLY. Rows are mock data held in local state; edits (owner /
+ * status / deck / loom / feedback / first-responded) mutate local state and
+ * persist nowhere yet. Wiring to come:
+ *   - outbound_leads_mirror  (one-way reflection of the lead-gen Google Sheet:
+ *     date, lead name, job title, company, website, email, campaign, phone,
+ *     linkedin)
+ *   - outbound_leads_internal (this editable layer, joined on lead email)
  *   - business-hours SLA computed at read time (Mon-Fri 09:00-18:00 London)
+ *   - "Create deck" spawns a per-lead outreach deck; "Record loom" opens the
+ *     script pre-filled from the row.
  *
  * The sort is the point of the surface, so it's real here: Band 1 "Needs
  * response" (first_responded_at IS NULL) on top, sorted by business-hours
- * elapsed DESCENDING - nearest breach on top; brand-new leads at the bottom.
- * Band 2 "Everything else" below, by recency. SLA colour comes from tokens
- * (--success / --warning / --danger), never hardcoded hex.
+ * elapsed DESCENDING - nearest breach on top. Band 2 "Everything else" below,
+ * by recency. SLA colour uses the muted-status tokens, never hardcoded hex.
  */
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
-  PageHeader,
-  StatTile,
-  Card,
-  Table,
-  THead,
-  TBody,
-  TR,
-  TH,
-  TD,
-  Num,
-} from "@/components/ui";
+  ArrowTopRightOnSquareIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  VideoCameraIcon,
+  PresentationChartBarIcon,
+  ChevronDownIcon,
+} from "@heroicons/react/24/outline";
+import { Table, THead, TBody, TR, TH, TD, Num } from "@/components/ui";
 
-/* ── Model ── */
+/* ── Model (mirrors the lead-gen sheet + the internal layer) ── */
 
 type Status = "New" | "Responded" | "Awaiting" | "Booked" | "Dead";
-type AssetType = "Loom" | "Deck" | "Both" | "";
 
 interface Lead {
   email: string;
-  brand: string;
+  name: string;
+  jobTitle: string;
+  company: string;
   website: string;
+  campaign: string;
   // Internal, editable layer:
   owner: string; // "" = unassigned
   status: Status;
-  assetType: AssetType;
-  assetLink: string;
+  deckLink: string; // "" = not created
+  loomLink: string; // "" = not recorded
   feedback: string;
   firstRespondedAt: string | null; // null => Band 1 (needs response)
   // Derived/mock timing:
@@ -52,7 +55,7 @@ interface Lead {
   respondedRank: number; // smaller = more recent (Band 2 sort)
 }
 
-/* ── Config (mirrors the real SLA constants to come) ── */
+/* ── SLA config (mirrors the real constants to come) ── */
 
 const THRESHOLD_MIN = 5 * 60; // 5 business hours
 const AMBER_WINDOW_MIN = 60; // < 1h to breach
@@ -65,10 +68,12 @@ function slaState(elapsedMin: number): SlaState {
   return "healthy";
 }
 
-const SLA_META: Record<SlaState, { label: string; text: string; accent: string }> = {
-  breached: { label: "Breached", text: "text-danger", accent: "var(--color-danger)" },
-  amber: { label: "<1h to breach", text: "text-warning", accent: "var(--color-warning)" },
-  healthy: { label: "Healthy", text: "text-success", accent: "var(--color-success)" },
+/* Muted-status palette: calm attention, not loud alerts. Colour carries the
+ * SLA state on the age value; the legend decodes it. */
+const SLA_META: Record<SlaState, { text: string }> = {
+  breached: { text: "text-status-late" },
+  amber: { text: "text-status-approaching" },
+  healthy: { text: "text-status-ontrack" },
 };
 
 function fmtElapsed(min: number): string {
@@ -79,109 +84,143 @@ function fmtElapsed(min: number): string {
 
 const OWNERS = ["", "Ajay", "Dylan"];
 const STATUSES: Status[] = ["New", "Responded", "Awaiting", "Booked", "Dead"];
-const ASSET_TYPES: AssetType[] = ["", "Loom", "Deck", "Both"];
 
-/* ── Mock rows ── */
+/* ── Mock rows (shape mirrors the sheet columns) ── */
 
 const SEED: Lead[] = [
-  { email: "grace@lumenskin.co", brand: "Lumen Skincare", website: "lumenskin.co", owner: "Ajay", status: "New", assetType: "", assetLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 400, respondedAgo: "", respondedRank: 0 },
-  { email: "tom@northsail.com", brand: "Northsail Coffee", website: "northsail.com", owner: "Dylan", status: "New", assetType: "", assetLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 312, respondedAgo: "", respondedRank: 0 },
-  { email: "priya@verveath.com", brand: "Verve Athletic", website: "verveath.com", owner: "Ajay", status: "New", assetType: "", assetLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 265, respondedAgo: "", respondedRank: 0 },
-  { email: "sam@oakmere.co.uk", brand: "Oakmere Home", website: "oakmere.co.uk", owner: "Dylan", status: "New", assetType: "", assetLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 65, respondedAgo: "", respondedRank: 0 },
-  { email: "leah@pikerose.com", brand: "Pike & Rose", website: "pikerose.com", owner: "", status: "New", assetType: "", assetLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 18, respondedAgo: "", respondedRank: 0 },
-  { email: "will@brightbottle.com", brand: "Bright Bottle Co", website: "brightbottle.com", owner: "Ajay", status: "Responded", assetType: "Loom", assetLink: "loom.com/s/abc", feedback: "Liked the hook, wants pricing", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "responded 2h ago", respondedRank: 1 },
-  { email: "nina@meadowlark.co", brand: "Meadowlark", website: "meadowlark.co", owner: "Dylan", status: "Booked", assetType: "Both", assetLink: "cal.com/mw", feedback: "Call Thu 3pm", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "responded 1d ago", respondedRank: 2 },
-  { email: "rob@cinderco.com", brand: "Cinder & Co", website: "cinderco.com", owner: "Ajay", status: "Awaiting", assetType: "Deck", assetLink: "", feedback: "Sent deck, chasing", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "responded 3d ago", respondedRank: 3 },
-  { email: "kate@halcyon.com", brand: "Halcyon Goods", website: "halcyon.com", owner: "Dylan", status: "Dead", assetType: "", assetLink: "", feedback: "No budget this quarter", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "responded 5d ago", respondedRank: 4 },
+  { email: "grace@lumenskin.co", name: "Grace Okafor", jobTitle: "Ecommerce Director", company: "Lumen Skincare", website: "lumenskin.co", campaign: "6/30 Campaign", owner: "Ajay", status: "New", deckLink: "", loomLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 400, respondedAgo: "", respondedRank: 0 },
+  { email: "tom@northsail.com", name: "Tom Reilly", jobTitle: "Head of Growth", company: "Northsail Coffee", website: "northsail.com", campaign: "6/30 Campaign", owner: "Dylan", status: "New", deckLink: "", loomLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 312, respondedAgo: "", respondedRank: 0 },
+  { email: "priya@verveath.com", name: "Priya Nair", jobTitle: "Founder", company: "Verve Athletic", website: "verveath.com", campaign: "6/30 Campaign", owner: "Ajay", status: "New", deckLink: "", loomLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 265, respondedAgo: "", respondedRank: 0 },
+  { email: "sam@oakmere.co.uk", name: "Sam Whitfield", jobTitle: "Marketing Lead", company: "Oakmere Home", website: "oakmere.co.uk", campaign: "6/30 Campaign", owner: "Dylan", status: "New", deckLink: "", loomLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 65, respondedAgo: "", respondedRank: 0 },
+  { email: "leah@pikerose.com", name: "Leah Cormac", jobTitle: "Ecommerce Manager", company: "Pike & Rose", website: "pikerose.com", campaign: "6/30 Campaign", owner: "", status: "New", deckLink: "", loomLink: "", feedback: "", firstRespondedAt: null, elapsedMin: 18, respondedAgo: "", respondedRank: 0 },
+  { email: "will@brightbottle.com", name: "Will Amara", jobTitle: "Co-founder", company: "Bright Bottle Co", website: "brightbottle.com", campaign: "6/23 Campaign", owner: "Ajay", status: "Responded", deckLink: "", loomLink: "loom.com/s/abc", feedback: "Liked the hook, wants pricing", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "2h ago", respondedRank: 1 },
+  { email: "nina@meadowlark.co", name: "Nina Voss", jobTitle: "Head of Ecommerce", company: "Meadowlark", website: "meadowlark.co", campaign: "6/23 Campaign", owner: "Dylan", status: "Booked", deckLink: "outbound/deck/meadowlark", loomLink: "loom.com/s/mw", feedback: "Call Thu 3pm", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "1d ago", respondedRank: 2 },
+  { email: "rob@cinderco.com", name: "Rob Deakin", jobTitle: "Owner", company: "Cinder & Co", website: "cinderco.com", campaign: "6/16 Campaign", owner: "Ajay", status: "Awaiting", deckLink: "outbound/deck/cinder", loomLink: "", feedback: "Sent deck, chasing", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "3d ago", respondedRank: 3 },
+  { email: "kate@halcyon.com", name: "Kate Lindqvist", jobTitle: "Director", company: "Halcyon Goods", website: "halcyon.com", campaign: "6/16 Campaign", owner: "Dylan", status: "Dead", deckLink: "", loomLink: "", feedback: "No budget this quarter", firstRespondedAt: "set", elapsedMin: 0, respondedAgo: "5d ago", respondedRank: 4 },
 ];
 
 /* ── Token-styled inline controls ── */
 
 const selectCls =
-  "bg-transparent text-xs text-foreground rounded-md border border-transparent px-2 py-1 -mx-1 cursor-pointer hover:border-border focus:border-border focus:outline-none focus:ring-1 focus:ring-ring";
+  "bg-transparent text-xs text-foreground rounded border border-transparent px-2 py-1 -mx-1 cursor-pointer appearance-none hover:border-border focus:border-foreground focus:outline-none";
 const inputCls =
-  "w-full bg-transparent text-xs text-muted placeholder:text-subtle rounded-md border border-transparent px-2 py-1 -mx-1 hover:border-border focus:border-border focus:text-foreground focus:outline-none focus:ring-1 focus:ring-ring";
+  "w-full bg-transparent text-xs text-muted placeholder:text-subtle rounded border border-transparent px-2 py-1 -mx-1 hover:border-border focus:border-foreground focus:text-foreground focus:outline-none";
 
 /* ── Page ── */
 
 export default function OutboundPage() {
   const [leads, setLeads] = useState<Lead[]>(SEED);
+  const [query, setQuery] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState<"all" | string>("all");
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   function update(email: string, patch: Partial<Lead>) {
     setLeads((rows) => rows.map((r) => (r.email === email ? { ...r, ...patch } : r)));
   }
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return leads.filter((l) => {
+      if (ownerFilter !== "all" && (l.owner || "Unassigned") !== ownerFilter) return false;
+      if (!q) return true;
+      return `${l.name} ${l.company} ${l.email} ${l.campaign}`.toLowerCase().includes(q);
+    });
+  }, [leads, query, ownerFilter]);
+
   const band1 = useMemo(
-    () =>
-      leads
-        .filter((l) => l.firstRespondedAt === null)
-        .sort((a, b) => b.elapsedMin - a.elapsedMin), // business-hours elapsed DESC
-    [leads],
+    () => filtered.filter((l) => l.firstRespondedAt === null).sort((a, b) => b.elapsedMin - a.elapsedMin),
+    [filtered],
   );
   const band2 = useMemo(
-    () =>
-      leads
-        .filter((l) => l.firstRespondedAt !== null)
-        .sort((a, b) => a.respondedRank - b.respondedRank), // recency
-    [leads],
+    () => filtered.filter((l) => l.firstRespondedAt !== null).sort((a, b) => a.respondedRank - b.respondedRank),
+    [filtered],
   );
 
-  return (
-    <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
-      <PageHeader
-        className="mb-8"
-        title="Outbound"
-        subtitle="SLA action queue · mirrored one-way from the lead-gen sheet"
-        actions={
-          <StatTile
-            className="min-w-[13rem]"
-            label="Avg response · this week"
-            value="3.2h"
-            context="business hours · Mon-Fri 09:00-18:00"
-          />
-        }
-      />
+  const needsResponse = leads.filter((l) => l.firstRespondedAt === null).length;
 
-      <Card className="overflow-hidden">
+  return (
+    <div className="px-6 md:px-10 py-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Outbound</h1>
+          <p className="text-sm text-subtle mt-1">
+            Response queue, mirrored one-way from the lead-gen sheet. Reply, then send a deck or record a loom.
+          </p>
+        </div>
+      </div>
+
+      {/* Actionable signals */}
+      <div className="grid grid-cols-2 gap-3">
+        <StatTile label="Needs response" value={String(needsResponse)} alert={needsResponse > 0} />
+        <StatTile label="Avg response · this week" value="3.2h" hint="business hours · Mon-Fri 09:00-18:00" />
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-subtle tabular-nums mr-1">{filtered.length} of {leads.length}</span>
+          <select
+            value={ownerFilter}
+            onChange={(e) => setOwnerFilter(e.target.value)}
+            className="h-8 px-2.5 rounded border border-border bg-surface text-xs text-muted appearance-none focus:outline-none focus:border-foreground"
+          >
+            <option value="all">All owners</option>
+            <option value="Ajay">Ajay</option>
+            <option value="Dylan">Dylan</option>
+            <option value="Unassigned">Unassigned</option>
+          </select>
+        </div>
+        <div className="relative w-full md:w-64">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-subtle z-10" />
+          <input
+            placeholder="Search lead, company, campaign"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-8 w-full pl-8 pr-3 rounded border border-border bg-surface text-xs text-muted placeholder:text-subtle focus:outline-none focus:border-foreground"
+          />
+        </div>
+      </div>
+
+      {/* Queue */}
+      <div className="bg-surface border border-border-faint rounded overflow-x-auto">
         <Table>
           <THead>
             <TR hover={false}>
               <TH>Lead</TH>
+              <TH>Title</TH>
+              <TH>Company</TH>
               <TH>Owner</TH>
               <TH>Status</TH>
-              <TH>Asset</TH>
+              <TH>Outreach</TH>
               <TH>Feedback</TH>
-              <TH>First responded</TH>
-              <TH align="right">SLA</TH>
+              <TH>Responded</TH>
+              <TH align="right">Age</TH>
             </TR>
           </THead>
 
           {/* Band 1 - Needs response */}
           <TBody>
-            <BandRow label="Needs response" count={band1.length} note="sorted by business-hours elapsed · nearest breach on top" />
+            <BandRow label="Needs response" count={band1.length} note="business-hours elapsed · nearest breach on top" />
             {band1.map((l) => {
-              const s = slaState(l.elapsedMin);
-              const meta = SLA_META[s];
+              const meta = SLA_META[slaState(l.elapsedMin)];
               return (
-                <TR key={l.email} style={{ boxShadow: `inset 2px 0 0 ${meta.accent}` }}>
-                  <LeadCell lead={l} />
+                <TR key={l.email}>
+                  <LeadCells lead={l} />
                   <OwnerCell lead={l} onChange={update} />
                   <StatusCell lead={l} onChange={update} />
-                  <AssetCell lead={l} onChange={update} />
+                  <OutreachCell lead={l} onChange={update} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
                   <FeedbackCell lead={l} onChange={update} />
                   <TD>
                     <button
-                      onClick={() => update(l.email, { firstRespondedAt: "set", status: l.status === "New" ? "Responded" : l.status, respondedAgo: "responded just now", respondedRank: -1 })}
-                      className="text-xs text-muted hover:text-foreground rounded-md border border-transparent hover:border-border px-2 py-1 -mx-1 transition-colors"
+                      onClick={() => update(l.email, { firstRespondedAt: "set", status: l.status === "New" ? "Responded" : l.status, respondedAgo: "just now", respondedRank: -1 })}
+                      className="text-xs text-muted hover:text-foreground rounded border border-transparent hover:border-border px-2 py-1 -mx-1 transition-colors whitespace-nowrap"
                     >
                       Mark responded
                     </button>
                   </TD>
                   <TD align="right">
-                    <div className="flex flex-col items-end gap-1">
-                      <Num className={meta.text}>{fmtElapsed(l.elapsedMin)}</Num>
-                      <span className={`text-2xs font-medium ${meta.text}`}>{meta.label}</span>
-                    </div>
+                    <Num className={meta.text}>{fmtElapsed(l.elapsedMin)}</Num>
                   </TD>
                 </TR>
               );
@@ -190,33 +229,45 @@ export default function OutboundPage() {
 
           {/* Band 2 - Everything else */}
           <TBody>
-            <BandRow label="Everything else" count={band2.length} note="responded · awaiting · booked · dead · sorted by recency" />
+            <BandRow label="Everything else" count={band2.length} note="responded · awaiting · booked · dead · by recency" />
             {band2.map((l) => (
               <TR key={l.email}>
-                <LeadCell lead={l} dim={l.status === "Dead"} />
+                <LeadCells lead={l} dim={l.status === "Dead"} />
                 <OwnerCell lead={l} onChange={update} />
                 <StatusCell lead={l} onChange={update} />
-                <AssetCell lead={l} onChange={update} />
+                <OutreachCell lead={l} onChange={update} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
                 <FeedbackCell lead={l} onChange={update} />
                 <TD>
-                  <span className="text-xs text-muted">{l.respondedAgo}</span>
+                  <span className="text-xs text-muted whitespace-nowrap">{l.respondedAgo}</span>
                 </TD>
                 <TD align="right">
-                  <span className="text-subtle">-</span>
+                  <span className="text-subtle">—</span>
                 </TD>
               </TR>
             ))}
           </TBody>
         </Table>
-      </Card>
+      </div>
 
       {/* Legend */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-2xs text-subtle">
-        <LegendDot className="bg-danger" label="Breached SLA" />
-        <LegendDot className="bg-warning" label="< 1h to breach" />
-        <LegendDot className="bg-success" label="Healthy" />
-        <span className="ml-auto">Owner · status · asset · feedback are inline-editable · writes to the internal layer only.</span>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-2xs text-subtle">
+        <LegendDot className="bg-status-late" label="Breached SLA" />
+        <LegendDot className="bg-status-approaching" label="< 1h to breach" />
+        <LegendDot className="bg-status-ontrack" label="On track" />
+        <span className="ml-auto">Owner, status, outreach and feedback are inline-editable, writing to the internal layer only.</span>
       </div>
+    </div>
+  );
+}
+
+/* ── Header stat tile ── */
+
+function StatTile({ label, value, hint, alert }: { label: string; value: string; hint?: string; alert?: boolean }) {
+  return (
+    <div className="bg-surface border border-border-faint rounded p-5">
+      <div className="text-2xs uppercase tracking-wider text-subtle font-medium">{label}</div>
+      <div className={`mt-2 text-xl font-semibold tabular-nums ${alert ? "text-status-late" : "text-foreground"}`}>{value}</div>
+      {hint && <div className="mt-1 text-2xs text-subtle">{hint}</div>}
     </div>
   );
 }
@@ -225,8 +276,8 @@ export default function OutboundPage() {
 
 function BandRow({ label, count, note }: { label: string; count: number; note: string }) {
   return (
-    <tr className="bg-surface-raised/40">
-      <td colSpan={7} className="px-5 py-2.5 border-b border-border">
+    <tr>
+      <td colSpan={9} className="px-4 py-2.5 border-b border-border bg-surface-raised/30">
         <div className="flex items-center gap-2.5">
           <span className="text-2xs font-semibold uppercase tracking-wider text-foreground">{label}</span>
           <span className="rounded-full bg-surface-raised px-2 text-2xs text-muted tabular-nums">{count}</span>
@@ -237,12 +288,19 @@ function BandRow({ label, count, note }: { label: string; count: number; note: s
   );
 }
 
-function LeadCell({ lead, dim }: { lead: Lead; dim?: boolean }) {
+function LeadCells({ lead, dim }: { lead: Lead; dim?: boolean }) {
   return (
-    <TD>
-      <div className={dim ? "text-muted" : "text-foreground"}>{lead.brand}</div>
-      <div className="text-2xs text-subtle">{lead.email}</div>
-    </TD>
+    <>
+      <TD className="max-w-[170px]">
+        <span className={`block truncate ${dim ? "text-muted" : "text-foreground"}`}>{lead.name}</span>
+      </TD>
+      <TD className="max-w-[150px] text-muted">
+        <span className="block truncate">{lead.jobTitle}</span>
+      </TD>
+      <TD className="max-w-[150px] text-muted">
+        <span className="block truncate">{lead.company}</span>
+      </TD>
+    </>
   );
 }
 
@@ -251,9 +309,7 @@ function OwnerCell({ lead, onChange }: { lead: Lead; onChange: (e: string, p: Pa
     <TD>
       <select className={selectCls} value={lead.owner} onChange={(e) => onChange(lead.email, { owner: e.target.value })}>
         {OWNERS.map((o) => (
-          <option key={o || "none"} value={o}>
-            {o || "Assign…"}
-          </option>
+          <option key={o || "none"} value={o}>{o || "Assign…"}</option>
         ))}
       </select>
     </TD>
@@ -265,34 +321,84 @@ function StatusCell({ lead, onChange }: { lead: Lead; onChange: (e: string, p: P
     <TD>
       <select className={selectCls} value={lead.status} onChange={(e) => onChange(lead.email, { status: e.target.value as Status })}>
         {STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
+          <option key={s} value={s}>{s}</option>
         ))}
       </select>
     </TD>
   );
 }
 
-function AssetCell({ lead, onChange }: { lead: Lead; onChange: (e: string, p: Partial<Lead>) => void }) {
+/* One outreach entry point per lead: click "Create" and choose deck or loom.
+ * Whatever's been made shows as a view chip; the menu only offers what's left.
+ * Wiring (spawn deck / open loom recorder) comes later. */
+function OutreachCell({
+  lead,
+  onChange,
+  menuOpen,
+  setMenuOpen,
+}: {
+  lead: Lead;
+  onChange: (e: string, p: Partial<Lead>) => void;
+  menuOpen: string | null;
+  setMenuOpen: (v: string | null) => void;
+}) {
+  const hasDeck = !!lead.deckLink;
+  const hasLoom = !!lead.loomLink;
+  const both = hasDeck && hasLoom;
+  const open = menuOpen === lead.email;
+
+  const createDeck = () => { onChange(lead.email, { deckLink: `outbound/deck/${lead.email.split("@")[0]}` }); setMenuOpen(null); };
+  const recordLoom = () => { onChange(lead.email, { loomLink: "https://loom.com/record" }); setMenuOpen(null); };
+
   return (
     <TD>
-      <div className="flex flex-col gap-0.5">
-        <select className={selectCls} value={lead.assetType} onChange={(e) => onChange(lead.email, { assetType: e.target.value as AssetType })}>
-          {ASSET_TYPES.map((a) => (
-            <option key={a || "none"} value={a}>
-              {a || "Type"}
-            </option>
-          ))}
-        </select>
-        <input
-          className={inputCls}
-          value={lead.assetLink}
-          placeholder="asset link"
-          onChange={(e) => onChange(lead.email, { assetLink: e.target.value })}
-        />
+      <div className="relative flex items-center gap-1.5">
+        {hasDeck && <AssetChip label="Deck" Icon={PresentationChartBarIcon} link={lead.deckLink} />}
+        {hasLoom && <AssetChip label="Loom" Icon={VideoCameraIcon} link={lead.loomLink} />}
+        {!both && (
+          <button
+            onClick={() => setMenuOpen(open ? null : lead.email)}
+            className="inline-flex items-center gap-1 h-7 px-2 rounded border border-border-faint bg-surface text-2xs text-muted hover:border-border hover:text-foreground transition-colors"
+          >
+            <PlusIcon className="size-3" />
+            {!hasDeck && !hasLoom && "Create"}
+            <ChevronDownIcon className="size-3" />
+          </button>
+        )}
+        {open && (
+          <>
+            <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(null)} />
+            <div className="absolute top-full left-0 z-20 mt-1 min-w-[9rem] rounded border border-border bg-surface-raised py-1 shadow-[0_8px_24px_rgba(0,0,0,0.45)]">
+              {!hasDeck && (
+                <button onClick={createDeck} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-muted hover:bg-surface hover:text-foreground">
+                  <PresentationChartBarIcon className="size-3.5" /> Create deck
+                </button>
+              )}
+              {!hasLoom && (
+                <button onClick={recordLoom} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-muted hover:bg-surface hover:text-foreground">
+                  <VideoCameraIcon className="size-3.5" /> Record loom
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </TD>
+  );
+}
+
+function AssetChip({ label, Icon, link }: { label: string; Icon: typeof VideoCameraIcon; link: string }) {
+  const href = link.startsWith("http") ? link : `/${link}`;
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      className="inline-flex items-center gap-1 h-7 px-2 rounded border border-border bg-surface-raised text-2xs font-medium text-foreground hover:border-muted transition-colors"
+    >
+      <Icon className="size-3.5" />
+      {label}
+      <ArrowTopRightOnSquareIcon className="size-3 text-subtle" />
+    </Link>
   );
 }
 
@@ -312,7 +418,7 @@ function FeedbackCell({ lead, onChange }: { lead: Lead; onChange: (e: string, p:
 function LegendDot({ className, label }: { className: string; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={`h-2 w-2 rounded-sm ${className}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${className}`} />
       {label}
     </span>
   );
