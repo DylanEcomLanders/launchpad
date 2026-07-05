@@ -132,72 +132,60 @@ export function PasscodeGate({
 
   if (!authed) {
     return (
-      <div className="min-h-screen flex bg-background">
-        {/* ── Left: form (mirrors the main login) ── */}
-        <div className="flex flex-1 flex-col justify-between px-6 py-12 sm:px-12 lg:px-16">
-          {/* Logo top-left */}
-          <div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="Ecom Landers" className="h-5 brightness-0 invert" />
-          </div>
-
-          {/* Form bottom-left */}
-          <div className="w-full max-w-sm">
-            <p className="mb-4 inline-flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.14em] text-subtle">
-              <LockClosedIcon className="size-3" />
-              Restricted
-            </p>
-            <div className="mb-7">
-              <h1 className="text-xl font-medium text-foreground">{title}</h1>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Enter the passcode to continue.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className={shaking ? "animate-[shake_0.5s_ease-in-out]" : ""}>
-                <input
-                  type="password"
-                  value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    setError(false);
-                  }}
-                  placeholder="Enter passcode"
-                  autoFocus
-                  className={`${AUTH_INPUT} ${error ? "border-danger/60 focus:border-danger" : ""}`}
-                />
-              </div>
-              {error && <p className="text-xs text-danger">Incorrect passcode. Try again.</p>}
-              <button type="submit" className={AUTH_BTN}>
-                Unlock
-                <svg
-                  className="size-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M7 17 17 7" />
-                  <path d="M8 7h9v9" />
-                </svg>
-              </button>
-            </form>
-
-            {idleTimeoutMs ? (
-              <p className="mt-4 text-2xs uppercase tracking-[0.08em] text-subtle">
-                Auto-locks after {Math.floor(idleTimeoutMs / 60000)} minutes idle
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        {/* ── Right: image panel (same asset as the main login) ── */}
-        <div className="relative hidden md:block md:w-[45%] m-3 rounded overflow-hidden border border-border-faint">
+      <div className="min-h-screen flex items-center justify-center bg-background px-6">
+        {/* Clean, centered form in the main-login idiom (no image panel). */}
+        <div className="w-full max-w-sm">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/login-final-v3.gif" alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <img src="/logo.svg" alt="Ecom Landers" className="mb-10 h-5 brightness-0 invert" />
+
+          <p className="mb-4 inline-flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.14em] text-subtle">
+            <LockClosedIcon className="size-3" />
+            Restricted
+          </p>
+          <div className="mb-7">
+            <h1 className="text-xl font-medium text-foreground">{title}</h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Enter the passcode to continue.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className={shaking ? "animate-[shake_0.5s_ease-in-out]" : ""}>
+              <input
+                type="password"
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  setError(false);
+                }}
+                placeholder="Enter passcode"
+                autoFocus
+                className={`${AUTH_INPUT} ${error ? "border-danger/60 focus:border-danger" : ""}`}
+              />
+            </div>
+            {error && <p className="text-xs text-danger">Incorrect passcode. Try again.</p>}
+            <button type="submit" className={AUTH_BTN}>
+              Unlock
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M7 17 17 7" />
+                <path d="M8 7h9v9" />
+              </svg>
+            </button>
+          </form>
+
+          {idleTimeoutMs ? (
+            <p className="mt-4 text-2xs uppercase tracking-[0.08em] text-subtle">
+              Auto-locks after {Math.floor(idleTimeoutMs / 60000)} minutes idle
+            </p>
+          ) : null}
         </div>
       </div>
     );
