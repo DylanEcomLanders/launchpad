@@ -4,18 +4,40 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { StarIcon } from "@heroicons/react/24/solid";
-import {
-  PixelApps, PixelBoard, PixelBolt, PixelBook, PixelBookmark, PixelBuilding,
-  PixelBulb, PixelCap, PixelCard, PixelChart, PixelChecklist, PixelCoins,
-  PixelFunnel, PixelGrid, PixelHeart, PixelHome, PixelPulse, PixelPuzzle,
-  PixelReceipt, PixelSend, PixelTag, PixelType, PixelUserPlus, PixelUsers,
-} from "@/components/pixel-icons";
+/* Sidebar icons: heroicons-outline (the DESIGN.md set), aliased to the former
+ * pixel-icon names so every nav entry keeps its reference while rendering the
+ * clean line icon. */
 import {
   Bars3Icon,
   XMarkIcon,
   ChevronDownIcon,
   ClockIcon,
   ArrowRightOnRectangleIcon,
+  BuildingStorefrontIcon,
+  Squares2X2Icon as PixelApps,
+  ViewColumnsIcon as PixelBoard,
+  BoltIcon as PixelBolt,
+  BookOpenIcon as PixelBook,
+  BookmarkIcon as PixelBookmark,
+  BuildingOffice2Icon as PixelBuilding,
+  LightBulbIcon as PixelBulb,
+  AcademicCapIcon as PixelCap,
+  CreditCardIcon as PixelCard,
+  ChartBarIcon as PixelChart,
+  ClipboardDocumentCheckIcon as PixelChecklist,
+  BanknotesIcon as PixelCoins,
+  FunnelIcon as PixelFunnel,
+  RectangleGroupIcon as PixelGrid,
+  HeartIcon as PixelHeart,
+  HomeIcon as PixelHome,
+  ArrowTrendingUpIcon as PixelPulse,
+  PuzzlePieceIcon as PixelPuzzle,
+  DocumentTextIcon as PixelReceipt,
+  PaperAirplaneIcon as PixelSend,
+  TagIcon as PixelTag,
+  LanguageIcon as PixelType,
+  UserPlusIcon as PixelUserPlus,
+  UsersIcon as PixelUsers,
 } from "@heroicons/react/24/outline";
 // LogoMark moved to dashboard top bar — sidebar no longer renders the logo.
 import { useRole, useCurrentUser, signOut } from "@/components/auth-gate";
@@ -150,7 +172,7 @@ const feedbackItem = {
 const clientsItem = {
   label: "Clients",
   href: "/clients",
-  icon: <PixelUsers className="size-4" />,
+  icon: <BuildingStorefrontIcon className="size-4" />,
 };
 /* Tools — quick-access launcher for client assets + internal tooling. Used
  * to be called Mission Control; renamed when the kanban claimed that name. */
