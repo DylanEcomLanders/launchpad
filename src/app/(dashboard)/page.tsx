@@ -38,40 +38,61 @@ const QUICK_TOOLS: Tool[] = [
   { title: "Feedback form", subtitle: "In-flight check-ins", href: "/tools/feedback", icon: DitherChat },
 ];
 
-/* Per-month delivery metrics for the last `months` calendar months (oldest →
- * newest): on-time rate %, deliverables shipped, avg turnaround days. Same real
- * Project Delivery data as /kpi, bucketed monthly for the trend lines. */
-function monthlyMetrics(items: DeliveryItem[], months: number) {
-  const now = new Date();
-  const labels: string[] = [];
-  const onTimeRate: (number | null)[] = [];
-  const delivered: number[] = [];
-  const turnaround: (number | null)[] = [];
+/* Day-by-day cumulative delivery metrics for one calendar month: running
+ * shipped count, on-time rate %, and avg turnaround days for each day 1..N.
+ * `upToDay` cuts the current month off at today (rest of the days are null so
+ * the line honestly stops). Same real Project Delivery data as /kpi. */
+function monthSeries(items: DeliveryItem[], year: number, month: number, upToDay?: number) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const lastDay = upToDay ?? daysInMonth;
 
-  for (let m = months - 1; m >= 0; m--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
-    let shipped = 0;
-    let onTime = 0;
-    let late = 0;
-    let tSum = 0;
-    let tN = 0;
-    for (const it of items) {
-      if (!it.isDelivered || !it.deliveredAt) continue;
-      const dd = new Date(it.deliveredAt);
-      if (dd.getFullYear() !== d.getFullYear() || dd.getMonth() !== d.getMonth()) continue;
-      shipped++;
-      if (it.startedAt && it.deliveredAt >= it.startedAt) {
-        tSum += (new Date(it.deliveredAt).getTime() - new Date(it.startedAt).getTime()) / 86_400_000;
-        tN++;
-      }
-      if (it.dueDate) it.deliveredAt <= it.dueDate ? onTime++ : late++;
-    }
-    labels.push(d.toLocaleDateString("en-GB", { month: "short" }));
-    delivered.push(shipped);
-    onTimeRate.push(onTime + late > 0 ? Math.round((onTime / (onTime + late)) * 100) : null);
-    turnaround.push(tN > 0 ? Math.round((tSum / tN) * 10) / 10 : null);
+  const evts: { day: number; onTime: boolean | null; turn: number | null }[] = [];
+  for (const it of items) {
+    if (!it.isDelivered || !it.deliveredAt) continue;
+    const dd = new Date(it.deliveredAt);
+    if (dd.getFullYear() !== year || dd.getMonth() !== month) continue;
+    evts.push({
+      day: dd.getDate(),
+      onTime: it.dueDate ? it.deliveredAt <= it.dueDate : null,
+      turn:
+        it.startedAt && it.deliveredAt >= it.startedAt
+          ? (new Date(it.deliveredAt).getTime() - new Date(it.startedAt).getTime()) / 86_400_000
+          : null,
+    });
   }
-  return { labels, onTimeRate, delivered, turnaround };
+
+  const shipped: (number | null)[] = [];
+  const onTimeRate: (number | null)[] = [];
+  const turnaround: (number | null)[] = [];
+  let cShip = 0;
+  let cOn = 0;
+  let cRated = 0;
+  let cTSum = 0;
+  let cTN = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    if (d > lastDay) {
+      shipped.push(null);
+      onTimeRate.push(null);
+      turnaround.push(null);
+      continue;
+    }
+    for (const e of evts) {
+      if (e.day !== d) continue;
+      cShip++;
+      if (e.onTime !== null) {
+        cRated++;
+        if (e.onTime) cOn++;
+      }
+      if (e.turn !== null) {
+        cTSum += e.turn;
+        cTN++;
+      }
+    }
+    shipped.push(cShip);
+    onTimeRate.push(cRated > 0 ? Math.round((cOn / cRated) * 100) : null);
+    turnaround.push(cTN > 0 ? Math.round((cTSum / cTN) * 10) / 10 : null);
+  }
+  return { daysInMonth, shipped, onTimeRate, turnaround };
 }
 
 function greetingFor(hour: number) {
@@ -117,27 +138,40 @@ export default function Overview() {
   const items = useMemo(() => getDeliveryItems(clients, pods), [clients, pods]);
   const summary = useMemo(() => computeSummary(items, "month", 0), [items]);
   const overdue = useMemo(() => computeOverdue(items, "month", 0), [items]);
-  const monthly = useMemo(() => monthlyMetrics(items, 6), [items]);
-  const trends = useMemo(() => {
-    const nn = (xs: (number | null)[]) => xs.filter((v): v is number => v !== null);
-    const mean = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
-    const mean1 = (xs: number[]) => (xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : null);
-    const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
-    const half = Math.floor(monthly.labels.length / 2);
-    const delta = (xs: (number | null)[], m: (a: number[]) => number | null) => {
-      const p = m(nn(xs.slice(0, half)));
-      const r = m(nn(xs.slice(half)));
-      return p !== null && r !== null ? Math.round((r - p) * 10) / 10 : null;
+  /* Month-to-date vs the whole of last month. Each metric returns a bright
+   * "this month" line (stops at today) and a faded "last month" ghost, plus a
+   * headline (current MTD value) and a delta vs last month at the same day. */
+  const daily = useMemo(() => {
+    const now = new Date();
+    const today = now.getDate();
+    const cur = monthSeries(items, now.getFullYear(), now.getMonth(), today);
+    const pd = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prev = monthSeries(items, pd.getFullYear(), pd.getMonth());
+    const maxDays = Math.max(cur.daysInMonth, prev.daysInMonth);
+    const pad = (a: (number | null)[]) => a.concat(Array(Math.max(0, maxDays - a.length)).fill(null));
+    const lastDefinedUpTo = (a: (number | null)[], day: number) => {
+      for (let i = Math.min(day, a.length) - 1; i >= 0; i--) if (a[i] !== null) return a[i];
+      return null;
+    };
+    const metric = (c: (number | null)[], p: (number | null)[]) => {
+      const value = lastDefinedUpTo(c, today);
+      const prevAtDay = lastDefinedUpTo(p, today);
+      return {
+        cur: pad(c),
+        prev: pad(p),
+        value,
+        delta: value !== null && prevAtDay !== null ? Math.round((value - prevAtDay) * 10) / 10 : null,
+      };
     };
     return {
-      onTime: { avg: mean(nn(monthly.onTimeRate)), delta: delta(monthly.onTimeRate, mean) },
-      throughput: {
-        total: sum(monthly.delivered),
-        delta: sum(monthly.delivered.slice(half)) - sum(monthly.delivered.slice(0, half)),
-      },
-      turnaround: { avg: mean1(nn(monthly.turnaround)), delta: delta(monthly.turnaround, mean1) },
+      labels: ["1", `${Math.round(maxDays / 2)}`, `${maxDays}`],
+      curLabel: now.toLocaleDateString("en-GB", { month: "short" }),
+      prevLabel: pd.toLocaleDateString("en-GB", { month: "short" }),
+      onTime: metric(cur.onTimeRate, prev.onTimeRate),
+      throughput: metric(cur.shipped, prev.shipped),
+      turnaround: metric(cur.turnaround, prev.turnaround),
     };
-  }, [monthly]);
+  }, [items]);
   const shipped = useMemo(() => {
     const ref = new Date();
     return items
@@ -177,41 +211,55 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* ── Delivery overview ── three monthly trends: reliable · productive · fast ── */}
-      <section className="mb-12 grid gap-3 lg:grid-cols-3">
-        <LineCard
-          label="On-time delivery · 6 months"
-          value={trends.onTime.avg === null ? "—" : `${trends.onTime.avg}%`}
-          caption="avg on-time"
-          delta={trends.onTime.delta}
-          deltaUnit="pts"
-          points={monthly.onTimeRate}
-          color="var(--color-status-ontrack)"
-          labels={monthly.labels}
-          loading={loading}
-        />
-        <LineCard
-          label="Throughput · 6 months"
-          value={String(trends.throughput.total)}
-          caption="shipped"
-          delta={trends.throughput.delta}
-          points={monthly.delivered}
-          color="var(--foreground)"
-          labels={monthly.labels}
-          loading={loading}
-        />
-        <LineCard
-          label="Turnaround · 6 months"
-          value={trends.turnaround.avg === null ? "—" : `${trends.turnaround.avg}d`}
-          caption="avg start to launch"
-          delta={trends.turnaround.delta}
-          deltaUnit="d"
-          lowerIsBetter
-          points={monthly.turnaround}
-          color="var(--foreground)"
-          labels={monthly.labels}
-          loading={loading}
-        />
+      {/* ── Delivery overview ── month-to-date, last month ghosted behind ── */}
+      <section className="mb-12">
+        <div className="mb-4 flex items-baseline justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle">
+            Delivery · {daily.curLabel} to date
+          </p>
+          <div className="flex items-center gap-4 text-2xs text-subtle">
+            <GhostKey label={daily.curLabel} />
+            <GhostKey label={daily.prevLabel} faded />
+          </div>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-3">
+          <LineCard
+            label="On-time delivery"
+            value={daily.onTime.value === null ? "—" : `${daily.onTime.value}%`}
+            caption="vs last month"
+            delta={daily.onTime.delta}
+            deltaUnit="pts"
+            color="var(--color-status-ontrack)"
+            cur={daily.onTime.cur}
+            prev={daily.onTime.prev}
+            labels={daily.labels}
+            loading={loading}
+          />
+          <LineCard
+            label="Throughput"
+            value={daily.throughput.value === null ? "—" : String(daily.throughput.value)}
+            caption="shipped, vs last month"
+            delta={daily.throughput.delta}
+            color="var(--foreground)"
+            cur={daily.throughput.cur}
+            prev={daily.throughput.prev}
+            labels={daily.labels}
+            loading={loading}
+          />
+          <LineCard
+            label="Turnaround"
+            value={daily.turnaround.value === null ? "—" : `${daily.turnaround.value}d`}
+            caption="vs last month"
+            delta={daily.turnaround.delta}
+            deltaUnit="d"
+            lowerIsBetter
+            color="var(--foreground)"
+            cur={daily.turnaround.cur}
+            prev={daily.turnaround.prev}
+            labels={daily.labels}
+            loading={loading}
+          />
+        </div>
       </section>
 
       {/* ── Needs attention + Recently shipped ── */}
@@ -327,8 +375,9 @@ function Headline({
   );
 }
 
-/* One delivery-trend card: headline (avg/total + directional delta) over a
- * compact monthly line. lowerIsBetter flips the delta colour (turnaround). */
+/* One delivery card: headline (month-to-date value + delta vs last month) over
+ * a compact day-by-day line, with last month ghosted behind for comparison.
+ * lowerIsBetter flips the delta colour (turnaround). */
 function LineCard({
   label,
   value,
@@ -336,7 +385,8 @@ function LineCard({
   delta,
   deltaUnit,
   lowerIsBetter,
-  points,
+  cur,
+  prev,
   color,
   labels,
   loading,
@@ -347,7 +397,8 @@ function LineCard({
   delta: number | null;
   deltaUnit?: string;
   lowerIsBetter?: boolean;
-  points: (number | null)[];
+  cur: (number | null)[];
+  prev: (number | null)[];
   color: string;
   labels: string[];
   loading: boolean;
@@ -361,9 +412,27 @@ function LineCard({
       {loading ? (
         <div className="h-28 w-full animate-pulse rounded-sm bg-surface-raised" />
       ) : (
-        <LineChart className="h-28 w-full" showY={false} labels={labels} series={[{ key: label, color, points }]} />
+        <LineChart
+          className="h-28 w-full"
+          showY={false}
+          extendEnds={false}
+          labels={labels}
+          series={[
+            { key: "last", color, points: prev, faded: true },
+            { key: "this", color, points: cur },
+          ]}
+        />
       )}
     </ChartCard>
+  );
+}
+
+function GhostKey({ label, faded }: { label: string; faded?: boolean }) {
+  return (
+    <span className="flex items-center gap-1.5 tabular-nums" style={{ opacity: faded ? 0.5 : 1 }}>
+      <span className="h-[2px] w-3.5 rounded-full" style={{ background: faded ? "var(--muted)" : "var(--foreground)" }} />
+      {label}
+    </span>
   );
 }
 

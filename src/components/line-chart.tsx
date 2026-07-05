@@ -42,17 +42,22 @@ export function LineChart({
   className,
   yTicks = 4,
   showY = true,
+  extendEnds = true,
 }: {
-  series: { key: string; color: string; points: (number | null)[] }[];
+  series: { key: string; color: string; points: (number | null)[]; faded?: boolean }[];
   labels: string[];
   className?: string;
   yTicks?: number;
   /** Show the y-axis scale + gutter. Off for compact sparkline-style cards. */
   showY?: boolean;
+  /** Dotted-bridge leading/trailing gaps out to the chart edges. Off when a
+   *  line should honestly stop at its last data point (e.g. month-to-date). */
+  extendEnds?: boolean;
 }) {
   const allVals = series.flatMap((s) => s.points).filter((v): v is number => v !== null);
   const yMax = niceMax(Math.max(1, ...allVals));
-  const n = labels.length;
+  // x is spaced across the DATA points, not the (sparser) axis tick labels.
+  const n = Math.max(1, ...series.map((s) => s.points.length));
   const toXY = (v: number, i: number) => ({ x: n > 1 ? (i / (n - 1)) * 100 : 50, y: 100 - (v / yMax) * 100 });
   const ticks = showY ? Array.from({ length: yTicks + 1 }, (_, k) => (yMax / yTicks) * k) : [0, yMax];
   const plotLeft = showY ? "left-11" : "left-0";
@@ -107,21 +112,21 @@ export function LineChart({
             const first = defined[0];
             const last = defined[defined.length - 1];
             let dotted = "";
-            if (first.i > 0) dotted += ` M 0 ${first.y} L ${first.x} ${first.y}`;
+            if (extendEnds && first.i > 0) dotted += ` M 0 ${first.y} L ${first.x} ${first.y}`;
             for (let r = 0; r < runs.length - 1; r++) {
               const a = runs[r][runs[r].length - 1];
               const b = runs[r + 1][0];
               dotted += ` M ${a.x} ${a.y} L ${b.x} ${b.y}`;
             }
-            if (last.i < s.points.length - 1) dotted += ` M ${last.x} ${last.y} L 100 ${last.y}`;
+            if (extendEnds && last.i < s.points.length - 1) dotted += ` M ${last.x} ${last.y} L 100 ${last.y}`;
 
             return (
-              <g key={si}>
-                <path d={`${smoothPath(defined)} L ${last.x} 100 L ${first.x} 100 Z`} fill={`url(#line-fill-${si})`} stroke="none" />
+              <g key={si} opacity={s.faded ? 0.32 : 1}>
+                {!s.faded && <path d={`${smoothPath(defined)} L ${last.x} 100 L ${first.x} 100 Z`} fill={`url(#line-fill-${si})`} stroke="none" />}
                 {dotted && (
-                  <path d={dotted} fill="none" stroke={s.color} strokeWidth="2" strokeLinecap="round" strokeDasharray="0.5 4" opacity="0.5" vectorEffect="non-scaling-stroke" />
+                  <path d={dotted} fill="none" stroke={s.color} strokeWidth={s.faded ? 1.5 : 2} strokeLinecap="round" strokeDasharray="0.5 4" opacity="0.5" vectorEffect="non-scaling-stroke" />
                 )}
-                <path d={solid} fill="none" stroke={s.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                <path d={solid} fill="none" stroke={s.color} strokeWidth={s.faded ? 1.5 : 2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
               </g>
             );
           })}
