@@ -335,7 +335,7 @@ export default function MyInvoicesPage() {
         {/* Form */}
         <form
           onSubmit={submit}
-          className="bg-surface border border-border rounded-xl p-6 space-y-4"
+          className="rounded border border-border-faint bg-surface p-6 space-y-4"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <FieldL label="Invoice number">
@@ -404,7 +404,7 @@ export default function MyInvoicesPage() {
                 <button
                   type="button"
                   onClick={removeFile}
-                  className="text-subtle hover:text-danger p-1"
+                  className="text-subtle hover:text-status-late p-1"
                   aria-label="Remove file"
                 >
                   <XMarkIcon className="size-4" />
@@ -446,9 +446,9 @@ export default function MyInvoicesPage() {
             />
           </FieldL>
 
-          {error && <p className="text-xs text-danger">{error}</p>}
+          {error && <p className="text-xs text-status-late">{error}</p>}
           {submitted && (
-            <p className="text-xs text-success">
+            <p className="text-xs text-status-ontrack">
               Submitted. Admin will see it on the next refresh.
             </p>
           )}
@@ -457,7 +457,7 @@ export default function MyInvoicesPage() {
             <button
               type="submit"
               disabled={submitting || uploading || !file}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded text-[11px] font-semibold uppercase tracking-wider bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ArrowUpTrayIcon className="size-3.5" />
               {submitting ? "Submitting..." : "Submit invoice"}
@@ -471,7 +471,7 @@ export default function MyInvoicesPage() {
             <h2 className="text-[11px] uppercase tracking-wider text-subtle font-semibold mb-3">
               Your invoices
             </h2>
-            <div className="bg-surface border border-border rounded-xl overflow-hidden">
+            <div className="rounded border border-border-faint bg-surface overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-background text-[10px] uppercase tracking-wider text-subtle">
                   <tr>
@@ -517,7 +517,7 @@ export default function MyInvoicesPage() {
                             <button
                               onClick={() => deleteInvoice(i.id)}
                               disabled={deletingId === i.id}
-                              className="text-[11px] text-subtle hover:text-danger disabled:opacity-50"
+                              className="text-[11px] text-subtle hover:text-status-late disabled:opacity-50"
                               title="Delete invoice"
                             >
                               {deletingId === i.id ? "Deleting..." : "Delete"}
@@ -571,14 +571,14 @@ function Summary({
 }) {
   const valueColor =
     tone === "positive"
-      ? "text-success"
+      ? "text-status-ontrack"
       : tone === "warn"
-      ? "text-warning"
+      ? "text-status-approaching"
       : tone === "muted"
       ? "text-subtle"
       : "text-foreground";
   return (
-    <div className="bg-surface border border-border rounded-xl p-4">
+    <div className="rounded border border-border-faint bg-surface p-4">
       <div className="text-[10px] uppercase tracking-wider text-subtle mb-1">
         {label}
       </div>
