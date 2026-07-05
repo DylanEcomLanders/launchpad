@@ -396,8 +396,14 @@ export function Sidebar() {
     }))
     .filter((s) => s.items.length > 0 || s.href);
 
-  /* Sections render open with no collapse toggle: the whole nav is visible at
-   * a glance, no arrows to click. */
+  /* Sections are collapsible (click the header) but start open, so the whole
+   * nav is visible by default with no arrows cluttering the rows. */
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(visibleSections.map((s) => [s.title, true])),
+  );
+  function toggleSection(title: string) {
+    setOpenSections((prev) => ({ ...prev, [title]: !(prev[title] ?? true) }));
+  }
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -504,7 +510,7 @@ export function Sidebar() {
             : "text-muted hover:bg-surface-hover hover:text-foreground"
         }`}
       >
-        <span className={active ? "text-foreground" : "text-muted"}>{item.icon}</span>
+        <span className={`flex size-6 shrink-0 items-center justify-center rounded-md transition-colors ${active ? "bg-[var(--ring)] text-white" : "text-muted"}`}>{item.icon}</span>
         {!collapsed && <span className="flex-1">{item.label}</span>}
       </Link>
     );
@@ -529,12 +535,20 @@ export function Sidebar() {
         </div>
       );
     }
+    const open = openSections[section.title] ?? true;
     return (
       <div key={section.title}>
-        <div className="flex items-center gap-3 px-2.5 py-2.5 text-muted">
+        <button
+          onClick={() => toggleSection(section.title)}
+          className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-md text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
+        >
           <span className="text-subtle">{section.icon}</span>
-          <span className="flex-1 text-sm font-medium">{section.title}</span>
-        </div>
+          <span className="flex-1 text-left text-sm font-medium">{section.title}</span>
+          {sectionHasActive && !open && (
+            <span className="size-1.5 rounded-full bg-foreground shrink-0" />
+          )}
+        </button>
+        {open && (
         <div className="ml-[1.15rem] mt-1 mb-1 space-y-1 border-l border-border pl-2.5">
           {section.items.map((item) => {
             const active = !item.external && isActive(item.href);
@@ -573,12 +587,13 @@ export function Sidebar() {
                     : "text-muted hover:text-foreground hover:bg-surface-hover"
                 }`}
               >
-                <span className={active ? "text-foreground" : "text-muted"}>{item.icon}</span>
+                <span className={`flex size-6 shrink-0 items-center justify-center rounded-md transition-colors ${active ? "bg-[var(--ring)] text-white" : "text-muted"}`}>{item.icon}</span>
                 <span>{item.label}</span>
               </Link>
             );
           })}
           </div>
+        )}
       </div>
     );
   }
