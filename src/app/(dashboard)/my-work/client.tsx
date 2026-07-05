@@ -653,7 +653,7 @@ export default function MyWorkClient() {
           <div className="flex items-center bg-surface border border-border rounded p-0.5 shrink-0">
             <button
               onClick={() => setViewMode("lanes")}
-              className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+              className={`px-3 py-1.5 text-[12px] font-medium rounded-sm transition-colors ${
                 viewMode === "lanes"
                   ? "bg-border text-foreground"
                   : "text-subtle hover:text-foreground"
@@ -663,7 +663,7 @@ export default function MyWorkClient() {
             </button>
             <button
               onClick={() => setViewMode("by-client")}
-              className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+              className={`px-3 py-1.5 text-[12px] font-medium rounded-sm transition-colors ${
                 viewMode === "by-client"
                   ? "bg-border text-foreground"
                   : "text-subtle hover:text-foreground"
@@ -928,7 +928,7 @@ export default function MyWorkClient() {
                         <button
                           key={d.id}
                           onClick={() => setOpenItemId(d.id)}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 text-left bg-surface border border-border rounded-md hover:border-border transition-colors ${
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 text-left bg-surface border border-border rounded hover:border-border transition-colors ${
                             d.lane === "done"
                               ? "opacity-60"
                               : ""
@@ -1035,7 +1035,7 @@ export default function MyWorkClient() {
                 href={`/workspace/clients/${openItem.clientId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-foreground hover:border-border transition-colors"
+                className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-surface border border-border rounded text-foreground hover:border-border transition-colors"
               >
                 <span>
                   <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold block">
@@ -1057,7 +1057,7 @@ export default function MyWorkClient() {
                     href={openProject.brief}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-foreground hover:border-border transition-colors"
+                    className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-surface border border-border rounded text-foreground hover:border-border transition-colors"
                   >
                     <span>
                       <span className="text-[10px] uppercase tracking-wider text-subtle font-semibold block">
@@ -1070,7 +1070,7 @@ export default function MyWorkClient() {
                     <span className="text-subtle">Open →</span>
                   </a>
                 ) : (
-                  <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md">
+                  <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded">
                     <p className="text-[10px] uppercase tracking-wider text-subtle font-semibold mb-1">
                       Strategist brief
                     </p>
@@ -1080,7 +1080,7 @@ export default function MyWorkClient() {
                   </div>
                 )
               ) : (
-                <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded-md text-muted italic">
+                <div className="px-2.5 py-2 text-[12px] bg-surface border border-border rounded text-muted italic">
                   <span className="text-[10px] uppercase tracking-wider not-italic font-semibold block mb-0.5">
                     Strategist brief
                   </span>
@@ -1117,7 +1117,7 @@ export default function MyWorkClient() {
                     })
                   }
                   placeholder="https://figma.com/file/…"
-                  className="w-full px-2.5 py-1.5 text-[12px] bg-surface border border-border rounded-md text-foreground placeholder:text-muted focus:outline-none focus:border-border"
+                  className="w-full px-2.5 py-1.5 text-[12px] bg-surface border border-border rounded text-foreground placeholder:text-muted focus:outline-none focus:border-border"
                 />
               </div>
             </div>
@@ -1212,7 +1212,7 @@ function ViewAsPicker({
     <div ref={ref} className="relative inline-block">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 pl-3 pr-2.5 py-1.5 text-xs font-medium bg-surface text-foreground border border-border rounded-full hover:border-border transition-colors"
+        className="inline-flex items-center gap-2 pl-3 pr-2.5 py-1.5 text-xs font-medium bg-surface text-foreground border border-border rounded hover:border-border transition-colors"
       >
         <span className="truncate max-w-[200px]">
           {active?.name ?? "Pick someone"}

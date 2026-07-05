@@ -4531,7 +4531,7 @@ function SearchControl({
           if (!query) setExpanded(false);
         }}
         placeholder="Search cards…"
-        className="h-7 pl-7 pr-7 w-56 text-3xs bg-background border border-border rounded-full text-foreground placeholder:text-subtle focus:outline-none focus:border-border transition-all"
+        className="h-7 pl-7 pr-7 w-56 text-3xs bg-background border border-border rounded text-foreground placeholder:text-subtle focus:outline-none focus:border-border transition-all"
       />
       {query ? (
         <button
