@@ -1,180 +1,115 @@
 import Link from "next/link";
 import {
-  ChevronRightIcon,
-  ClipboardDocumentCheckIcon,
+  ArrowUpRightIcon,
+  UserGroupIcon,
   ClipboardDocumentListIcon,
   FolderIcon,
-  BookOpenIcon,
-  LightBulbIcon,
-  PhotoIcon,
+  ClipboardDocumentCheckIcon,
+  PencilSquareIcon,
+  MagnifyingGlassIcon,
   Squares2X2Icon,
   SwatchIcon,
-  UserGroupIcon,
+  PhotoIcon,
+  LanguageIcon,
+  LightBulbIcon,
+  BookOpenIcon,
   BanknotesIcon,
-} from "@heroicons/react/24/solid";
-import { DecorativeBlocks } from "@/components/decorative-blocks";
+} from "@heroicons/react/24/outline";
 
-const primary = [
-  {
-    title: "Pods",
-    description: "Your pod's work in flight — deliverables, tickets, blockers. Mark tasks done, raise tickets, escalate blockers.",
-    href: "/team/pods",
-    icon: UserGroupIcon,
-  },
-  {
-    title: "Why Pods",
-    description: "How we work, and why. Pods, the week, buckets, the Monday Protocol — read once, pop it open whenever you need a reminder.",
-    href: "/team/why-pods",
-    icon: LightBulbIcon,
-  },
-  {
-    title: "Task Board",
-    description: "Live deliverables grouped by project — phases, deadlines, who's on what. Auto-refreshes every 30s.",
-    href: "/tasks",
-    icon: ClipboardDocumentListIcon,
-  },
-  {
-    title: "Client Portals",
-    description: "Team view of every active portal — gates, checklists, handover context.",
-    href: "/team/portals",
-    icon: FolderIcon,
-  },
-  {
-    title: "Operations Wiki",
-    description: "Our internal playbook — process, standards, and the way we deliver.",
-    href: "/team/ops-wiki",
-    icon: BookOpenIcon,
-    badge: "WIP",
-  },
-  {
-    title: "Payments",
-    description: "How you get paid — per-page rates by tier, the volume rebate, rush fee, retainers, and invoicing. Read once, bookmark it.",
-    href: "/team/payments",
-    icon: BanknotesIcon,
-  },
-];
+/* ── Team Tools ──
+ * The team's day-to-day hub, grouped by what you came to do: run the work
+ * (Delivery), make the work (Production), or learn how we work (Playbook).
+ * DESIGN.md craft: dark tokens, 4px rounding, border-border-faint cards on the
+ * surface-raised step, no shadows / gradients / decorative blocks.
+ */
 
-interface ToolDef {
+type Tool = {
   title: string;
   description: string;
   href: string;
-  icon: typeof PhotoIcon;
+  icon: typeof UserGroupIcon;
   external?: boolean;
-}
+};
 
-const tools: ToolDef[] = [
+type Group = { label: string; blurb: string; tools: Tool[] };
+
+const GROUPS: Group[] = [
   {
-    title: "Design Library",
-    description: "The Figma master file — components, tokens, patterns. Pull from here, don't reinvent.",
-    href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177",
-    icon: SwatchIcon,
-    external: true,
+    label: "Delivery",
+    blurb: "Run the work.",
+    tools: [
+      { title: "Pods", description: "Your pod's work in flight: deliverables, tickets, blockers. Mark done, raise tickets, escalate.", href: "/team/pods", icon: UserGroupIcon },
+      { title: "Task Board", description: "Live deliverables grouped by project: phases, deadlines, who's on what. Auto-refreshes every 30s.", href: "/tasks", icon: ClipboardDocumentListIcon },
+      { title: "Client Portals", description: "Team view of every active portal: gates, checklists, handover context.", href: "/team/portals", icon: FolderIcon },
+      { title: "Dev QA Checklist", description: "Run the evergreen QA gates before anything is handed to a client.", href: "/team/qa", icon: ClipboardDocumentCheckIcon },
+    ],
   },
   {
-    title: "Swipe File",
-    description: "Reference library of great pages — drop a URL, we cache mobile + desktop.",
-    href: "/team/swipe-file",
-    icon: PhotoIcon,
+    label: "Production",
+    blurb: "Make the work.",
+    tools: [
+      { title: "Copy Engine", description: "Brief in, conversion copy out. Brand-aware, section by section.", href: "/team/copy", icon: PencilSquareIcon },
+      { title: "Research & Intel", description: "Deep strategic research from a client brief: market, audience, angles.", href: "/team/research", icon: MagnifyingGlassIcon },
+      { title: "Design & Dev", description: "Section gallery plus the per-page build checklists, filterable.", href: "/team/design", icon: Squares2X2Icon },
+      { title: "Design Library", description: "The Figma master file: components, tokens, patterns. Pull from here, don't reinvent.", href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177", icon: SwatchIcon, external: true },
+      { title: "Swipe File", description: "Reference library of great pages. Drop a URL, we cache mobile plus desktop.", href: "/team/swipe-file", icon: PhotoIcon },
+      { title: "Font Library", description: "Approved fonts only. Browse, preview, download, filter by niche.", href: "/team/fonts", icon: LanguageIcon },
+    ],
   },
   {
-    title: "Font Library",
-    description: "Approved fonts only. Browse, preview, download — filter by niche or use case.",
-    href: "/team/fonts",
-    icon: Squares2X2Icon,
-  },
-  {
-    title: "Dev QA Checklist",
-    description: "Evergreen Dev QA checklist — run through before handing anything to a client.",
-    href: "/team/qa",
-    icon: ClipboardDocumentCheckIcon,
+    label: "Playbook",
+    blurb: "How we work.",
+    tools: [
+      { title: "Why Pods", description: "The pod operating system: the week, buckets, the Monday Protocol. Read once, reopen anytime.", href: "/team/why-pods", icon: LightBulbIcon },
+      { title: "Operations Wiki", description: "Process, standards, and the way we deliver, team-facing.", href: "/team/ops-wiki", icon: BookOpenIcon },
+      { title: "Payments", description: "How you get paid: per-page rates by tier, volume rebate, rush fee, retainers, invoicing.", href: "/team/payments", icon: BanknotesIcon },
+    ],
   },
 ];
 
 export default function TeamToolsPage() {
   return (
-    <div className="relative min-h-screen">
-      <DecorativeBlocks />
-      <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-20">
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold mb-1">
-            Team Tools
-          </h1>
-          <p className="text-sm text-subtle">
-            Everything the team needs to deliver — portals, the playbook, and our QA gates.
-          </p>
-        </div>
+    <div className="px-6 pb-20 pt-8 md:px-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Team Tools</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+          Everything the team needs to deliver: the boards you work from, the tools you build with, and the playbook behind how we operate.
+        </p>
+      </header>
 
-        {/* Primary cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {primary.map((item) => (
-            <Link
-              key={item.title}
-              href={item.href}
-              className="bg-surface border border-border rounded-lg p-5 hover:border-surface hover:shadow-sm cursor-pointer group transition-all"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <item.icon className="size-5 text-subtle" />
-                <h2 className="text-sm font-semibold text-foreground">
-                  {item.title}
-                </h2>
-                {"badge" in item && item.badge && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-surface-raised text-foreground rounded">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-subtle leading-relaxed mb-3">
-                {item.description}
-              </p>
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground group-hover:gap-1.5 transition-all">
-                Open
-                <ChevronRightIcon className="size-3" />
-              </span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Tools Section */}
-        <div className="mt-10">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-subtle mb-4">
-            Tools
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tools.map((tool) => {
-              const linkProps = tool.external
-                ? { target: "_blank", rel: "noopener noreferrer" as const }
-                : {};
-              return (
-                <Link
-                  key={tool.title}
-                  href={tool.href}
-                  {...linkProps}
-                  className="bg-surface border border-border rounded-lg p-5 hover:border-surface hover:shadow-sm cursor-pointer group transition-all"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <tool.icon className="size-5 text-subtle" />
-                    <h2 className="text-sm font-semibold text-foreground">
-                      {tool.title}
-                    </h2>
-                    {tool.external && (
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-subtle">
-                        ↗
+      <div className="space-y-8">
+        {GROUPS.map((group) => (
+          <section key={group.label}>
+            <div className="mb-3 flex items-baseline gap-2.5">
+              <h2 className="text-3xs font-semibold uppercase tracking-wider text-subtle">{group.label}</h2>
+              <span className="text-3xs text-subtle">{group.blurb}</span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {group.tools.map((tool) => {
+                const linkProps = tool.external
+                  ? { target: "_blank", rel: "noopener noreferrer" as const }
+                  : {};
+                return (
+                  <Link
+                    key={tool.title}
+                    href={tool.href}
+                    {...linkProps}
+                    className="group rounded border border-border-faint bg-surface-raised p-5 transition-colors hover:border-border"
+                  >
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="flex size-9 items-center justify-center rounded border border-border-faint bg-surface text-muted transition-colors group-hover:text-foreground">
+                        <tool.icon className="size-4" />
                       </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-subtle leading-relaxed mb-3">
-                    {tool.description}
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground group-hover:gap-1.5 transition-all">
-                    Open
-                    <ChevronRightIcon className="size-3" />
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+                      <ArrowUpRightIcon className="size-4 text-subtle transition-colors group-hover:text-foreground" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground">{tool.title}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted">{tool.description}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </div>
     </div>
   );

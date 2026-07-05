@@ -320,8 +320,16 @@ const navSections: NavSection[] = [
     items: [
       trainingItem,
       teamToolsItem,
-      submitInvoiceItem,
     ],
+  },
+  {
+    /* Submit Invoice — its own solo link so contractors aren't digging through
+     * a dropdown to file. Sub-nav lives on the page itself. */
+    title: "Submit Invoice",
+    icon: <PixelReceipt className="size-4" />,
+    group: "ops",
+    href: "/me/invoices",
+    items: [],
   },
   {
     title: "Company",

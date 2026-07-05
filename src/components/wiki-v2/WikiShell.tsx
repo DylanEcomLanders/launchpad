@@ -11,7 +11,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-/* Secondary left rail for the wiki — sits inside the main content card.
+/* Secondary left rail for the wiki, sits inside the main content card.
  * Holds the full page tree + a search input that filters by title in place.
  * Active page is derived from the URL via usePathname so the rail tracks
  * navigation without needing to thread state through pages. */
@@ -54,7 +54,7 @@ export function WikiShell({ sections, children }: Props) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search wiki..."
-              className="w-full pl-8 pr-3 py-2 text-[12px] bg-surface border border-border rounded-md focus:outline-none focus:border-white placeholder:text-subtle"
+              className="w-full pl-8 pr-3 py-2 text-[12px] bg-surface border border-border rounded focus:outline-none focus:border-ring placeholder:text-subtle"
             />
           </div>
         </div>
@@ -63,16 +63,16 @@ export function WikiShell({ sections, children }: Props) {
         <nav className="flex-1 overflow-y-auto px-3 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Link
             href="/wiki-v2"
-            className={`relative block px-2.5 py-1.5 mb-5 text-[12px] rounded-md transition-colors ${
+            className={`relative block px-2.5 py-1.5 mb-5 text-[12px] rounded transition-colors ${
               !activeSlug
-                ? "text-foreground font-semibold bg-surface shadow-[var(--shadow-soft)]"
-                : "text-[#5F6066] hover:text-foreground hover:bg-surface"
+                ? "text-foreground font-semibold bg-surface-raised"
+                : "text-muted hover:text-foreground hover:bg-surface-raised"
             }`}
           >
             {!activeSlug && (
               <span
                 aria-hidden
-                className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-surface"
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-foreground"
               />
             )}
             Overview
@@ -181,23 +181,23 @@ function PageLink({
   return (
     <Link
       href={`/wiki-v2/${slug}`}
-      className={`relative flex items-baseline gap-2 py-1.5 px-2.5 text-[12px] rounded-md transition-colors ${
+      className={`relative flex items-baseline gap-2 py-1.5 px-2.5 text-[12px] rounded transition-colors ${
         active
-          ? "text-foreground font-semibold bg-surface shadow-[var(--shadow-soft)]"
-          : "text-[#5F6066] hover:text-foreground hover:bg-surface"
+          ? "text-foreground font-semibold bg-surface-raised"
+          : "text-muted hover:text-foreground hover:bg-surface-raised"
       }`}
     >
       {active && (
         <span
           aria-hidden
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-surface"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-foreground"
         />
       )}
       {number && (
         <span
           aria-hidden
           className={`font-mono text-[10px] tabular-nums tracking-wider shrink-0 ${
-            active ? "text-[#9A9A9F]" : "text-muted"
+            active ? "text-subtle" : "text-muted"
           }`}
         >
           {number}
