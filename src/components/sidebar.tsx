@@ -5,45 +5,16 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { StarIcon } from "@heroicons/react/24/solid";
 import {
-  HomeIcon,
-  Cog6ToothIcon,
-  BriefcaseIcon,
-  AcademicCapIcon,
+  PixelApps, PixelBoard, PixelBolt, PixelBook, PixelBookmark, PixelBuilding,
+  PixelBulb, PixelCap, PixelCard, PixelChart, PixelChecklist, PixelCoins,
+  PixelFunnel, PixelGrid, PixelHeart, PixelHome, PixelPulse, PixelPuzzle,
+  PixelReceipt, PixelSend, PixelTag, PixelType, PixelUserPlus, PixelUsers,
+} from "@/components/pixel-icons";
+import {
   Bars3Icon,
   XMarkIcon,
   ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   ClockIcon,
-  BanknotesIcon,
-  SparklesIcon,
-  BookOpenIcon,
-  BuildingOffice2Icon,
-  RocketLaunchIcon,
-  PuzzlePieceIcon,
-  Squares2X2Icon,
-  LightBulbIcon,
-  LockClosedIcon,
-  CalendarDaysIcon,
-  ViewColumnsIcon,
-  PhotoIcon,
-  TrophyIcon,
-  DocumentTextIcon,
-  InboxIcon,
-  ChatBubbleOvalLeftIcon,
-  TagIcon,
-  CalculatorIcon,
-  ArrowTrendingUpIcon,
-  LinkIcon,
-  CodeBracketIcon,
-  UsersIcon,
-  ShareIcon,
-  UserPlusIcon,
-  DocumentDuplicateIcon,
-  BookmarkIcon,
-  DocumentPlusIcon,
-  CreditCardIcon,
-  BoltIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 // LogoMark moved to dashboard top bar — sidebar no longer renders the logo.
@@ -130,45 +101,45 @@ export const shelvedItems: NavItem[] = [
 const missionControlItem = {
   label: "Delivery",
   href: "/kanban",
-  icon: <ViewColumnsIcon className="size-4" />,
+  icon: <PixelBoard className="size-4" />,
 };
 /* Delivery KPIs — on-time / overdue / turnaround reporting off the ClickUp
  * board. Sits next to Project Delivery in the delivery cluster. */
 const kpiItem = {
   label: "Delivery KPIs",
   href: "/kpi",
-  icon: <ArrowTrendingUpIcon className="size-4" />,
+  icon: <PixelChart className="size-4" />,
 };
 const onboardingItem = {
   label: "Onboarding",
   href: "/tools/onboarding-inbox",
-  icon: <InboxIcon className="size-4" />,
+  icon: <PixelUserPlus className="size-4" />,
 };
 /* Retention dashboard — CSM home (client health, churn risk, renewals).
  * Repointed from the old /tools/feedback tool, which is still reachable by URL. */
 const feedbackItem = {
   label: "Retention",
   href: "/retention",
-  icon: <ChatBubbleOvalLeftIcon className="size-4" />,
+  icon: <PixelPulse className="size-4" />,
 };
 /* Tools — quick-access launcher for client assets + internal tooling. Used
  * to be called Mission Control; renamed when the kanban claimed that name. */
 const homeItem = {
   label: "Tools",
   href: "/",
-  icon: <HomeIcon className="size-4" />,
+  icon: <PixelApps className="size-4" />,
 };
 /* My Work — personal landing for everyone: the deliverables assigned to the
  * signed-in person. (Replaces the old founder-only "My Week" planner.) */
 const myWorkItem = {
   label: "My Tasks",
   href: "/my-work",
-  icon: <CalendarDaysIcon className="size-4" />,
+  icon: <PixelChecklist className="size-4" />,
 };
 const offerItem = {
   label: "Offer",
   href: "/offer",
-  icon: <SparklesIcon className="size-4" />,
+  icon: <PixelTag className="size-4" />,
 };
 /* Old Delivery — the previous /workspace surface, kept around until
  * its in-flight projects are manually migrated to the Delivery kanban.
@@ -176,26 +147,26 @@ const offerItem = {
 const workspaceItem = {
   label: "Old Delivery",
   href: "/workspace",
-  icon: <Squares2X2Icon className="size-4" />,
+  icon: <PixelGrid className="size-4" />,
 };
 /* Agents — shelved from the nav for now (route still exists at /agents).
  * Restore by re-adding to the admin pinned cluster + command palette.
 const agentsItem = {
   label: "Agents",
   href: "/agents",
-  icon: <WrenchScrewdriverIcon className="size-4" />,
+  icon: <PixelWrench className="size-4" />,
 };
 */
 const wikiItem = {
   label: "Wiki",
   href: "/wiki-v2",
-  icon: <BookOpenIcon className="size-4" />,
+  icon: <PixelBook className="size-4" />,
 };
 /* R&D Tracker — internal accountability + team idea inbox. Admin cluster. */
 const rdItem = {
   label: "R&D",
   href: "/rd",
-  icon: <LightBulbIcon className="size-4" />,
+  icon: <PixelBulb className="size-4" />,
 };
 /* Finance — single pinned item replacing the old "PRIVATE" section. Lock icon
  * signals the password gate; /finance is already wrapped in FinanceGate. All
@@ -204,7 +175,7 @@ const rdItem = {
 const financeItem = {
   label: "Finance",
   href: "/finance",
-  icon: <LockClosedIcon className="size-4" />,
+  icon: <PixelCoins className="size-4" />,
 };
 /* Admin — replaces the old "Company" section. Single pinned item; the
  * previous tabs (Overview / People / Structure / Hiring / Contracts / Settings)
@@ -212,7 +183,7 @@ const financeItem = {
 const adminItem = {
   label: "Company",
   href: "/company",
-  icon: <BuildingOffice2Icon className="size-4" />,
+  icon: <PixelBuilding className="size-4" />,
 };
 /* Sales — Ajay's one-stop surface for the sales motion. /sales is
  * the canonical dashboard (KPIs + funnel + pipeline kanban +
@@ -222,7 +193,7 @@ const adminItem = {
 const salesItem = {
   label: "Sales",
   href: "/sales",
-  icon: <RocketLaunchIcon className="size-4" />,
+  icon: <PixelFunnel className="size-4" />,
 };
 /* Training — knowledge / learning hub. Will land on canonical /training
  * once the surface consolidates wiki, SOPs, funnel knowledge, playbooks
@@ -231,7 +202,7 @@ const salesItem = {
 const trainingItem = {
   label: "Training",
   href: "/wiki-v2",
-  icon: <AcademicCapIcon className="size-4" />,
+  icon: <PixelCap className="size-4" />,
 };
 /* Hero Offer - the conversion engine playbook house. One umbrella with
  * Start here / Acquisition / Execution / Retention tabs inside. Sits
@@ -259,10 +230,10 @@ const heroOfferItem = {
  * Renders as one collapsible "Toolbox" section. */
 /* Team — all team-facing utilities: reference assets + pay tools. */
 const teamItems: NavItem[] = [
-  { label: "Swipe File", href: "/team/swipe-file", icon: <BookmarkIcon className="size-4" /> },
-  { label: "Font Library", href: "/team/fonts", icon: <DocumentTextIcon className="size-4" /> },
-  { label: "Submit Invoice", href: "/me/invoices", icon: <DocumentPlusIcon className="size-4" /> },
-  { label: "Payments", href: "/team/payments", icon: <CreditCardIcon className="size-4" /> },
+  { label: "Swipe File", href: "/team/swipe-file", icon: <PixelBookmark className="size-4" /> },
+  { label: "Font Library", href: "/team/fonts", icon: <PixelType className="size-4" /> },
+  { label: "Submit Invoice", href: "/me/invoices", icon: <PixelReceipt className="size-4" /> },
+  { label: "Payments", href: "/team/payments", icon: <PixelCard className="size-4" /> },
 ];
 
 /* Shortcuts — single pinned nav item between My Tasks and Project Delivery.
@@ -272,7 +243,7 @@ const teamItems: NavItem[] = [
 const shortcutsItem = {
   label: "Shortcuts",
   href: "/shortcuts",
-  icon: <BoltIcon className="size-4" />,
+  icon: <PixelBolt className="size-4" />,
 };
 
 /* Team Tools — lands on the /team hub page, which is a card-grid
@@ -283,18 +254,16 @@ const shortcutsItem = {
 const teamToolsItem = {
   label: "Team Tools",
   href: "/team",
-  icon: <PuzzlePieceIcon className="size-4" />,
+  icon: <PixelPuzzle className="size-4" />,
 };
 
-/* Toolkit — lands on the / dashboard home, the admin utility-tool
- * launcher (Payment Link / Invoice Generator / Dev Hours /
- * Intelligems / Hook Generator / Scope Generator / Content DB etc).
- * Was dropped in the 10-surface rewrite by mistake; restored here
- * so the utility tools stay discoverable. */
-const toolkitItem = {
-  label: "Toolkit",
+/* Overview — the admin home at /. A briefing surface: delivery health,
+ * what needs attention, and the daily quick tools. Pinned to the top of
+ * the nav (admin/CRO) so it's always one click back, same as the logo. */
+const overviewItem = {
+  label: "Overview",
   href: "/",
-  icon: <HomeIcon className="size-4" />,
+  icon: <PixelHome className="size-4" />,
 };
 
 /* Submit Invoice — top-level shortcut so contractors don't have to
@@ -303,7 +272,7 @@ const toolkitItem = {
 const submitInvoiceItem = {
   label: "Submit Invoice",
   href: "/me/invoices",
-  icon: <DocumentPlusIcon className="size-4" />,
+  icon: <PixelReceipt className="size-4" />,
 };
 
 /* Outbound — the sales outbound tool (being built; empty placeholder for
@@ -311,7 +280,7 @@ const submitInvoiceItem = {
 const outboundItem = {
   label: "Outbound",
   href: "/outbound",
-  icon: <ShareIcon className="size-4" />,
+  icon: <PixelSend className="size-4" />,
 };
 
 /* Grouped, collapsible navigation. Each section is a dropdown; items carry
@@ -321,7 +290,7 @@ const ADMIN_CRO: ("admin" | "cro")[] = ["admin", "cro"];
 const navSections: NavSection[] = [
   {
     title: "Client Health",
-    icon: <BriefcaseIcon className="size-4" />,
+    icon: <PixelHeart className="size-4" />,
     group: "lifecycle",
     items: [
       { ...onboardingItem, roles: ADMIN_CRO },
@@ -333,31 +302,30 @@ const navSections: NavSection[] = [
   },
   {
     title: "Sales",
-    icon: <RocketLaunchIcon className="size-4" />,
+    icon: <PixelFunnel className="size-4" />,
     group: "lifecycle",
     roles: ADMIN_CRO,
     items: [outboundItem],
   },
   {
     title: "Offer",
-    icon: <SparklesIcon className="size-4" />,
+    icon: <PixelTag className="size-4" />,
     group: "lifecycle",
     items: [offerItem, heroOfferItem],
   },
   {
     title: "Team",
-    icon: <UsersIcon className="size-4" />,
+    icon: <PixelUsers className="size-4" />,
     group: "ops",
     items: [
       trainingItem,
       teamToolsItem,
       submitInvoiceItem,
-      { ...toolkitItem, roles: ADMIN_CRO },
     ],
   },
   {
     title: "Company",
-    icon: <BuildingOffice2Icon className="size-4" />,
+    icon: <PixelBuilding className="size-4" />,
     group: "ops",
     roles: ADMIN_CRO,
     items: [financeItem, { ...adminItem, roles: ["admin"] }],
@@ -368,7 +336,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const role = useRole();
   const currentUser = useCurrentUser();
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = false;
   const [mobileOpen, setMobileOpen] = useState(false);
   /* Per-item role gating: a section can mix team-visible and admin-only items
    * (Delivery is everyone; Onboarding/KPIs are admin/cro), so filter items by
@@ -444,7 +412,7 @@ export function Sidebar() {
         ]
       : []),
     ...(role !== "team"
-      ? [{ label: toolkitItem.label, href: toolkitItem.href, group: "Pinned", icon: toolkitItem.icon, keywords: ["tools", "launcher", "payment", "invoice", "intelligems"] }]
+      ? [{ label: overviewItem.label, href: overviewItem.href, group: "Pinned", icon: overviewItem.icon, keywords: ["home", "overview", "dashboard", "delivery", "tools", "payment", "invoice"] }]
       : []),
     // Team utilities — searchable for everyone.
     ...teamItems.map((i: NavItem) => ({ label: i.label, href: i.href, group: "Team" })),
@@ -646,19 +614,14 @@ export function Sidebar() {
         >
           <XMarkIcon className="size-[18px]" />
         </button>
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute top-3 right-3 p-1 rounded-md hover:bg-surface-raised hidden md:block transition-colors z-10"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? <ChevronRightIcon className="size-3.5 text-subtle" /> : <ChevronLeftIcon className="size-3.5 text-subtle" />}
-        </button>
 
         {/* Navigation. Search trigger lives in the top bar — open via window
             event dispatched there (or ⌘K from anywhere). */}
         <nav className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {/* My Tasks — personal home, pinned above the grouped sections. */}
+          {/* Overview (admin/CRO home) + My Tasks — pinned above the grouped
+              sections so home is always one click away. */}
           <div className="px-3 space-y-1">
+            {role !== "team" && renderTopLink(overviewItem)}
             {renderTopLink(myWorkItem)}
           </div>
 

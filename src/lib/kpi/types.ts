@@ -85,4 +85,6 @@ export interface TrendPoint {
   label: string;
   onTimeRate: number | null;
   delivered: number;
+  /** Avg (deliveredAt − startedAt) in days for items delivered that week. */
+  avgTurnaround: number | null;
 }

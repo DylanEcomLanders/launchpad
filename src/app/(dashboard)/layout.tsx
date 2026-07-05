@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { AuthGate } from "@/components/auth-gate";
@@ -90,7 +91,9 @@ export default function DashboardLayout({
         {/* Top bar - logo on the left, full width, single hairline divider below.
             Mirrors the Well /Reporting brand bar pattern. */}
         <header className="h-14 shrink-0 flex items-center justify-between px-5 border-b border-border bg-background">
-          <Logo className="text-foreground" height={18} />
+          <Link href="/" aria-label="Overview" className="transition-opacity hover:opacity-80">
+            <Logo className="text-foreground" height={18} />
+          </Link>
           {/* Search - opens the command palette (state lives in the sidebar; we
               dispatch a window event so the trigger can live anywhere). */}
           <button
