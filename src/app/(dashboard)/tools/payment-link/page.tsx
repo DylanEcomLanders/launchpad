@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardDocumentIcon, CheckIcon, BoltIcon } from "@heroicons/react/24/outline";
-import { DecorativeBlocks } from "@/components/decorative-blocks";
+import { ClipboardDocumentIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
 
 type PlanType = "one-time" | "recurring";
+
+/* Current conversion-engine tiers (mirrors /pricing + /hero-offer). */
+const PRESETS = [
+  { name: "Entry", amount: 5000, desc: "Conversion Engine — Entry retainer. 2 page builds + 2 A/B tests per month, biweekly strategy calls + reporting." },
+  { name: "Core", amount: 10000, desc: "Conversion Engine — Core retainer. 4 page builds + 4 A/B tests per month, weekly strategy calls + reporting." },
+  { name: "VIP", amount: 15000, desc: "Conversion Engine — VIP retainer. 6 page builds + 12 A/B tests per month, weekly calls, priority turnaround, quarterly brand strategy." },
+];
 
 export default function PaymentLinkPage() {
   const [planType, setPlanType] = useState<PlanType>("one-time");
@@ -20,10 +26,10 @@ export default function PaymentLinkPage() {
 
   const canSubmit = clientName.trim() && amount && parseFloat(amount) > 0;
 
-  function applyConversionEnginePreset() {
+  function applyPreset(p: (typeof PRESETS)[number]) {
     setPlanType("recurring");
-    setAmount("8000");
-    setDescription("Conversion Engine — monthly retainer. Full conversion team managing your post-click revenue system. Audit, roadmap, page builds, testing, AOV optimisation, and monthly reporting.");
+    setAmount(String(p.amount));
+    setDescription(p.desc);
   }
 
   async function handleGenerate() {
@@ -77,168 +83,99 @@ export default function PaymentLinkPage() {
   }
 
   return (
-    <div className="relative min-h-screen">
-      <DecorativeBlocks />
-      <div className="relative z-10 max-w-lg mx-auto px-6 md:px-12 py-16 md:py-24">
-        <div className="mb-12">
-          <h1 className="text-[28px] font-bold mb-2">
-            Payment Link
-          </h1>
-          <p className="text-subtle">
-            Generate a checkout link to send to a client
-          </p>
-        </div>
+    <div className="mx-auto max-w-lg px-6 pb-20 pt-10">
+      <header className="mb-8">
+        <h1 className="text-xl font-semibold">Payment link</h1>
+        <p className="mt-1 text-sm text-muted">Generate a Whop checkout link to send to a client.</p>
+      </header>
 
-        <div className="space-y-6">
-          {/* Presets */}
-          <div>
-            <label className={labelClass}>Quick Preset</label>
-            <button
-              onClick={applyConversionEnginePreset}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
-            >
-              <BoltIcon className="size-4 text-warning" />
-              <div className="text-left flex-1">
-                <p className="text-sm font-semibold">Conversion Engine</p>
-                <p className="text-[10px] text-background/60">£8,000/mo recurring retainer</p>
-              </div>
-            </button>
-          </div>
-
-          {/* Plan type toggle */}
-          <div>
-            <label className={labelClass}>Plan Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              {(["one-time", "recurring"] as PlanType[]).map((type) => (
+      <div className="space-y-5 rounded border border-border-faint bg-surface p-6">
+        {/* Presets — current tiers */}
+        <div>
+          <label className={labelClass}>Quick preset</label>
+          <div className="grid grid-cols-3 gap-2">
+            {PRESETS.map((p) => {
+              const on = planType === "recurring" && amount === String(p.amount);
+              return (
                 <button
-                  key={type}
-                  onClick={() => setPlanType(type)}
-                  className={`py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${
-                    planType === type
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border text-subtle hover:border-border"
-                  }`}
+                  key={p.name}
+                  onClick={() => applyPreset(p)}
+                  className={`rounded border px-3 py-2.5 text-left transition-colors ${on ? "border-border bg-surface-raised" : "border-border-faint hover:bg-surface-raised"}`}
                 >
-                  {type === "one-time" ? "One-time" : "Monthly"}
+                  <div className="text-sm font-medium text-foreground">{p.name}</div>
+                  <div className="mt-0.5 text-2xs tabular-nums text-subtle">£{(p.amount / 1000)}k/mo</div>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
+        </div>
 
-          <div>
-            <label className={labelClass}>Client Name *</label>
-            <input
-              type="text"
-              className={inputClass}
-              placeholder="e.g. Ecomlanders"
-              value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className={labelClass}>Client Email</label>
-            <input
-              type="email"
-              className={inputClass}
-              placeholder="e.g. client@example.com"
-              value={clientEmail}
-              onChange={(e) => setClientEmail(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className={labelClass}>
-              Amount (GBP) *
-              {planType === "recurring" && <span className="ml-2 text-subtle font-normal text-xs">per month</span>}
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-subtle">
-                £
-              </span>
-              <input
-                type="number"
-                min="0.50"
-                step="0.01"
-                className={`${inputClass} pl-7`}
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
-            {planType === "recurring" && amount && parseFloat(amount) > 0 && (
-              <p className="text-[11px] text-subtle mt-1.5">
-                Billed monthly • First payment £{parseFloat(amount).toLocaleString("en-GB")} • Renews every 30 days
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className={labelClass}>Description</label>
-            <textarea
-              className={textareaClass}
-              rows={3}
-              placeholder="What's this payment for?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          {error && (
-            <div className="px-4 py-3 bg-danger/10 border border-danger/20 rounded-lg text-sm text-danger">
-              {error}
-            </div>
-          )}
-
-          {paymentUrl ? (
-            <div className="space-y-4">
-              <div className="px-4 py-3 bg-success/10 border border-success/20 rounded-lg">
-                <p className="text-sm font-medium text-success mb-2">
-                  {planType === "recurring" ? "Recurring subscription link created" : "Payment link created"}
-                </p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={paymentUrl}
-                    className="flex-1 px-3 py-2 bg-surface border border-border rounded-md text-sm text-subtle truncate"
-                  />
-                  <button
-                    onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors shrink-0"
-                  >
-                    {copied ? (
-                      <>
-                        <CheckIcon className="size-4" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <ClipboardDocumentIcon className="size-4" />
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
+        {/* Plan type */}
+        <div>
+          <label className={labelClass}>Plan type</label>
+          <div className="inline-flex rounded border border-border-faint p-0.5">
+            {(["one-time", "recurring"] as PlanType[]).map((type) => (
               <button
-                onClick={handleReset}
-                className="w-full py-2.5 text-sm font-medium text-subtle border border-border rounded-md hover:bg-surface-raised transition-colors"
+                key={type}
+                onClick={() => setPlanType(type)}
+                className={`rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${planType === type ? "bg-surface-raised text-foreground" : "text-muted hover:text-foreground"}`}
               >
-                Create another
+                {type === "one-time" ? "One-time" : "Monthly"}
               </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleGenerate}
-              disabled={!canSubmit || loading}
-              className="w-full py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {loading ? "Creating…" : planType === "recurring" ? "Generate Subscription Link" : "Generate Payment Link"}
-            </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>Client name *</label>
+          <input type="text" className={inputClass} placeholder="e.g. Harvestory" value={clientName} onChange={(e) => setClientName(e.target.value)} />
+        </div>
+
+        <div>
+          <label className={labelClass}>Client email</label>
+          <input type="email" className={inputClass} placeholder="e.g. client@example.com" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} />
+        </div>
+
+        <div>
+          <label className={labelClass}>Amount (GBP) *{planType === "recurring" && <span className="ml-2 text-xs font-normal text-subtle">per month</span>}</label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-subtle">£</span>
+            <input type="number" min="0.50" step="0.01" className={`${inputClass} pl-7`} placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div>
+          {planType === "recurring" && amount && parseFloat(amount) > 0 && (
+            <p className="mt-1.5 text-2xs text-subtle">Billed monthly · first payment £{parseFloat(amount).toLocaleString("en-GB")} · renews every 30 days</p>
           )}
         </div>
+
+        <div>
+          <label className={labelClass}>Description</label>
+          <textarea className={textareaClass} rows={3} placeholder="What's this payment for?" value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+
+        {error && (
+          <div className="rounded border border-status-late/30 px-3 py-2.5 text-sm text-status-late">{error}</div>
+        )}
+
+        {paymentUrl ? (
+          <div className="space-y-3">
+            <div className="rounded border border-status-ontrack/25 p-4">
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-status-ontrack">
+                <CheckIcon className="size-4" />{planType === "recurring" ? "Recurring subscription link created" : "Payment link created"}
+              </p>
+              <div className="flex items-center gap-2">
+                <input type="text" readOnly value={paymentUrl} className="flex-1 truncate rounded border border-border bg-surface px-3 py-2 text-sm text-muted" />
+                <button onClick={handleCopy} className="flex shrink-0 items-center gap-1.5 rounded bg-accent px-3 py-2 text-sm font-medium text-accent-foreground">
+                  {copied ? <><CheckIcon className="size-4" />Copied</> : <><ClipboardDocumentIcon className="size-4" />Copy</>}
+                </button>
+              </div>
+            </div>
+            <button onClick={handleReset} className="w-full rounded border border-border py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-raised hover:text-foreground">Create another</button>
+          </div>
+        ) : (
+          <button onClick={handleGenerate} disabled={!canSubmit || loading} className="w-full rounded bg-accent py-2.5 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
+            {loading ? "Creating…" : planType === "recurring" ? "Generate subscription link" : "Generate payment link"}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,16 +1,7 @@
-import OfferHubClient from "./offer-hub-client";
-import { getProjects } from "@/lib/portfolio-v2/data";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function OfferHubPage() {
-  const projects = await getProjects().catch(() => []);
-  const previewImages = projects
-    .flatMap((p) => [
-      ...(p.desktop_slices ?? []).map((s) => s.url),
-      ...(p.mobile_slices ?? []).map((s) => s.url),
-    ])
-    .slice(0, 16);
-
-  return <OfferHubClient previewImages={previewImages} />;
+/* /offer was a portfolio-preview hub that duplicated the real offer surface.
+ * Consolidated: the offer now lives at /hero-offer. */
+export default function OfferPage() {
+  redirect("/hero-offer");
 }
