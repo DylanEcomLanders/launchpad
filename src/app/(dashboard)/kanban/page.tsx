@@ -282,6 +282,12 @@ const PHASE_1_ORDER: PreviewPhase[] = [
 ];
 const PHASE_2_ORDER: PreviewPhase[] = ["development", "qa", "launch-testing"];
 
+/* Board columns exclude Documents: retainer reports / decks / monthly breakdowns
+ * now live in the Clients Command Centre, not on the delivery board. The phase
+ * stays in the model so existing data + phase logic are unaffected; it just
+ * isn't rendered as a column. */
+const BOARD_PHASES = PREVIEW_PHASES.filter((p) => p.value !== "documents");
+
 const INTERNAL_BUFFER_DAYS = 3;
 
 function addCalendarDays(iso: string, days: number): string {
@@ -899,6 +905,9 @@ export default function KanbanPage() {
           const d = p.deliverables.find((x) => x.id === id);
           if (!d) continue;
           if (d.phase === targetPhase) return next;
+          // Tickets are handled in place (resolved via completedAt), never
+          // dragged between columns. Block moving a ticket out, or anything in.
+          if (d.phase === "tickets" || targetPhase === "tickets") return next;
           const fromIdx = PREVIEW_PHASES.findIndex((x) => x.value === d.phase);
           const toIdx = PREVIEW_PHASES.findIndex((x) => x.value === targetPhase);
           // Backward move flags the card as needing revisions. Forward move
@@ -1613,7 +1622,7 @@ export default function KanbanPage() {
            * page never scrolls. Each column scrolls its own cards. */
           <div className="flex-1 min-h-0">
           <BoardColumns
-            phases={PREVIEW_PHASES}
+            phases={BOARD_PHASES}
             cards={cardsByPhase}
             viewMode={viewMode}
             density={density}
@@ -2154,7 +2163,7 @@ function Card({
         return "on-track";
       })()
     : null;
-  const status: StuckStatus =
+  const rawStatus: StuckStatus =
     cardDueStatus ??
     (d.phase === "tickets" && categoryMeta
       ? ticketCategoryStatus(
@@ -2167,6 +2176,17 @@ function Card({
         : d.phase === "external-revisions"
           ? externalReviewStatus(d.sentToClientAt, MOCK_TODAY) ?? "on-track"
           : dated ?? scaledStatus(d.phase, d.hoursInPhase, d.turnaroundDays));
+  /* Undated build cards (no card due date AND no computed phase deadline) and
+   * on-hold cards read neutral: never stuck, so retrofitted work and client-
+   * blocked cards don't flood the board red. SLA-clock phases (tickets /
+   * documents / external revisions) keep their own timing and are excluded. */
+  const onHold = !!d.onHold;
+  const undated =
+    !cardDueStatus &&
+    dated === null &&
+    !["tickets", "documents", "external-revisions"].includes(d.phase);
+  const neutralTiming = onHold || undated;
+  const status: StuckStatus = neutralTiming ? "on-track" : rawStatus;
   const live = d.phase === "launch-testing" && d.liveStartedAt && !d.testResult;
   // Approved-internally cards stay in Internal Revisions and read GREEN so
   // the primary designer knows it's signed off and needs sending to the
@@ -2175,13 +2195,15 @@ function Card({
   // The one small colour on the card, a Linear-style health mark. Muted
   // tones: green on-track/live, amber approaching, muted red when late.
   const statusDot =
-    live || approved
-      ? "var(--color-status-ontrack)"
-      : status === "stuck"
-        ? "var(--color-status-late)"
-        : status === "approaching"
-          ? "var(--color-status-approaching)"
-          : "var(--color-status-ontrack)";
+    neutralTiming
+      ? "var(--muted)"
+      : live || approved
+        ? "var(--color-status-ontrack)"
+        : status === "stuck"
+          ? "var(--color-status-late)"
+          : status === "approaching"
+            ? "var(--color-status-approaching)"
+            : "var(--color-status-ontrack)";
   const LeadIcon = categoryMeta?.icon ?? phaseIcon(d.phase);
   const isOverdue = status === "stuck" && !live && !approved;
   const rounds = revisionRoundCount(d.phaseHistory);
@@ -2213,7 +2235,7 @@ function Card({
    * full card; drag still works. Falls through to the full card
    * render below for cosy. */
   const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
-    if (!canManage) return;
+    if (!canManage || d.phase === "tickets") return;
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", d.id);
     onDragStart();
@@ -2223,7 +2245,7 @@ function Card({
     return (
       <ProjectCard
         variant="compact"
-        draggable={canManage}
+        draggable={canManage && d.phase !== "tickets"}
         onDragStart={handleDragStart}
         onDragEnd={onDragEnd}
         onClick={onOpen}
@@ -2258,7 +2280,7 @@ function Card({
 
   return (
     <ProjectCard
-      draggable={canManage}
+      draggable={canManage && d.phase !== "tickets"}
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={onOpen}
@@ -3307,11 +3329,11 @@ function DetailModal({
           <div className="flex items-start gap-10 flex-wrap">
             <div>
               <div className="flex items-center gap-2 text-2xs text-muted mb-2">
-                <span className="size-2 rounded-[3px]" style={{ background: statusColor }} />
+                <span className="size-2 rounded-[3px]" style={{ background: d.onHold ? "var(--muted)" : statusColor }} />
                 Status
               </div>
-              <div className="text-xl font-medium leading-none" style={{ color: statusColor }}>
-                {style.label}
+              <div className="text-xl font-medium leading-none" style={{ color: d.onHold ? "var(--muted)" : statusColor }}>
+                {d.onHold ? "On hold" : style.label}
               </div>
             </div>
             <div>
@@ -3347,6 +3369,62 @@ function DetailModal({
             ]}
             className="shrink-0"
           />
+        </div>
+
+        {/* Timing: retrofit-friendly. Set real dates when known; an undated card
+            reads neutral (never overdue), and On hold freezes the clock so
+            client-blocked work isn't flagged red. */}
+        <div className="px-6 pb-5 -mt-1">
+          <div className="flex flex-wrap items-end gap-x-6 gap-y-3 border-t border-border-faint pt-4">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-2xs text-muted">Start date</span>
+              <input
+                type="date"
+                value={d.startDate ?? ""}
+                disabled={!canManage}
+                onChange={(e) => onUpdate({ startDate: e.target.value || undefined })}
+                className="w-40 px-2.5 py-1.5 text-xs bg-surface border border-border rounded text-foreground focus:outline-none focus:border-ring disabled:opacity-50"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-2xs text-muted">Due date</span>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="date"
+                  value={d.dueDate ?? ""}
+                  disabled={!canManage}
+                  onChange={(e) => onUpdate({ dueDate: e.target.value || undefined })}
+                  className="w-40 px-2.5 py-1.5 text-xs bg-surface border border-border rounded text-foreground focus:outline-none focus:border-ring disabled:opacity-50"
+                />
+                {d.dueDate && canManage && (
+                  <button
+                    onClick={() => onUpdate({ dueDate: undefined })}
+                    className="px-1.5 py-1 text-2xs text-subtle hover:text-foreground transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {!d.dueDate && (
+                <span className="text-3xs text-subtle">No due date · reads neutral, never overdue</span>
+              )}
+            </label>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-2xs text-muted">Hold</span>
+              <button
+                disabled={!canManage}
+                onClick={() => onUpdate({ onHold: !d.onHold })}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded border transition-colors disabled:opacity-50 ${
+                  d.onHold
+                    ? "border-border bg-surface-raised text-foreground"
+                    : "border-border-faint text-muted hover:text-foreground"
+                }`}
+              >
+                <span className={`size-1.5 rounded-full ${d.onHold ? "bg-status-approaching" : "bg-subtle"}`} />
+                {d.onHold ? "Waiting on client" : "Active"}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="px-6 pb-6 space-y-6">

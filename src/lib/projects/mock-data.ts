@@ -59,8 +59,17 @@ export interface MockDeliverable {
   developer?: string;
   /** Secondary developer — picks up tickets, bugs, post-launch tweaks */
   secondaryDeveloper?: string;
-  /** Target completion date — ISO yyyy-mm-dd. Drives the date stamp on the card */
+  /** Target completion date — ISO yyyy-mm-dd. Drives the date stamp on the card
+   *  AND the card's health colour (overdue=red, due today/tomorrow=amber). When
+   *  unset the card is "undated": it reads neutral and never overdue, so
+   *  retrofitted work doesn't flood the board red until real dates are added. */
   dueDate?: string;
+  /** Actual start date — ISO yyyy-mm-dd. Optional context for retrofitted work
+   *  (when it really began), editable in the detail modal. Doesn't drive colour. */
+  startDate?: string;
+  /** Paused / waiting on the client. Freezes the deadline clock: the card reads
+   *  neutral (not overdue) and drops out of the at-risk count while we wait. */
+  onHold?: boolean;
   phase: PreviewPhase;
   /** UK working hours spent in the CURRENT phase (Mon-Fri 9-5 Europe/London,
    *  excl bank holidays). 8h = 1 working day. Drives the stuck flag via
