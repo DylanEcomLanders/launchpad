@@ -14,6 +14,7 @@ import {
   ClockIcon,
   ArrowRightOnRectangleIcon,
   BuildingStorefrontIcon,
+  SparklesIcon,
   Squares2X2Icon as PixelApps,
   ViewColumnsIcon as PixelBoard,
   BoltIcon as PixelBolt,
@@ -358,6 +359,15 @@ const navSections: NavSection[] = [
     icon: <PixelTag className="size-4" />,
     group: "lifecycle",
     href: "/hero-offer",
+    items: [],
+  },
+  {
+    /* Production — advertorial job queue + review. Internal-only. */
+    title: "Production",
+    icon: <SparklesIcon className="size-4" />,
+    group: "lifecycle",
+    href: "/production",
+    roles: ADMIN_CRO,
     items: [],
   },
   {
