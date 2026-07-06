@@ -161,7 +161,7 @@ export default function PricingPage() {
   const upfront = billing === "upfront";
 
   return (
-    <div className="min-h-screen bg-background text-surface-raised flex flex-col">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#FAFAF7] flex flex-col">
       {/* ══ Header ════════════════════════════════════════════════ */}
       <header className="border-b border-white/5">
         <div className="max-w-6xl mx-auto w-full flex items-center px-6 md:px-12 h-16">
@@ -195,7 +195,7 @@ export default function PricingPage() {
           <button
             onClick={() => setBilling("monthly")}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              !upfront ? "bg-white text-background" : "text-white/55 hover:text-white"
+              !upfront ? "bg-white text-[#0E0D0B]" : "text-white/55 hover:text-white"
             }`}
           >
             Monthly
@@ -203,13 +203,13 @@ export default function PricingPage() {
           <button
             onClick={() => setBilling("upfront")}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors flex items-center gap-2 ${
-              upfront ? "bg-white text-background" : "text-white/55 hover:text-white"
+              upfront ? "bg-white text-[#0E0D0B]" : "text-white/55 hover:text-white"
             }`}
           >
             Pay up front
             <span
               className={`font-mono text-[10px] tracking-wider ${
-                upfront ? "text-background/60" : "text-white/40"
+                upfront ? "text-[#0E0D0B]/60" : "text-white/40"
               }`}
             >
               -10%
@@ -229,7 +229,7 @@ export default function PricingPage() {
                 key={tier.name}
                 className={
                   featured
-                    ? "rounded-3xl bg-surface-raised text-surface p-7 md:p-8 shadow-xl shadow-black/30"
+                    ? "rounded-3xl bg-[#FAFAF7] text-[#1A1A17] p-7 md:p-8 shadow-xl shadow-black/30"
                     : "rounded-3xl border border-white/12 bg-white/[0.025] p-7 md:p-8"
                 }
               >
@@ -240,7 +240,7 @@ export default function PricingPage() {
                     {tier.name}
                   </h2>
                   {featured && tier.badge && (
-                    <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-surface text-surface-raised">
+                    <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-[#1A1A17] text-[#FAFAF7]">
                       {tier.badge}
                     </span>
                   )}
@@ -253,13 +253,13 @@ export default function PricingPage() {
                     {fmtK(amount)}
                   </span>
                   <span
-                    className={`text-sm ${featured ? "text-surface/45" : "text-white/40"}`}
+                    className={`text-sm ${featured ? "text-[#1A1A17]/45" : "text-white/40"}`}
                   >
                     /mo
                   </span>
                 </div>
                 <p
-                  className={`font-mono text-[11px] mt-2 ${featured ? "text-surface/45" : "text-white/35"}`}
+                  className={`font-mono text-[11px] mt-2 ${featured ? "text-[#1A1A17]/45" : "text-white/35"}`}
                 >
                   {upfront
                     ? `${fmtK(amount * 3)} up front for 90 days, 10% off`
@@ -267,20 +267,20 @@ export default function PricingPage() {
                 </p>
 
                 <p
-                  className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-surface/60" : "text-white/50"}`}
+                  className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-[#1A1A17]/60" : "text-white/50"}`}
                 >
                   {tier.blurb}
                 </p>
 
                 <div
-                  className={`h-px mb-6 ${featured ? "bg-surface/10" : "bg-white/10"}`}
+                  className={`h-px mb-6 ${featured ? "bg-[#1A1A17]/10" : "bg-white/10"}`}
                 />
 
                 <ul className="space-y-3.5">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5">
                       <CheckIcon
-                        className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-surface" : "text-white/35"}`}
+                        className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-[#1A1A17]" : "text-white/35"}`}
                       />
                       <span
                         className={`text-sm leading-snug ${featured ? "" : "text-white/70"}`}
@@ -317,7 +317,7 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-background p-5 md:p-6">
+          <div className="rounded-2xl border border-white/10 bg-[#0E0D0B] p-5 md:p-6">
             <ul className="space-y-3 mb-4">
               {tally.map((t) => (
                 <li
@@ -341,7 +341,7 @@ export default function PricingPage() {
               <span className="text-sm font-semibold text-white">
                 In the Engine
               </span>
-              <span className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] px-3 py-1 rounded-full bg-surface-raised text-background shrink-0">
+              <span className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] px-3 py-1 rounded-full bg-[#FAFAF7] text-[#0E0D0B] shrink-0">
                 Included
               </span>
             </div>
@@ -480,7 +480,7 @@ export default function PricingPage() {
             <div className="flex items-baseline justify-between gap-3 mb-3">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h3 className="text-lg font-semibold">Funnel Build</h3>
-                <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-surface-raised text-background">
+                <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-[#FAFAF7] text-[#0E0D0B]">
                   Most popular
                 </span>
               </div>
