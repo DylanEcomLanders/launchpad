@@ -1,0 +1,113 @@
+<!doctype html>
+<!--
+  Advertorial shell v1 - self-contained, brand-themed via :root CSS variables ONLY.
+  The generator writes the article content into the marked regions; it never edits
+  the CSS. Brand variables are injected into :root at generation time from the
+  client's brand profile. Nothing here loads an external resource: fonts fall back
+  to system stacks so a draft renders offline in the review iframe.
+
+  Content regions the generator fills (id-marked):
+    #eyebrow   short kicker / section label
+    #headline  the H1 - must continue the ad scent
+    #dek       one-line standfirst
+    #byline    author + date
+    #hero      hero image slot (human fills post-review; caption allowed)
+    #body      the article: <section> blocks, one idea each
+    #offer     the offer box (price, anchor, guarantee, CTA)
+    #disclaimer compliance footer (required when any compliance flag is hot)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Advertorial</title>
+<style>
+  :root {
+    /* Overridden at generation from the client brand profile. */
+    --brand-primary: #5E6AD2;
+    --brand-ink: #1a1b1e;
+    --brand-bg: #ffffff;
+    --brand-surface: #f6f5f2;
+    --brand-muted: #6b6b70;
+    --brand-line: #e6e5e1;
+    --font-heading: "Georgia", "Times New Roman", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--brand-bg);
+    color: var(--brand-ink);
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 40px 22px 80px; }
+  #eyebrow {
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--brand-primary); font-weight: 700; margin: 0 0 14px;
+  }
+  #headline {
+    font-family: var(--font-heading);
+    font-size: 40px; line-height: 1.1; font-weight: 700;
+    letter-spacing: -0.01em; margin: 0 0 16px;
+  }
+  #dek { font-size: 21px; line-height: 1.4; color: var(--brand-muted); margin: 0 0 22px; }
+  #byline { font-size: 13px; color: var(--brand-muted); border-top: 1px solid var(--brand-line);
+    border-bottom: 1px solid var(--brand-line); padding: 12px 0; margin: 0 0 28px; }
+  #hero { margin: 0 0 30px; }
+  #hero .slot {
+    aspect-ratio: 16 / 9; width: 100%; background: var(--brand-surface);
+    border: 1px dashed var(--brand-line); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-muted); font-size: 13px;
+  }
+  #hero figcaption { font-size: 13px; color: var(--brand-muted); margin-top: 8px; }
+  #body h2 { font-family: var(--font-heading); font-size: 26px; line-height: 1.2; margin: 34px 0 12px; }
+  #body p { margin: 0 0 18px; }
+  #body a { color: var(--brand-primary); }
+  .review {
+    border-left: 3px solid var(--brand-primary);
+    background: var(--brand-surface);
+    padding: 16px 20px; margin: 26px 0; border-radius: 0 8px 8px 0;
+  }
+  .review p { font-size: 19px; font-style: italic; margin: 0 0 8px; }
+  .review cite { font-size: 13px; font-style: normal; color: var(--brand-muted); }
+  #offer {
+    margin: 40px 0 8px; padding: 28px; border-radius: 12px;
+    background: var(--brand-surface); border: 1px solid var(--brand-line); text-align: center;
+  }
+  #offer .price { font-family: var(--font-heading); font-size: 34px; font-weight: 700; }
+  #offer .anchor { color: var(--brand-muted); text-decoration: line-through; margin-left: 8px; font-size: 20px; }
+  #offer .guarantee { font-size: 15px; color: var(--brand-muted); margin: 8px 0 18px; }
+  #offer .cta {
+    display: inline-block; background: var(--brand-primary); color: #fff;
+    font-weight: 700; text-decoration: none; padding: 14px 30px; border-radius: 999px; font-size: 17px;
+  }
+  #disclaimer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--brand-line);
+    font-size: 12px; line-height: 1.5; color: var(--brand-muted); }
+  @media (max-width: 520px) { #headline { font-size: 30px; } #dek { font-size: 18px; } }
+</style>
+</head>
+<body>
+  <article class="wrap">
+    <p id="eyebrow">Advertorial</p>
+    <h1 id="headline">Headline goes here</h1>
+    <p id="dek">One-line standfirst goes here.</p>
+    <p id="byline">By the editorial team</p>
+
+    <figure id="hero">
+      <div class="slot">Hero image - added after review</div>
+    </figure>
+
+    <div id="body">
+      <p>Article body is written here, one idea per section.</p>
+    </div>
+
+    <aside id="offer"></aside>
+
+    <footer id="disclaimer"></footer>
+  </article>
+</body>
+</html>
