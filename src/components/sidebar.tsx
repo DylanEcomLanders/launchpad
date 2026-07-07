@@ -14,7 +14,6 @@ import {
   ClockIcon,
   ArrowRightOnRectangleIcon,
   BuildingStorefrontIcon,
-  SparklesIcon,
   Squares2X2Icon as PixelApps,
   ViewColumnsIcon as PixelBoard,
   BoltIcon as PixelBolt,
@@ -361,15 +360,9 @@ const navSections: NavSection[] = [
     href: "/hero-offer",
     items: [],
   },
-  {
-    /* Production — advertorial job queue + review. Internal-only. */
-    title: "Production",
-    icon: <SparklesIcon className="size-4" />,
-    group: "lifecycle",
-    href: "/production",
-    roles: ADMIN_CRO,
-    items: [],
-  },
+  /* Production (advertorial) shelved from the nav 2026-07-07. Route + store +
+   * kit still live under /production and skills/advertorial; re-add this section
+   * to resurface. */
   {
     title: "Team",
     icon: <PixelUsers className="size-4" />,
