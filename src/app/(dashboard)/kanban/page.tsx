@@ -294,7 +294,7 @@ const BOARD_PHASES = PREVIEW_PHASES.filter((p) => p.value !== "documents");
  * consumer of deliverable.phase keeps working). Columns render clustered under
  * three phase headers with per-phase ownership; Tickets + Not started sit
  * outside the bands (triage / backlog, not build flow). The design-to-dev
- * handover gate is the door between the Design and Build bands. */
+ * handover gate is the door between Phase 1 and Phase 2. */
 const PHASE_BANDS: {
   key: string;
   label: string | null;
@@ -303,18 +303,23 @@ const PHASE_BANDS: {
 }[] = [
   { key: "tickets", label: null, phases: ["tickets"] },
   { key: "backlog", label: null, phases: ["not-started"] },
-  { key: "p1", label: "Phase 1 · Strategy", owner: "Strategist", phases: ["strategy"] },
+  {
+    key: "p1",
+    label: "Phase 1 · Strategy + Design",
+    owner: "Strategist + Design pod",
+    phases: ["strategy", "design", "internal-revisions", "external-revisions"],
+  },
   {
     key: "p2",
-    label: "Phase 2 · Design",
-    owner: "Design pod",
-    phases: ["design", "internal-revisions", "external-revisions"],
+    label: "Phase 2 · Development",
+    owner: "Dev pod",
+    phases: ["development", "qa"],
   },
   {
     key: "p3",
-    label: "Phase 3 · Build + Optimisation",
-    owner: "Dev pod",
-    phases: ["development", "qa", "launch-testing"],
+    label: "Phase 3 · Optimisation",
+    owner: "Strategist",
+    phases: ["launch-testing"],
   },
 ];
 
