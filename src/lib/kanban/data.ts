@@ -18,6 +18,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
+  type DesignHandoff,
   type MockClient,
   type MockDeliverable,
   type MockPod,
@@ -76,6 +77,9 @@ interface KanbanTaskRow {
   developer: string | null;
   secondary_developer: string | null;
   due_date: string | null;
+  start_date: string | null;
+  on_hold: boolean;
+  design_handoff: DesignHandoff | null;
   phase_history: PhaseHistoryEntry[];
   revision_requested: boolean;
   approved_at: string | null;
@@ -116,6 +120,9 @@ function taskRowToMock(r: KanbanTaskRow): MockDeliverable {
     developer: r.developer ?? undefined,
     secondaryDeveloper: r.secondary_developer ?? undefined,
     dueDate: r.due_date ?? undefined,
+    startDate: r.start_date ?? undefined,
+    onHold: r.on_hold || undefined,
+    designHandoff: r.design_handoff ?? undefined,
     /* hoursInPhase is a runtime field (worker computed). DB doesn't store it
      * yet; default 0 so the type stays satisfied. Status decoration falls
      * back to phase_history-driven dates. */
@@ -249,6 +256,9 @@ function mockTaskToRow(projectId: string, d: MockDeliverable): KanbanTaskRow {
     developer: d.developer ?? null,
     secondary_developer: d.secondaryDeveloper ?? null,
     due_date: d.dueDate ?? null,
+    start_date: d.startDate ?? null,
+    on_hold: !!d.onHold,
+    design_handoff: d.designHandoff ?? null,
     phase_history: d.phaseHistory ?? [],
     revision_requested: !!d.revisionRequested,
     approved_at: d.approvedAt ?? null,

@@ -46,6 +46,21 @@ export interface TrackedMetric {
   interim?: string;
 }
 
+/* The design-to-dev handover form. Everything dev needs to start without
+ * chasing: the Figma file, a Loom walkthrough, font files, and any extra
+ * assets. Links (Drive/Dropbox/etc) rather than uploads in v1, so the record
+ * stays a small jsonb blob. submittedAt is the gate: present = dev may pull
+ * the card into Phase 2. */
+export interface DesignHandoff {
+  figmaUrl: string;
+  loomUrl: string;
+  fontFilesUrl: string;
+  assetsUrl?: string;
+  notes?: string;
+  submittedAt?: string; // ISO yyyy-mm-dd; set on submit, cleared on reopen
+  submittedBy?: string;
+}
+
 export interface MockDeliverable {
   id: string;
   title: string;
@@ -70,6 +85,11 @@ export interface MockDeliverable {
   /** Paused / waiting on the client. Freezes the deadline clock: the card reads
    *  neutral (not overdue) and drops out of the at-risk count while we wait. */
   onHold?: boolean;
+  /** The design-to-dev handover record. NULL/undefined = not submitted, and the
+   *  gate blocks the card from entering any Phase 2 build phase (development /
+   *  qa / launch-testing). Submitting from the detail modal stamps submittedAt
+   *  and unlocks the move. */
+  designHandoff?: DesignHandoff;
   phase: PreviewPhase;
   /** UK working hours spent in the CURRENT phase (Mon-Fri 9-5 Europe/London,
    *  excl bank holidays). 8h = 1 working day. Drives the stuck flag via

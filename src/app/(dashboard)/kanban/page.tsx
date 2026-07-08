@@ -60,6 +60,7 @@ import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
+  type DesignHandoff,
   type MockDeliverable,
   type MockClient,
   type MockPod,
@@ -897,7 +898,34 @@ export default function KanbanPage() {
     [allDeliverables, activeId],
   );
 
-  function moveDeliverable(id: string, targetPhase: PreviewPhase) {
+  function moveDeliverable(
+    id: string,
+    targetPhase: PreviewPhase,
+    opts?: { bypassHandoffGate?: boolean },
+  ) {
+    /* Design-to-dev gate, checked BEFORE the state update (updaters run at
+     * render time, so a flag set inside one isn't readable here). A card
+     * entering any Phase 2 build phase from outside Phase 2 must carry a
+     * submitted design handover. The submit-handover flow passes
+     * bypassHandoffGate because it stamps the handover and moves in the same
+     * tick, before state has re-rendered. */
+    if (!opts?.bypassHandoffGate && PHASE_2_ORDER.includes(targetPhase)) {
+      const current = allDeliverables.find((d) => d.id === id);
+      if (
+        current &&
+        !PHASE_2_ORDER.includes(current.phase) &&
+        !current.designHandoff?.submittedAt
+      ) {
+        window.dispatchEvent(
+          new CustomEvent("kanban-gate-blocked", {
+            detail: {
+              message: `"${current.title}" needs its design handover (Figma, Loom, fonts) submitted before it can enter the build. Open the card to complete it.`,
+            },
+          }),
+        );
+        return;
+      }
+    }
     setClients((prev) => {
       const next = cloneClients(prev);
       for (const c of next) {
@@ -1568,6 +1596,7 @@ export default function KanbanPage() {
               view scope, and Display options. No client-specific controls. */}
           <div className="flex items-center gap-2">
             <SyncErrorToast />
+            <GateBlockedToast />
             <SearchControl
               query={searchQuery}
               onChange={setSearchQuery}
@@ -1694,6 +1723,21 @@ export default function KanbanPage() {
           deliverable={activeDeliverable}
           onClose={() => setActiveId(null)}
           onUpdate={(patch) => updateDeliverable(activeDeliverable.id, patch)}
+          onSubmitHandoff={(handoff) => {
+            /* Stamp + move in one flow. bypassHandoffGate because the stamped
+             * state hasn't re-rendered yet when the move runs. */
+            const stamped: DesignHandoff = {
+              ...handoff,
+              submittedAt: MOCK_TODAY,
+              submittedBy: currentUser?.name || "Team",
+            };
+            updateDeliverable(activeDeliverable.id, { designHandoff: stamped });
+            if (!PHASE_2_ORDER.includes(activeDeliverable.phase)) {
+              moveDeliverable(activeDeliverable.id, "development", {
+                bypassHandoffGate: true,
+              });
+            }
+          }}
           onConclude={(r) => concludeTest(activeDeliverable.id, r)}
           onApproveInternal={() =>
             approveInternalRevisions(activeDeliverable.id)
@@ -3107,11 +3151,204 @@ function DarkDatePicker({
   );
 }
 
+/* ── Design-to-dev handover section ──
+ * Lives in the card modal for every build-flow card. Unsubmitted: a compact
+ * form (links, not uploads, in v1) that drafts on blur and submits when the
+ * three required links are present. Submitted: a link summary + Reopen.
+ * Submission is THE gate: it stamps submittedAt and moves the card to
+ * Development (the parent handler owns the stamp + move). */
+const HANDOFF_INPUT =
+  "w-full px-2.5 py-1.5 text-xs bg-surface border border-border rounded text-foreground placeholder:text-subtle focus:outline-none focus:border-ring disabled:opacity-50";
+
+function DesignHandoffSection({
+  deliverable: d,
+  canManage,
+  onSaveDraft,
+  onSubmit,
+}: {
+  deliverable: ContextDeliverable;
+  canManage: boolean;
+  onSaveDraft: (h: DesignHandoff) => void;
+  onSubmit: (h: DesignHandoff) => void;
+}) {
+  const [draft, setDraft] = useState<DesignHandoff>(() =>
+    d.designHandoff ?? {
+      figmaUrl: d.figmaUrl ?? "",
+      loomUrl: "",
+      fontFilesUrl: "",
+      assetsUrl: "",
+      notes: "",
+    },
+  );
+  // Re-seed when the modal switches card.
+  useEffect(() => {
+    setDraft(
+      d.designHandoff ?? {
+        figmaUrl: d.figmaUrl ?? "",
+        loomUrl: "",
+        fontFilesUrl: "",
+        assetsUrl: "",
+        notes: "",
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.id]);
+
+  const submitted = !!d.designHandoff?.submittedAt;
+  const missing: string[] = [];
+  if (!draft.figmaUrl.trim()) missing.push("Figma");
+  if (!draft.loomUrl.trim()) missing.push("Loom walkthrough");
+  if (!draft.fontFilesUrl.trim()) missing.push("Font files");
+
+  function patch(p: Partial<DesignHandoff>) {
+    setDraft((prev) => ({ ...prev, ...p }));
+  }
+  function persist() {
+    onSaveDraft({ ...draft });
+  }
+
+  if (submitted && d.designHandoff) {
+    const h = d.designHandoff;
+    const links: { label: string; url?: string }[] = [
+      { label: "Figma", url: h.figmaUrl },
+      { label: "Loom walkthrough", url: h.loomUrl },
+      { label: "Font files", url: h.fontFilesUrl },
+      { label: "Assets", url: h.assetsUrl },
+    ];
+    return (
+      <section className="border-t border-white/[0.05] pt-6">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="text-3xs font-medium text-subtle">Design handover</h3>
+          <span className="text-3xs text-status-ontrack">
+            Submitted {formatShortDate(h.submittedAt!)}
+            {h.submittedBy ? ` · ${h.submittedBy}` : ""}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {links
+            .filter((l) => l.url?.trim())
+            .map((l) => (
+              <a
+                key={l.label}
+                href={l.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded border border-border bg-surface px-2.5 py-1.5 text-2xs text-muted transition-colors hover:text-foreground"
+              >
+                {l.label} ↗
+              </a>
+            ))}
+        </div>
+        {h.notes?.trim() && (
+          <p className="mt-3 text-xs leading-relaxed text-muted">{h.notes}</p>
+        )}
+        {canManage && (
+          <button
+            onClick={() =>
+              onSaveDraft({ ...h, submittedAt: undefined, submittedBy: undefined })
+            }
+            className="mt-3 text-2xs text-subtle transition-colors hover:text-foreground"
+          >
+            Reopen handover
+          </button>
+        )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="border-t border-white/[0.05] pt-6">
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h3 className="text-3xs font-medium text-subtle">Design handover</h3>
+        {missing.length > 0 && (
+          <span className="text-3xs text-subtle">Missing: {missing.join(", ")}</span>
+        )}
+      </div>
+      <p className="mb-3 text-4xs text-muted">
+        Required before this card can enter the build. Submitting moves it to
+        Development.
+      </p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <div className="text-3xs text-subtle mb-1.5">Figma link *</div>
+          <input
+            type="url"
+            value={draft.figmaUrl}
+            disabled={!canManage}
+            onChange={(e) => patch({ figmaUrl: e.target.value })}
+            onBlur={persist}
+            placeholder="https://figma.com/design/…"
+            className={HANDOFF_INPUT}
+          />
+        </div>
+        <div>
+          <div className="text-3xs text-subtle mb-1.5">Loom walkthrough *</div>
+          <input
+            type="url"
+            value={draft.loomUrl}
+            disabled={!canManage}
+            onChange={(e) => patch({ loomUrl: e.target.value })}
+            onBlur={persist}
+            placeholder="https://loom.com/share/…"
+            className={HANDOFF_INPUT}
+          />
+        </div>
+        <div>
+          <div className="text-3xs text-subtle mb-1.5">Font files *</div>
+          <input
+            type="url"
+            value={draft.fontFilesUrl}
+            disabled={!canManage}
+            onChange={(e) => patch({ fontFilesUrl: e.target.value })}
+            onBlur={persist}
+            placeholder="Drive / Dropbox link"
+            className={HANDOFF_INPUT}
+          />
+        </div>
+        <div>
+          <div className="text-3xs text-subtle mb-1.5">Assets (optional)</div>
+          <input
+            type="url"
+            value={draft.assetsUrl ?? ""}
+            disabled={!canManage}
+            onChange={(e) => patch({ assetsUrl: e.target.value })}
+            onBlur={persist}
+            placeholder="Imagery, exports, anything extra"
+            className={HANDOFF_INPUT}
+          />
+        </div>
+      </div>
+      <div className="mt-3">
+        <div className="text-3xs text-subtle mb-1.5">Notes for dev (optional)</div>
+        <textarea
+          value={draft.notes ?? ""}
+          disabled={!canManage}
+          onChange={(e) => patch({ notes: e.target.value })}
+          onBlur={persist}
+          rows={2}
+          placeholder="Interactions, breakpoints, anything not obvious from the file"
+          className={HANDOFF_INPUT}
+        />
+      </div>
+      {canManage && (
+        <button
+          onClick={() => onSubmit({ ...draft })}
+          disabled={missing.length > 0}
+          className="mt-3 rounded bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Submit handover → Development
+        </button>
+      )}
+    </section>
+  );
+}
+
 interface DetailModalProps {
   canManage: boolean;
   deliverable: ContextDeliverable;
   onClose: () => void;
   onUpdate: (patch: Partial<MockDeliverable>) => void;
+  onSubmitHandoff: (handoff: DesignHandoff) => void;
   onConclude: (result: TestResult) => void;
   onApproveInternal: () => void;
   onRequestRevisions: () => void;
@@ -3133,6 +3370,7 @@ function DetailModal({
   deliverable: d,
   onClose,
   onUpdate,
+  onSubmitHandoff,
   onConclude,
   onApproveInternal,
   onRequestRevisions,
@@ -3666,6 +3904,19 @@ function DetailModal({
                 </section>
               );
             })()}
+
+          {/* Design-to-dev handover. The gate: this card cannot enter a Phase 2
+            * build phase until the handover is submitted. Hidden for tickets /
+            * documents (not part of the build flow). Once submitted it stays
+            * visible as a link summary so dev has everything in one place. */}
+          {!["tickets", "documents"].includes(d.phase) && (
+            <DesignHandoffSection
+              deliverable={d}
+              canManage={canManage}
+              onSaveDraft={(h) => onUpdate({ designHandoff: h })}
+              onSubmit={onSubmitHandoff}
+            />
+          )}
 
           {/* Manual client-facing deadlines per phase bucket. Shown for
             * every project (build + retainer) so admin can pin an
@@ -4526,6 +4777,33 @@ function DetailModal({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Gate blocked toast ──
+ * Fired by moveDeliverable when the design-to-dev gate stops a drag.
+ * Informational, not an error: monochrome raised surface per DESIGN. */
+function GateBlockedToast() {
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    function handler(e: Event) {
+      const detail = (e as CustomEvent<{ message: string }>).detail;
+      if (detail?.message) {
+        setMessage(detail.message);
+        window.setTimeout(() => setMessage(null), 7000);
+      }
+    }
+    window.addEventListener("kanban-gate-blocked", handler);
+    return () => window.removeEventListener("kanban-gate-blocked", handler);
+  }, []);
+
+  if (!message) return null;
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-md rounded border border-border bg-surface-raised px-5 py-3 text-xs text-foreground">
+      <div className="mb-0.5 font-semibold">Handover required</div>
+      <div className="text-2xs text-muted">{message}</div>
     </div>
   );
 }
