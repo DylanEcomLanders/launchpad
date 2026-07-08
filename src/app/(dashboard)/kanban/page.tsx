@@ -289,6 +289,35 @@ const PHASE_2_ORDER: PreviewPhase[] = ["development", "qa", "launch-testing"];
  * isn't rendered as a column. */
 const BOARD_PHASES = PREVIEW_PHASES.filter((p) => p.value !== "documents");
 
+/* ── Phase bands ──
+ * Presentation grouping ONLY: the ten underlying phases are untouched (every
+ * consumer of deliverable.phase keeps working). Columns render clustered under
+ * three phase headers with per-phase ownership; Tickets + Not started sit
+ * outside the bands (triage / backlog, not build flow). The design-to-dev
+ * handover gate is the door between the Design and Build bands. */
+const PHASE_BANDS: {
+  key: string;
+  label: string | null;
+  owner?: string;
+  phases: PreviewPhase[];
+}[] = [
+  { key: "tickets", label: null, phases: ["tickets"] },
+  { key: "backlog", label: null, phases: ["not-started"] },
+  { key: "p1", label: "Phase 1 · Strategy", owner: "Strategist", phases: ["strategy"] },
+  {
+    key: "p2",
+    label: "Phase 2 · Design",
+    owner: "Design pod",
+    phases: ["design", "internal-revisions", "external-revisions"],
+  },
+  {
+    key: "p3",
+    label: "Phase 3 · Build + Optimisation",
+    owner: "Dev pod",
+    phases: ["development", "qa", "launch-testing"],
+  },
+];
+
 const INTERNAL_BUFFER_DAYS = 3;
 
 function addCalendarDays(iso: string, days: number): string {
@@ -1893,9 +1922,10 @@ function BoardColumns(props: BoardColumnsProps) {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
-  return (
-    <div className="flex gap-0.5 justify-start overflow-x-auto pb-2 h-full">
-      {props.phases.map((phase) => {
+  /* Single-column renderer, behaviour untouched: drop target + header + cards
+   * + quick-add. Extracted from the old flat map so the bands below can group
+   * columns without touching any drag/drop logic. */
+  const renderColumn = (phase: (typeof PREVIEW_PHASES)[number]) => {
         const cards = props.cards[phase.value] ?? [];
         return (
           <div
@@ -2125,7 +2155,51 @@ function BoardColumns(props: BoardColumnsProps) {
             </div>
           </div>
         );
-      })}
+  };
+
+  /* Group the visible phases into bands, preserving order. Any phase not
+   * covered by PHASE_BANDS renders as its own unbanded group (safety net so a
+   * future phase never silently disappears from the board). */
+  const covered = new Set(PHASE_BANDS.flatMap((b) => b.phases));
+  const bands: { key: string; label: string | null; owner?: string; metas: (typeof PREVIEW_PHASES)[number][] }[] = [
+    ...PHASE_BANDS.map((b) => ({
+      key: b.key,
+      label: b.label,
+      owner: b.owner,
+      metas: props.phases.filter((p) => b.phases.includes(p.value)),
+    })),
+    ...props.phases
+      .filter((p) => !covered.has(p.value))
+      .map((p) => ({ key: p.value, label: null as string | null, owner: undefined, metas: [p] })),
+  ].filter((b) => b.metas.length > 0);
+
+  return (
+    <div className="flex gap-4 justify-start overflow-x-auto pb-2 h-full">
+      {bands.map((band) => (
+        <div key={band.key} className="flex h-full min-h-0 shrink-0 flex-col">
+          {/* Band header. Unbanded groups (Tickets / Not started) keep the
+           * same fixed-height strip, empty, so every column top aligns. */}
+          <div
+            className={`mb-1 flex h-7 shrink-0 items-end justify-between gap-3 px-2 pb-1.5 ${
+              band.label ? "border-b border-border-faint" : ""
+            }`}
+          >
+            {band.label && (
+              <>
+                <span className="text-3xs font-semibold uppercase tracking-wider text-subtle">
+                  {band.label}
+                </span>
+                {band.owner && (
+                  <span className="text-3xs text-subtle">{band.owner}</span>
+                )}
+              </>
+            )}
+          </div>
+          <div className="flex min-h-0 flex-1 gap-0.5">
+            {band.metas.map(renderColumn)}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
