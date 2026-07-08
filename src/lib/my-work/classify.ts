@@ -130,12 +130,13 @@ function developerLane(card: MockDeliverable): MyWorkLane {
 
 function strategistLane(card: MockDeliverable): MyWorkLane {
   if (card.phase === "strategy") return "todo";
+  if (card.phase === "test-backlog") return "todo"; // queued test ideas
   if (card.phase === "launch-testing") {
     if (card.testResult) return "done";
     if (card.liveStartedAt) return "in_progress";
     return "todo";
   }
-  /* Defensive fallback - strategist only scopes to those two phases. */
+  /* Defensive fallback - strategist only scopes to those phases. */
   return "todo";
 }
 
@@ -198,7 +199,9 @@ export function classifyClientsForUser(
           identity.croLeadPodIds.length > 0 &&
           project.podId &&
           identity.croLeadPodIds.includes(project.podId) &&
-          (card.phase === "strategy" || card.phase === "launch-testing");
+          (card.phase === "strategy" ||
+            card.phase === "test-backlog" ||
+            card.phase === "launch-testing");
 
         if (assignment) {
           const lane =

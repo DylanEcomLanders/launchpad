@@ -248,6 +248,7 @@ const PHASE_DAYS_BY_TURNAROUND: Record<
     "external-revisions": 3,
     development: 3,
     qa: 1,
+    "test-backlog": 0,
     "launch-testing": 1,
   },
   20: {
@@ -260,6 +261,7 @@ const PHASE_DAYS_BY_TURNAROUND: Record<
     "external-revisions": 3,
     development: 5,
     qa: 2,
+    "test-backlog": 0,
     "launch-testing": 1,
   },
   25: {
@@ -272,6 +274,7 @@ const PHASE_DAYS_BY_TURNAROUND: Record<
     "external-revisions": 3,
     development: 7,
     qa: 2,
+    "test-backlog": 0,
     "launch-testing": 2,
   },
 };
@@ -319,7 +322,7 @@ const PHASE_BANDS: {
     key: "p3",
     label: "Phase 3 · Optimisation",
     owner: "Strategist",
-    phases: ["launch-testing"],
+    phases: ["test-backlog", "launch-testing"],
   },
 ];
 
@@ -874,6 +877,7 @@ export default function KanbanPage() {
       "external-revisions": [],
       development: [],
       qa: [],
+      "test-backlog": [],
       "launch-testing": [],
     };
     for (const d of visibleDeliverables) {
@@ -1310,8 +1314,34 @@ export default function KanbanPage() {
     });
   }
 
-  function concludeTest(id: string, result: TestResult) {
+  function concludeTest(id: string, result: TestResult, followUpTitle?: string) {
     updateDeliverable(id, { testResult: result });
+    /* Close the optimisation loop: a concluded test can queue its follow-up
+     * straight into the Test queue on the same project, so the pipeline never
+     * empties silently. */
+    const title = followUpTitle?.trim();
+    if (title) {
+      setClients((prev) => {
+        const next = cloneClients(prev);
+        for (const c of next) {
+          for (const p of c.projects) {
+            const src = p.deliverables.find((x) => x.id === id);
+            if (!src) continue;
+            p.deliverables.push({
+              id: `d-${Date.now().toString(36)}`,
+              title,
+              category: src.category,
+              phase: "test-backlog",
+              hoursInPhase: 0,
+              phaseHistory: [{ phase: "test-backlog", enteredAt: MOCK_TODAY }],
+              notes: `Follow-up to "${src.title}" (${result.outcome}).`,
+            });
+            return next;
+          }
+        }
+        return next;
+      });
+    }
     setActiveId(null);
   }
 
@@ -1692,6 +1722,19 @@ export default function KanbanPage() {
             activeTurnaround={
               viewMode === "project" ? activeProject?.turnaroundDays : undefined
             }
+            bandOwners={(() => {
+              /* Real lead names in the band headers (project view only; other
+               * views mix pods so the static role labels stay). */
+              if (viewMode !== "project" || !activeProject) return undefined;
+              const pod = pods.find((p) => p.id === activeProject.podId);
+              return {
+                p1: pod?.designer
+                  ? `${STRATEGY_OWNER} + ${pod.designer}`
+                  : undefined,
+                p2: pod?.developer ?? undefined,
+                p3: STRATEGY_OWNER,
+              };
+            })()}
             draggingId={draggingId}
             dragOverCol={dragOverCol}
             addingToPhase={addingToPhase}
@@ -1772,7 +1815,7 @@ export default function KanbanPage() {
               });
             }
           }}
-          onConclude={(r) => concludeTest(activeDeliverable.id, r)}
+          onConclude={(r, followUp) => concludeTest(activeDeliverable.id, r, followUp)}
           onApproveInternal={() =>
             approveInternalRevisions(activeDeliverable.id)
           }
@@ -1886,6 +1929,9 @@ interface BoardColumnsProps {
   // / results mix projects with different turnarounds so the column header
   // falls back to the baseline expectation). Undefined treated as default 15.
   activeTurnaround?: TurnaroundDays;
+  /* Real lead names per band key (project view, derived from the active pod).
+   * Falls back to the band's static role label when absent. */
+  bandOwners?: Record<string, string | undefined>;
   draggingId: string | null;
   dragOverCol: PreviewPhase | null;
   addingToPhase: PreviewPhase | null;
@@ -2194,8 +2240,10 @@ function BoardColumns(props: BoardColumnsProps) {
                 <span className="text-3xs font-semibold uppercase tracking-wider text-subtle">
                   {band.label}
                 </span>
-                {band.owner && (
-                  <span className="text-3xs text-subtle">{band.owner}</span>
+                {(props.bandOwners?.[band.key] ?? band.owner) && (
+                  <span className="text-3xs text-subtle">
+                    {props.bandOwners?.[band.key] ?? band.owner}
+                  </span>
                 )}
               </>
             )}
@@ -3428,7 +3476,7 @@ interface DetailModalProps {
   onClose: () => void;
   onUpdate: (patch: Partial<MockDeliverable>) => void;
   onSubmitHandoff: (handoff: DesignHandoff) => void;
-  onConclude: (result: TestResult) => void;
+  onConclude: (result: TestResult, followUpTitle?: string) => void;
   onApproveInternal: () => void;
   onRequestRevisions: () => void;
   onUndoApprove: () => void;
@@ -3504,6 +3552,8 @@ function DetailModal({
   );
   const [confidenceDraft, setConfidenceDraft] = useState<string>("");
   const [notesDraft, setNotesDraft] = useState<string>(d.interimNotes ?? "");
+  /* Optional follow-up test queued into test-backlog on conclude. */
+  const [followUpDraft, setFollowUpDraft] = useState<string>("");
 
   const [interimNotesDraft, setInterimNotesDraft] = useState<string>(
     d.interimNotes ?? "",
@@ -3605,7 +3655,7 @@ function DetailModal({
       notes: notesDraft.trim() || undefined,
       screenshot: d.screenshot,
     };
-    onConclude(result);
+    onConclude(result, followUpDraft.trim() || undefined);
   }
 
   function saveInterim() {
@@ -4525,6 +4575,20 @@ function DetailModal({
                 rows={3}
                 className="w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
               />
+
+              {/* Close the loop: queue the next test while the learning is
+               * fresh. Optional; lands in Test queue on the same project. */}
+              <div>
+                <div className="text-3xs text-subtle mb-1.5">
+                  Queue a follow-up test (optional)
+                </div>
+                <input
+                  value={followUpDraft}
+                  onChange={(e) => setFollowUpDraft(e.target.value)}
+                  placeholder={`e.g. Iterate on "${d.title}"`}
+                  className="w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
+                />
+              </div>
 
               <div className="flex justify-end gap-2">
                 <button

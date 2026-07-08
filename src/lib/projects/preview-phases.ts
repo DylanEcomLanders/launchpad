@@ -12,6 +12,7 @@ export type PreviewPhase =
   | "external-revisions"
   | "development"
   | "qa"
+  | "test-backlog"
   | "launch-testing";
 
 export interface PreviewPhaseMeta {
@@ -23,14 +24,15 @@ export interface PreviewPhaseMeta {
 export const PREVIEW_PHASES: PreviewPhaseMeta[] = [
   { value: "tickets",             label: "Tickets",            color: "#EF4444" }, // triage column for client bugs + tweaks
   { value: "documents",           label: "Documents",          color: "#0D9488" }, // retainer reports, test plans, results writeups
-  { value: "not-started",         label: "Not started",        color: "#71717A" },
+  { value: "not-started",         label: "Backlog",            color: "#71717A" }, // intake queue before Phase 1
   { value: "strategy",            label: "Strategy",           color: "#0891B2" },
   { value: "design",              label: "Design",             color: "#7C3AED" },
-  { value: "internal-revisions",  label: "Internal Revisions", color: "#EA580C" },
-  { value: "external-revisions",  label: "External Revisions", color: "#DB2777" },
+  { value: "internal-revisions",  label: "Internal Review",    color: "#EA580C" }, // reviewer owns; drives revision counting
+  { value: "external-revisions",  label: "With client",        color: "#DB2777" }, // client owns the wait; 48h chase clock
   { value: "development",         label: "Development",        color: "#059669" },
   { value: "qa",                  label: "QA",                 color: "#0EA5E9" },
-  { value: "launch-testing",      label: "Launch & Testing",   color: "#A78BFA" },
+  { value: "test-backlog",        label: "Test queue",         color: "#A78BFA" }, // queued hypotheses/next tests; the optimisation pipeline
+  { value: "launch-testing",      label: "Live tests",         color: "#A78BFA" },
 ];
 
 const META = new Map(PREVIEW_PHASES.map((p) => [p.value, p]));
@@ -70,6 +72,7 @@ export const PREVIEW_THRESHOLDS: Record<PreviewPhase, PreviewThreshold> = {
   "external-revisions": { expectedHours: 16,  stuckHours: 32 },    // 2d internal → 4d client
   development:          { expectedHours: 32,  stuckHours: 48 },    // 4d internal → 6d client
   qa:                   { expectedHours: 8,   stuckHours: 24 },    // 1d internal → 3d client
+  "test-backlog":       { expectedHours: 40,  stuckHours: 80 },    // queue: 5d before nudge, 10d before stuck
   "launch-testing":     { expectedHours: 8,   stuckHours: 24 },    // 1d internal → 3d client
 };
 
@@ -272,6 +275,10 @@ export function activeAssigneeFor(phase: PreviewPhase | undefined, roles: RolePo
       // Secondary developer owns QA - primary built it, secondary tests it
       // (fresh eyes catch what the builder missed).
       return secondary(roles.secondaryDeveloper, roles.developer);
+    case "test-backlog":
+      // Queued test ideas: the strategist's pipeline. Assignee-wise the card
+      // shows whoever will pick the build up first.
+      return primary(roles.designer || roles.developer);
     default:
       // not-started or unset — show the primary owner who'll pick it up first
       return primary(roles.designer || roles.developer);
