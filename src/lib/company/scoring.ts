@@ -23,6 +23,7 @@
 import type { MockClient, MockDeliverable } from "@/lib/projects/mock-data";
 import type { Person, ScoringEntry, ScoringPeriod } from "./types";
 import { personByKanbanName } from "@/lib/people/resolver";
+import { isDeliveredPhase } from "@/lib/projects/preview-phases";
 
 /* Cap configuration from the contractor scheme doc. */
 export const PER_PAGE_CAP_BONUS_PCT = 25;
@@ -65,7 +66,7 @@ export function scoreDeliverableAsPerPage(
   /* Reaching launch-testing = delivered, ish. The phase_history entry
    * for launch-testing is when the build went live. */
   const launchEntry = (deliverable.phaseHistory || []).find(
-    (e) => e.phase === "launch-testing",
+    (e) => isDeliveredPhase(e.phase),
   );
   if (!launchEntry || !deliverable.dueDate) return entries;
 
@@ -184,7 +185,7 @@ export function scoreMonthAsRetainer(
         );
         if (!matchesPerson) continue;
         const launch = (d.phaseHistory || []).find(
-          (e) => e.phase === "launch-testing",
+          (e) => isDeliveredPhase(e.phase),
         );
         if (!launch) continue;
         const launchMonth = launch.enteredAt.slice(0, 7);
@@ -204,7 +205,7 @@ export function scoreMonthAsRetainer(
   const anyLate = tasksThisMonth.some((d) => {
     if (!d.dueDate) return false;
     const launch = (d.phaseHistory || []).find(
-      (e) => e.phase === "launch-testing",
+      (e) => isDeliveredPhase(e.phase),
     );
     return launch ? workingDaysBetween(d.dueDate, launch.enteredAt) >= 1 : false;
   });

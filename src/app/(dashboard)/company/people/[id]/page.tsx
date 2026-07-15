@@ -46,6 +46,7 @@ import {
 } from "@/lib/company/scoring";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { personByKanbanName } from "@/lib/people/resolver";
+import { isDeliveredPhase } from "@/lib/projects/preview-phases";
 import { inputClass, selectClass, textareaClass } from "@/lib/form-styles";
 import { initials, deptColor } from "@/lib/company/ui";
 import { Table, THead, TBody, TR, TH, TD, Num, Badge } from "@/components/ui";
@@ -1395,7 +1396,7 @@ function ScoringTab({
         for (const p of c.projects) {
           for (const d of p.deliverables) {
             const launch = (d.phaseHistory || []).find(
-              (e) => e.phase === "launch-testing",
+              (e) => isDeliveredPhase(e.phase),
             );
             if (!launch) continue;
             /* Is this person on the card? */
@@ -1842,7 +1843,7 @@ function KpisTab({ person }: { person: Person }) {
             continue;
           }
           const launch = (d.phaseHistory || []).find(
-            (e) => e.phase === "launch-testing",
+            (e) => isDeliveredPhase(e.phase),
           );
           if (launch) {
             delivered += 1;

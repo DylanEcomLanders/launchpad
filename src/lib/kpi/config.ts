@@ -9,9 +9,8 @@
  *  within a session; same value SSR + client, so no hydration mismatch). */
 export const KPI_NOW: string = new Date().toISOString().slice(0, 10);
 
-/** Phase that marks a deliverable as delivered/live. Reaching it (an entry in
- *  phaseHistory) = delivered; the entry date is the delivery date. */
-export const DELIVERED_PHASE = "launch-testing";
+/** Delivered/live phases — single source in the phase model. */
+export { DELIVERED_PHASES } from "@/lib/projects/preview-phases";
 
 /** On-time-rate colour bands (percent). */
 export const RATE_GOOD = 85;

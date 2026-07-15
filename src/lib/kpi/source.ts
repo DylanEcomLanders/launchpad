@@ -11,7 +11,7 @@
  */
 
 import type { MockClient, MockPod } from "@/lib/projects/mock-data";
-import { DELIVERED_PHASE } from "./config";
+import { DELIVERED_PHASES } from "./config";
 import type { DeliveryItem } from "./types";
 
 export function getDeliveryItems(
@@ -27,9 +27,11 @@ export function getDeliveryItems(
 
       for (const d of project.deliverables) {
         const history = d.phaseHistory ?? [];
-        // Delivery date = when it first entered Launch & Testing.
-        const deliveredEntry = history.find((h) => h.phase === DELIVERED_PHASE);
-        const isDelivered = !!deliveredEntry || d.phase === DELIVERED_PHASE;
+        // Delivery date = when it first reached a delivered phase (Done/Launch,
+        // or legacy Live tests). Earliest such history entry wins.
+        const delivered = new Set<string>(DELIVERED_PHASES);
+        const deliveredEntry = history.find((h) => delivered.has(h.phase));
+        const isDelivered = !!deliveredEntry || delivered.has(d.phase);
 
         out.push({
           id: d.id,

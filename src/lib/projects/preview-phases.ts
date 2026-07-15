@@ -49,6 +49,16 @@ export function previewPhaseMeta(p: PreviewPhase | string | undefined): PreviewP
   return META.get(p as PreviewPhase) ?? null;
 }
 
+/* Delivered/live signal — reaching any of these (a phaseHistory entry) means the
+ * page shipped. `done`/`launch` are the new delivery-board terminals; the legacy
+ * `launch-testing` is kept so pre-restructure data still reads as delivered.
+ * Single source: KPI, company scoring, and the people page all use this. */
+export const DELIVERED_PHASES: PreviewPhase[] = ["done", "launch", "launch-testing"];
+const DELIVERED_SET = new Set<string>(DELIVERED_PHASES);
+export function isDeliveredPhase(p: PreviewPhase | string | undefined): boolean {
+  return !!p && DELIVERED_SET.has(p);
+}
+
 // ── Thresholds ──────────────────────────────────────────────────────────────
 
 export interface PreviewThreshold {
