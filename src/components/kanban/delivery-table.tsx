@@ -34,10 +34,10 @@ type Band = "tickets" | "intake" | "p1" | "p2" | "p3";
 
 const BANDS: { key: Band; label: string; color: string }[] = [
   { key: "tickets", label: "Tickets", color: "#EF4444" },
-  { key: "intake", label: "Intake", color: "#71717A" },
+  { key: "intake", label: "Setup", color: "#71717A" },
   { key: "p1", label: "Phase 1 · Design", color: "#7C3AED" },
   { key: "p2", label: "Phase 2 · Development", color: "#0F9D6C" },
-  { key: "p3", label: "Phase 3 · Optimisation", color: "#A78BFA" },
+  { key: "p3", label: "Phase 3 · Approval + Launch", color: "#16A34A" },
 ];
 
 function bandForPhase(p: PreviewPhase): Band | null {
@@ -54,9 +54,11 @@ function bandForPhase(p: PreviewPhase): Band | null {
     case "development":
     case "qa":
       return "p2";
-    case "test-backlog":
-    case "launch-testing":
+    case "client-approval":
+    case "launch":
+    case "done":
       return "p3";
+    // test-backlog + launch-testing have left the delivery board (Results Engine)
     default:
       return null;
   }

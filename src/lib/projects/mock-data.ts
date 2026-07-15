@@ -439,6 +439,8 @@ export type SubtaskStatus = "locked" | "available" | "done";
 const CLIENT_APPROVED_PHASES = new Set<PreviewPhase>([
   "development",
   "qa",
+  "launch",
+  "done",
   "test-backlog",
   "launch-testing",
 ]);
@@ -509,7 +511,8 @@ export const SUBTASK_ROLE_LABEL: Record<SubtaskRole, string> = {
 export function subtaskGroupForPhase(p: PreviewPhase): SubtaskGroup {
   if (p === "design" || p === "internal-revisions" || p === "external-revisions")
     return "design";
-  if (p === "development" || p === "qa") return "development";
+  if (p === "development" || p === "qa" || p === "client-approval" || p === "launch" || p === "done")
+    return "development";
   if (p === "test-backlog" || p === "launch-testing") return "optimisation";
   return "strategy"; // strategy / tickets / not-started / documents
 }

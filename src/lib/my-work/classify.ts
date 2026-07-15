@@ -119,8 +119,12 @@ function designerLane(card: MockDeliverable): MyWorkLane {
   if (
     phase === "development" ||
     phase === "qa" ||
+    phase === "client-approval" ||
+    phase === "launch" ||
+    phase === "done" ||
     phase === "launch-testing"
   ) {
+    // Out of the designer's hands once it's in build / approval / launch.
     return "done";
   }
   return "todo";
@@ -132,7 +136,9 @@ function developerLane(card: MockDeliverable): MyWorkLane {
   if (phase === "qa") {
     return card.revisionRequested ? "in_progress" : "done";
   }
-  if (phase === "launch-testing") return "done";
+  if (phase === "launch") return "in_progress"; // dev owns go-live
+  if (phase === "client-approval") return "done"; // out with the client
+  if (phase === "done" || phase === "launch-testing") return "done";
   return "todo";
 }
 
