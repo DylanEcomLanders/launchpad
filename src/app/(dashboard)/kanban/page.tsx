@@ -283,6 +283,9 @@ const PHASE_DAYS_BY_TURNAROUND: Record<
     "external-revisions": 3,
     development: 3,
     qa: 1,
+    "client-approval": 1,
+    launch: 0,
+    done: 0,
     "test-backlog": 0,
     "launch-testing": 1,
   },
@@ -296,6 +299,9 @@ const PHASE_DAYS_BY_TURNAROUND: Record<
     "external-revisions": 3,
     development: 5,
     qa: 2,
+    "client-approval": 1,
+    launch: 0,
+    done: 0,
     "test-backlog": 0,
     "launch-testing": 1,
   },
@@ -309,6 +315,9 @@ const PHASE_DAYS_BY_TURNAROUND: Record<
     "external-revisions": 3,
     development: 7,
     qa: 2,
+    "client-approval": 1,
+    launch: 0,
+    done: 0,
     "test-backlog": 0,
     "launch-testing": 2,
   },
@@ -319,13 +328,17 @@ const PHASE_1_ORDER: PreviewPhase[] = [
   "design",
   "internal-revisions",
 ];
-const PHASE_2_ORDER: PreviewPhase[] = ["development", "qa", "launch-testing"];
+const PHASE_2_ORDER: PreviewPhase[] = ["development", "qa", "launch"];
 
 /* Board columns exclude Documents: retainer reports / decks / monthly breakdowns
  * now live in the Clients Command Centre, not on the delivery board. The phase
  * stays in the model so existing data + phase logic are unaffected; it just
  * isn't rendered as a column. */
-const BOARD_PHASES = PREVIEW_PHASES.filter((p) => p.value !== "documents");
+/* The Delivery board's columns: the linear build flow, ending at Done.
+ * `documents` is hidden; `test-backlog` + `launch-testing` have LEFT the board
+ * for the Results Engine (optimisation is a separate surface). */
+const OFF_BOARD_PHASES = new Set<PreviewPhase>(["documents", "test-backlog", "launch-testing"]);
+const BOARD_PHASES = PREVIEW_PHASES.filter((p) => !OFF_BOARD_PHASES.has(p.value));
 
 /* Phase value → human label, for the activity feed (avoids showing raw
  * enum values like "internal-revisions"). */
@@ -381,9 +394,9 @@ const PHASE_BANDS: {
   },
   {
     key: "p3",
-    label: "Phase 3 · Optimisation",
-    owner: "Strategist",
-    phases: ["test-backlog", "launch-testing"],
+    label: "Phase 3 · Approval + Launch",
+    owner: "Client + Dev pod",
+    phases: ["client-approval", "launch", "done"],
   },
 ];
 
@@ -1031,6 +1044,9 @@ export default function KanbanPage() {
       "external-revisions": [],
       development: [],
       qa: [],
+      "client-approval": [],
+      launch: [],
+      done: [],
       "test-backlog": [],
       "launch-testing": [],
     };

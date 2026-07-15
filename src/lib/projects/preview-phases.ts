@@ -5,13 +5,17 @@
 export type PreviewPhase =
   | "tickets"
   | "documents"
-  | "not-started"
+  | "not-started"       // Delivery board label: "Setup"
   | "strategy"
   | "design"
   | "internal-revisions"
   | "external-revisions"
   | "development"
-  | "qa"
+  | "qa"                // Delivery board label: "Internal QA"
+  | "client-approval"   // NEW — second client-hold before go-live (paused clock)
+  | "launch"            // NEW — go-live; records the control benchmark + fires the seam
+  | "done"              // NEW — delivered/live; the delivery job ends here
+  // ── leave the delivery board for the Results Engine (kept for transition) ──
   | "test-backlog"
   | "launch-testing";
 
@@ -24,14 +28,18 @@ export interface PreviewPhaseMeta {
 export const PREVIEW_PHASES: PreviewPhaseMeta[] = [
   { value: "tickets",             label: "Tickets",            color: "#EF4444" }, // triage column for client bugs + tweaks
   { value: "documents",           label: "Documents",          color: "#0D9488" }, // retainer reports, test plans, results writeups
-  { value: "not-started",         label: "Intake",             color: "#71717A" }, // intake queue before Phase 1
+  { value: "not-started",         label: "Setup",              color: "#71717A" }, // pod assigned, scope confirmed, fields filled
   { value: "strategy",            label: "Strategy",           color: "#0891B2" },
   { value: "design",              label: "Design",             color: "#7C3AED" },
-  { value: "internal-revisions",  label: "Internal Review",    color: "#EA580C" }, // reviewer owns; drives revision counting
-  { value: "external-revisions",  label: "With client",        color: "#DB2777" }, // client owns the wait; 48h chase clock
+  { value: "internal-revisions",  label: "Internal Revisions", color: "#EA580C" }, // head designer signs off; the design QA
+  { value: "external-revisions",  label: "External Revisions", color: "#DB2777" }, // client owns the wait; clock paused
   { value: "development",         label: "Development",        color: "#059669" },
-  { value: "qa",                  label: "QA",                 color: "#0EA5E9" },
-  { value: "test-backlog",        label: "Test queue",         color: "#A78BFA" }, // queued hypotheses/next tests; the optimisation pipeline
+  { value: "qa",                  label: "Internal QA",        color: "#0EA5E9" }, // head developer signs off; the dev QA
+  { value: "client-approval",     label: "Client Approval",    color: "#E11D48" }, // second client-hold; clock paused
+  { value: "launch",             label: "Launch",              color: "#16A34A" }, // go-live; control benchmark + seam
+  { value: "done",               label: "Done",                color: "#6B7280" }, // delivered/live; optimisation moves off-board
+  // ── off the delivery board; live on the Results Engine (transition-only) ──
+  { value: "test-backlog",        label: "Test queue",         color: "#A78BFA" },
   { value: "launch-testing",      label: "Live tests",         color: "#A78BFA" },
 ];
 
@@ -65,15 +73,18 @@ export const WORKING_HOURS_PER_DAY = 8;
 export const PREVIEW_THRESHOLDS: Record<PreviewPhase, PreviewThreshold> = {
   tickets:              { expectedHours: 8,   stuckHours: 24 },    // 1d internal → 3d client
   documents:            { expectedHours: 16,  stuckHours: 40 },    // 2d internal → 5d client; scheduled work
-  "not-started":        { expectedHours: 0,   stuckHours: 0 },     // not timed
+  "not-started":        { expectedHours: 8,   stuckHours: 24 },    // Setup: 1d internal → 3d
   strategy:             { expectedHours: 16,  stuckHours: 32 },    // 2d internal → 4d client
   design:               { expectedHours: 32,  stuckHours: 48 },    // 4d internal → 6d client
   "internal-revisions": { expectedHours: 8,   stuckHours: 24 },    // 1d internal → 3d client
   "external-revisions": { expectedHours: 16,  stuckHours: 32 },    // 2d internal → 4d client
   development:          { expectedHours: 32,  stuckHours: 48 },    // 4d internal → 6d client
-  qa:                   { expectedHours: 8,   stuckHours: 24 },    // 1d internal → 3d client
-  "test-backlog":       { expectedHours: 40,  stuckHours: 80 },    // queue: 5d before nudge, 10d before stuck
-  "launch-testing":     { expectedHours: 8,   stuckHours: 24 },    // 1d internal → 3d client
+  qa:                   { expectedHours: 8,   stuckHours: 24 },    // Internal QA: 1d → 3d
+  "client-approval":    { expectedHours: 16,  stuckHours: 32 },    // client-hold; clock paused in-app
+  launch:               { expectedHours: 8,   stuckHours: 24 },    // go-live day
+  done:                 { expectedHours: 0,   stuckHours: 0 },     // terminal; not timed
+  "test-backlog":       { expectedHours: 40,  stuckHours: 80 },    // off-board (Results Engine)
+  "launch-testing":     { expectedHours: 8,   stuckHours: 24 },    // off-board (Results Engine)
 };
 
 export type StuckStatus = "on-track" | "approaching" | "stuck";
@@ -262,13 +273,16 @@ export function activeAssigneeFor(phase: PreviewPhase | undefined, roles: RolePo
       // make changes. Primary owns the fix.
       return primary(roles.designer);
     case "external-revisions":
-      // External Rev = client has it. Secondary designer babysits + handles
-      // client-driven amends to keep pressure off the primary's pipeline.
+    case "client-approval":
+      // Client-hold columns. Secondary designer babysits + chases the client to
+      // keep pressure off the primary's pipeline (PM-as-chaser lands with the
+      // central-role model).
       return secondary(roles.secondaryDesigner, roles.designer);
     case "strategy":
     case "design":
       return primary(roles.designer);
     case "development":
+    case "launch":
     case "launch-testing":
       return primary(roles.developer);
     case "qa":
