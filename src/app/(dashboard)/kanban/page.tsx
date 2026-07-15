@@ -28,6 +28,8 @@ import {
   Squares2X2Icon,
   AdjustmentsHorizontalIcon,
   CheckIcon,
+  ClockIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useCurrentUser, useRole } from "@/components/auth-gate";
@@ -56,11 +58,44 @@ import {
 } from "@/lib/projects/preview-phases";
 import { Field, Pill, ProjectCard, Segmented } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import { DeliveryTableView } from "@/components/kanban/delivery-table";
+import type { KanbanActivity } from "@/lib/kanban/data";
 import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
+  activeTestRun,
+  testRunsFor,
+  mirrorTestRuns,
+  subtaskStatuses,
+  subtaskAssigneeName,
+  subtaskGroupForPhase,
+  seedSubtasksForGroup,
+  SUBTASK_TEMPLATE,
+  subtaskDeadline,
+  SUBTASK_ROLE_LABEL,
+  SUBTASK_GROUP_ORDER,
+  SUBTASK_GROUP_LABEL,
+  tierConfig,
+  tokenCostForSize,
+  poolForTier,
+  tierIsOneOff,
+  projectTypeForTier,
+  currentCycleMonthIndex,
+  findOpenCycle,
+  makeCycle,
+  cycleReadout,
+  type TierName,
+  type CardSize,
+  type EngagementStatus,
+  type SubtaskGroup,
   type DesignHandoff,
+  type StrategyHandoff,
+  type DevHandoff,
+  type TestRun,
+  type Subtask,
+  type SubtaskRole,
+  type SubtaskUnlock,
   type MockDeliverable,
   type MockClient,
   type MockPod,
@@ -292,6 +327,32 @@ const PHASE_2_ORDER: PreviewPhase[] = ["development", "qa", "launch-testing"];
  * isn't rendered as a column. */
 const BOARD_PHASES = PREVIEW_PHASES.filter((p) => p.value !== "documents");
 
+/* Phase value → human label, for the activity feed (avoids showing raw
+ * enum values like "internal-revisions"). */
+const PHASE_LABEL: Record<string, string> = Object.fromEntries(
+  PREVIEW_PHASES.map((p) => [p.value, p.label]),
+);
+function phaseLabel(v?: string): string {
+  if (!v) return "";
+  return PHASE_LABEL[v] ?? v;
+}
+
+/* Coarse "x ago" for the activity feed. Uses real wall-clock time (the
+ * activity log stamps Date.now(), not the board's MOCK_TODAY). */
+function relativeTime(iso: string): string {
+  const secs = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  if (secs < 60) return "just now";
+  const mins = Math.round(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  const wks = Math.round(days / 7);
+  if (wks < 5) return `${wks}w ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 /* ── Phase bands ──
  * Presentation grouping ONLY: the ten underlying phases are untouched (every
  * consumer of deliverable.phase keeps working). Columns render clustered under
@@ -473,6 +534,16 @@ const DELIVERABLE_CATEGORIES = [
   "Other",
 ] as const;
 
+/* Card sizes for the token-meter quick-add selector. Cost is derived via
+ * tokenCostForSize - the label just shows the size; the number beside it is
+ * the live cost. A test is its own card (`test`, 2 tokens), never bundled. */
+const SIZE_OPTIONS: { value: CardSize; label: string }[] = [
+  { value: "core", label: "Core" },
+  { value: "secondary", label: "2nd" },
+  { value: "tertiary", label: "3rd" },
+  { value: "test", label: "Test" },
+];
+
 interface ContextDeliverable extends MockDeliverable {
   clientName: string;
   clientId: string;
@@ -590,7 +661,8 @@ export default function KanbanPage() {
    * localStorage (or MOCK_CLIENTS on cold load); the cloud pull overlays
    * once it returns. Mutations through setClients / setPods mirror to
    * Supabase automatically. */
-  const { clients, setClients, pods, setPods } = useKanbanData();
+  const { clients, setClients, pods, setPods, cycles, setCycles, activity, logActivity, loading } =
+    useKanbanData();
   /* Members (team role) get a read-only-ish board: they can open cards
    * and add content (notes, Figma, strategy brief, screenshots) but
    * can't move cards, change due dates, or tick things through phases.
@@ -598,6 +670,20 @@ export default function KanbanPage() {
   const role = useRole();
   const canManage = role !== "team";
   const [viewMode, setViewMode] = useState<ViewMode>("project");
+  /* Board vs Table: two reads of the same delivery data. Board is the kanban;
+   * Table is the phase-banded deliverable list. Top-level switch, above the
+   * board's own project/pod scoping. */
+  const [layoutView, setLayoutView] = useState<"board" | "table">("board");
+  /* Deep-link into Results from the sidebar (?view=results). Read once on mount;
+   * no Suspense boundary needed vs useSearchParams. */
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("view") === "results"
+    ) {
+      setViewMode("results");
+    }
+  }, []);
   /* Quality-of-life search: filters cards across the active view by
    * title / client name / assignee. Cleared with Esc when focused.
    * Press / from anywhere to jump focus into it. */
@@ -622,6 +708,20 @@ export default function KanbanPage() {
     if (typeof window === "undefined") return;
     localStorage.setItem("launchpad-kanban-density", density);
   }, [density]);
+  /* Board layout. "full" = every phase its own column (11 across). "condensed"
+   * = one column per pipeline stage (band), with each card's exact phase shown
+   * as a pill - fits a laptop screen. Persisted like density; "full" default so
+   * nothing the team already knows changes unless they opt in. */
+  const [layout, setLayout] = useState<"full" | "condensed">("condensed");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("launchpad-kanban-layout");
+    if (saved === "full" || saved === "condensed") setLayout(saved);
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("launchpad-kanban-layout", layout);
+  }, [layout]);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   /* Keyboard shortcuts. "/" from anywhere → focus search. Esc while
@@ -728,6 +828,9 @@ export default function KanbanPage() {
     useState<TicketCategory>("ticket");
   const [newDeliverableCategoryDraft, setNewDeliverableCategoryDraft] =
     useState<string>("");
+  /* Card size for the quick-add form on a metered retainer project. Drives the
+   * token cost stamped on the new card (cost itself is always derived). */
+  const [newSizeDraft, setNewSizeDraft] = useState<CardSize>("core");
 
   // Onboarding brief is now structured Q&A sourced from the client's
   // onboarding submission. Read-only in the kanban; editing happens in the
@@ -745,6 +848,53 @@ export default function KanbanPage() {
   const activeProject =
     activeClient?.projects.find((p) => p.id === projectId) ??
     activeClient?.projects[0];
+
+  /* ── Token meter (commercial layer) ────────────────────────────────────
+   * A project is metered when it carries a tier with a pool (a retainer, not a
+   * one-off) AND its engagement is active. Metered projects find-or-create one
+   * cycle per calendar month. Everything here is PASSIVE: it measures + shows,
+   * it never gates card creation or a move. Non-retainers have no cycle + no
+   * meter (they fall through as undefined). */
+  const meterTier: TierName | undefined = activeProject?.tier;
+  const isMeteredRetainer =
+    !!meterTier &&
+    !tierIsOneOff(meterTier) &&
+    activeProject?.engagementStatus === "active";
+  /* Absolute calendar-month index for the current cycle. Stable per session so
+   * the readout + find-or-create key on the same month. */
+  const currentMonthIndex = useMemo(() => currentCycleMonthIndex(), []);
+  const activeCycle =
+    activeProject && isMeteredRetainer
+      ? findOpenCycle(activeProject.id, currentMonthIndex, cycles)
+      : undefined;
+  const activeCycleReadout = useMemo(
+    () =>
+      activeProject && activeCycle
+        ? cycleReadout(activeCycle, activeProject.deliverables)
+        : undefined,
+    [activeProject, activeCycle],
+  );
+
+  /* Open a metered retainer → ensure this month's cycle exists so the meter
+   * renders straight away (even before any card is added). Guarded so it only
+   * mints once per project+month. */
+  useEffect(() => {
+    if (!activeProject || !isMeteredRetainer || !meterTier) return;
+    if (findOpenCycle(activeProject.id, currentMonthIndex, cycles)) return;
+    const isFirst = !cycles.some((c) => c.projectId === activeProject.id);
+    const cyc = makeCycle(
+      activeProject.id,
+      meterTier,
+      currentMonthIndex,
+      isFirst,
+    );
+    setCycles((prev) =>
+      findOpenCycle(activeProject.id, currentMonthIndex, prev)
+        ? prev
+        : [...prev, cyc],
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProject?.id, isMeteredRetainer, meterTier, currentMonthIndex, cycles]);
 
   /* Look up table: podId → pod (with current roster). Pods are
    * keyed by id and the pods array already has v2 taking priority
@@ -811,6 +961,10 @@ export default function KanbanPage() {
    * developer / secondaryDeveloper free-text fields. */
   const currentUser = useCurrentUser();
   const meName = currentUser?.name?.trim().toLowerCase() || "";
+  /* Who gets attributed in the activity log. Falls back to a neutral
+   * label when the board is opened without a resolved identity. */
+  const actorName = currentUser?.name?.trim() || "Someone";
+  const [activityOpen, setActivityOpen] = useState(false);
 
   const visibleDeliverables: ContextDeliverable[] = useMemo(() => {
     // Completed tickets + concluded tests fall off the active board. Tickets
@@ -947,23 +1101,36 @@ export default function KanbanPage() {
      * submitted design handover. The submit-handover flow passes
      * bypassHandoffGate because it stamps the handover and moves in the same
      * tick, before state has re-rendered. */
-    if (!opts?.bypassHandoffGate && PHASE_2_ORDER.includes(targetPhase)) {
+    if (!opts?.bypassHandoffGate) {
       const current = allDeliverables.find((d) => d.id === id);
-      if (
-        current &&
-        !PHASE_2_ORDER.includes(current.phase) &&
-        !current.designHandoff?.submittedAt
-      ) {
-        window.dispatchEvent(
-          new CustomEvent("kanban-gate-blocked", {
-            detail: {
-              message: `"${current.title}" needs its design handover (Figma, Loom, fonts) submitted before it can enter the build. Open the card to complete it.`,
-            },
-          }),
-        );
-        return;
+      if (current) {
+        function blockGate(message: string) {
+          window.dispatchEvent(
+            new CustomEvent("kanban-gate-blocked", { detail: { message } }),
+          );
+        }
+        // Design gate: a card entering any Phase 2 build phase from outside
+        // Phase 2 must carry a submitted design handover. This is the only
+        // handover the playbook gates on - the "Development Handover Complete"
+        // step in the Design phase. Strategy and Development progress freely
+        // via their checklists; only the design-to-build handover is a gate.
+        if (
+          PHASE_2_ORDER.includes(targetPhase) &&
+          !PHASE_2_ORDER.includes(current.phase) &&
+          !current.designHandoff?.submittedAt
+        ) {
+          blockGate(
+            `"${current.title}" needs its design handover (Figma, Loom, fonts) submitted before it can enter the build. Open the card to complete it.`,
+          );
+          return;
+        }
       }
     }
+    /* Snapshot the card BEFORE the move so the activity log can record the
+     * from-phase + names. Read from allDeliverables (carries client/project
+     * names). Logged after setClients, gated on the same no-op rules the
+     * updater uses, so a same-phase drop or a ticket move logs nothing. */
+    const beforeMove = allDeliverables.find((d) => d.id === id);
     setClients((prev) => {
       const next = cloneClients(prev);
       for (const c of next) {
@@ -1029,6 +1196,12 @@ export default function KanbanPage() {
           }).name;
           d.phase = targetPhase;
           d.hoursInPhase = 0;
+          // Entering a phase seeds that group's subtask template (no-op if the
+          // group already carries any subtasks).
+          d.subtasks = seedSubtasksForGroup(
+            d.subtasks,
+            subtaskGroupForPhase(targetPhase),
+          );
           const stamp = MOCK_TODAY;
           const history = d.phaseHistory ? [...d.phaseHistory] : [];
           history.push({ phase: targetPhase, enteredAt: stamp });
@@ -1047,12 +1220,34 @@ export default function KanbanPage() {
       }
       return next;
     });
+    /* Log the move. Skip no-ops (same phase), ticket in/out (handled in
+     * place), and bypass-gate moves (the handover submit logs its own
+     * entry, so we don't double up with a redundant "moved to Development"). */
+    if (
+      beforeMove &&
+      !opts?.bypassHandoffGate &&
+      beforeMove.phase !== targetPhase &&
+      beforeMove.phase !== "tickets" &&
+      targetPhase !== "tickets"
+    ) {
+      logActivity({
+        actor: actorName,
+        action: "moved",
+        cardId: id,
+        cardTitle: beforeMove.title,
+        clientName: beforeMove.clientName,
+        projectName: beforeMove.projectName,
+        fromPhase: beforeMove.phase,
+        toPhase: targetPhase,
+      });
+    }
   }
 
   function addDeliverable(
     phase: PreviewPhase,
     title: string,
     category?: string,
+    size?: CardSize,
   ) {
     /* Title can't be empty - that's a no-op, no need to nag. */
     if (!title.trim()) return;
@@ -1086,8 +1281,35 @@ export default function KanbanPage() {
       setProjectId(newProjectId);
       /* Defer the deliverable add by one tick so React picks up the new
        * project from the state update before activeProject re-derives. */
-      setTimeout(() => addDeliverable(phase, title, category), 0);
+      setTimeout(() => addDeliverable(phase, title, category, size), 0);
       return;
+    }
+    /* Token meter: on a metered retainer, stamp the card with its size + the
+     * project's current open cycle so it counts against the pool. Find-or-create
+     * the cycle here too (robust if the open effect hasn't fired yet). This is
+     * measurement only - it NEVER blocks the card being created. */
+    let cycleIdToStamp: string | undefined;
+    let sizeToStamp: CardSize | undefined;
+    if (isMeteredRetainer && meterTier) {
+      sizeToStamp = size ?? "core";
+      const existing = findOpenCycle(activeProject.id, currentMonthIndex, cycles);
+      if (existing) {
+        cycleIdToStamp = existing.id;
+      } else {
+        const isFirst = !cycles.some((c) => c.projectId === activeProject.id);
+        const cyc = makeCycle(
+          activeProject.id,
+          meterTier,
+          currentMonthIndex,
+          isFirst,
+        );
+        cycleIdToStamp = cyc.id;
+        setCycles((prev) =>
+          findOpenCycle(activeProject.id, currentMonthIndex, prev)
+            ? prev
+            : [...prev, cyc],
+        );
+      }
     }
     setClients((prev) => {
       const next = cloneClients(prev);
@@ -1109,10 +1331,20 @@ export default function KanbanPage() {
         secondaryDesigner: pod?.secondaryDesigner,
         developer: pod?.developer,
         secondaryDeveloper: pod?.secondaryDeveloper,
+        size: sizeToStamp,
+        cycleId: cycleIdToStamp,
       });
       // New card = brand-new assignment for whoever owns this phase.
       notifyAssigneeChange(id, phase);
       return next;
+    });
+    logActivity({
+      actor: actorName,
+      action: "created",
+      cardTitle: title.trim(),
+      clientName: activeClient.name,
+      projectName: activeProject.name,
+      toPhase: phase,
     });
     setNewTitleDraft("");
     setNewCategoryDraft("ticket");
@@ -1169,6 +1401,14 @@ export default function KanbanPage() {
       c.projects = c.projects.filter((p) => p.id !== projectId);
       return next;
     });
+    logActivity({
+      actor: actorName,
+      action: "deleted",
+      cardTitle: project.name,
+      clientName: client?.name,
+      projectName: project.name,
+      detail: "project",
+    });
     if (activeProject?.id === projectId) {
       const remaining = (client?.projects ?? []).filter((p) => p.id !== projectId);
       setProjectId(remaining[0]?.id ?? "");
@@ -1191,6 +1431,13 @@ export default function KanbanPage() {
     });
     if (!ok) return;
     setClients((prev) => prev.filter((c) => c.id !== clientId));
+    logActivity({
+      actor: actorName,
+      action: "deleted",
+      cardTitle: client.name,
+      clientName: client.name,
+      detail: "client",
+    });
     if (activeClient?.id === clientId) {
       const remaining = clients.filter((c) => c.id !== clientId);
       setClientId(remaining[0]?.id ?? "");
@@ -1203,9 +1450,20 @@ export default function KanbanPage() {
     type: ProjectType;
     turnaroundDays?: TurnaroundDays;
     engagementDays?: EngagementDays;
+    tier?: TierName;
+    mrr?: number;
+    engagementStatus?: EngagementStatus;
   }) {
-    const { name, type, turnaroundDays, engagementDays } = input;
+    const { name, turnaroundDays, engagementDays, tier, mrr } = input;
     if (!name.trim() || !activeClient) return;
+    /* Type derives from the tier when one is set (one_off => build); otherwise
+     * fall back to the explicit type from the form. */
+    const type: ProjectType = tier ? projectTypeForTier(tier) : input.type;
+    /* A retainer with a pool defaults to an active engagement so the meter
+     * lights up immediately; caller can override. One-off tiers stay unset. */
+    const engagementStatus: EngagementStatus | undefined =
+      input.engagementStatus ??
+      (tier && !tierIsOneOff(tier) ? "active" : undefined);
     const newId = `proj-${Date.now()}`;
     setClients((prev) => {
       const next = cloneClients(prev);
@@ -1235,6 +1493,9 @@ export default function KanbanPage() {
         // Builds anchor every Phase 1 deadline to startDate. Retainers track
         // dates per-deliverable so they don't need it.
         startDate: type === "build" ? MOCK_TODAY : undefined,
+        tier,
+        mrr,
+        engagementStatus,
         deliverables: seededDeliverables,
       });
       return next;
@@ -1316,6 +1577,18 @@ export default function KanbanPage() {
 
   function concludeTest(id: string, result: TestResult, followUpTitle?: string) {
     updateDeliverable(id, { testResult: result });
+    const concluded = allDeliverables.find((x) => x.id === id);
+    if (concluded) {
+      logActivity({
+        actor: actorName,
+        action: "concluded_test",
+        cardId: id,
+        cardTitle: concluded.title,
+        clientName: concluded.clientName,
+        projectName: concluded.projectName,
+        detail: result.outcome,
+      });
+    }
     /* Close the optimisation loop: a concluded test can queue its follow-up
      * straight into the Test queue on the same project, so the pipeline never
      * empties silently. */
@@ -1417,6 +1690,16 @@ export default function KanbanPage() {
       }
       return next;
     });
+    if (d) {
+      logActivity({
+        actor: actorName,
+        action: "deleted",
+        cardId: id,
+        cardTitle: d.title,
+        clientName: d.clientName,
+        projectName: d.projectName,
+      });
+    }
     setActiveId(null);
   }
 
@@ -1518,6 +1801,9 @@ export default function KanbanPage() {
   const activePod = pods.find((p) => p.id === podId);
 
   function headerTitle(): { bold: string; light: string } {
+    if (layoutView === "table") {
+      return { bold: "Deliverables", light: "" };
+    }
     if (viewMode === "results") {
       return { bold: "Results Library", light: "" };
     }
@@ -1566,8 +1852,45 @@ export default function KanbanPage() {
                 </span>
               )}
             </p>
+            {/* Token meter: one passive readout for an active retainer's monthly
+                pool. Derived, no hand-maths. Never gates - an exhausted pool
+                shows overage, it never blocks work. Commercial data is admin/CRO
+                only: a designer (member) never sees it. */}
+            {canManage && layoutView === "board" && viewMode === "project" && meterTier && activeCycleReadout && (
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-2xs font-medium tabular-nums">
+                <span className="capitalize text-foreground">{meterTier}</span>
+                <span className="text-subtle">·</span>
+                <span className="text-muted">
+                  {activeCycleReadout.poolTotal} tokens
+                </span>
+                <span className="text-subtle">·</span>
+                <span className="text-muted">
+                  {activeCycleReadout.consumed} spent
+                </span>
+                <span className="text-subtle">·</span>
+                <span
+                  className={
+                    activeCycleReadout.remaining <= 0
+                      ? "font-semibold text-status-late"
+                      : "text-muted"
+                  }
+                >
+                  {activeCycleReadout.remaining <= 0
+                    ? `${activeCycleReadout.overage} over`
+                    : `${activeCycleReadout.remaining} left`}
+                </span>
+                {activeCycleReadout.rolledIn > 0 && (
+                  <>
+                    <span className="text-subtle">·</span>
+                    <span className="text-muted">
+                      {activeCycleReadout.rolledIn} rolled in
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
             <div className="mt-2 flex items-center gap-2 min-w-0">
-              {viewMode === "project" && clients.length > 0 ? (
+              {layoutView === "board" && viewMode === "project" && clients.length > 0 ? (
                 <>
                   <KanbanClientPicker
                     variant="title"
@@ -1612,7 +1935,7 @@ export default function KanbanPage() {
                       />
                     )}
                 </>
-              ) : viewMode === "pod" && pods.length > 0 ? (
+              ) : layoutView === "board" && viewMode === "pod" && pods.length > 0 ? (
                 <>
                   <KanbanPodPicker
                     variant="title"
@@ -1661,20 +1984,42 @@ export default function KanbanPage() {
           <div className="flex items-center gap-2">
             <SyncErrorToast />
             <GateBlockedToast />
-            <SearchControl
-              query={searchQuery}
-              onChange={setSearchQuery}
-              inputRef={searchInputRef}
+            <Segmented
+              value={layoutView}
+              onChange={(v) => setLayoutView(v as "board" | "table")}
+              options={[
+                { value: "board", label: "Board" },
+                { value: "table", label: "Table" },
+              ]}
             />
-            <ViewModeMenu value={viewMode} onChange={setViewMode} />
-            <OverflowMenu
-              density={density}
-              onSetDensity={setDensity}
-              onOpenRules={() => setRulesOpen(true)}
-              mineOnly={mineOnly}
-              onToggleMine={() => setMineOnly((v) => !v)}
-              showMine={!!meName}
-            />
+            {layoutView === "board" && (
+              <>
+                <SearchControl
+                  query={searchQuery}
+                  onChange={setSearchQuery}
+                  inputRef={searchInputRef}
+                />
+                <ViewModeMenu value={viewMode} onChange={setViewMode} />
+                <Pill
+                  active={activityOpen}
+                  onClick={() => setActivityOpen((v) => !v)}
+                  title="Activity log"
+                >
+                  <ClockIcon className="size-3.5" />
+                  Activity
+                </Pill>
+                <OverflowMenu
+                  density={density}
+                  onSetDensity={setDensity}
+                  layout={layout}
+                  onSetLayout={setLayout}
+                  onOpenRules={() => setRulesOpen(true)}
+                  mineOnly={mineOnly}
+                  onToggleMine={() => setMineOnly((v) => !v)}
+                  showMine={!!meName}
+                />
+              </>
+            )}
           </div>
         </div>
 
@@ -1682,8 +2027,8 @@ export default function KanbanPage() {
             an inline switch above), so they reserve no row and the board sits
             at the same Y. Only results still carries a sub-row (its filters),
             so only it reserves the height. */}
-        <div className={`shrink-0 ${viewMode === "results" ? "min-h-[56px]" : ""}`}>
-          {viewMode === "results" && (
+        <div className={`shrink-0 ${layoutView === "board" && viewMode === "results" ? "min-h-[56px]" : ""}`}>
+          {layoutView === "board" && viewMode === "results" && (
             <ResultsBankFilters
               outcome={bankOutcome}
               client={bankClient}
@@ -1704,7 +2049,11 @@ export default function KanbanPage() {
             view mode toggle block above). The vertical jolt here was the
             real one. */}
 
-        {viewMode === "results" ? (
+        {layoutView === "table" ? (
+          <div className="flex-1 min-h-0 overflow-y-auto pt-1">
+            <DeliveryTableView clients={clients} loading={loading} />
+          </div>
+        ) : viewMode === "results" ? (
           <ResultsBankGrid
             cards={resultCards}
             onOpen={(id) => setActiveId(id)}
@@ -1715,6 +2064,7 @@ export default function KanbanPage() {
            * page never scrolls. Each column scrolls its own cards. */
           <div className="flex-1 min-h-0">
           <BoardColumns
+            layout={layout}
             phases={BOARD_PHASES}
             cards={cardsByPhase}
             viewMode={viewMode}
@@ -1741,6 +2091,14 @@ export default function KanbanPage() {
             newTitleDraft={newTitleDraft}
             newCategoryDraft={newCategoryDraft}
             newDeliverableCategoryDraft={newDeliverableCategoryDraft}
+            sizeDraft={newSizeDraft}
+            /* Only a metered retainer surfaces the size selector + remaining
+               hint on the create form. null everywhere else. */
+            retainerRemaining={
+              canManage && isMeteredRetainer && activeCycleReadout
+                ? activeCycleReadout.remaining
+                : null
+            }
             onSetDraggingId={setDraggingId}
             onSetDragOverCol={setDragOverCol}
             onMove={moveDeliverable}
@@ -1749,6 +2107,7 @@ export default function KanbanPage() {
             onSetNewTitleDraft={setNewTitleDraft}
             onSetNewCategoryDraft={setNewCategoryDraft}
             onSetNewDeliverableCategoryDraft={setNewDeliverableCategoryDraft}
+            onSetSizeDraft={setNewSizeDraft}
             onAddDeliverable={addDeliverable}
             onUpdate={updateDeliverable}
             canManage={canManage}
@@ -1794,6 +2153,13 @@ export default function KanbanPage() {
         />
       )}
 
+      {activityOpen && (
+        <ActivityPanel
+          activity={activity}
+          onClose={() => setActivityOpen(false)}
+        />
+      )}
+
       {activeDeliverable && (
         <DetailModal
           canManage={canManage}
@@ -1809,9 +2175,68 @@ export default function KanbanPage() {
               submittedBy: currentUser?.name || "Team",
             };
             updateDeliverable(activeDeliverable.id, { designHandoff: stamped });
-            if (!PHASE_2_ORDER.includes(activeDeliverable.phase)) {
+            const movedToBuild = !PHASE_2_ORDER.includes(
+              activeDeliverable.phase,
+            );
+            if (movedToBuild) {
               moveDeliverable(activeDeliverable.id, "development", {
                 bypassHandoffGate: true,
+              });
+            }
+            logActivity({
+              actor: actorName,
+              action: "submitted_handover",
+              cardId: activeDeliverable.id,
+              cardTitle: activeDeliverable.title,
+              clientName: activeDeliverable.clientName,
+              projectName: activeDeliverable.projectName,
+              toPhase: movedToBuild ? "development" : undefined,
+            });
+          }}
+          onSubmitStrategyHandoff={(handoff) => {
+            /* Stamp + advance Strategy → Design in one flow.
+             * bypassHandoffGate because the stamp hasn't re-rendered yet. */
+            const stamped: StrategyHandoff = {
+              ...handoff,
+              submittedAt: MOCK_TODAY,
+              submittedBy: currentUser?.name || "Team",
+            };
+            updateDeliverable(activeDeliverable.id, { strategyHandoff: stamped });
+            if (activeDeliverable.phase === "strategy") {
+              moveDeliverable(activeDeliverable.id, "design", {
+                bypassHandoffGate: true,
+              });
+              logActivity({
+                actor: actorName,
+                action: "submitted_handover",
+                cardId: activeDeliverable.id,
+                cardTitle: activeDeliverable.title,
+                clientName: activeDeliverable.clientName,
+                projectName: activeDeliverable.projectName,
+                toPhase: "design",
+              });
+            }
+          }}
+          onSubmitDevHandoff={(handoff) => {
+            /* Stamp + advance Development → Launch & Testing in one flow. */
+            const stamped: DevHandoff = {
+              ...handoff,
+              submittedAt: MOCK_TODAY,
+              submittedBy: currentUser?.name || "Team",
+            };
+            updateDeliverable(activeDeliverable.id, { devHandoff: stamped });
+            if (activeDeliverable.phase === "development") {
+              moveDeliverable(activeDeliverable.id, "launch-testing", {
+                bypassHandoffGate: true,
+              });
+              logActivity({
+                actor: actorName,
+                action: "submitted_handover",
+                cardId: activeDeliverable.id,
+                cardTitle: activeDeliverable.title,
+                clientName: activeDeliverable.clientName,
+                projectName: activeDeliverable.projectName,
+                toPhase: "launch-testing",
               });
             }
           }}
@@ -1921,6 +2346,7 @@ function PodProjectSwitch({
 }
 
 interface BoardColumnsProps {
+  layout: "full" | "condensed";
   phases: typeof PREVIEW_PHASES;
   cards: Record<PreviewPhase, ContextDeliverable[]>;
   viewMode: ViewMode;
@@ -1938,6 +2364,11 @@ interface BoardColumnsProps {
   newTitleDraft: string;
   newCategoryDraft: TicketCategory;
   newDeliverableCategoryDraft: string;
+  /* Token meter: current card-size draft + this project's remaining pool.
+   * retainerRemaining is null unless the active project is a metered retainer,
+   * which is how the form decides whether to show the size selector + hint. */
+  sizeDraft: CardSize;
+  retainerRemaining: number | null;
   onSetDraggingId: (v: string | null) => void;
   onSetDragOverCol: (v: PreviewPhase | null) => void;
   onMove: (id: string, phase: PreviewPhase) => void;
@@ -1946,10 +2377,12 @@ interface BoardColumnsProps {
   onSetNewTitleDraft: (v: string) => void;
   onSetNewCategoryDraft: (v: TicketCategory) => void;
   onSetNewDeliverableCategoryDraft: (v: string) => void;
+  onSetSizeDraft: (v: CardSize) => void;
   onAddDeliverable: (
     phase: PreviewPhase,
     title: string,
     category?: string,
+    size?: CardSize,
   ) => void;
   onUpdate: (id: string, patch: Partial<MockDeliverable>) => void;
   canManage: boolean;
@@ -2176,6 +2609,9 @@ function BoardColumns(props: BoardColumnsProps) {
                                 phase.value,
                                 props.newTitleDraft,
                                 props.newDeliverableCategoryDraft || undefined,
+                                props.retainerRemaining !== null
+                                  ? props.sizeDraft
+                                  : undefined,
                               );
                             }
                             if (e.key === "Escape") {
@@ -2190,6 +2626,47 @@ function BoardColumns(props: BoardColumnsProps) {
                           }
                           className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-muted"
                         />
+                        {/* Token meter QoL: pick the card size + see the cost
+                            and remaining pool right where the decision is made.
+                            Only on a metered retainer project. */}
+                        {props.retainerRemaining !== null && (
+                          <div className="flex flex-col gap-1 border-t border-border-faint pt-1.5">
+                            <div className="flex items-center gap-1">
+                              {SIZE_OPTIONS.map((s) => {
+                                const active = props.sizeDraft === s.value;
+                                return (
+                                  <button
+                                    key={s.value}
+                                    type="button"
+                                    onClick={() => props.onSetSizeDraft(s.value)}
+                                    className={`flex-1 inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded text-4xs font-semibold transition-colors ${
+                                      active
+                                        ? "bg-white text-background"
+                                        : "text-subtle hover:bg-surface"
+                                    }`}
+                                  >
+                                    {s.label}
+                                    <span className="tabular-nums opacity-70">
+                                      {tokenCostForSize(s.value)}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <p className="px-1 text-4xs tabular-nums text-subtle">
+                              {tokenCostForSize(props.sizeDraft)}-token card ·{" "}
+                              <span
+                                className={
+                                  props.retainerRemaining <= 0
+                                    ? "font-semibold text-status-late"
+                                    : ""
+                                }
+                              >
+                                {props.retainerRemaining} left this month
+                              </span>
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )
                   ) : (
@@ -2223,6 +2700,147 @@ function BoardColumns(props: BoardColumnsProps) {
       .filter((p) => !covered.has(p.value))
       .map((p) => ({ key: p.value, label: null as string | null, owner: undefined, metas: [p] })),
   ].filter((b) => b.metas.length > 0);
+
+  /* Condensed layout: one column per band (pipeline stage). All the band's
+   * phases collapse into a single column; each card shows its exact phase as a
+   * pill (via showPhase). Cross-stage drops advance the card to the band's
+   * entry phase; dropping onto its own stage is a no-op (sub-phase moves live
+   * in the card modal). renderColumn (full mode) is untouched. */
+  const renderCondensedColumn = (band: (typeof bands)[number]) => {
+    const entry = band.metas[0].value;
+    const cards = band.metas.flatMap((m) => props.cards[m.value] ?? []);
+    const label = band.label
+      ? band.label.replace(/^Phase \d+ · /, "")
+      : band.metas[0].label;
+    const owner = props.bandOwners?.[band.key] ?? band.owner;
+    const inBand = (id: string | null) => !!id && cards.some((c) => c.id === id);
+    return (
+      <div
+        key={band.key}
+        onDragOver={(e) => {
+          if (!props.draggingId) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          if (props.dragOverCol !== entry) props.onSetDragOverCol(entry);
+        }}
+        onDragLeave={(e: DragEvent<HTMLDivElement>) => {
+          const related = e.relatedTarget as Node | null;
+          if (!related || !(e.currentTarget as Node).contains(related)) {
+            if (props.dragOverCol === entry) props.onSetDragOverCol(null);
+          }
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          if (!props.canManage) {
+            props.onSetDragOverCol(null);
+            return;
+          }
+          const id = e.dataTransfer.getData("text/plain") || props.draggingId;
+          if (id && !inBand(id)) props.onMove(id, entry);
+          props.onSetDragOverCol(null);
+          props.onSetDraggingId(null);
+        }}
+        className="flex-1 min-w-[220px] rounded flex flex-col h-full overflow-hidden"
+      >
+        <div className="mb-1 border-b border-border-faint px-2 py-2.5 shrink-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <span className="text-[12.5px] font-medium text-foreground truncate">
+                {label}
+              </span>
+              {owner && <span className="text-3xs text-subtle truncate">{owner}</span>}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-3xs font-medium text-subtle tabular-nums">
+                {cards.length}
+              </span>
+              {props.canManage && props.viewMode === "project" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    props.onSetAddingToPhase(entry);
+                    props.onSetNewTitleDraft("");
+                  }}
+                  className="size-5 inline-flex items-center justify-center rounded text-subtle hover:text-foreground hover:bg-white/[0.06] transition-colors"
+                  title={`Add card to ${label}`}
+                >
+                  <PlusIcon className="size-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <div
+          className={`${props.density === "glance" ? "p-1 flex flex-col gap-1" : "px-1 py-1 flex flex-col gap-2"} flex-1 min-h-0 overflow-y-auto scrollbar-hide`}
+        >
+          {cards.length === 0 ? (
+            <p className="text-3xs text-muted text-center py-6">-</p>
+          ) : (
+            cards.map((d) => (
+              <Card
+                key={d.id}
+                deliverable={d}
+                viewMode={props.viewMode}
+                density={props.density}
+                showPhase
+                isDragging={props.draggingId === d.id}
+                onDragStart={() => props.onSetDraggingId(d.id)}
+                onDragEnd={() => {
+                  props.onSetDraggingId(null);
+                  props.onSetDragOverCol(null);
+                }}
+                onOpen={() => props.onOpenCard(d.id)}
+                onUpdate={(patch) => props.onUpdate(d.id, patch)}
+                canManage={props.canManage}
+              />
+            ))
+          )}
+          {props.dragOverCol === entry &&
+            props.draggingId !== null &&
+            !inBand(props.draggingId) && (
+              <div className="rounded-[6px] border border-dashed border-white/[0.16] bg-white/[0.03] h-[92px]" />
+            )}
+          {props.canManage &&
+            props.viewMode === "project" &&
+            props.addingToPhase === entry && (
+              <div
+                className="rounded bg-background border border-border p-1.5"
+                data-add-form="true"
+              >
+                <input
+                  autoFocus
+                  value={props.newTitleDraft}
+                  onChange={(e) => props.onSetNewTitleDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      props.onAddDeliverable(
+                        entry,
+                        props.newTitleDraft,
+                        entry === "tickets" ? props.newCategoryDraft : undefined,
+                      );
+                    }
+                    if (e.key === "Escape") {
+                      props.onSetNewTitleDraft("");
+                      props.onSetAddingToPhase(null);
+                    }
+                  }}
+                  placeholder="New card"
+                  className="w-full px-2 py-1 rounded text-2xs bg-transparent text-foreground focus:outline-none placeholder:text-muted"
+                />
+              </div>
+            )}
+        </div>
+      </div>
+    );
+  };
+
+  if (props.layout === "condensed") {
+    return (
+      <div className="flex gap-3 pb-2 h-full overflow-x-auto">
+        {bands.map(renderCondensedColumn)}
+      </div>
+    );
+  }
 
   return (
     <div className="flex gap-4 justify-start overflow-x-auto pb-2 h-full">
@@ -2261,6 +2879,9 @@ interface CardProps {
   deliverable: ContextDeliverable;
   viewMode: ViewMode;
   density: "cosy" | "glance";
+  /** Condensed layout: show the card's exact phase as a pill (in full layout
+   *  the column already conveys it). */
+  showPhase?: boolean;
   isDragging: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
@@ -2290,6 +2911,7 @@ function Card({
   deliverable: d,
   viewMode,
   density,
+  showPhase,
   isDragging,
   onDragStart,
   onDragEnd,
@@ -2359,6 +2981,8 @@ function Card({
   const neutralTiming = onHold || undated;
   const status: StuckStatus = neutralTiming ? "on-track" : rawStatus;
   const live = d.phase === "launch-testing" && d.liveStartedAt && !d.testResult;
+  const subs = d.subtasks ?? [];
+  const subDone = subs.filter((s) => s.done).length;
   // Approved-internally cards stay in Internal Revisions and read GREEN so
   // the primary designer knows it's signed off and needs sending to the
   // client. Once moved to External Rev (sent), green clears.
@@ -2375,7 +2999,6 @@ function Card({
           : status === "approaching"
             ? "var(--color-status-approaching)"
             : "var(--color-status-ontrack)";
-  const LeadIcon = categoryMeta?.icon ?? phaseIcon(d.phase);
   const isOverdue = status === "stuck" && !live && !approved;
   const rounds = revisionRoundCount(d.phaseHistory);
   const limbo = limboStatusFor(rounds);
@@ -2393,12 +3016,121 @@ function Card({
       ? `${d.projectName}${d.category ? ` · ${d.category}` : ""}`
       : null;
 
+  /* "With client" callout: cards sitting in external revisions are waiting on
+   * the client. Surface it on the card face with the days-waiting counter so
+   * you can scan any column for who's stuck with a client, amber past 48h and
+   * red past 72h (the same sentToClientAt clock as the status engine). */
+  const withClient = d.phase === "external-revisions";
+  const daysWithClient =
+    withClient && d.sentToClientAt
+      ? daysBetweenISO(d.sentToClientAt, MOCK_TODAY)
+      : null;
+  const withClientTone = withClient
+    ? externalReviewStatus(d.sentToClientAt, MOCK_TODAY)
+    : null;
+  const withClientCallout = withClient ? (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-4xs font-medium ${
+        withClientTone === "stuck"
+          ? "bg-status-late/10 text-status-late"
+          : withClientTone === "approaching"
+            ? "bg-status-approaching/10 text-status-approaching"
+            : "bg-surface-raised text-muted"
+      }`}
+    >
+      <PaperAirplaneIcon className="size-3 -rotate-45 shrink-0" />
+      With client
+      {daysWithClient != null ? ` · ${daysWithClient}d` : ""}
+    </span>
+  ) : null;
+
   const role = activeAssigneeFor(d.phase, {
     designer: d.designer,
     secondaryDesigner: d.secondaryDesigner,
     developer: d.developer,
     secondaryDeveloper: d.secondaryDeveloper,
   });
+
+  /* What's being worked on, on the card face: the first "available" subtask
+   * (the one the modal rings). When a card has no subtasks yet, fall back to
+   * the first template step for its phase group - display only, nothing is
+   * seeded or persisted - so every build card shows a step, not just a phase.
+   * Tickets / backlog / documents don't carry a step. */
+  const displaySub: { title: string; owner?: string } | undefined = (() => {
+    if (["tickets", "not-started", "documents"].includes(d.phase)) return undefined;
+    const statuses = subtaskStatuses(d);
+    const idx = statuses.findIndex((s) => s === "available");
+    if (idx >= 0) {
+      return { title: subs[idx].title, owner: subtaskAssigneeName(d, subs[idx].role) };
+    }
+    if (subs.length > 0) return undefined; // all done / locked - nothing active
+    // No subtasks yet: show the step matching the card's CURRENT phase (not the
+    // group's first step), so a card in Internal Review reads "Internal
+    // Revisions", not "Initial Design".
+    const stepByPhase: Partial<Record<PreviewPhase, string>> = {
+      strategy: "Brief provided",
+      design: "Initial Design",
+      "internal-revisions": "Internal Revisions",
+      "external-revisions": "Client Revisions",
+      development: "Development",
+      qa: "Internal QA",
+      "test-backlog": "First Test Live",
+      "launch-testing": "First Test Live",
+    };
+    const stepTitle = stepByPhase[d.phase];
+    const tmpl = stepTitle
+      ? SUBTASK_TEMPLATE.find((t) => t.title === stepTitle)
+      : undefined;
+    return tmpl
+      ? { title: tmpl.title, owner: subtaskAssigneeName(d, tmpl.role) }
+      : undefined;
+  })();
+
+  /* Deadline for the active subtask, cascaded from the project start via the
+   * turnaround day budgets (built by ~day 12 of 15). */
+  const activeSubDue = displaySub
+    ? subtaskDeadline(displaySub.title, d.projectStartDate, d.turnaroundDays)
+    : undefined;
+
+  /* Health as a labelled pill (never a border). On-track reads "On track"; only
+   * late / due-soon shift colour. Neutral-timing + backlog show nothing. */
+  const statusPillLabel =
+    neutralTiming || d.phase === "not-started"
+      ? null
+      : live || approved
+        ? "On track"
+        : status === "stuck"
+          ? "Late"
+          : status === "approaching"
+            ? "Due soon"
+            : "On track";
+  const statusPillClass =
+    statusPillLabel === "Late"
+      ? "bg-status-late/15 text-status-late"
+      : statusPillLabel === "Due soon"
+        ? "bg-status-approaching/15 text-status-approaching"
+        : "bg-status-ontrack/15 text-status-ontrack";
+
+  /* Phase deadline (the existing turnaround-derived per-phase due date). */
+  const phaseDeadlineText: string | null = (() => {
+    if (d.phase === "documents" && d.dueDate) return formatShortDate(d.dueDate);
+    if (d.phase === "external-revisions" && d.sentToClientAt)
+      return formatShortDate(
+        addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS),
+      );
+    const due =
+      d.projectType === "build"
+        ? phaseInternalDueDate(d.phase, {
+            type: d.projectType,
+            turnaroundDays: d.turnaroundDays,
+            startDate: d.projectStartDate,
+            clientApprovedAt: d.projectClientApprovedAt,
+          })
+        : null;
+    if (due) return formatShortDate(due);
+    if (d.dueDate) return formatShortDate(d.dueDate);
+    return null;
+  })();
 
   /* Glance mode short-circuit: cards collapse to a thin bar that
    * preserves the status colour (the whole point - admin can scan
@@ -2456,120 +3188,92 @@ function Card({
       onDragEnd={onDragEnd}
       onClick={onOpen}
       dragging={isDragging}
-      overdue={isOverdue}
+      overdue={false}
       live={!!live}
-      icon={<LeadIcon className="size-4 shrink-0 mt-px text-muted" title={categoryMeta?.label} />}
       title={d.title}
-      description={subhead || undefined}
+      description={
+        displaySub ? (
+          <span className="inline-flex items-center gap-1.5 text-2xs">
+            <span className="size-3 shrink-0 rounded-full border border-border" />
+            <span className="min-w-0 truncate text-foreground">
+              {displaySub.title}
+            </span>
+            {activeSubDue && (
+              <span className="shrink-0 text-subtle">
+                · {formatShortDate(activeSubDue)}
+              </span>
+            )}
+          </span>
+        ) : withClientCallout ? (
+          withClientCallout
+        ) : subhead ? (
+          <span className="text-2xs text-muted">{subhead}</span>
+        ) : undefined
+      }
       cluster={
-        <>
+        live ? (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-5xs font-semibold bg-status-ontrack/15 text-status-ontrack">
+            <span className="relative flex size-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-status-ontrack opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full size-1.5 bg-status-ontrack" />
+            </span>
+            {needsConclude ? "Conclude" : "Live"}
+          </span>
+        ) : ready ? (
+          <span className="shrink-0 rounded px-1.5 py-0.5 text-5xs font-semibold bg-surface-raised text-muted">
+            Ready
+          </span>
+        ) : statusPillLabel ? (
+          <span className={`shrink-0 rounded px-1.5 py-0.5 text-5xs font-semibold ${statusPillClass}`}>
+            {statusPillLabel}
+          </span>
+        ) : (
           <span
             className="size-2 rounded-full shrink-0"
             style={{ background: statusDot }}
-            title={status === "stuck" ? "Late" : status === "approaching" ? "Approaching" : "On track"}
+            title="On track"
           />
-          {d.revisionRequested && (
-            <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted"
-              title="Bounced back; needs revisions"
-            >
-              <ArrowUturnLeftIcon className="size-2.5" />
-              Revisions
-            </span>
-          )}
-          {limbo !== "none" && (
-            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
-              R{rounds}
-            </span>
-          )}
-          {ready && (
-            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
-              Ready
-            </span>
-          )}
-          {live && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-status-ontrack">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-status-ontrack opacity-75 animate-ping" />
-                <span className="relative inline-flex rounded-full size-1.5 bg-status-ontrack" />
-              </span>
-              Live
-            </span>
-          )}
-          {needsConclude && (
-            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
-              Conclude
-            </span>
-          )}
-          {needsInterim && (
-            <span className="px-1.5 py-0.5 text-5xs font-medium rounded bg-surface-raised text-muted">
-              Log result
-            </span>
-          )}
-        </>
+        )
       }
       footer={
         <>
           <span className="text-subtle truncate min-w-0">
-            {d.phase === "launch-testing" ? (
-              <>
-                {LAUNCH_TESTING_TESTER}
-                <span className="text-muted mx-1">·</span>
-                {LAUNCH_TESTING_DEV}
-              </>
-            ) : d.phase === "strategy" ? (
-              <>{STRATEGY_OWNER}</>
-            ) : approved ? (
-              // Approved-in-internal-rev cards flip to the primary designer -
-              // they own the "send it to the client" action.
-              <>{d.designer || role.name}</>
-            ) : (
-              <>
-                {role.name}
-                {role.isSecondary && (
-                  <span className="text-muted ml-1">(2nd)</span>
-                )}
-              </>
-            )}
+            Assignee:{" "}
+            <span className="text-muted">
+              {d.phase === "launch-testing" ? (
+                <>
+                  {LAUNCH_TESTING_TESTER}
+                  <span className="mx-1">·</span>
+                  {LAUNCH_TESTING_DEV}
+                </>
+              ) : d.phase === "strategy" ? (
+                <>{STRATEGY_OWNER}</>
+              ) : approved ? (
+                // Approved-in-internal-rev cards flip to the primary designer -
+                // they own the "send it to the client" action.
+                <>{d.designer || role.name}</>
+              ) : (
+                <>
+                  {role.name}
+                  {role.isSecondary && <span className="ml-1">(2nd)</span>}
+                </>
+              )}
+            </span>
           </span>
+          {/* Deadline moved up top (Phase deadline line). Only show a fallback
+              deadline on the right, coloured by health (falls back to time in
+              phase when there's no computed deadline). */}
           <span
-            className={`tabular-nums font-medium shrink-0 ${
-              live || approved
-                ? "text-subtle"
-                : status === "stuck"
-                  ? "text-status-late"
-                  : status === "approaching"
-                    ? "text-status-approaching"
-                    : "text-subtle"
+            className={`tabular-nums shrink-0 ${
+              !live && !approved && status === "stuck"
+                ? "text-status-late"
+                : !live && !approved && status === "approaching"
+                  ? "text-status-approaching"
+                  : "text-subtle"
             }`}
           >
-            {(() => {
-              // Documents column has per-card dueDates from the retainer
-              // preload (or manual override on builds).
-              if (d.phase === "documents" && d.dueDate)
-                return formatShortDate(d.dueDate);
-              // External Rev shows the 48h client clock target.
-              if (d.phase === "external-revisions" && d.sentToClientAt)
-                return formatShortDate(
-                  addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS),
-                );
-              // Builds use the project-derived phase due date everywhere else.
-              const due =
-                d.projectType === "build"
-                  ? phaseInternalDueDate(d.phase, {
-                      type: d.projectType,
-                      turnaroundDays: d.turnaroundDays,
-                      startDate: d.projectStartDate,
-                      clientApprovedAt: d.projectClientApprovedAt,
-                    })
-                  : null;
-              if (due) return formatShortDate(due);
-              // Last fallback - per-card dueDate (legacy / manual override),
-              // then a TBD if there's literally no date anchor anywhere.
-              if (d.dueDate) return formatShortDate(d.dueDate);
-              if (d.phase === "not-started") return "TBD";
-              return formatHours(d.hoursInPhase);
-            })()}
+            {phaseDeadlineText ??
+              (d.phase === "not-started" ? "TBD" : formatHours(d.hoursInPhase))}
           </span>
         </>
       }
@@ -3298,6 +4002,7 @@ function DesignHandoffSection({
   onSaveDraft: (h: DesignHandoff) => void;
   onSubmit: (h: DesignHandoff) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DesignHandoff>(() =>
     d.designHandoff ?? {
       figmaUrl: d.figmaUrl ?? "",
@@ -3307,8 +4012,9 @@ function DesignHandoffSection({
       notes: "",
     },
   );
-  // Re-seed when the modal switches card.
+  // Re-seed + re-collapse when the modal switches card.
   useEffect(() => {
+    setOpen(false);
     setDraft(
       d.designHandoff ?? {
         figmaUrl: d.figmaUrl ?? "",
@@ -3322,6 +4028,11 @@ function DesignHandoffSection({
   }, [d.id]);
 
   const submitted = !!d.designHandoff?.submittedAt;
+  const started = !!(
+    draft.figmaUrl.trim() ||
+    draft.loomUrl.trim() ||
+    draft.fontFilesUrl.trim()
+  );
   const missing: string[] = [];
   if (!draft.figmaUrl.trim()) missing.push("Figma");
   if (!draft.loomUrl.trim()) missing.push("Loom walkthrough");
@@ -3383,17 +4094,53 @@ function DesignHandoffSection({
     );
   }
 
-  return (
-    <section className="border-t border-white/[0.05] pt-6">
-      <div className="mb-1 flex items-center justify-between gap-3">
-        <h3 className="text-3xs font-medium text-subtle">Design handover</h3>
-        {missing.length > 0 && (
-          <span className="text-3xs text-subtle">Missing: {missing.join(", ")}</span>
+  /* Collapsed by default: a single prompt row + button. The form only opens
+   * when you choose to work on the handover, so a card that isn't ready to
+   * hand off yet stays quiet. */
+  if (!open) {
+    return (
+      <section className="flex items-center justify-between gap-3 rounded border border-border-faint bg-surface px-4 py-3">
+        <div className="min-w-0">
+          <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
+            Design handover
+          </h3>
+          <p className="mt-0.5 text-2xs text-muted">
+            {started
+              ? `In progress. Missing: ${missing.join(", ") || "nothing"}.`
+              : "Package Figma, Loom + fonts for dev. Submitting moves the card to Development."}
+          </p>
+        </div>
+        {canManage && (
+          <button
+            onClick={() => setOpen(true)}
+            className="shrink-0 rounded-md border border-border bg-surface px-2.5 py-1.5 text-2xs font-medium text-muted transition-colors hover:text-foreground"
+          >
+            {started ? "Continue" : "Start handover"}
+          </button>
         )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded border border-border-faint bg-surface p-5">
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
+          Design handover
+        </h3>
+        <button
+          onClick={() => setOpen(false)}
+          className="text-2xs text-subtle transition-colors hover:text-foreground"
+        >
+          Collapse
+        </button>
       </div>
       <p className="mb-3 text-4xs text-muted">
         Required before this card can enter the build. Submitting moves it to
-        Development.
+        Development.{" "}
+        {missing.length > 0 && (
+          <span className="text-subtle">Missing: {missing.join(", ")}.</span>
+        )}
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
@@ -3470,13 +4217,420 @@ function DesignHandoffSection({
   );
 }
 
+/* ── Lightweight lane gates ──
+ * Strategy → Design and Development → Launch bookend the richer design gate.
+ * Same submit-stamp shape, but each is just an optional free-text note plus the
+ * stamp: the strategist / dev drop in whatever context the next lane needs and
+ * hand off. Notes are optional so an empty handoff still advances the card. */
+/* Small select style shared by the grouped-checklist add-subtask forms. */
+const SUBTASK_SELECT =
+  "rounded border border-border bg-surface px-2 py-1 text-2xs text-foreground focus:outline-none focus:border-ring";
+
+/* One plain-checkbox subtask row inside a phase group. Handover rows
+ * (kind set) are rendered separately by the group body since they expand into
+ * a form rather than toggling. */
+function SubtaskRow({
+  subtask: s,
+  status,
+  owner,
+  isNextActionable,
+  canManage,
+  onToggle,
+  onRemove,
+}: {
+  subtask: Subtask;
+  status: "locked" | "available" | "done";
+  owner?: string;
+  isNextActionable: boolean;
+  canManage: boolean;
+  onToggle: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <button
+        disabled={!canManage || status === "locked"}
+        onClick={onToggle}
+        className="shrink-0 disabled:cursor-not-allowed"
+        title={status === "locked" ? "Locked until it unlocks" : "Toggle done"}
+      >
+        {status === "done" ? (
+          <CheckCircleIcon className="size-4 text-status-ontrack" />
+        ) : status === "locked" ? (
+          <LockClosedIcon className="size-3.5 text-subtle" />
+        ) : (
+          <span
+            className={`inline-block size-4 rounded-full border border-border ${
+              isNextActionable ? "ring-1 ring-ring" : ""
+            }`}
+          />
+        )}
+      </button>
+      <div className="min-w-0 flex-1">
+        <div
+          className={`text-sm ${
+            status === "done"
+              ? "text-subtle line-through"
+              : status === "locked"
+                ? "text-subtle"
+                : "text-foreground"
+          }`}
+        >
+          {s.title}
+        </div>
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-3xs text-subtle">
+          {owner ? (
+            <span className="text-muted">{owner}</span>
+          ) : s.role ? (
+            <span>{SUBTASK_ROLE_LABEL[s.role]}</span>
+          ) : null}
+          {s.dueDate && <span>· {formatShortDate(s.dueDate)}</span>}
+          {s.unlock === "client_approval" && (
+            <span>· unlocks on client approval</span>
+          )}
+          {status === "locked" && s.unlock === "sequential" && (
+            <span>· waiting on earlier steps</span>
+          )}
+        </div>
+      </div>
+      {canManage && (
+        <button
+          onClick={onRemove}
+          className="shrink-0 text-subtle transition-colors hover:text-status-late"
+          title="Remove subtask"
+        >
+          <XMarkIcon className="size-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* Add-subtask form appended to a single phase group. The group is fixed by the
+ * caller so the new item lands in the right section. */
+function AddSubtaskForm({
+  group,
+  existing,
+  onCommit,
+}: {
+  group: SubtaskGroup;
+  existing: Subtask[];
+  onCommit: (next: Subtask[]) => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [roleDraft, setRoleDraft] = useState<SubtaskRole>("secondary_designer");
+  const [unlockDraft, setUnlockDraft] = useState<SubtaskUnlock>("sequential");
+
+  function add() {
+    const t = titleDraft.trim();
+    if (!t) return;
+    const st: Subtask = {
+      id: crypto.randomUUID?.() ?? `sub-${Date.now()}`,
+      title: t,
+      group,
+      role: roleDraft,
+      unlock: unlockDraft,
+      done: false,
+    };
+    onCommit([...existing, st]);
+    setTitleDraft("");
+    setAdding(false);
+  }
+
+  if (!adding) {
+    return (
+      <button
+        onClick={() => setAdding(true)}
+        className="inline-flex items-center gap-1 px-4 py-2.5 text-2xs text-subtle transition-colors hover:text-foreground"
+      >
+        <PlusIcon className="size-3" />
+        Add task
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-2 border-t border-border-faint p-3">
+      <input
+        autoFocus
+        value={titleDraft}
+        onChange={(e) => setTitleDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") add();
+          if (e.key === "Escape") setAdding(false);
+        }}
+        placeholder="Task (e.g. Desktop variations)"
+        className="w-full rounded border border-border bg-surface px-2.5 py-1.5 text-sm text-foreground placeholder:text-subtle focus:border-ring focus:outline-none"
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={roleDraft}
+          onChange={(e) => setRoleDraft(e.target.value as SubtaskRole)}
+          className={SUBTASK_SELECT}
+        >
+          {(Object.keys(SUBTASK_ROLE_LABEL) as SubtaskRole[]).map((r) => (
+            <option key={r} value={r}>
+              {SUBTASK_ROLE_LABEL[r]}
+            </option>
+          ))}
+        </select>
+        <select
+          value={unlockDraft}
+          onChange={(e) => setUnlockDraft(e.target.value as SubtaskUnlock)}
+          className={SUBTASK_SELECT}
+        >
+          <option value="sequential">In order</option>
+          <option value="client_approval">After client approval</option>
+        </select>
+        <button
+          onClick={add}
+          disabled={!titleDraft.trim()}
+          className="ml-auto rounded bg-accent px-2.5 py-1 text-2xs font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+        >
+          Add
+        </button>
+        <button
+          onClick={() => setAdding(false)}
+          className="text-2xs text-subtle transition-colors hover:text-foreground"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* Small phase tag for a group header. Strategy + Design = Phase 1, Development
+ * = Phase 2, Optimisation = Phase 3 (mirrors the board's phase bands). */
+const GROUP_PHASE_TAG: Record<SubtaskGroup, string> = {
+  strategy: "Phase 1",
+  design: "Phase 1",
+  development: "Phase 2",
+  optimisation: "Phase 3",
+};
+
+/* Surface resource chip: opens the link in a new tab, with an inline edit
+ * pencil for managers. Renders a dashed "Add {label}" when empty. */
+function ResourceChip({
+  icon,
+  label,
+  url,
+  canManage,
+  onEdit,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  url?: string;
+  canManage: boolean;
+  onEdit: () => void;
+}) {
+  if (url) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-md border border-border-faint bg-surface py-1.5 pl-2.5 pr-1.5 text-2xs text-muted">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+        >
+          {icon}
+          {label}
+          <ArrowTopRightOnSquareIcon className="size-3 shrink-0" />
+        </a>
+        {canManage && (
+          <button
+            onClick={onEdit}
+            title={`Edit ${label}`}
+            className="ml-0.5 text-subtle transition-colors hover:text-foreground"
+          >
+            <PencilSquareIcon className="size-3" />
+          </button>
+        )}
+      </span>
+    );
+  }
+  if (!canManage) return null;
+  return (
+    <button
+      type="button"
+      onClick={onEdit}
+      className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2.5 py-1.5 text-2xs text-subtle transition-colors hover:border-border hover:text-foreground"
+    >
+      <PlusIcon className="size-3 shrink-0" />
+      Add {label}
+    </button>
+  );
+}
+
+function StrategyHandoffSection({
+  deliverable: d,
+  canManage,
+  onSubmit,
+  onReopen,
+}: {
+  deliverable: ContextDeliverable;
+  canManage: boolean;
+  onSubmit: (h: StrategyHandoff) => void;
+  onReopen: () => void;
+}) {
+  const [notes, setNotes] = useState<string>(d.strategyHandoff?.notes ?? "");
+  useEffect(() => {
+    setNotes(d.strategyHandoff?.notes ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.id]);
+
+  const submitted = !!d.strategyHandoff?.submittedAt;
+
+  if (submitted && d.strategyHandoff) {
+    const h = d.strategyHandoff;
+    return (
+      <section className="rounded border border-border-faint bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
+            Strategy gate
+          </h3>
+          <span className="text-3xs text-status-ontrack">
+            Strategy signed off · {formatShortDate(h.submittedAt!)}
+            {h.submittedBy ? ` · ${h.submittedBy}` : ""}
+          </span>
+        </div>
+        {h.notes?.trim() && (
+          <p className="text-sm leading-relaxed text-muted">{h.notes}</p>
+        )}
+        {canManage && (
+          <button
+            onClick={onReopen}
+            className="mt-3 text-2xs text-subtle transition-colors hover:text-foreground"
+          >
+            Reopen handover
+          </button>
+        )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded border border-border-faint bg-surface p-5">
+      <h3 className="mb-2 text-3xs font-medium uppercase tracking-wider text-subtle">
+        Strategy gate
+      </h3>
+      <p className="mb-3 text-xs text-subtle">
+        Hand off to Design when the brief is ready. Notes are optional.
+      </p>
+      <div>
+        <div className="mb-1.5 text-3xs text-subtle">Notes for design</div>
+        <textarea
+          value={notes}
+          disabled={!canManage}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          placeholder="Anything design needs before starting"
+          className={HANDOFF_INPUT}
+        />
+      </div>
+      {canManage && (
+        <button
+          onClick={() => onSubmit({ notes: notes.trim() || undefined })}
+          className="mt-3 rounded bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground transition-opacity hover:opacity-90"
+        >
+          Hand off to Design
+        </button>
+      )}
+    </section>
+  );
+}
+
+function DevHandoffSection({
+  deliverable: d,
+  canManage,
+  onSubmit,
+  onReopen,
+}: {
+  deliverable: ContextDeliverable;
+  canManage: boolean;
+  onSubmit: (h: DevHandoff) => void;
+  onReopen: () => void;
+}) {
+  const [notes, setNotes] = useState<string>(d.devHandoff?.notes ?? "");
+  useEffect(() => {
+    setNotes(d.devHandoff?.notes ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.id]);
+
+  const submitted = !!d.devHandoff?.submittedAt;
+
+  if (submitted && d.devHandoff) {
+    const h = d.devHandoff;
+    return (
+      <section className="rounded border border-border-faint bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
+            Build gate
+          </h3>
+          <span className="text-3xs text-status-ontrack">
+            Build signed off · {formatShortDate(h.submittedAt!)}
+            {h.submittedBy ? ` · ${h.submittedBy}` : ""}
+          </span>
+        </div>
+        {h.notes?.trim() && (
+          <p className="text-sm leading-relaxed text-muted">{h.notes}</p>
+        )}
+        {canManage && (
+          <button
+            onClick={onReopen}
+            className="mt-3 text-2xs text-subtle transition-colors hover:text-foreground"
+          >
+            Reopen handover
+          </button>
+        )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded border border-border-faint bg-surface p-5">
+      <h3 className="mb-2 text-3xs font-medium uppercase tracking-wider text-subtle">
+        Build gate
+      </h3>
+      <p className="mb-3 text-xs text-subtle">
+        Hand off to Launch & Testing when the build is ready. Notes are optional.
+      </p>
+      <div>
+        <div className="mb-1.5 text-3xs text-subtle">Notes for launch</div>
+        <textarea
+          value={notes}
+          disabled={!canManage}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          placeholder="Anything the tester needs before going live"
+          className={HANDOFF_INPUT}
+        />
+      </div>
+      {canManage && (
+        <button
+          onClick={() => onSubmit({ notes: notes.trim() || undefined })}
+          className="mt-3 rounded bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground transition-opacity hover:opacity-90"
+        >
+          Hand off to Launch & Testing
+        </button>
+      )}
+    </section>
+  );
+}
+
 interface DetailModalProps {
   canManage: boolean;
   deliverable: ContextDeliverable;
   onClose: () => void;
   onUpdate: (patch: Partial<MockDeliverable>) => void;
   onSubmitHandoff: (handoff: DesignHandoff) => void;
-  onConclude: (result: TestResult, followUpTitle?: string) => void;
+  onSubmitStrategyHandoff: (h: StrategyHandoff) => void;
+  onSubmitDevHandoff: (h: DevHandoff) => void;
+  /** Legacy single-conclude flow, superseded by the multi-test Optimisation
+   *  tab (which persists via mirrorTestRuns). Kept optional so the call site
+   *  compiles; unused by the new modal. */
+  onConclude?: (result: TestResult, followUpTitle?: string) => void;
   onApproveInternal: () => void;
   onRequestRevisions: () => void;
   onUndoApprove: () => void;
@@ -3498,7 +4652,8 @@ function DetailModal({
   onClose,
   onUpdate,
   onSubmitHandoff,
-  onConclude,
+  onSubmitStrategyHandoff,
+  onSubmitDevHandoff,
   onApproveInternal,
   onRequestRevisions,
   onUndoApprove,
@@ -3525,107 +4680,172 @@ function DetailModal({
         : "var(--color-status-ontrack)";
   const rounds = revisionRoundCount(d.phaseHistory);
   const calDays = calendarDaysInCurrentPhase(d.phaseHistory);
-  const live = d.phase === "launch-testing" && d.liveStartedAt && !d.testResult;
-  const daysLive = live ? daysBetween(d.liveStartedAt!) : 0;
-  const needsConclude = live && daysLive >= CONCLUDE_PROMPT_DAYS;
-  const needsInterim =
-    live &&
-    daysLive >= INTERIM_NUDGE_DAYS &&
-    !(d.metrics ?? []).some(isMetricLogged);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
 
-  // First-row metric is treated as the primary for conclude-time defaults.
-  const primaryMetric = (d.metrics ?? [])[0];
-  const primaryInterimNumber = primaryMetric?.interim
-    ? parseFloat(primaryMetric.interim.replace(/[^-0-9.]/g, ""))
-    : NaN;
-
-  const [tab, setTab] = useState<"status" | "info">("status");
-  const [concluding, setConcluding] = useState(false);
-  const [outcomeDraft, setOutcomeDraft] = useState<TestOutcome>("winner");
-  const [metricDraft, setMetricDraft] = useState<string>(
-    primaryMetric?.name ?? "",
-  );
-  const [upliftDraft, setUpliftDraft] = useState<string>(
-    Number.isFinite(primaryInterimNumber) ? String(primaryInterimNumber) : "",
-  );
-  const [confidenceDraft, setConfidenceDraft] = useState<string>("");
-  const [notesDraft, setNotesDraft] = useState<string>(d.interimNotes ?? "");
-  /* Optional follow-up test queued into test-backlog on conclude. */
-  const [followUpDraft, setFollowUpDraft] = useState<string>("");
-
-  const [interimNotesDraft, setInterimNotesDraft] = useState<string>(
-    d.interimNotes ?? "",
-  );
-  const [notesDraftDeliverable, setNotesDraftDeliverable] = useState<string>(
-    d.notes ?? "",
-  );
-
-  // Per-test metrics editor. Defaults to CVR + AOV + RPV when nothing has
-  // been stored yet so the strategist isnt staring at an empty section.
-  const [metricsDraft, setMetricsDraft] = useState<TrackedMetric[]>(
-    d.metrics && d.metrics.length > 0 ? d.metrics : DEFAULT_METRICS,
-  );
-
-  function commitMetrics(next: TrackedMetric[]) {
-    setMetricsDraft(next);
-    // Drop fully empty rows on save so we dont persist phantom metrics.
-    const cleaned = next.filter(
-      (m) => m.name.trim() || m.baseline?.trim() || m.interim?.trim(),
-    );
-    onUpdate({ metrics: cleaned.length > 0 ? cleaned : undefined });
-  }
-
-  function updateMetric(i: number, patch: Partial<TrackedMetric>) {
-    const next = metricsDraft.map((m, idx) =>
-      idx === i ? { ...m, ...patch } : m,
-    );
-    setMetricsDraft(next);
-  }
-
-  function blurCommit() {
-    commitMetrics(metricsDraft);
-  }
-
-  function addMetric() {
-    commitMetrics([...metricsDraft, { name: "" }]);
-  }
-
-  function removeMetric(i: number) {
-    commitMetrics(metricsDraft.filter((_, idx) => idx !== i));
-  }
-
-  // Test URL draft is the only single-field Test setup input left. The
-  // metrics editor replaces tracked-metric / baseline / interim-uplift.
-  const [liveUrlDraft, setLiveUrlDraft] = useState<string>(
-    d.liveTestUrl ?? "",
-  );
-
-  // Phase history is noise on first open. Collapsed by default; the chevron
-  // toggles it open.
-  const [historyOpen, setHistoryOpen] = useState(false);
-
-  // Strategy brief lives only in the modal now. Same paste-URL pattern as
-  // the onboarding brief, scoped per-deliverable.
+  // Surface-level editors: brief, figma, notes. Reused across surface + lanes.
   const [editingBrief, setEditingBrief] = useState(false);
   const [briefDraft, setBriefDraft] = useState(d.brief ?? "");
   const [editingFigma, setEditingFigma] = useState(false);
   const [figmaDraft, setFigmaDraft] = useState(d.figmaUrl ?? "");
+  const [notesDraftDeliverable, setNotesDraftDeliverable] = useState<string>(
+    d.notes ?? "",
+  );
 
-  const role = activeAssigneeFor(d.phase, {
-    designer: d.designer,
-    secondaryDesigner: d.secondaryDesigner,
-    developer: d.developer,
-    secondaryDeveloper: d.secondaryDeveloper,
-  });
+  // Phase history collapsible in the footer.
+  const [historyOpen, setHistoryOpen] = useState(false);
 
-  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
+  // ── Phase-grouped checklist ──
+  // The group matching the card's current phase is the active one.
+  const currentGroup = subtaskGroupForPhase(d.phase);
+  // The modal shows ONE phase at a time - the active one by default - with a
+  // switcher to click into another. Keeps the card short (no long scroll) and
+  // focused on what's happening now. Re-seeds to the active phase on card switch.
+  const [viewedGroup, setViewedGroup] = useState<SubtaskGroup>(currentGroup);
+  useEffect(() => {
+    setViewedGroup(subtaskGroupForPhase(d.phase));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.id]);
+
+  // Materialise a group's template the moment it is viewed, if the card has
+  // none for it yet. Keyed on viewedGroup so switching to a phase the card
+  // hasn't reached (e.g. Optimisation while still in Design) still surfaces
+  // that phase's preloaded checklist. Seeds each group at most once.
+  useEffect(() => {
+    if (!(d.subtasks ?? []).some((s) => s.group === viewedGroup)) {
+      onUpdate({ subtasks: seedSubtasksForGroup(d.subtasks, viewedGroup) });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.id, viewedGroup]);
+
+  // Derived subtask state for the grouped checklist.
+  const subs = d.subtasks ?? [];
+  const subStatuses = subtaskStatuses(d);
+  // Index of the single "next actionable" subtask (first available, in array
+  // order) - gets the periwinkle ring so the eye lands on what to do next.
+  const nextActionableIdx = subStatuses.findIndex((s) => s === "available");
+
+  function commitSubtasks(next: Subtask[]) {
+    onUpdate({ subtasks: next.length ? next : undefined });
+  }
+  function toggleSubtask(id: string) {
+    commitSubtasks(
+      subs.map((s) =>
+        s.id === id
+          ? { ...s, done: !s.done, doneAt: !s.done ? MOCK_TODAY : undefined }
+          : s,
+      ),
+    );
+  }
+  function removeSubtask(id: string) {
+    commitSubtasks(subs.filter((s) => s.id !== id));
+  }
+  // Resolve a subtask owner name; strategist resolves to STRATEGY_OWNER.
+  function ownerFor(s: Subtask): string | undefined {
+    if (s.role === "strategist") return STRATEGY_OWNER;
+    return subtaskAssigneeName(d, s.role);
+  }
+
+  // ── Optimisation: multi-test runs ──
+  const runs = testRunsFor(d);
+  const active = activeTestRun(d);
+  const activeConcluded = !!active?.result;
+
+  // Live/interim nudges read from the active run.
+  const activeLive =
+    d.phase === "launch-testing" && !!active?.liveStartedAt && !active?.result;
+  const daysLive = activeLive ? daysBetween(active!.liveStartedAt!) : 0;
+
+  // Active-run editable drafts. Re-seed when the card OR active run changes.
+  const [liveUrlDraft, setLiveUrlDraft] = useState<string>(active?.liveTestUrl ?? "");
+  const [interimNotesDraft, setInterimNotesDraft] = useState<string>(
+    active?.interimNotes ?? "",
+  );
+  const [metricsDraft, setMetricsDraft] = useState<TrackedMetric[]>(
+    active?.metrics && active.metrics.length > 0 ? active.metrics : DEFAULT_METRICS,
+  );
+  const activeId = active?.id;
+  useEffect(() => {
+    setLiveUrlDraft(active?.liveTestUrl ?? "");
+    setInterimNotesDraft(active?.interimNotes ?? "");
+    setMetricsDraft(
+      active?.metrics && active.metrics.length > 0
+        ? active.metrics
+        : DEFAULT_METRICS,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.id, activeId]);
+
+  // Conclude drafts for the active run.
+  const [concluding, setConcluding] = useState(false);
+  const primaryMetric = (active?.metrics ?? [])[0];
+  const [outcomeDraft, setOutcomeDraft] = useState<TestOutcome>("winner");
+  const [metricDraft, setMetricDraft] = useState<string>(primaryMetric?.name ?? "");
+  const [upliftDraft, setUpliftDraft] = useState<string>("");
+  const [confidenceDraft, setConfidenceDraft] = useState<string>("");
+  const [concludeNotesDraft, setConcludeNotesDraft] = useState<string>("");
+
+  /* Patch the ACTIVE run and persist via mirrorTestRuns so the card face,
+   * Results bank + My Tasks (which read the legacy singular fields) stay
+   * correct. When there are no runs yet, seeds run 1. */
+  function patchActiveRun(patch: Partial<TestRun>) {
+    if (runs.length === 0) {
+      const seeded: TestRun = {
+        id: crypto.randomUUID?.() ?? `run-${Date.now()}`,
+        label: "Test 1",
+        ...patch,
+      };
+      onUpdate(mirrorTestRuns([seeded]));
+      return;
+    }
+    const next = runs.map((r, i) =>
+      i === runs.length - 1 ? { ...r, ...patch } : r,
+    );
+    onUpdate(mirrorTestRuns(next));
+  }
+
+  function startFirstTest() {
+    const seeded: TestRun = {
+      id: crypto.randomUUID?.() ?? `run-${Date.now()}`,
+      label: "Test 1",
+    };
+    onUpdate(mirrorTestRuns([seeded]));
+  }
+
+  function addAnotherTest() {
+    const n = runs.length;
+    const next: TestRun = {
+      id: crypto.randomUUID?.() ?? `run-${Date.now()}`,
+      label: `Test ${n + 1}`,
+    };
+    onUpdate(mirrorTestRuns([...runs, next]));
+    setConcluding(false);
+  }
+
+  function commitMetrics(nextMetrics: TrackedMetric[]) {
+    setMetricsDraft(nextMetrics);
+    const cleaned = nextMetrics.filter(
+      (m) => m.name.trim() || m.baseline?.trim() || m.interim?.trim(),
+    );
+    patchActiveRun({ metrics: cleaned.length > 0 ? cleaned : undefined });
+  }
+  function updateMetric(i: number, patch: Partial<TrackedMetric>) {
+    setMetricsDraft((prev) => prev.map((m, idx) => (idx === i ? { ...m, ...patch } : m)));
+  }
+  function blurCommit() {
+    commitMetrics(metricsDraft);
+  }
+  function addMetric() {
+    commitMetrics([...metricsDraft, { name: "" }]);
+  }
+  function removeMetric(i: number) {
+    commitMetrics(metricsDraft.filter((_, idx) => idx !== i));
+  }
 
   async function onFile(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    /* Reset the input so the user can re-pick the same file later. */
     e.target.value = "";
     setUploadingScreenshot(true);
     try {
@@ -3634,46 +4854,484 @@ function DetailModal({
         alert("Screenshot upload failed - check your connection and try again.");
         return;
       }
-      /* Sign immediately so the in-flight render gets a working URL.
-       * mockTaskToRow strips signed URLs back to paths before writing
-       * to the DB so the column stays long-lived. */
       const signed = await signScreenshotPaths([path]);
-      onUpdate({ screenshot: signed[path] || path });
+      patchActiveRun({ screenshot: signed[path] || path });
     } finally {
       setUploadingScreenshot(false);
     }
   }
 
   function submitConclude() {
+    if (!active) return;
     const result: TestResult = {
       concludedAt: MOCK_TODAY,
       outcome: outcomeDraft,
       metric: metricDraft.trim() || undefined,
       upliftPct: upliftDraft.trim() ? Number(upliftDraft) : undefined,
       confidencePct: confidenceDraft.trim() ? Number(confidenceDraft) : undefined,
-      durationDays: d.liveStartedAt ? daysBetween(d.liveStartedAt) : undefined,
-      notes: notesDraft.trim() || undefined,
-      screenshot: d.screenshot,
+      durationDays: active.liveStartedAt
+        ? daysBetween(active.liveStartedAt)
+        : undefined,
+      notes: concludeNotesDraft.trim() || undefined,
+      screenshot: active.screenshot,
     };
-    onConclude(result, followUpDraft.trim() || undefined);
+    const next = runs.map((r, i) =>
+      i === runs.length - 1 ? { ...r, result } : r,
+    );
+    onUpdate(mirrorTestRuns(next));
+    setConcluding(false);
   }
 
-  function saveInterim() {
-    // Notes save direct; metric interims live in the per-row inputs below.
-    onUpdate({
-      interimNotes: interimNotesDraft.trim() || undefined,
-    });
-  }
+  const PIPELINE: PreviewPhase[] = [
+    ...PHASE_1_ORDER,
+    "external-revisions",
+    ...PHASE_2_ORDER,
+  ];
+  const pipelineIdx = PIPELINE.indexOf(d.phase);
+
+  const hasBuildSchedule =
+    d.projectType === "build" && !!d.projectStartDate && !!d.turnaroundDays;
+
+  // Optimisation group body: the full multi-test workflow, relocated from
+  // the old Optimisation tab. Rendered inside the grouped checklist.
+  const renderOptimisation = () => (
+            <div className="space-y-5">
+              {runs.length === 0 ? (
+                <section className="rounded border border-border-faint bg-surface p-5">
+                  <p className="text-sm text-foreground">
+                    No tests yet.
+                  </p>
+                  <p className="mt-1 text-xs text-subtle">
+                    {d.phase === "launch-testing" || d.phase === "test-backlog"
+                      ? "Start the first test to set a live URL, track metrics, and record the outcome."
+                      : "Tests are set up once this card reaches the optimisation phase."}
+                  </p>
+                  {canManage &&
+                    (d.phase === "launch-testing" || d.phase === "test-backlog") && (
+                      <button
+                        onClick={startFirstTest}
+                        className="mt-3 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground transition-opacity hover:opacity-90"
+                      >
+                        Start first test
+                      </button>
+                    )}
+                </section>
+              ) : (
+                <>
+                  {/* Concluded runs (read-only) */}
+                  {runs.map((run, i) => {
+                    const isActiveRun = i === runs.length - 1;
+                    // The active run renders its editable block below; only
+                    // render concluded / non-active runs as read summaries here.
+                    if (isActiveRun && !run.result) return null;
+                    const label = run.label ?? `Test ${i + 1}`;
+                    return (
+                      <section
+                        key={run.id}
+                        className="rounded border border-border-faint bg-surface p-5"
+                      >
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
+                            {label}
+                          </h3>
+                          {run.result && (
+                            <span
+                              className="px-2 py-0.5 rounded-sm text-4xs font-medium"
+                              style={{
+                                background: OUTCOME_META[run.result.outcome].bg,
+                                color: OUTCOME_META[run.result.outcome].color,
+                              }}
+                            >
+                              {OUTCOME_META[run.result.outcome].label}
+                            </span>
+                          )}
+                        </div>
+                        {run.liveTestUrl && (
+                          <a
+                            href={run.liveTestUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-muted hover:text-foreground transition-colors break-all mb-3"
+                          >
+                            {run.liveTestUrl}
+                            <ArrowTopRightOnSquareIcon className="size-3 shrink-0" />
+                          </a>
+                        )}
+                        {run.result ? (
+                          <div className="grid grid-cols-4 gap-3 text-sm">
+                            <div>
+                              <p className="text-4xs font-medium uppercase tracking-wider text-subtle">
+                                Metric
+                              </p>
+                              <p className="mt-0.5 text-foreground">
+                                {run.result.metric ?? "-"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-4xs font-medium uppercase tracking-wider text-subtle">
+                                Uplift
+                              </p>
+                              <p className="mt-0.5 text-foreground tabular-nums">
+                                {run.result.upliftPct == null
+                                  ? "-"
+                                  : `${run.result.upliftPct > 0 ? "+" : ""}${run.result.upliftPct}%`}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-4xs font-medium uppercase tracking-wider text-subtle">
+                                Confidence
+                              </p>
+                              <p className="mt-0.5 text-foreground tabular-nums">
+                                {run.result.confidencePct != null
+                                  ? `${run.result.confidencePct}%`
+                                  : "-"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-4xs font-medium uppercase tracking-wider text-subtle">
+                                Duration
+                              </p>
+                              <p className="mt-0.5 text-foreground tabular-nums">
+                                {run.result.durationDays != null
+                                  ? `${run.result.durationDays}d`
+                                  : "-"}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          run.metrics && run.metrics.length > 0 && (
+                            <div className="space-y-1">
+                              {run.metrics.map((m, mi) => (
+                                <div
+                                  key={mi}
+                                  className="flex items-center justify-between gap-3 text-xs"
+                                >
+                                  <span className="text-subtle">{m.name || "-"}</span>
+                                  <span className="text-foreground tabular-nums">
+                                    {m.baseline || "-"} → {m.interim || "-"}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        )}
+                        {run.result?.notes && (
+                          <p className="mt-3 text-sm text-muted leading-relaxed">
+                            {run.result.notes}
+                          </p>
+                        )}
+                        {run.interimNotes && !run.result && (
+                          <p className="mt-3 text-sm text-muted leading-relaxed">
+                            {run.interimNotes}
+                          </p>
+                        )}
+                      </section>
+                    );
+                  })}
+
+                  {/* Active run - editable, unless already concluded */}
+                  {active && !activeConcluded && (
+                    <section className="rounded border border-border-faint bg-surface p-5 space-y-4">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
+                          {active.label ?? `Test ${runs.length}`}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          {active.liveTestUrl && (
+                            <a
+                              href={active.liveTestUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-3xs font-medium text-subtle hover:text-foreground transition-colors"
+                            >
+                              Open live
+                              <ArrowTopRightOnSquareIcon className="size-3" />
+                            </a>
+                          )}
+                          {canManage && !active.liveStartedAt && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                patchActiveRun({ liveStartedAt: MOCK_TODAY })
+                              }
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                            >
+                              <span className="size-1.5 rounded-full bg-white" />
+                              Set live
+                            </button>
+                          )}
+                          {canManage && active.liveStartedAt && !concluding && (
+                            <button
+                              type="button"
+                              onClick={() => setConcluding(true)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-approaching text-background hover:opacity-90 transition-opacity"
+                            >
+                              Conclude test
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {activeLive && daysLive >= INTERIM_NUDGE_DAYS &&
+                        !(active.metrics ?? []).some(isMetricLogged) && (
+                          <p className="text-xs text-status-approaching">
+                            Live for {daysLive} days with no interim numbers
+                            recorded. Drop running figures into the metrics rows.
+                          </p>
+                        )}
+                      {activeLive && daysLive >= CONCLUDE_PROMPT_DAYS && !concluding && (
+                        <p className="text-xs text-status-approaching">
+                          Test has been live {daysLive} days. Time to conclude.
+                        </p>
+                      )}
+
+                      <div>
+                        <label className="text-3xs text-subtle mb-1.5 block">
+                          Test URL
+                        </label>
+                        <input
+                          value={liveUrlDraft}
+                          disabled={!canManage}
+                          onChange={(e) => setLiveUrlDraft(e.target.value)}
+                          onBlur={() => {
+                            const v = liveUrlDraft.trim();
+                            if ((v || undefined) !== active.liveTestUrl) {
+                              patchActiveRun({ liveTestUrl: v || undefined });
+                            }
+                          }}
+                          placeholder="https://..."
+                          className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle disabled:opacity-50"
+                        />
+                      </div>
+
+                      {/* Per-metric editor */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-3xs text-subtle">Metrics</label>
+                          <span className="text-4xs text-subtle">
+                            Baseline / Interim
+                          </span>
+                        </div>
+                        {metricsDraft.map((m, i) => (
+                          <div
+                            key={i}
+                            className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1.5 items-center"
+                          >
+                            <input
+                              value={m.name}
+                              disabled={!canManage}
+                              onChange={(e) => updateMetric(i, { name: e.target.value })}
+                              onBlur={blurCommit}
+                              placeholder="Metric"
+                              className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle disabled:opacity-50"
+                            />
+                            <input
+                              value={m.baseline ?? ""}
+                              disabled={!canManage}
+                              onChange={(e) =>
+                                updateMetric(i, { baseline: e.target.value })
+                              }
+                              onBlur={blurCommit}
+                              placeholder="Baseline"
+                              className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle tabular-nums disabled:opacity-50"
+                            />
+                            <input
+                              value={m.interim ?? ""}
+                              disabled={!canManage}
+                              onChange={(e) =>
+                                updateMetric(i, { interim: e.target.value })
+                              }
+                              onBlur={blurCommit}
+                              placeholder="Interim"
+                              className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle tabular-nums disabled:opacity-50"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeMetric(i)}
+                              disabled={!canManage}
+                              className="size-7 inline-flex items-center justify-center rounded-sm text-muted hover:text-foreground hover:bg-surface-raised transition-colors disabled:opacity-50"
+                              title="Remove metric"
+                              aria-label="Remove metric"
+                            >
+                              <XMarkIcon className="size-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                        {canManage && (
+                          <button
+                            type="button"
+                            onClick={addMetric}
+                            className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border text-3xs font-medium text-subtle hover:text-foreground hover:border-border transition-colors"
+                          >
+                            <PlusIcon className="size-3" />
+                            Add metric
+                          </button>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="text-3xs text-subtle mb-1.5 block">
+                          Interim notes
+                        </label>
+                        <textarea
+                          value={interimNotesDraft}
+                          disabled={!canManage}
+                          onChange={(e) => setInterimNotesDraft(e.target.value)}
+                          onBlur={() => {
+                            const v = interimNotesDraft.trim();
+                            if ((v || undefined) !== active.interimNotes) {
+                              patchActiveRun({ interimNotes: v || undefined });
+                            }
+                          }}
+                          placeholder="What the running data is telling you."
+                          rows={2}
+                          className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle disabled:opacity-50"
+                        />
+                      </div>
+
+                      {/* Screenshot */}
+                      <div>
+                        <label className="text-3xs text-subtle mb-1.5 block">
+                          Screenshot
+                        </label>
+                        {active.screenshot ? (
+                          <div className="relative rounded overflow-hidden border border-border">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={active.screenshot}
+                              alt="Test screenshot"
+                              className="w-full max-h-80 object-cover"
+                            />
+                            {canManage && (
+                              <button
+                                onClick={() => patchActiveRun({ screenshot: undefined })}
+                                className="absolute top-2 right-2 size-7 rounded-full bg-black/70 text-white hover:bg-black flex items-center justify-center"
+                              >
+                                <XMarkIcon className="size-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingScreenshot || !canManage}
+                            className="w-full px-4 py-6 rounded-md border border-dashed border-border bg-surface text-sm text-subtle hover:border-border hover:text-foreground transition-colors disabled:opacity-60 disabled:cursor-wait"
+                          >
+                            {uploadingScreenshot ? "Uploading..." : "Upload a screenshot"}
+                          </button>
+                        )}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={onFile}
+                          className="hidden"
+                        />
+                      </div>
+
+                      {/* Conclude form */}
+                      {concluding && (
+                        <div className="rounded border border-border bg-surface-raised p-4 space-y-3">
+                          <p className="text-3xs font-medium uppercase tracking-wider text-subtle">
+                            Conclude test
+                          </p>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {(["winner", "loser", "inconclusive", "shipped"] as TestOutcome[]).map(
+                              (o) => (
+                                <button
+                                  key={o}
+                                  onClick={() => setOutcomeDraft(o)}
+                                  className={`px-2.5 py-2 rounded-sm text-3xs font-medium transition-colors ${
+                                    outcomeDraft === o
+                                      ? "text-background"
+                                      : "bg-surface text-muted border border-border hover:text-foreground"
+                                  }`}
+                                  style={
+                                    outcomeDraft === o
+                                      ? { background: OUTCOME_META[o].color }
+                                      : undefined
+                                  }
+                                >
+                                  {OUTCOME_META[o].label}
+                                </button>
+                              ),
+                            )}
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <input
+                              value={metricDraft}
+                              onChange={(e) => setMetricDraft(e.target.value)}
+                              placeholder="Metric"
+                              className="px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle"
+                            />
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={upliftDraft}
+                              onChange={(e) => setUpliftDraft(e.target.value)}
+                              placeholder="Uplift %"
+                              className="px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle"
+                            />
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={confidenceDraft}
+                              onChange={(e) => setConfidenceDraft(e.target.value)}
+                              placeholder="Confidence %"
+                              className="px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle"
+                            />
+                          </div>
+                          <textarea
+                            value={concludeNotesDraft}
+                            onChange={(e) => setConcludeNotesDraft(e.target.value)}
+                            placeholder="Notes"
+                            rows={3}
+                            className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => setConcluding(false)}
+                              className="px-3 py-2 rounded-md text-3xs font-semibold text-subtle hover:text-foreground"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={submitConclude}
+                              className="px-3 py-2 rounded-md text-3xs font-semibold bg-foreground text-background hover:opacity-90"
+                            >
+                              Save result
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </section>
+                  )}
+
+                  {/* After the active run is concluded, offer another test */}
+                  {canManage && activeConcluded && (
+                    <button
+                      onClick={addAnotherTest}
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-border text-xs font-medium text-subtle hover:text-foreground hover:border-border transition-colors"
+                    >
+                      <PlusIcon className="size-3.5" />
+                      Add another test
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+  );
 
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded bg-background border border-border"
+        className="h-full w-full max-w-2xl overflow-y-auto bg-background border-l border-border animate-slide-in-right"
       >
+        {/* ── Header ── */}
         <div className="px-6 pt-5 pb-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-3xs font-medium text-subtle">
@@ -3684,711 +5342,61 @@ function DetailModal({
               {d.title}
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            className="size-8 rounded text-subtle hover:text-foreground hover:bg-surface flex items-center justify-center shrink-0 transition-colors"
-          >
-            <XMarkIcon className="size-4" />
-          </button>
-        </div>
-
-        <div className="px-6 pb-6 flex items-end justify-between gap-6 flex-wrap">
-          <div className="flex items-start gap-10 flex-wrap">
-            <div>
-              <div className="flex items-center gap-2 text-2xs text-muted mb-2">
-                <span className="size-2 rounded-[3px]" style={{ background: d.onHold ? "var(--muted)" : statusColor }} />
-                Status
-              </div>
-              <div className="text-xl font-medium leading-none" style={{ color: d.onHold ? "var(--muted)" : statusColor }}>
-                {d.onHold ? "On hold" : style.label}
-              </div>
-            </div>
-            <div>
-              <div className="text-2xs text-muted mb-2">In phase</div>
-              <div className="text-xl font-medium text-foreground leading-none tabular-nums">
-                {formatHours(d.hoursInPhase)}
-              </div>
-            </div>
-            {calDays > 0 && (
-              <div>
-                <div className="text-2xs text-muted mb-2">Calendar</div>
-                <div className="text-xl font-medium text-foreground leading-none tabular-nums">
-                  {calDays}d
-                </div>
-              </div>
-            )}
-            {rounds > 0 && (
-              <div>
-                <div className="text-2xs text-muted mb-2">Revisions</div>
-                <div className="text-xl font-medium text-foreground leading-none tabular-nums">
-                  R{rounds}
-                </div>
-              </div>
-            )}
-          </div>
-          <Segmented
-            variant="ghost"
-            value={tab}
-            onChange={setTab}
-            options={[
-              { label: "Status", value: "status" },
-              { label: "Info", value: "info" },
-            ]}
-            className="shrink-0"
-          />
-        </div>
-
-        {/* Timing: retrofit-friendly. Set real dates when known; an undated card
-            reads neutral (never overdue), and On hold freezes the clock so
-            client-blocked work isn't flagged red. */}
-        <div className="px-6 pb-5 -mt-1">
-          <div className="flex flex-wrap items-end gap-x-6 gap-y-3 border-t border-border-faint pt-4">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-2xs text-muted">Start date</span>
-              <input
-                type="date"
-                value={d.startDate ?? ""}
-                disabled={!canManage}
-                onChange={(e) => onUpdate({ startDate: e.target.value || undefined })}
-                className="w-40 px-2.5 py-1.5 text-xs bg-surface border border-border rounded text-foreground focus:outline-none focus:border-ring disabled:opacity-50"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-2xs text-muted">Due date</span>
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="date"
-                  value={d.dueDate ?? ""}
-                  disabled={!canManage}
-                  onChange={(e) => onUpdate({ dueDate: e.target.value || undefined })}
-                  className="w-40 px-2.5 py-1.5 text-xs bg-surface border border-border rounded text-foreground focus:outline-none focus:border-ring disabled:opacity-50"
-                />
-                {d.dueDate && canManage && (
-                  <button
-                    onClick={() => onUpdate({ dueDate: undefined })}
-                    className="px-1.5 py-1 text-2xs text-subtle hover:text-foreground transition-colors"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              {!d.dueDate && (
-                <span className="text-3xs text-subtle">No due date · reads neutral, never overdue</span>
-              )}
-            </label>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-2xs text-muted">Hold</span>
-              <button
-                disabled={!canManage}
-                onClick={() => onUpdate({ onHold: !d.onHold })}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded border transition-colors disabled:opacity-50 ${
-                  d.onHold
-                    ? "border-border bg-surface-raised text-foreground"
-                    : "border-border-faint text-muted hover:text-foreground"
-                }`}
-              >
-                <span className={`size-1.5 rounded-full ${d.onHold ? "bg-status-approaching" : "bg-subtle"}`} />
-                {d.onHold ? "Waiting on client" : "Active"}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-6 pb-6 space-y-6">
-          {tab === "status" && (
-            <>
-          {/* Phase progress - the hero. Shows where the deliverable sits in
-              the build pipeline: done phases filled, current bright, future
-              hatched. Build-with-schedule cards get the dated version below
-              instead, so this is skipped for them. */}
-          {(() => {
-            const hasBuildSchedule =
-              d.projectType === "build" && !!d.projectStartDate && !!d.turnaroundDays;
-            if (hasBuildSchedule) return null;
-            const PIPELINE: PreviewPhase[] = [
-              ...PHASE_1_ORDER,
-              "external-revisions",
-              ...PHASE_2_ORDER,
-            ];
-            const currentIdx = PIPELINE.indexOf(d.phase);
-            if (currentIdx < 0) return null;
-            return (
-              <section>
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="text-3xs font-medium text-subtle">Progress</h3>
-                  <span className="text-4xs text-subtle">
-                    {previewPhaseMeta(d.phase)?.label ?? d.phase}
-                  </span>
-                </div>
-                <div className="flex gap-1 h-2">
-                  {PIPELINE.map((p, i) => (
-                    <div
-                      key={p}
-                      title={previewPhaseMeta(p)?.label ?? p}
-                      className={`flex-1 rounded-sm ${
-                        i === currentIdx
-                          ? "bg-foreground"
-                          : i < currentIdx
-                            ? "bg-white/25"
-                            : "border border-white/[0.05] bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.05)_3px,rgba(255,255,255,0.05)_6px)]"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <div className="mt-2 flex items-center justify-between text-4xs text-subtle">
-                  <span>{previewPhaseMeta(PIPELINE[0])?.label ?? PIPELINE[0]}</span>
-                  <span>
-                    {previewPhaseMeta(PIPELINE[PIPELINE.length - 1])?.label ??
-                      PIPELINE[PIPELINE.length - 1]}
-                  </span>
-                </div>
-              </section>
-            );
-          })()}
-          {/* Build schedule - the full Phase 1 + Phase 2 internal due dates
-              for this project. Phase 2 reads "TBC" until the client approves
-              the design (first card moves Ext Rev -> Dev). External client
-              deadline shown at the bottom for reference. */}
-          {d.projectType === "build" &&
-            d.projectStartDate &&
-            d.turnaroundDays &&
-            (() => {
-              /* Manual Phase 2 deadline IS the client deadline when set
-               * (Phase 2 = the final stretch that lands live). Falls back
-               * to the computed startDate + turnaroundDays when admin
-               * hasn't pinned one. */
-              const clientDeadlineISO =
-                d.projectPhase2Deadline ??
-                addCalendarDays(d.projectStartDate, d.turnaroundDays);
-              // Find the latest Phase 2 due date - if it lands past the
-              // client deadline, the schedule has slipped because external
-              // rev took longer than budgeted. Warn the team.
-              const lastPhase2Due = d.projectClientApprovedAt
-                ? phaseInternalDueDate("launch-testing", {
-                    type: d.projectType,
-                    turnaroundDays: d.turnaroundDays,
-                    startDate: d.projectStartDate,
-                    clientApprovedAt: d.projectClientApprovedAt,
-                  })
-                : null;
-              const isLate =
-                !!lastPhase2Due &&
-                lastPhase2Due.localeCompare(clientDeadlineISO) > 0;
-              // Schedule grid includes External Revisions explicitly so the
-              // 3-day client window is visible. The card for it uses
-              // sentToClientAt + 2 day soft target since External Rev isn't
-              // part of the internal phase-due engine.
-              const scheduleCells: {
-                phase: PreviewPhase;
-                due: string | null;
-                isCurrent: boolean;
-              }[] = [
-                ...PHASE_1_ORDER.map((p) => ({
-                  phase: p,
-                  due: phaseInternalDueDate(p, {
-                    type: d.projectType,
-                    turnaroundDays: d.turnaroundDays,
-                    startDate: d.projectStartDate,
-                    clientApprovedAt: d.projectClientApprovedAt,
-                  }),
-                  isCurrent: d.phase === p,
-                })),
-                {
-                  phase: "external-revisions" as PreviewPhase,
-                  due: d.sentToClientAt
-                    ? addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS)
-                    : null,
-                  isCurrent: d.phase === "external-revisions",
-                },
-                ...PHASE_2_ORDER.map((p) => ({
-                  phase: p,
-                  due: phaseInternalDueDate(p, {
-                    type: d.projectType,
-                    turnaroundDays: d.turnaroundDays,
-                    startDate: d.projectStartDate,
-                    clientApprovedAt: d.projectClientApprovedAt,
-                  }),
-                  isCurrent: d.phase === p,
-                })),
-              ];
-              return (
-                <section className="border-t border-white/[0.05] pt-6">
-                  {(() => {
-                    const currentIdx = scheduleCells.findIndex((c) => c.isCurrent);
-                    const first = scheduleCells[0];
-                    const last = scheduleCells[scheduleCells.length - 1];
-                    const currentCell = currentIdx >= 0 ? scheduleCells[currentIdx] : null;
-                    return (
-                      <>
-                        <div className="flex items-baseline justify-between mb-3">
-                          <h3 className="text-3xs font-medium text-subtle">Progress</h3>
-                          <span className="text-4xs text-subtle">{d.turnaroundDays}d build</span>
-                        </div>
-                        <div className="flex gap-1 h-2">
-                          {scheduleCells.map((c, i) => {
-                            const done = currentIdx >= 0 && i < currentIdx;
-                            return (
-                              <div
-                                key={c.phase}
-                                title={`${previewPhaseMeta(c.phase)?.label ?? c.phase}${c.due ? ` · ${formatShortDate(c.due)}` : ""}`}
-                                className={`flex-1 rounded-sm ${
-                                  c.isCurrent
-                                    ? "bg-foreground"
-                                    : done
-                                      ? "bg-white/25"
-                                      : "border border-white/[0.05] bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.05)_3px,rgba(255,255,255,0.05)_6px)]"
-                                }`}
-                              />
-                            );
-                          })}
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-4xs text-subtle">
-                          <span>{previewPhaseMeta(first.phase)?.label ?? first.phase}</span>
-                          <span>{previewPhaseMeta(last.phase)?.label ?? last.phase}</span>
-                        </div>
-                        {currentCell && (
-                          <p className="mt-3 text-2xs text-muted">
-                            Currently in{" "}
-                            <span className="text-foreground font-medium">
-                              {previewPhaseMeta(currentCell.phase)?.label ?? currentCell.phase}
-                            </span>
-                            {currentCell.due && (
-                              <>
-                                {" · due "}
-                                <span className="text-foreground tabular-nums">
-                                  {formatShortDate(currentCell.due)}
-                                </span>
-                              </>
-                            )}
-                          </p>
-                        )}
-                      </>
-                    );
-                  })()}
-                  {isLate && (
-                    <div className="mt-3 px-3 py-2 rounded bg-status-late/10 border border-status-late/30 text-3xs text-status-late">
-                      External revisions ran long: Launch & Testing now lands
-                      after the client deadline. Escalate or rescope.
-                    </div>
-                  )}
-                  {canManage && (
-                  <div className="mt-3 pt-3 border-t border-border space-y-2 text-3xs">
-                    {/* These two anchors drive the auto-computed per-phase
-                      * due dates in the schedule grid above. They're a
-                      * fallback - if Phase 1 / Phase 2 deadlines are set
-                      * directly in the Client deadlines section, those
-                      * take precedence for stuck/approaching/on-track. */}
-                    <p className="text-4xs text-muted italic pb-1">
-                      Schedule anchors (used when no manual deadlines set)
-                    </p>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-subtle shrink-0">
-                        Project start
-                      </span>
-                      <div className="min-w-0 flex-1 max-w-[180px]">
-                        <DarkDatePicker
-                          value={d.projectStartDate}
-                          onChange={(v) => onSetProjectStartDate(v)}
-                          placeholder="Set start date"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-subtle shrink-0">
-                        Client approved
-                      </span>
-                      <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-                        <div className="max-w-[180px] flex-1">
-                          <DarkDatePicker
-                            value={d.projectClientApprovedAt}
-                            onChange={(v) => onSetClientApproval(v)}
-                            placeholder="Mark approved"
-                          />
-                        </div>
-                        {d.projectClientApprovedAt && (
-                          <button
-                            onClick={onResetClientApproval}
-                            className="text-4xs text-subtle hover:text-status-late transition-colors shrink-0"
-                            title="Reset client approval - Phase 2 dates go back to TBC"
-                          >
-                            Reset
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-subtle">
-                        Client deadline
-                      </span>
-                      <span
-                        className={`tabular-nums ${
-                          isLate ? "text-status-late" : "text-foreground"
-                        }`}
-                      >
-                        {formatShortDate(clientDeadlineISO)}
-                      </span>
-                    </div>
-                  </div>
-                  )}
-                </section>
-              );
-            })()}
-
-          {/* Design-to-dev handover. The gate: this card cannot enter a Phase 2
-            * build phase until the handover is submitted. Hidden for tickets /
-            * documents (not part of the build flow). Once submitted it stays
-            * visible as a link summary so dev has everything in one place. */}
-          {!["tickets", "documents"].includes(d.phase) && (
-            <DesignHandoffSection
-              deliverable={d}
-              canManage={canManage}
-              onSaveDraft={(h) => onUpdate({ designHandoff: h })}
-              onSubmit={onSubmitHandoff}
-            />
-          )}
-
-          {/* Manual client-facing deadlines per phase bucket. Shown for
-            * every project (build + retainer) so admin can pin an
-            * externally-imposed deadline (campaign launch, event,
-            * client cut-off) without depending on the build schedule's
-            * computed math. When set, override the per-phase due
-            * dates for stuck/approaching/on-track on every card in
-            * that bucket; Phase 2 also becomes the client deadline. */}
-          {canManage && (
-          <section className="border-t border-white/[0.05] pt-6">
-            <h3 className="text-3xs font-medium text-subtle mb-3">
-              Client deadlines
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-3xs text-subtle mb-1.5">Phase 1 deadline</div>
-                <DarkDatePicker
-                  value={d.projectPhase1Deadline}
-                  onChange={(v) => onSetPhase1Deadline(v)}
-                  placeholder="Set Phase 1 due"
-                />
-              </div>
-              <div>
-                <div className="text-3xs text-subtle mb-1.5">Phase 2 deadline</div>
-                <DarkDatePicker
-                  value={d.projectPhase2Deadline}
-                  onChange={(v) => onSetPhase2Deadline(v)}
-                  placeholder="Set Phase 2 due"
-                />
-              </div>
-            </div>
-          </section>
-          )}
-
-          {/* Internal Revisions decision bar - Approve pushes the design to
-              the client (green state, External Rev), Request revisions
-              bounces back to Design with the Revisions tag. Both pair with
-              notifyAssigneeChange so whoever owns the next phase gets a ping
-              when Slack wires in.
-              The phase-transition action blocks below (complete / approve /
-              request revisions / QA / conclude) are all management actions,
-              each gated with canManage so members get a read-only board. */}
-          {/* Tickets get a Complete button instead of phase progression. Once
-              completed they fall off the active board (filtered out in
-              visibleDeliverables); the modal stays openable from the strip
-              while open here, with an Undo button if the user wants it back. */}
-          {canManage && d.phase === "tickets" && (
-            <section
-              className={`rounded border p-4 ${
-                d.completedAt
-                  ? "border-status-ontrack/40 bg-status-ontrack/5"
-                  : "border-border bg-background"
-              }`}
+          <div className="flex items-center gap-3 shrink-0">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-md border border-border-faint bg-surface px-2 py-1 text-2xs font-medium"
+              style={{ color: d.onHold ? "var(--muted)" : statusColor }}
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p
-                    className={`text-3xs font-bold ${
-                      d.completedAt ? "text-status-ontrack" : "text-subtle"
-                    }`}
-                  >
-                    {d.completedAt ? "Completed" : "Ticket status"}
-                  </p>
-                  <p className="text-sm text-foreground mt-0.5">
-                    {d.completedAt
-                      ? `Marked done ${formatShortDate(d.completedAt)}. No longer on the board.`
-                      : "Mark this ticket as resolved to clear it from the board."}
-                  </p>
-                </div>
-                <div className="shrink-0">
-                  {d.completedAt ? (
-                    <button
-                      onClick={onUncompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
-                    >
-                      <ArrowUturnLeftIcon className="size-3" />
-                      Reopen
-                    </button>
-                  ) : (
-                    <button
-                      onClick={onCompleteTicket}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
-                    >
-                      <CheckCircleIcon className="size-3.5" />
-                      Complete
-                    </button>
-                  )}
-                </div>
-              </div>
-            </section>
-          )}
+              <span
+                className="size-1.5 rounded-full"
+                style={{ background: d.onHold ? "var(--muted)" : statusColor }}
+              />
+              {d.onHold ? "On hold" : style.label}
+            </span>
+            <button
+              onClick={onClose}
+              className="size-8 rounded text-subtle hover:text-foreground hover:bg-surface flex items-center justify-center transition-colors"
+            >
+              <XMarkIcon className="size-4" />
+            </button>
+          </div>
+        </div>
 
-          {canManage && d.phase === "internal-revisions" && !d.testResult && (
-            <section className="border-t border-white/[0.05] pt-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p
-                    className={`text-3xs font-medium ${
-                      d.approvedAt ? "text-status-ontrack" : "text-subtle"
-                    }`}
-                  >
-                    {d.approvedAt ? "Approved - send to client" : "Internal sign-off"}
-                  </p>
-                  <p className="text-sm text-foreground mt-0.5">
-                    {d.approvedAt
-                      ? `Signed off ${formatShortDate(d.approvedAt)}. Drag the card to External Revisions once you have sent it.`
-                      : "Approve and hand to the primary designer to send, or bounce back to Design."}
-                  </p>
-                </div>
-                {d.approvedAt ? (
-                  <button
-                    onClick={onUndoApprove}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-surface text-muted border border-border hover:text-white hover:border-border transition-colors"
-                  >
-                    <ArrowUturnLeftIcon className="size-3" />
-                    Undo
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={onRequestRevisions}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
-                    >
-                      <ArrowUturnLeftIcon className="size-3" />
-                      Request revisions
-                    </button>
-                    <button
-                      onClick={onApproveInternal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
-                    >
-                      <CheckCircleIcon className="size-3.5" />
-                      Approve
-                    </button>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* QA decision bar - mirror of Internal Rev. Approve pushes to
-              Launch & Testing; Send back bounces to Dev with the Revisions
-              tag (the move handler auto-flags backward moves). */}
-          {canManage && d.phase === "qa" && !d.testResult && (
-            <section className="border-t border-white/[0.05] pt-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-3xs font-bold text-subtle">
-                    QA sign-off
-                  </p>
-                  <p className="text-sm text-foreground mt-0.5">
-                    Approve to push to Launch & Testing, or send back to Dev
-                    if anything broke.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={onKickbackFromQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
-                  >
-                    <ArrowUturnLeftIcon className="size-3" />
-                    Send back
-                  </button>
-                  <button
-                    onClick={onApproveQA}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
-                  >
-                    <CheckCircleIcon className="size-3.5" />
-                    Approve
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
-
-          <section className="grid grid-cols-2 gap-4">
+        {/* ── Surface: always-visible core info ── */}
+        <div className="px-6 pb-6 space-y-5 border-b border-border-faint">
+          {/* The three dates that matter, at a glance. Editable lower, in the
+              Development group schedule anchors. */}
+          <div className="grid grid-cols-3 gap-6">
             <div>
-              <h3 className="text-3xs font-medium text-subtle mb-2">
-                Active assignee
-              </h3>
-              {d.phase === "launch-testing" ? (
-                <p className="text-sm text-foreground">
-                  {LAUNCH_TESTING_TESTER}
-                  <span className="text-muted mx-1.5">·</span>
-                  {LAUNCH_TESTING_DEV}
-                  <span className="block text-4xs text-subtle mt-1">
-                    Test / Dev
-                  </span>
-                </p>
-              ) : d.phase === "strategy" ? (
-                <p className="text-sm text-foreground">
-                  {STRATEGY_OWNER}
-                  <span className="block text-4xs text-subtle mt-1">
-                    Strategy owner
-                  </span>
-                </p>
-              ) : d.phase === "internal-revisions" && d.approvedAt ? (
-                <p className="text-sm text-foreground">
-                  {d.designer || role.name}
-                  <span className="block text-4xs text-status-ontrack mt-1">
-                    Approved - send to client
-                  </span>
-                </p>
-              ) : (
-                <p className="text-sm text-foreground">
-                  {role.name}
-                  {role.isSecondary && (
-                    <span className="text-subtle ml-2 text-xs">
-                      (secondary)
-                    </span>
-                  )}
-                </p>
-              )}
+              <div className="text-xs text-subtle">Start date</div>
+              <div className="mt-1 text-sm text-foreground">
+                {d.projectStartDate ? formatShortDate(d.projectStartDate) : "TBC"}
+              </div>
             </div>
             <div>
-              <h3 className="text-3xs font-medium text-subtle mb-2">
-                Due
-              </h3>
-              {canManage ? (
-                <DarkDatePicker
-                  value={d.dueDate}
-                  onChange={(v) => onUpdate({ dueDate: v })}
-                />
-              ) : (
-                <p className="text-sm text-foreground">
-                  {d.dueDate ? formatShortDate(d.dueDate) : "Not set"}
-                </p>
-              )}
-            </div>
-          </section>
-            </>
-          )}
-
-          {tab === "info" && (
-            <>
-          <section>
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-3xs font-medium text-subtle">
-                Strategy brief
-              </h3>
-              {d.brief && !editingBrief && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBriefDraft(d.brief ?? "");
-                    setEditingBrief(true);
-                  }}
-                  className="inline-flex items-center gap-1 text-3xs font-medium text-subtle hover:text-white transition-colors"
-                >
-                  <PencilSquareIcon className="size-3" />
-                  Edit
-                </button>
-              )}
-            </div>
-            {editingBrief ? (
-              <div className="flex items-center gap-2">
-                <input
-                  autoFocus
-                  value={briefDraft}
-                  onChange={(e) => setBriefDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      onUpdate({ brief: briefDraft.trim() || undefined });
-                      setEditingBrief(false);
-                    }
-                    if (e.key === "Escape") {
-                      setBriefDraft(d.brief ?? "");
-                      setEditingBrief(false);
-                    }
-                  }}
-                  placeholder="Paste brief URL (Google Doc, Notion, SharePoint, etc.)"
-                  className="flex-1 min-w-0 px-3 py-2 rounded bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    onUpdate({ brief: briefDraft.trim() || undefined });
-                    setEditingBrief(false);
-                  }}
-                  className="px-3 py-2 rounded bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBriefDraft(d.brief ?? "");
-                    setEditingBrief(false);
-                  }}
-                  className="px-3 py-2 rounded text-3xs font-semibold text-subtle hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
+              <div className="text-xs text-subtle">Phase 1 deadline</div>
+              <div className="mt-1 text-sm text-foreground">
+                {d.projectPhase1Deadline
+                  ? formatShortDate(d.projectPhase1Deadline)
+                  : "TBC"}
               </div>
-            ) : d.brief ? (
-              <a
-                href={d.brief}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-white underline-offset-4 hover:underline break-all"
-              >
-                <DocumentTextIcon className="size-3.5 shrink-0" />
-                {d.brief}
-                <ArrowTopRightOnSquareIcon className="size-3.5 shrink-0" />
-              </a>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setBriefDraft("");
-                  setEditingBrief(true);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
-              >
-                <PlusIcon className="size-3.5" />
-                Attach brief URL
-              </button>
-            )}
-          </section>
-
-          {/* Figma URL - separate slot from Strategy brief because the team
-              opens this every phase post-Strategy (design, dev for hand-off,
-              QA for spec check). Same edit-on-pencil pattern as brief. */}
-          <section>
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="text-3xs font-medium text-subtle">
-                Figma
-              </h3>
-              {d.figmaUrl && !editingFigma && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFigmaDraft(d.figmaUrl ?? "");
-                    setEditingFigma(true);
-                  }}
-                  className="inline-flex items-center gap-1 text-3xs font-medium text-subtle hover:text-white transition-colors"
-                >
-                  <PencilSquareIcon className="size-3" />
-                  Edit
-                </button>
-              )}
             </div>
+            <div>
+              <div className="text-xs text-subtle">Phase 2 deadline</div>
+              <div className="mt-1 text-sm text-foreground">
+                {d.projectPhase2Deadline
+                  ? formatShortDate(d.projectPhase2Deadline)
+                  : "TBC"}
+              </div>
+            </div>
+          </div>
+
+          {/* Resource links: Figma + Strategy brief. The surface is the single
+              home for both - view (open) and edit right here, so the lane tabs
+              stay focused on workflow actions. */}
+          <div className="flex flex-wrap items-center gap-2">
             {editingFigma ? (
-              <div className="flex items-center gap-2">
+              <div className="flex w-full items-center gap-2">
                 <input
                   autoFocus
                   value={figmaDraft}
@@ -4398,67 +5406,470 @@ function DetailModal({
                       onUpdate({ figmaUrl: figmaDraft.trim() || undefined });
                       setEditingFigma(false);
                     }
-                    if (e.key === "Escape") {
-                      setFigmaDraft(d.figmaUrl ?? "");
-                      setEditingFigma(false);
-                    }
+                    if (e.key === "Escape") setEditingFigma(false);
                   }}
                   placeholder="Paste Figma file or frame URL"
-                  className="flex-1 min-w-0 px-3 py-2 rounded bg-background border border-border text-sm text-foreground focus:outline-none focus:border-subtle placeholder:text-muted"
+                  className="min-w-0 flex-1 rounded border border-border bg-surface px-2.5 py-1.5 text-sm text-foreground placeholder:text-subtle focus:border-ring focus:outline-none"
                 />
                 <button
-                  type="button"
                   onClick={() => {
                     onUpdate({ figmaUrl: figmaDraft.trim() || undefined });
                     setEditingFigma(false);
                   }}
-                  className="px-3 py-2 rounded bg-white text-background text-3xs font-semibold hover:bg-foreground transition-colors"
+                  className="rounded-md bg-foreground px-2.5 py-1.5 text-3xs font-semibold text-background transition-opacity hover:opacity-90"
                 >
                   Save
                 </button>
                 <button
-                  type="button"
-                  onClick={() => {
-                    setFigmaDraft(d.figmaUrl ?? "");
-                    setEditingFigma(false);
-                  }}
-                  className="px-3 py-2 rounded text-3xs font-semibold text-subtle hover:text-white transition-colors"
+                  onClick={() => setEditingFigma(false)}
+                  className="px-1.5 text-3xs font-semibold text-subtle transition-colors hover:text-foreground"
                 >
                   Cancel
                 </button>
               </div>
-            ) : d.figmaUrl ? (
-              <a
-                href={d.figmaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-white underline-offset-4 hover:underline break-all"
-              >
-                <PuzzlePieceIcon className="size-3.5 shrink-0" />
-                {d.figmaUrl}
-                <ArrowTopRightOnSquareIcon className="size-3.5 shrink-0" />
-              </a>
+            ) : editingBrief ? (
+              <div className="flex w-full items-center gap-2">
+                <input
+                  autoFocus
+                  value={briefDraft}
+                  onChange={(e) => setBriefDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      onUpdate({ brief: briefDraft.trim() || undefined });
+                      setEditingBrief(false);
+                    }
+                    if (e.key === "Escape") setEditingBrief(false);
+                  }}
+                  placeholder="Paste strategy brief URL (Notion, Doc...)"
+                  className="min-w-0 flex-1 rounded border border-border bg-surface px-2.5 py-1.5 text-sm text-foreground placeholder:text-subtle focus:border-ring focus:outline-none"
+                />
+                <button
+                  onClick={() => {
+                    onUpdate({ brief: briefDraft.trim() || undefined });
+                    setEditingBrief(false);
+                  }}
+                  className="rounded-md bg-foreground px-2.5 py-1.5 text-3xs font-semibold text-background transition-opacity hover:opacity-90"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditingBrief(false)}
+                  className="px-1.5 text-3xs font-semibold text-subtle transition-colors hover:text-foreground"
+                >
+                  Cancel
+                </button>
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setFigmaDraft("");
-                  setEditingFigma(true);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-dashed border-border text-sm text-subtle hover:text-foreground hover:border-border transition-colors"
-              >
-                <PlusIcon className="size-3.5" />
-                Attach Figma URL
-              </button>
+              <>
+                <ResourceChip
+                  icon={<PuzzlePieceIcon className="size-3.5 shrink-0" />}
+                  label="Figma"
+                  url={d.figmaUrl}
+                  canManage={canManage}
+                  onEdit={() => {
+                    setFigmaDraft(d.figmaUrl ?? "");
+                    setEditingFigma(true);
+                  }}
+                />
+                <ResourceChip
+                  icon={<DocumentTextIcon className="size-3.5 shrink-0" />}
+                  label="Strategy brief"
+                  url={d.brief}
+                  canManage={canManage}
+                  onEdit={() => {
+                    setBriefDraft(d.brief ?? "");
+                    setEditingBrief(true);
+                  }}
+                />
+              </>
             )}
-          </section>
+          </div>
 
-          <section>
-            <h3 className="text-3xs font-medium text-subtle mb-2">
+          {/* Tickets resolve in place - complete / reopen right here */}
+          {d.phase === "tickets" && canManage && (
+            <section
+              className={`rounded border p-5 ${
+                d.completedAt
+                  ? "border-status-ontrack/40 bg-status-ontrack/5"
+                  : "border-border-faint bg-surface"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p
+                    className={`text-3xs font-medium uppercase tracking-wider ${
+                      d.completedAt ? "text-status-ontrack" : "text-subtle"
+                    }`}
+                  >
+                    {d.completedAt ? "Completed" : "Ticket status"}
+                  </p>
+                  <p className="text-sm text-foreground mt-1">
+                    {d.completedAt
+                      ? `Marked done ${formatShortDate(d.completedAt)}. No longer on the board.`
+                      : "Mark this ticket as resolved to clear it from the board."}
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  {d.completedAt ? (
+                    <button
+                      onClick={onUncompleteTicket}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-foreground transition-colors"
+                    >
+                      <ArrowUturnLeftIcon className="size-3" />
+                      Reopen
+                    </button>
+                  ) : (
+                    <button
+                      onClick={onCompleteTicket}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                    >
+                      <CheckCircleIcon className="size-3.5" />
+                      Complete
+                    </button>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* ── Phase-grouped checklist ── */}
+        <div className="px-6 py-5 space-y-4">
+          {(() => {
+            const currentIdx = SUBTASK_GROUP_ORDER.indexOf(currentGroup);
+
+            // Render a single group's body (no header - the switcher handles
+            // phase selection; only the viewed group is shown).
+            const renderGroup = (group: SubtaskGroup) => {
+              const idx = SUBTASK_GROUP_ORDER.indexOf(group);
+              const rel: "past" | "current" | "future" =
+                idx < currentIdx ? "past" : idx === currentIdx ? "current" : "future";
+              // Every group (incl. optimisation) is a plain checklist now.
+              const groupSubs = subs.filter((s) => s.group === group);
+
+              return (
+                <section
+                  key={group}
+                  className={`rounded border bg-surface ${
+                    rel === "current"
+                      ? "border-ring ring-1 ring-ring/40 bg-ring/5"
+                      : "border-border-faint"
+                  }`}
+                >
+                    <div>
+                        <>
+                          <div className="divide-y divide-border-faint">
+                            {groupSubs.map((s) => {
+                              const globalIdx = subs.indexOf(s);
+                              const status = subStatuses[globalIdx];
+                              // Handover rows expand into the reused form.
+                              if (s.kind === "design_handoff") {
+                                return (
+                                  <div key={s.id} className="p-4">
+                                    <DesignHandoffSection
+                                      deliverable={d}
+                                      canManage={canManage}
+                                      onSaveDraft={(h) =>
+                                        onUpdate({ designHandoff: h })
+                                      }
+                                      onSubmit={onSubmitHandoff}
+                                    />
+                                  </div>
+                                );
+                              }
+                              if (s.kind === "dev_handoff") {
+                                return (
+                                  <div key={s.id} className="p-4">
+                                    <DevHandoffSection
+                                      deliverable={d}
+                                      canManage={canManage}
+                                      onSubmit={onSubmitDevHandoff}
+                                      onReopen={() =>
+                                        onUpdate({
+                                          devHandoff: {
+                                            ...(d.devHandoff ?? {}),
+                                            submittedAt: undefined,
+                                            submittedBy: undefined,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                );
+                              }
+                              return (
+                                <SubtaskRow
+                                  key={s.id}
+                                  subtask={s}
+                                  status={status}
+                                  owner={ownerFor(s)}
+                                  isNextActionable={globalIdx === nextActionableIdx}
+                                  canManage={canManage}
+                                  onToggle={() => toggleSubtask(s.id)}
+                                  onRemove={() => removeSubtask(s.id)}
+                                />
+                              );
+                            })}
+                          </div>
+
+                          {/* Internal-revisions sign-off lives in Design */}
+                          {group === "design" &&
+                            canManage &&
+                            d.phase === "internal-revisions" &&
+                            !d.testResult && (
+                              <div className="border-t border-border-faint p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p
+                                      className={`text-3xs font-medium uppercase tracking-wider ${
+                                        d.approvedAt
+                                          ? "text-status-ontrack"
+                                          : "text-subtle"
+                                      }`}
+                                    >
+                                      {d.approvedAt
+                                        ? "Approved - send to client"
+                                        : "Internal sign-off"}
+                                    </p>
+                                    <p className="text-sm text-foreground mt-1">
+                                      {d.approvedAt
+                                        ? `Signed off ${formatShortDate(d.approvedAt)}. Drag the card to External Revisions once you have sent it.`
+                                        : "Approve and hand to the primary designer to send, or bounce back to Design."}
+                                    </p>
+                                  </div>
+                                  {d.approvedAt ? (
+                                    <button
+                                      onClick={onUndoApprove}
+                                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-foreground transition-colors"
+                                    >
+                                      <ArrowUturnLeftIcon className="size-3" />
+                                      Undo
+                                    </button>
+                                  ) : (
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <button
+                                        onClick={onRequestRevisions}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
+                                      >
+                                        <ArrowUturnLeftIcon className="size-3" />
+                                        Request revisions
+                                      </button>
+                                      <button
+                                        onClick={onApproveInternal}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                                      >
+                                        <CheckCircleIcon className="size-3.5" />
+                                        Approve
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                          {/* QA sign-off lives in Development */}
+                          {group === "development" &&
+                            canManage &&
+                            d.phase === "qa" &&
+                            !d.testResult && (
+                              <div className="border-t border-border-faint p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="text-3xs font-medium uppercase tracking-wider text-subtle">
+                                      QA sign-off
+                                    </p>
+                                    <p className="text-sm text-foreground mt-1">
+                                      Approve to push to Launch & Testing, or send
+                                      back to Dev if anything broke.
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <button
+                                      onClick={onKickbackFromQA}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
+                                    >
+                                      <ArrowUturnLeftIcon className="size-3" />
+                                      Send back
+                                    </button>
+                                    <button
+                                      onClick={onApproveQA}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                                    >
+                                      <CheckCircleIcon className="size-3.5" />
+                                      Approve → Launch
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                          {/* Admin build-schedule anchors live in Development */}
+                          {group === "development" &&
+                            canManage &&
+                            hasBuildSchedule && (
+                              <div className="border-t border-border-faint p-4">
+                                <h3 className="mb-3 text-3xs font-medium uppercase tracking-wider text-subtle">
+                                  Schedule
+                                </h3>
+                                <div className="space-y-3 text-xs">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-subtle shrink-0">
+                                      Project start
+                                    </span>
+                                    <div className="min-w-0 flex-1 max-w-[200px]">
+                                      <DarkDatePicker
+                                        value={d.projectStartDate}
+                                        onChange={(v) => onSetProjectStartDate(v)}
+                                        placeholder="Set start date"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-subtle shrink-0">
+                                      Client approved
+                                    </span>
+                                    <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                                      <div className="max-w-[200px] flex-1">
+                                        <DarkDatePicker
+                                          value={d.projectClientApprovedAt}
+                                          onChange={(v) => onSetClientApproval(v)}
+                                          placeholder="Mark approved"
+                                        />
+                                      </div>
+                                      {d.projectClientApprovedAt && (
+                                        <button
+                                          onClick={onResetClientApproval}
+                                          className="text-3xs text-subtle hover:text-status-late transition-colors shrink-0"
+                                          title="Reset client approval - Phase 2 dates go back to TBC"
+                                        >
+                                          Reset
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-subtle shrink-0">
+                                      Phase 1 deadline
+                                    </span>
+                                    <div className="min-w-0 flex-1 max-w-[200px]">
+                                      <DarkDatePicker
+                                        value={d.projectPhase1Deadline}
+                                        onChange={(v) => onSetPhase1Deadline(v)}
+                                        placeholder="Set Phase 1 due"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-subtle shrink-0">
+                                      Phase 2 deadline
+                                    </span>
+                                    <div className="min-w-0 flex-1 max-w-[200px]">
+                                      <DarkDatePicker
+                                        value={d.projectPhase2Deadline}
+                                        onChange={(v) => onSetPhase2Deadline(v)}
+                                        placeholder="Set Phase 2 due"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                          {/* Add a one-off task to this group */}
+                          {canManage && (
+                            <div className="border-t border-border-faint">
+                              <AddSubtaskForm
+                                group={group}
+                                existing={subs}
+                                onCommit={commitSubtasks}
+                              />
+                            </div>
+                          )}
+                        </>
+                    </div>
+                </section>
+              );
+            };
+
+            // Phase switcher: click a phase to view it. Active phase selected
+            // by default; done phases show a check, upcoming a lock.
+            const switcher = (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {SUBTASK_GROUP_ORDER.map((group) => {
+                  const idx = SUBTASK_GROUP_ORDER.indexOf(group);
+                  const rel =
+                    idx < currentIdx
+                      ? "past"
+                      : idx === currentIdx
+                        ? "current"
+                        : "future";
+                  const active = group === viewedGroup;
+                  return (
+                    <button
+                      key={group}
+                      type="button"
+                      onClick={() => setViewedGroup(group)}
+                      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-2xs font-medium transition-colors ${
+                        active
+                          ? "bg-surface-raised text-foreground ring-1 ring-ring/40"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      {rel === "past" ? (
+                        <CheckCircleIcon className="size-3.5 text-status-ontrack" />
+                      ) : rel === "future" ? (
+                        <LockClosedIcon className="size-3 text-subtle" />
+                      ) : (
+                        <span className="size-1.5 rounded-full bg-ring" />
+                      )}
+                      {SUBTASK_GROUP_LABEL[group]}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+            return (
+              <>
+                {switcher}
+                {renderGroup(viewedGroup)}
+              </>
+            );
+          })()}
+        </div>
+
+
+        {/* ── Delay flag + notes (bottom) ── */}
+        <div className="px-6 py-5 border-t border-border-faint space-y-5">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs text-subtle">Delay</span>
+            <button
+              disabled={!canManage}
+              onClick={() => onUpdate({ onHold: !d.onHold })}
+              className={`inline-flex w-fit items-center gap-1.5 px-2.5 py-1.5 text-xs rounded border transition-colors disabled:opacity-50 ${
+                d.onHold
+                  ? "border-border bg-surface-raised text-foreground"
+                  : "border-border-faint text-muted hover:text-foreground"
+              }`}
+            >
+              <span
+                className={`size-1.5 rounded-full ${d.onHold ? "bg-status-approaching" : "bg-subtle"}`}
+              />
+              {d.onHold ? "Delayed, waiting on client" : "On track"}
+            </button>
+            {d.onHold && (
+              <span className="text-3xs text-subtle">
+                Deadline clock is paused. Note what's holding it up below.
+              </span>
+            )}
+          </div>
+
+          <div>
+            <h3 className="mb-2 text-3xs font-medium uppercase tracking-wider text-subtle">
               Notes
             </h3>
             <textarea
               value={notesDraftDeliverable}
+              disabled={!canManage}
               onChange={(e) => setNotesDraftDeliverable(e.target.value)}
               onBlur={() => {
                 const v = notesDraftDeliverable.trim();
@@ -4468,209 +5879,13 @@ function DetailModal({
               }}
               placeholder="Context, edge cases, blockers - anything that doesn't fit the structured fields."
               rows={3}
-              className="w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted leading-relaxed"
+              className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-ring placeholder:text-subtle leading-relaxed disabled:opacity-50"
             />
-          </section>
-            </>
-          )}
+          </div>
+        </div>
 
-          {tab === "status" && (
-            <>
-          {/* Phase history is collapsed by default at the bottom of the modal. */}
-
-          {/* Nudge banner only. The actual Conclude button lives in the
-              Test setup header above so the strategist isnt staring at two
-              identical buttons. */}
-          {needsConclude && !d.testResult && !concluding && (
-            <section className="rounded border border-status-approaching/40 bg-status-approaching/5 p-4">
-              <p className="text-3xs font-bold text-status-approaching">
-                Time to conclude
-              </p>
-              <p className="mt-1 text-sm text-foreground">
-                Test has been live {daysLive} days. Use the Conclude test
-                button above to lock in the result.
-              </p>
-            </section>
-          )}
-
-          {needsInterim && !concluding && (
-            <section className="rounded border border-info/40 bg-info/5 p-4">
-              <p className="text-3xs font-medium text-info">
-                Log an interim result
-              </p>
-              <p className="mt-1 text-sm text-foreground">
-                Live for {daysLive} days with no interim numbers recorded. Drop
-                running figures into the metrics rows below to keep the kanban
-                honest.
-              </p>
-              <textarea
-                value={interimNotesDraft}
-                onChange={(e) => setInterimNotesDraft(e.target.value)}
-                onBlur={saveInterim}
-                placeholder="Interim notes"
-                rows={2}
-                className="mt-3 w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
-              />
-            </section>
-          )}
-
-          {concluding && (
-            <section className="rounded border border-border bg-surface p-4 space-y-3">
-              <p className="text-3xs font-bold text-subtle">
-                Conclude test
-              </p>
-
-              <div className="grid grid-cols-4 gap-1.5">
-                {(["winner", "loser", "inconclusive", "shipped"] as TestOutcome[]).map(
-                  (o) => (
-                    <button
-                      key={o}
-                      onClick={() => setOutcomeDraft(o)}
-                      className={`px-2.5 py-2 rounded text-3xs font-bold transition-colors ${
-                        outcomeDraft === o
-                          ? "text-background"
-                          : "bg-background text-muted border border-border hover:text-white"
-                      }`}
-                      style={
-                        outcomeDraft === o
-                          ? { background: OUTCOME_META[o].color }
-                          : undefined
-                      }
-                    >
-                      {OUTCOME_META[o].label}
-                    </button>
-                  ),
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <input
-                  value={metricDraft}
-                  onChange={(e) => setMetricDraft(e.target.value)}
-                  placeholder="Metric"
-                  className="px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
-                />
-                <input
-                  type="number"
-                  step="0.1"
-                  value={upliftDraft}
-                  onChange={(e) => setUpliftDraft(e.target.value)}
-                  placeholder="Uplift %"
-                  className="px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
-                />
-                <input
-                  type="number"
-                  step="0.1"
-                  value={confidenceDraft}
-                  onChange={(e) => setConfidenceDraft(e.target.value)}
-                  placeholder="Confidence %"
-                  className="px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
-                />
-              </div>
-
-              <textarea
-                value={notesDraft}
-                onChange={(e) => setNotesDraft(e.target.value)}
-                placeholder="Notes"
-                rows={3}
-                className="w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border"
-              />
-
-              {/* Close the loop: queue the next test while the learning is
-               * fresh. Optional; lands in Test queue on the same project. */}
-              <div>
-                <div className="text-3xs text-subtle mb-1.5">
-                  Queue a follow-up test (optional)
-                </div>
-                <input
-                  value={followUpDraft}
-                  onChange={(e) => setFollowUpDraft(e.target.value)}
-                  placeholder={`e.g. Iterate on "${d.title}"`}
-                  className="w-full px-3 py-2 rounded text-sm bg-background text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setConcluding(false)}
-                  className="px-3 py-2 rounded text-3xs font-semibold text-subtle hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={submitConclude}
-                  className="px-3 py-2 rounded text-3xs font-semibold bg-white text-background hover:bg-foreground"
-                >
-                  Save result
-                </button>
-              </div>
-            </section>
-          )}
-
-          {d.testResult && (
-            <section className="rounded border border-border bg-surface p-4">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <p className="text-3xs font-bold text-subtle">
-                  Result
-                </p>
-                <span
-                  className="px-2 py-1 rounded text-4xs font-bold"
-                  style={{
-                    background: OUTCOME_META[d.testResult.outcome].bg,
-                    color: OUTCOME_META[d.testResult.outcome].color,
-                  }}
-                >
-                  {OUTCOME_META[d.testResult.outcome].label}
-                </span>
-              </div>
-              <div className="grid grid-cols-4 gap-3 text-sm">
-                <div>
-                  <p className="text-4xs font-bold text-muted">
-                    Metric
-                  </p>
-                  <p className="mt-0.5 text-foreground">
-                    {d.testResult.metric ?? "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-4xs font-bold text-muted">
-                    Uplift
-                  </p>
-                  <p className="mt-0.5 text-foreground tabular-nums">
-                    {d.testResult.upliftPct == null
-                      ? "-"
-                      : `${d.testResult.upliftPct > 0 ? "+" : ""}${d.testResult.upliftPct}%`}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-4xs font-bold text-muted">
-                    Confidence
-                  </p>
-                  <p className="mt-0.5 text-foreground tabular-nums">
-                    {d.testResult.confidencePct != null
-                      ? `${d.testResult.confidencePct}%`
-                      : "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-4xs font-bold text-muted">
-                    Duration
-                  </p>
-                  <p className="mt-0.5 text-foreground tabular-nums">
-                    {d.testResult.durationDays != null
-                      ? `${d.testResult.durationDays}d`
-                      : "-"}
-                  </p>
-                </div>
-              </div>
-              {d.testResult.notes && (
-                <p className="mt-3 text-sm text-muted leading-relaxed">
-                  {d.testResult.notes}
-                </p>
-              )}
-            </section>
-          )}
-
+        {/* ── Footer: phase history + delete ── */}
+        <div className="px-6 py-5 border-t border-border-faint space-y-5">
           {d.phaseHistory && d.phaseHistory.length > 0 && (
             <section>
               <button
@@ -4678,7 +5893,7 @@ function DetailModal({
                 onClick={() => setHistoryOpen((v) => !v)}
                 className="w-full flex items-center justify-between gap-2 mb-2 group"
               >
-                <h3 className="text-3xs font-medium text-subtle group-hover:text-muted transition-colors">
+                <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle group-hover:text-muted transition-colors">
                   Phase history
                 </h3>
                 <span className="inline-flex items-center gap-1 text-4xs text-subtle group-hover:text-muted transition-colors">
@@ -4715,208 +5930,14 @@ function DetailModal({
             </section>
           )}
 
-          {d.phase === "launch-testing" && (
-            <section className="rounded border border-border bg-background p-4 space-y-3">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h3 className="text-3xs font-medium text-subtle">
-                  Test setup
-                </h3>
-                <div className="flex items-center gap-2">
-                  {d.liveTestUrl && (
-                    <a
-                      href={d.liveTestUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-4xs font-semibold text-subtle hover:text-white transition-colors"
-                    >
-                      Open live
-                      <ArrowTopRightOnSquareIcon className="size-3" />
-                    </a>
-                  )}
-                  {/* Ready -> click sets liveStartedAt to MOCK_TODAY and flips
-                      the card into Live state. Live -> click opens the
-                      conclude form inline. */}
-                  {canManage && !d.liveStartedAt && !d.testResult && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onUpdate({ liveStartedAt: MOCK_TODAY })
-                      }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
-                    >
-                      <span className="size-1.5 rounded-full bg-background" />
-                      Set live
-                    </button>
-                  )}
-                  {canManage && d.liveStartedAt && !d.testResult && !concluding && (
-                    <button
-                      type="button"
-                      onClick={() => setConcluding(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-medium bg-status-approaching text-background hover:bg-status-approaching transition-colors"
-                    >
-                      Conclude test
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
-                  Test URL
-                </label>
-                <input
-                  value={liveUrlDraft}
-                  onChange={(e) => setLiveUrlDraft(e.target.value)}
-                  onBlur={() => {
-                    const v = liveUrlDraft.trim();
-                    if ((v || undefined) !== d.liveTestUrl) {
-                      onUpdate({ liveTestUrl: v || undefined });
-                    }
-                  }}
-                  placeholder="https://..."
-                  className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
-                />
-              </div>
-
-              {/* Per-metric rows. Defaults to CVR / AOV / RPV; strategist
-                  can edit names, add custom metrics, or remove rows. First
-                  row is treated as primary by the conclude form. */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-4xs font-semibold text-subtle">
-                    Metrics
-                  </label>
-                  <span className="text-4xs text-muted">
-                    Before / After
-                  </span>
-                </div>
-                {metricsDraft.map((m, i) => (
-                  <div
-                    key={i}
-                    className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1.5 items-center"
-                  >
-                    <input
-                      value={m.name}
-                      onChange={(e) => updateMetric(i, { name: e.target.value })}
-                      onBlur={blurCommit}
-                      placeholder="Metric"
-                      className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
-                    />
-                    <input
-                      value={m.baseline ?? ""}
-                      onChange={(e) =>
-                        updateMetric(i, { baseline: e.target.value })
-                      }
-                      onBlur={blurCommit}
-                      placeholder="Baseline"
-                      className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
-                    />
-                    <input
-                      value={m.interim ?? ""}
-                      onChange={(e) =>
-                        updateMetric(i, { interim: e.target.value })
-                      }
-                      onBlur={blurCommit}
-                      placeholder="Interim"
-                      className="px-2.5 py-1.5 rounded text-xs bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted tabular-nums"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeMetric(i)}
-                      className="size-7 inline-flex items-center justify-center rounded text-muted hover:text-muted hover:bg-surface transition-colors"
-                      title="Remove metric"
-                      aria-label="Remove metric"
-                    >
-                      <XMarkIcon className="size-3.5" />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addMetric}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded border border-dashed border-border text-3xs font-semibold text-subtle hover:text-foreground hover:border-border transition-colors"
-                >
-                  <PlusIcon className="size-3" />
-                  Add metric
-                </button>
-              </div>
-
-              <div>
-                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
-                  Interim notes
-                </label>
-                <textarea
-                  value={interimNotesDraft}
-                  onChange={(e) => setInterimNotesDraft(e.target.value)}
-                  onBlur={() => {
-                    const v = interimNotesDraft.trim();
-                    if ((v || undefined) !== d.interimNotes) {
-                      onUpdate({ interimNotes: v || undefined });
-                    }
-                  }}
-                  placeholder="What the running data is telling you."
-                  rows={2}
-                  className="w-full px-3 py-2 rounded text-sm bg-surface text-foreground border border-border focus:outline-none focus:border-border placeholder:text-muted"
-                />
-              </div>
-
-              {/* Screenshot upload, folded into Test setup so the strategist
-                  drops the live variant proof in the same place as the URL +
-                  metric inputs. */}
-              <div>
-                <label className="text-4xs font-semibold text-subtle mb-1.5 block">
-                  Screenshot
-                </label>
-                {d.screenshot ? (
-                  <div className="relative rounded overflow-hidden border border-border">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={d.screenshot}
-                      alt="Test screenshot"
-                      className="w-full max-h-80 object-cover"
-                    />
-                    <button
-                      onClick={() => onUpdate({ screenshot: undefined })}
-                      className="absolute top-2 right-2 size-7 rounded-full bg-black/70 text-white hover:bg-black flex items-center justify-center"
-                    >
-                      <XMarkIcon className="size-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingScreenshot}
-                    className="w-full px-4 py-6 rounded border border-dashed border-border bg-surface text-sm text-subtle hover:border-border hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
-                  >
-                    {uploadingScreenshot ? "Uploading..." : "Upload a screenshot"}
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={onFile}
-                  className="hidden"
-                />
-              </div>
-            </section>
-          )}
-
-          {/* Destructive action - sits at the very bottom of the modal body
-              so it's out of the way but reachable. Uses a typed-confirm
-              prompt so accidental deletion is hard. Management-only. */}
           {canManage && (
-          <section className="pt-2">
             <button
               onClick={onDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-3xs font-semibold text-subtle hover:text-status-late transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium text-subtle hover:text-status-late transition-colors"
             >
               <XMarkIcon className="size-3.5" />
               Delete card
             </button>
-          </section>
-          )}
-            </>
           )}
         </div>
       </div>
@@ -5074,6 +6095,9 @@ function ProjectSwitch({
     type: ProjectType;
     turnaroundDays?: TurnaroundDays;
     engagementDays?: EngagementDays;
+    tier?: TierName;
+    mrr?: number;
+    engagementStatus?: EngagementStatus;
   }) => void;
   onDelete: (id: string) => void;
   counts: Record<string, number>;
@@ -5085,6 +6109,9 @@ function ProjectSwitch({
   const [typeDraft, setTypeDraft] = useState<ProjectType>("build");
   const [turnaroundDraft, setTurnaroundDraft] = useState<TurnaroundDays>(15);
   const [engagementDraft, setEngagementDraft] = useState<EngagementDays>(30);
+  /* Commercial tier for a retainer. Drives the monthly token pool. Only the
+   * retainer (pooled) tiers are offered here; builds stay tier-less. */
+  const [tierDraft, setTierDraft] = useState<TierName>("growth");
   const ref = useRef<HTMLDivElement | null>(null);
   const active = projects.find((p) => p.id === activeId);
 
@@ -5105,6 +6132,7 @@ function ProjectSwitch({
     setTypeDraft("build");
     setTurnaroundDraft(15);
     setEngagementDraft(30);
+    setTierDraft("growth");
     setAdding(false);
   }
   function submit() {
@@ -5114,10 +6142,17 @@ function ProjectSwitch({
       type: typeDraft,
       turnaroundDays: typeDraft === "build" ? turnaroundDraft : undefined,
       engagementDays: typeDraft === "retainer" ? engagementDraft : undefined,
+      /* A retainer carries a tier (=> the token pool). engagementStatus
+       * defaults to active in addProject so the meter lights up on create. */
+      tier: typeDraft === "retainer" ? tierDraft : undefined,
     });
     reset();
     setOpen(false);
   }
+  /* Retainer (pooled) tiers only - builds are tier-less here. */
+  const retainerTiers = (Object.keys(tierConfig) as TierName[]).filter(
+    (t) => !tierIsOneOff(t),
+  );
 
   const Check = () => (
     <svg className="size-3.5 text-status-ontrack shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -5221,6 +6256,23 @@ function ProjectSwitch({
                     : TURNAROUND_OPTIONS.map((t) => ({ label: `${t}d`, value: String(t) }))
                 }
               />
+              {/* Retainer tier -> the monthly token pool. Meter starts active. */}
+              {typeDraft === "retainer" && (
+                <div className="relative">
+                  <select
+                    value={tierDraft}
+                    onChange={(e) => setTierDraft(e.target.value as TierName)}
+                    className="appearance-none w-full h-8 pl-2.5 pr-7 rounded bg-surface border border-border text-2xs font-medium text-foreground capitalize focus:outline-none focus:border-subtle cursor-pointer"
+                  >
+                    {retainerTiers.map((t) => (
+                      <option key={t} value={t}>
+                        {t} · {poolForTier(t)} tokens/mo
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon className="size-3.5 text-subtle absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              )}
               <div className="flex items-center gap-2 pt-0.5">
                 <button
                   onClick={submit}
@@ -5662,7 +6714,6 @@ const VIEW_MODE_OPTIONS = [
   { v: "project", label: "By project" },
   { v: "master", label: "All projects" },
   { v: "pod", label: "By pod" },
-  { v: "results", label: "Results Library" },
 ] as const;
 
 function ViewModeMenu({
@@ -5717,9 +6768,131 @@ function ViewModeMenu({
   );
 }
 
+/* Slide-in activity feed. Read-only: who did what, newest first. Lives
+ * on the board (not a separate page) so the signal stays where the work
+ * is. Denormalised names mean rows stay readable after a card is deleted. */
+function ActivityPanel({
+  activity,
+  onClose,
+}: {
+  activity: KanbanActivity[];
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} aria-hidden />
+      <aside className="relative flex h-full w-full max-w-sm flex-col border-l border-border-faint bg-surface">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border-faint px-4">
+          <div className="flex items-center gap-2">
+            <ClockIcon className="size-4 text-muted" />
+            <h2 className="text-sm font-semibold text-foreground">Activity</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+            aria-label="Close activity"
+          >
+            <XMarkIcon className="size-4" />
+          </button>
+        </header>
+        <div className="flex-1 overflow-y-auto">
+          {activity.length === 0 ? (
+            <p className="px-4 py-10 text-center text-2xs text-muted">
+              No activity yet. Moves, new cards, deletions, handovers, and test
+              outcomes show up here.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border-faint">
+              {activity.map((a) => (
+                <li key={a.id} className="px-4 py-3">
+                  <ActivityRow a={a} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </aside>
+    </div>,
+    document.body,
+  );
+}
+
+function ActivityRow({ a }: { a: KanbanActivity }) {
+  const name = <span className="font-medium text-foreground">{a.cardTitle}</span>;
+  let phrase: React.ReactNode;
+  switch (a.action) {
+    case "moved":
+      phrase = (
+        <>
+          moved {name} from {phaseLabel(a.fromPhase)} to {phaseLabel(a.toPhase)}
+        </>
+      );
+      break;
+    case "created":
+      phrase = (
+        <>
+          created {name}
+          {a.toPhase ? ` in ${phaseLabel(a.toPhase)}` : ""}
+        </>
+      );
+      break;
+    case "deleted":
+      phrase = (
+        <>
+          deleted {a.detail ? `${a.detail} ` : ""}
+          {name}
+        </>
+      );
+      break;
+    case "concluded_test":
+      phrase = (
+        <>
+          concluded a test on {name}
+          {a.detail ? `: ${a.detail}` : ""}
+        </>
+      );
+      break;
+    case "submitted_handover":
+      phrase = (
+        <>
+          submitted the design handover for {name}
+          {a.toPhase ? `, moved to ${phaseLabel(a.toPhase)}` : ""}
+        </>
+      );
+      break;
+    default:
+      phrase = a.action;
+  }
+
+  const context = [a.clientName, a.projectName].filter(Boolean).join(" · ");
+
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-2xs leading-relaxed text-muted">
+        <span className="font-semibold text-foreground">{a.actor}</span> {phrase}
+      </p>
+      <div className="flex items-center gap-1.5 text-3xs text-subtle">
+        {context && <span className="truncate">{context}</span>}
+        {context && <span aria-hidden>•</span>}
+        <span className="shrink-0">{relativeTime(a.createdAt)}</span>
+      </div>
+    </div>
+  );
+}
+
 function OverflowMenu({
   density,
   onSetDensity,
+  layout,
+  onSetLayout,
   onOpenRules,
   mineOnly,
   onToggleMine,
@@ -5727,6 +6900,8 @@ function OverflowMenu({
 }: {
   density: "cosy" | "glance";
   onSetDensity: (d: "cosy" | "glance") => void;
+  layout: "full" | "condensed";
+  onSetLayout: (l: "full" | "condensed") => void;
   onOpenRules: () => void;
   /** "Mine only" filter, so it lives in the Display menu. */
   mineOnly: boolean;
@@ -5786,6 +6961,21 @@ function OverflowMenu({
               </span>
             </button>
           )}
+          <div className="p-2 border-b border-border-faint">
+            <div className="text-4xs text-subtle font-semibold px-2 mb-2">
+              Board layout
+            </div>
+            <Segmented
+              variant="ghost"
+              className="w-full [&>button]:flex-1"
+              value={layout}
+              onChange={onSetLayout}
+              options={[
+                { label: "Full", value: "full" },
+                { label: "Condensed", value: "condensed" },
+              ]}
+            />
+          </div>
           <div className="p-2 border-b border-border-faint">
             <div className="text-4xs text-subtle font-semibold px-2 mb-2">
               Card density

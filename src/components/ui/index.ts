@@ -4,6 +4,8 @@ export type { ButtonProps } from "./Button";
 export { Card, CardHeader, CardTitle, CardBody } from "./Card";
 export { StatTile } from "./StatTile";
 export type { StatTileProps } from "./StatTile";
+export { StatCard } from "./StatCard";
+export type { StatCardProps } from "./StatCard";
 export { Table, THead, TBody, TR, TH, TD, Num } from "./Table";
 export { Badge } from "./Badge";
 export { Avatar } from "./Avatar";

@@ -3,15 +3,19 @@
 "use client";
 
 import {
+  type BankedResult,
   type Client,
+  type ClientDoc,
   type Engagement,
   type Responsibilities,
   type ChecklistItem,
+  type WorkItem,
+  type WorkPhase,
   instantiateChecklist,
   itemDone,
 } from "./model";
 
-const LS = "launchpad-cc-v4";
+const LS = "launchpad-cc-v6";
 
 interface DB { clients: Client[]; engagements: Engagement[]; responsibilities: Responsibilities }
 
@@ -48,6 +52,16 @@ function seed(): DB {
         // invoice_paid deliberately NOT done → the outstanding item.
         lastDone: { digest: "2026-07-03", monthly_report: "2026-07-01" },
       }),
+      results: [
+        { id: "r-h1", title: "Hero CTA copy test", hypothesis: "Benefit-led CTA copy would beat the generic 'Shop now' by setting expectation before the click.", metric: "CVR", upliftPct: 8, outcome: "winner", date: "2026-06-28" },
+        { id: "r-h2", title: "Bundle PDP layout", hypothesis: "Leading the PDP with the 3-month bundle would lift AOV by anchoring on the higher-value option.", metric: "AOV", upliftPct: 18, outcome: "winner", date: "2026-06-14" },
+        { id: "r-h3", title: "Sticky mobile ATC", hypothesis: "A persistent add-to-cart bar on mobile would cut friction and lift conversion.", metric: "CVR", upliftPct: -2, outcome: "loser", date: "2026-06-02" },
+      ],
+      workItems: [
+        { id: "w-h1", title: "Ingredients section redesign", phase: "design" },
+        { id: "w-h2", title: "Sticky add-to-cart build", phase: "development" },
+        { id: "w-h3", title: "Reviews carousel test", phase: "optimisation" },
+      ],
     },
     {
       id: "e-ironpaws", clientId: "c-ironpaws", name: "Landing page project", type: "project", status: "active", goal: "convert",
@@ -151,11 +165,122 @@ export function getEngagementView(id: string): EngagementView | null {
   return { engagement, client, prior: db.engagements.filter((e) => e.clientId === client.id && e.id !== id) };
 }
 
+/** Resolve an engagement + client from its portal token (the isolated client
+ *  link). Returns null if no engagement carries that token. */
+export function getEngagementByToken(token: string): EngagementView | null {
+  const db = load();
+  const engagement = db.engagements.find((e) => e.portalToken === token);
+  if (!engagement) return null;
+  const client = db.clients.find((c) => c.id === engagement.clientId);
+  if (!client) return null;
+  return {
+    engagement,
+    client,
+    prior: db.engagements.filter(
+      (e) => e.clientId === client.id && e.id !== engagement.id,
+    ),
+  };
+}
+
+/** Get (creating if missing) the engagement's portal token. A random slug, not
+ *  the engagement id, so the client link can't be traced back to internal. */
+export function ensurePortalToken(engId: string): string | null {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  if (!e) return null;
+  if (!e.portalToken) {
+    const rand =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID().replace(/-/g, "")
+        : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+    e.portalToken = rand;
+    save(db);
+  }
+  return e.portalToken;
+}
+
 export function listEngagements(): { engagement: Engagement; client: Client }[] {
   const db = load();
   return db.engagements
     .map((engagement) => ({ engagement, client: db.clients.find((c) => c.id === engagement.clientId)! }))
     .filter((r) => r.client);
+}
+
+/** Attach a document's metadata to an engagement (the file itself already
+ *  lives in the client-documents bucket). */
+export function addDocument(engId: string, doc: ClientDoc): void {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  if (!e) return;
+  e.documents = [...(e.documents ?? []), doc];
+  save(db);
+}
+
+/** Remove a document's metadata from an engagement. Deleting the underlying
+ *  storage object is the caller's job (fire-and-forget). */
+export function removeDocument(engId: string, docId: string): void {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  if (!e || !e.documents) return;
+  e.documents = e.documents.filter((d) => d.id !== docId);
+  save(db);
+}
+
+/** Bank a win on an engagement (manual entry for the POC). */
+export function addResult(engId: string, result: BankedResult): void {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  if (!e) return;
+  e.results = [...(e.results ?? []), result];
+  save(db);
+}
+
+export function removeResult(engId: string, resultId: string): void {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  if (!e || !e.results) return;
+  e.results = e.results.filter((r) => r.id !== resultId);
+  save(db);
+}
+
+/** Add a live work item (manual entry for the POC). */
+export function addWorkItem(engId: string, item: WorkItem): void {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  if (!e) return;
+  e.workItems = [...(e.workItems ?? []), item];
+  save(db);
+}
+
+export function removeWorkItem(engId: string, itemId: string): void {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  if (!e || !e.workItems) return;
+  e.workItems = e.workItems.filter((w) => w.id !== itemId);
+  save(db);
+}
+
+/** Move a work item to a different phase. */
+export function setWorkItemPhase(
+  engId: string,
+  itemId: string,
+  phase: WorkPhase,
+): void {
+  const db = load();
+  const e = db.engagements.find((x) => x.id === engId);
+  const item = e?.workItems?.find((w) => w.id === itemId);
+  if (!item) return;
+  item.phase = phase;
+  save(db);
+}
+
+/** Edit the free-text notes on a client. */
+export function setClientNotes(clientId: string, notes: string): void {
+  const db = load();
+  const c = db.clients.find((x) => x.id === clientId);
+  if (!c) return;
+  c.notes = notes.trim() || undefined;
+  save(db);
 }
 
 /** Tick/untick. One-off items flip status; recurring items log/clear this

@@ -89,34 +89,41 @@ export function ProjectCard({
       onClick={onClick}
       title={tooltip}
       className={cn(
-        "p-3.5 rounded-[6px] border cursor-grab active:cursor-grabbing transition-colors",
+        // Flat dark surface always - status is carried by a subtly coloured
+        // border (not a filled red/green tint, which reads as an eyesore).
+        // Fixed min-height + footer pinned to the bottom = every card is the
+        // same height and the owner/date row lines up across the column.
+        // min-height sits above the tallest possible content (2-line title +
+        // callout + footer) so EVERY card lands on the same height, callout or
+        // not. Footer is pinned to the bottom so they line up.
+        "flex flex-col min-h-[124px] p-3.5 rounded-[6px] border cursor-grab active:cursor-grabbing transition-colors bg-surface hover:bg-surface-raised",
         overdue
-          ? "bg-[image:var(--card-overdue)] border-status-late/20 hover:bg-[image:var(--card-overdue-hover)] hover:border-status-late/30"
+          ? "border-status-late/30 hover:border-status-late/45"
           : live
-            ? "bg-[image:var(--card-live)] border-status-ontrack/20 hover:bg-[image:var(--card-live-hover)] hover:border-status-ontrack/30"
-            : "bg-surface border-white/[0.05] hover:bg-surface-raised hover:border-white/[0.09]",
+            ? "border-status-ontrack/25 hover:border-status-ontrack/40"
+            : "border-white/[0.06] hover:border-white/10",
         dragging && "opacity-40 scale-[0.98]",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2.5">
-        <div className="flex items-start gap-2.5 min-w-0">
-          {icon}
-          <p className="min-w-0 text-[13.5px] font-medium leading-snug text-foreground line-clamp-2 min-h-[37px]">
+        <div className="flex items-start gap-2 min-w-0">
+          {icon && <span className="mt-0.5 shrink-0">{icon}</span>}
+          <p className="min-w-0 text-sm font-medium leading-snug text-foreground line-clamp-2">
             {title}
           </p>
         </div>
         {clusterContent && (
-          <div className="flex items-center gap-1.5 shrink-0 mt-px">{clusterContent}</div>
+          <div className="flex items-center gap-1.5 shrink-0 mt-0.5">{clusterContent}</div>
         )}
       </div>
 
       {description && (
-        <p className="mt-1.5 text-3xs text-subtle truncate">{description}</p>
+        <div className="mt-2 text-2xs text-muted">{description}</div>
       )}
 
       {footer && (
-        <div className="mt-3 flex items-center justify-between gap-2 text-3xs">
+        <div className="mt-auto pt-3 flex items-center justify-between gap-2 text-2xs">
           {footer}
         </div>
       )}

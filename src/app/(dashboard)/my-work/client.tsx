@@ -24,10 +24,12 @@ import {
 import {
   buildMyWorkIdentity,
   classifyClientsForUser,
+  subtasksForUser,
   dragActionFor,
   type ClassifiedCard,
   type MyWorkLane,
   type MyWorkRole,
+  type MySubtask,
 } from "@/lib/my-work/classify";
 import { getPods as getPodsV2 } from "@/lib/pods-v2/data";
 import type { Pod as PodV2 } from "@/lib/pods-v2/types";
@@ -211,6 +213,15 @@ export default function MyWorkClient() {
       dueDate: c.card.dueDate ?? "",
     }));
   }, [identity, kanbanClients, kanbanPods, today]);
+
+  /* The user's own granular subtasks - the actionable steps under their cards.
+   * Only the unlocked, not-yet-done ones (what they can pick up right now). */
+  const mySubtasks: MySubtask[] = useMemo(() => {
+    if (!identity) return [];
+    return subtasksForUser(kanbanClients, identity, kanbanPods).filter(
+      (s) => s.status === "available",
+    );
+  }, [identity, kanbanClients, kanbanPods]);
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<TaskStatus | null>(null);
@@ -632,6 +643,49 @@ export default function MyWorkClient() {
               Open kanban →
             </span>
           </Link>
+        )}
+
+        {/* The user's own granular subtasks - the actionable steps under their
+            cards. Read-only here; ticking happens on the card. Gives members the
+            "on track with everything" view under the card-level lanes. */}
+        {mySubtasks.length > 0 && (
+          <div className="mb-6 rounded border border-border-faint bg-surface">
+            <div className="flex items-center justify-between gap-3 border-b border-border-faint px-4 py-2.5">
+              <h2 className="text-[11px] font-medium uppercase tracking-wider text-subtle">
+                Your steps this cycle
+                <span className="ml-1.5 tabular-nums text-subtle">
+                  {mySubtasks.length}
+                </span>
+              </h2>
+              <Link
+                href="/kanban"
+                className="text-[11px] font-semibold uppercase tracking-wider text-subtle transition-colors hover:text-foreground"
+              >
+                Open kanban →
+              </Link>
+            </div>
+            <ul className="divide-y divide-border-faint">
+              {mySubtasks.slice(0, 8).map((s) => (
+                <li
+                  key={`${s.cardId}-${s.subtask.id}`}
+                  className="flex items-center gap-3 px-4 py-2.5"
+                >
+                  <span className="size-3.5 shrink-0 rounded-full border border-border" />
+                  <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+                    {s.subtask.title}
+                  </span>
+                  <span className="max-w-[45%] shrink-0 truncate text-[11px] text-subtle">
+                    {s.cardTitle} · {s.clientName}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {mySubtasks.length > 8 && (
+              <div className="border-t border-border-faint px-4 py-2 text-[11px] text-subtle">
+                +{mySubtasks.length - 8} more on the board
+              </div>
+            )}
+          </div>
         )}
 
         {/* Search bar + view-mode toggle. Lane counts show

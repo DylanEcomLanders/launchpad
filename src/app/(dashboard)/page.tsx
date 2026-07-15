@@ -7,7 +7,7 @@ import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { getDeliveryItems } from "@/lib/kpi/source";
 import { computeSummary, computeOverdue } from "@/lib/kpi/metrics";
 import type { DeliveryItem } from "@/lib/kpi/types";
-import { LineChart } from "@/components/line-chart";
+import { StatCard } from "@/components/ui";
 import {
   DitherCard,
   DitherDoc,
@@ -113,6 +113,12 @@ function daysAgo(iso: string) {
   return `${d} days ago`;
 }
 
+/** Drop the trailing (and any) nulls from a month-to-date series so it can feed
+ *  a sparkline as a clean run of points. */
+function compact(a: (number | null)[]): number[] {
+  return a.filter((n): n is number => n !== null);
+}
+
 export default function Overview() {
   const currentUser = useCurrentUser();
   const [mounted, setMounted] = useState(false);
@@ -211,55 +217,50 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* ── Delivery overview ── month-to-date, last month ghosted behind ── */}
+      {/* ── Delivery overview ── month-to-date headline + trajectory sparkline ── */}
       <section className="mb-12">
         <div className="mb-4 flex items-baseline justify-between">
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle">
             Delivery · {daily.curLabel} to date
           </p>
-          <div className="flex items-center gap-4 text-2xs text-subtle">
-            <GhostKey label={daily.curLabel} />
-            <GhostKey label={daily.prevLabel} faded />
+          <Link href="/kpi" className="text-2xs text-muted transition-colors hover:text-foreground">
+            All KPIs →
+          </Link>
+        </div>
+        {loading ? (
+          <div className="grid gap-3 lg:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-32 animate-pulse rounded-lg border border-border-faint bg-surface" />
+            ))}
           </div>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-3">
-          <LineCard
-            label="On-time delivery"
-            value={daily.onTime.value === null ? "—" : `${daily.onTime.value}%`}
-            caption="vs last month"
-            delta={daily.onTime.delta}
-            deltaUnit="pts"
-            color="var(--color-status-ontrack)"
-            cur={daily.onTime.cur}
-            prev={daily.onTime.prev}
-            labels={daily.labels}
-            loading={loading}
-          />
-          <LineCard
-            label="Throughput"
-            value={daily.throughput.value === null ? "—" : String(daily.throughput.value)}
-            caption="shipped, vs last month"
-            delta={daily.throughput.delta}
-            color="var(--foreground)"
-            cur={daily.throughput.cur}
-            prev={daily.throughput.prev}
-            labels={daily.labels}
-            loading={loading}
-          />
-          <LineCard
-            label="Turnaround"
-            value={daily.turnaround.value === null ? "—" : `${daily.turnaround.value}d`}
-            caption="vs last month"
-            delta={daily.turnaround.delta}
-            deltaUnit="d"
-            lowerIsBetter
-            color="var(--foreground)"
-            cur={daily.turnaround.cur}
-            prev={daily.turnaround.prev}
-            labels={daily.labels}
-            loading={loading}
-          />
-        </div>
+        ) : (
+          <div className="grid gap-3 lg:grid-cols-3">
+            <StatCard
+              label="On-time delivery"
+              value={daily.onTime.value === null ? "—" : `${daily.onTime.value}%`}
+              delta={daily.onTime.delta}
+              deltaUnit=" pts"
+              deltaCaption="vs last month"
+              series={compact(daily.onTime.cur)}
+            />
+            <StatCard
+              label="Throughput"
+              value={daily.throughput.value === null ? "—" : String(daily.throughput.value)}
+              delta={daily.throughput.delta}
+              deltaCaption="shipped, vs last month"
+              series={compact(daily.throughput.cur)}
+            />
+            <StatCard
+              label="Turnaround"
+              value={daily.turnaround.value === null ? "—" : `${daily.turnaround.value}d`}
+              delta={daily.turnaround.delta}
+              deltaUnit="d"
+              deltaCaption="vs last month"
+              lowerIsBetter
+              series={compact(daily.turnaround.cur)}
+            />
+          </div>
+        )}
       </section>
 
       {/* ── Needs attention + Recently shipped ── */}
@@ -315,124 +316,6 @@ function StateOfPlay({ loading, delivered, overdue, briefs }: { loading: boolean
       You&apos;ve shipped {n(delivered)} this month. {n(overdue)} {overdue === 1 ? "deliverable is" : "deliverables are"} overdue
       {briefs > 0 ? <> and {n(briefs)} {briefs === 1 ? "brief is" : "briefs are"} waiting.</> : <> and no briefs are waiting.</>}
     </p>
-  );
-}
-
-function ChartCard({ label, href, cta, children }: { label: string; href?: string; cta?: string; children: React.ReactNode }) {
-  return (
-    <div className="flex h-full flex-col rounded border border-border-faint bg-surface px-5 py-4">
-      <div className="mb-4 flex items-baseline justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle">{label}</p>
-        {href && cta && (
-          <Link href={href} className="text-xs text-muted transition-colors hover:text-foreground">
-            {cta} →
-          </Link>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col">{children}</div>
-    </div>
-  );
-}
-
-function Headline({
-  loading,
-  value,
-  caption,
-  delta,
-  deltaUnit,
-  deltaGood,
-}: {
-  loading: boolean;
-  value: string;
-  caption: string;
-  delta?: number | null;
-  deltaUnit?: string;
-  deltaGood?: boolean;
-}) {
-  const hasDelta = delta !== null && delta !== undefined;
-  const up = hasDelta && delta >= 0;
-  const good = deltaGood ?? up;
-  return (
-    <div>
-      {loading ? (
-        <div className="h-7 w-16 animate-pulse rounded-sm bg-surface-raised" />
-      ) : (
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-semibold tabular-nums text-foreground">{value}</span>
-          {hasDelta && (
-            <span
-              className="text-2xs font-medium tabular-nums"
-              style={{ color: good ? "var(--color-status-ontrack)" : "var(--color-status-late)" }}
-            >
-              {up ? "▲" : "▼"} {Math.abs(delta)}
-              {deltaUnit ? ` ${deltaUnit}` : ""}
-            </span>
-          )}
-        </div>
-      )}
-      <div className="mt-0.5 text-2xs text-subtle">{caption}</div>
-    </div>
-  );
-}
-
-/* One delivery card: headline (month-to-date value + delta vs last month) over
- * a compact day-by-day line, with last month ghosted behind for comparison.
- * lowerIsBetter flips the delta colour (turnaround). */
-function LineCard({
-  label,
-  value,
-  caption,
-  delta,
-  deltaUnit,
-  lowerIsBetter,
-  cur,
-  prev,
-  color,
-  labels,
-  loading,
-}: {
-  label: string;
-  value: string;
-  caption: string;
-  delta: number | null;
-  deltaUnit?: string;
-  lowerIsBetter?: boolean;
-  cur: (number | null)[];
-  prev: (number | null)[];
-  color: string;
-  labels: string[];
-  loading: boolean;
-}) {
-  const good = delta === null ? undefined : lowerIsBetter ? delta <= 0 : delta >= 0;
-  return (
-    <ChartCard label={label} href="/kpi" cta="Report">
-      <div className="mb-4">
-        <Headline loading={loading} value={value} caption={caption} delta={delta} deltaUnit={deltaUnit} deltaGood={good} />
-      </div>
-      {loading ? (
-        <div className="h-28 w-full animate-pulse rounded-sm bg-surface-raised" />
-      ) : (
-        <LineChart
-          className="h-28 w-full"
-          showY={false}
-          extendEnds={false}
-          labels={labels}
-          series={[
-            { key: "last", color, points: prev, faded: true },
-            { key: "this", color, points: cur },
-          ]}
-        />
-      )}
-    </ChartCard>
-  );
-}
-
-function GhostKey({ label, faded }: { label: string; faded?: boolean }) {
-  return (
-    <span className="flex items-center gap-1.5 tabular-nums" style={{ opacity: faded ? 0.5 : 1 }}>
-      <span className="h-[2px] w-3.5 rounded-full" style={{ background: faded ? "var(--muted)" : "var(--foreground)" }} />
-      {label}
-    </span>
   );
 }
 

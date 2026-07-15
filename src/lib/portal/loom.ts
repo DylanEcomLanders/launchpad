@@ -30,3 +30,11 @@ export function toLoomEmbed(url: string): string | null {
 export function isLoomUrl(url: string): boolean {
   return /loom\.com\/(?:share|embed)\//i.test(url);
 }
+
+/**
+ * Quick check if a URL points at a direct video file we can play in a <video>
+ * tag (mp4/webm/mov/m4v/ogg), ignoring any query string.
+ */
+export function isVideoFileUrl(url: string): boolean {
+  return /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(url);
+}

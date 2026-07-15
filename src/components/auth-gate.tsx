@@ -13,7 +13,12 @@ import {
 
 const STORAGE_KEY = "launchpad-auth";
 const ROLE_KEY = "launchpad-role";
+// TEMP: client-side password fallback restored so local/dev login works
+// without the server env vars. Re-remove at merge once AUTH_SESSION_SECRET +
+// ADMIN/CRO/TEAM_PASSWORD are set (login then goes only through /api/auth/gate).
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025";
+const CRO_PASSWORD = process.env.NEXT_PUBLIC_CRO_PASSWORD || "cro2025";
+const TEAM_PASSWORD = process.env.NEXT_PUBLIC_TEAM_PASSWORD || "team2026";
 
 /* Cookie shadow of the sessionStorage role. Set so server-side API routes
  * (which can't read sessionStorage) can validate that the caller went
@@ -23,8 +28,6 @@ function setRoleCookie(role: "admin" | "cro" | "team") {
   if (typeof document === "undefined") return;
   document.cookie = `launchpad-role=${role}; Path=/; Max-Age=${8 * 3600}; SameSite=Strict`;
 }
-const CRO_PASSWORD = process.env.NEXT_PUBLIC_CRO_PASSWORD || "cro2025";
-const TEAM_PASSWORD = process.env.NEXT_PUBLIC_TEAM_PASSWORD || "team2026";
 
 /* Login control styling, driven entirely by the app's design tokens so the
  * screen stays synergetic with the rest of Launchpad (dark surface, hairline
@@ -106,6 +109,11 @@ function isTeamAllowedPath(pathname: string): boolean {
      * Admin) stay admin-only via the sidebar gates below. */
     pathname === "/kanban" ||
     pathname.startsWith("/kanban/") ||
+    /* Onboarding inbox - members handle new-client onboarding too. The inbox
+     * reviews each submission in its own slide-in drawer, so this one route
+     * covers the whole flow. (The legacy /tools/onboarding list + [id] pages
+     * stay admin-only; the inbox superseded them.) */
+    pathname.startsWith("/tools/onboarding-inbox") ||
     pathname === "/workspace" ||
     pathname.startsWith("/workspace/") ||
     pathname === "/wiki-v2" ||
@@ -338,10 +346,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           }
         }
       } catch {
-        /* network issue — fall through to the legacy comparison */
+        /* network issue - fall through to the legacy comparison */
       }
 
-      // Legacy fallback (transition window — remove once env vars are set).
+      // TEMP legacy fallback so local/dev login works. Re-remove at merge once
+      // the server env vars are set (then only /api/auth/gate authenticates).
       if (candidate === ADMIN_PASSWORD) return enterAs("admin");
       if (candidate === CRO_PASSWORD) return enterAs("cro");
       if (candidate === TEAM_PASSWORD) return enterAs("team");

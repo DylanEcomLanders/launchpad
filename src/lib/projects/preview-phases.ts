@@ -24,7 +24,7 @@ export interface PreviewPhaseMeta {
 export const PREVIEW_PHASES: PreviewPhaseMeta[] = [
   { value: "tickets",             label: "Tickets",            color: "#EF4444" }, // triage column for client bugs + tweaks
   { value: "documents",           label: "Documents",          color: "#0D9488" }, // retainer reports, test plans, results writeups
-  { value: "not-started",         label: "Backlog",            color: "#71717A" }, // intake queue before Phase 1
+  { value: "not-started",         label: "Intake",             color: "#71717A" }, // intake queue before Phase 1
   { value: "strategy",            label: "Strategy",           color: "#0891B2" },
   { value: "design",              label: "Design",             color: "#7C3AED" },
   { value: "internal-revisions",  label: "Internal Review",    color: "#EA580C" }, // reviewer owns; drives revision counting

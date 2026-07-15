@@ -28,6 +28,7 @@ import {
   BanknotesIcon as PixelCoins,
   FunnelIcon as PixelFunnel,
   RectangleGroupIcon as PixelGrid,
+  TrophyIcon as PixelTrophy,
   HeartIcon as PixelHeart,
   HomeIcon as PixelHome,
   ArrowTrendingUpIcon as PixelPulse,
@@ -154,6 +155,13 @@ const kpiItem = {
   href: "/kpi",
   icon: <PixelChart className="size-4" />,
 };
+/* Results Library — concluded test outcomes (winners / losers). Promoted out of
+ * the board's view dropdown to a first-class Client Health destination. */
+const resultsItem = {
+  label: "Results Library",
+  href: "/kanban?view=results",
+  icon: <PixelTrophy className="size-4" />,
+};
 const onboardingItem = {
   label: "Onboarding",
   href: "/tools/onboarding-inbox",
@@ -251,6 +259,11 @@ const trainingItem = {
   href: "/wiki-v2",
   icon: <PixelCap className="size-4" />,
 };
+const sopItem = {
+  label: "SOPs",
+  href: "/tools/sop-library",
+  icon: <PixelChecklist className="size-4" />,
+};
 /* Hero Offer - the conversion engine playbook house. One umbrella with
  * Start here / Acquisition / Execution / Retention tabs inside. Sits
  * in the Offer + Knowledge group. Visible to every role - the playbook
@@ -340,9 +353,10 @@ const navSections: NavSection[] = [
     icon: <PixelHeart className="size-4" />,
     group: "lifecycle",
     items: [
-      { ...onboardingItem, roles: ADMIN_CRO },
+      onboardingItem,
       { ...clientsItem, roles: ADMIN_CRO },
       missionControlItem,
+      { ...resultsItem, roles: ADMIN_CRO },
       { ...kpiItem, roles: ADMIN_CRO },
     ],
   },
@@ -369,6 +383,7 @@ const navSections: NavSection[] = [
     group: "ops",
     items: [
       trainingItem,
+      sopItem,
       teamToolsItem,
       submitInvoiceItem,
     ],
@@ -399,14 +414,6 @@ export function Sidebar() {
     }))
     .filter((s) => s.items.length > 0 || s.href);
 
-  /* Sections are collapsible (click the header) but start open, so the whole
-   * nav is visible by default with no arrows cluttering the rows. */
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(visibleSections.map((s) => [s.title, true])),
-  );
-  function toggleSection(title: string) {
-    setOpenSections((prev) => ({ ...prev, [title]: !(prev[title] ?? true) }));
-  }
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -434,10 +441,11 @@ export function Sidebar() {
     { label: submitInvoiceItem.label, href: submitInvoiceItem.href, group: "Pinned", icon: submitInvoiceItem.icon, keywords: ["invoice", "expenses", "submit", "pay"] },
     // Delivery (kanban board) — visible to everyone including members.
     { label: missionControlItem.label, href: missionControlItem.href, group: "Pinned", icon: missionControlItem.icon, keywords: ["kanban", "delivery", "board", "project"] },
+    // Onboarding - members handle new-client onboarding too.
+    { label: onboardingItem.label, href: onboardingItem.href, group: "Pinned", icon: onboardingItem.icon, keywords: ["onboarding", "inbox", "new clients", "intake"] },
     // Admin/CRO surfaces.
     ...(role !== "team"
       ? [
-          { label: onboardingItem.label, href: onboardingItem.href, group: "Pinned", icon: onboardingItem.icon, keywords: ["onboarding", "inbox", "new clients", "intake"] },
           { label: clientsItem.label, href: clientsItem.href, group: "Pinned", icon: clientsItem.icon, keywords: ["clients", "command centre", "csm", "engagements", "accounts", "retention"] },
           { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery", "legacy"] },
           { label: kpiItem.label, href: kpiItem.href, group: "Pinned", icon: kpiItem.icon, keywords: ["metrics", "throughput", "on-time"] },
@@ -507,14 +515,16 @@ export function Sidebar() {
         key={item.href}
         href={item.href}
         onClick={() => setMobileOpen(false)}
-        className={`flex items-center gap-3 px-2.5 py-2.5 rounded-md text-sm transition-colors ${
+        className={`flex items-center gap-2.5 px-2.5 py-1 rounded-md text-[13px] transition-colors ${
           active
             ? "bg-surface-raised text-foreground font-medium"
             : "text-muted hover:bg-surface-hover hover:text-foreground"
         }`}
       >
-        <span className={`flex size-6 shrink-0 items-center justify-center rounded-md transition-colors ${active ? "bg-accent text-accent-foreground" : "text-muted"}`}>{item.icon}</span>
-        {!collapsed && <span className="flex-1">{item.label}</span>}
+        <span className={`flex size-4 shrink-0 items-center justify-center transition-colors ${active ? "text-foreground" : "text-subtle"}`}>
+          {item.icon}
+        </span>
+        <span className="flex-1 truncate">{item.label}</span>
       </Link>
     );
   }
@@ -528,33 +538,25 @@ export function Sidebar() {
     if (section.href) {
       return renderTopLink({ label: section.title, href: section.href, icon: section.icon });
     }
-    const sectionHasActive = section.items.some((i) => !i.external && isActive(i.href));
-    if (collapsed) {
-      return (
-        <div key={section.title} className="mb-6" title={section.title}>
-            <div className="flex justify-center py-1.5">
-            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-foreground" : "bg-border"}`} />
-          </div>
-        </div>
-      );
-    }
-    const open = openSections[section.title] ?? true;
+    /* Flat section: an uppercase muted label (not clickable) over its items.
+     * No collapse, no indent - every item is always visible. Items share the
+     * top-link row style so icons, spacing + active state line up. */
     return (
       <div key={section.title}>
-        <button
-          onClick={() => toggleSection(section.title)}
-          className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-md text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
-        >
-          <span className="flex size-6 shrink-0 items-center justify-center text-subtle">{section.icon}</span>
-          <span className="flex-1 text-left text-sm font-medium">{section.title}</span>
-          {sectionHasActive && !open && (
-            <span className="size-1.5 rounded-full bg-foreground shrink-0" />
-          )}
-        </button>
-        {open && (
-        <div className="ml-[1.15rem] mt-1 mb-1 space-y-1 border-l border-border pl-2.5">
+        <div className="px-2.5 pb-1 pt-0.5 text-3xs font-semibold uppercase tracking-wider text-subtle">
+          {section.title}
+        </div>
+        <div className="space-y-0.5">
           {section.items.map((item) => {
             const active = !item.external && isActive(item.href);
+            const rowClass = `flex items-center gap-2.5 px-2.5 py-1 rounded-md text-[13px] transition-colors ${
+              active
+                ? "bg-surface-raised text-foreground font-medium"
+                : "text-muted hover:bg-surface-hover hover:text-foreground"
+            }`;
+            const iconClass = `flex size-4 shrink-0 items-center justify-center transition-colors ${
+              active ? "text-foreground" : "text-subtle"
+            }`;
             if (item.external) {
               return (
                 <a
@@ -563,13 +565,11 @@ export function Sidebar() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between gap-3 px-2.5 py-2 text-xs rounded-md text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
+                  className={rowClass}
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="text-muted">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </span>
-                  <svg className="size-3 text-subtle shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <span className={iconClass}>{item.icon}</span>
+                  <span className="flex-1 truncate">{item.label}</span>
+                  <svg className="size-3 shrink-0 text-subtle" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       fillRule="evenodd"
                       d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z"
@@ -584,19 +584,14 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-2.5 py-2 text-xs rounded-md transition-colors ${
-                  active
-                    ? "bg-surface-raised text-foreground font-medium"
-                    : "text-muted hover:text-foreground hover:bg-surface-hover"
-                }`}
+                className={rowClass}
               >
-                <span className={`flex size-6 shrink-0 items-center justify-center rounded-md transition-colors ${active ? "bg-accent text-accent-foreground" : "text-muted"}`}>{item.icon}</span>
-                <span>{item.label}</span>
+                <span className={iconClass}>{item.icon}</span>
+                <span className="flex-1 truncate">{item.label}</span>
               </Link>
             );
           })}
-          </div>
-        )}
+        </div>
       </div>
     );
   }
@@ -655,15 +650,15 @@ export function Sidebar() {
         <nav className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* Overview (admin/CRO home) + My Tasks — pinned above the grouped
               sections so home is always one click away. */}
-          <div className="px-3 space-y-1">
+          <div className="px-3 space-y-0.5">
             {role !== "team" && renderTopLink(overviewItem)}
             {renderTopLink(myWorkItem)}
           </div>
 
-          {/* Grouped, collapsible navigation. Sections + per-item role
-              gating are defined in navSections; visibleSections filters to
-              what this role can see. */}
-          <div className="mt-5 px-3 space-y-1.5">
+          {/* Flat, always-visible sections: an uppercase label per group with
+              every item shown. Per-item role gating is defined in navSections;
+              visibleSections filters to what this role can see. */}
+          <div className="mt-4 px-3 space-y-3">
             {visibleSections.map(renderSection)}
           </div>
         </nav>

@@ -32,7 +32,15 @@
  *   Strategist: no drag (conclude is a modal flow on the kanban card itself)
  */
 
-import type { MockClient, MockDeliverable, MockPod } from "@/lib/projects/mock-data";
+import {
+  subtaskStatuses,
+  subtaskAssigneeName,
+  type MockClient,
+  type MockDeliverable,
+  type MockPod,
+  type Subtask,
+  type SubtaskStatus,
+} from "@/lib/projects/mock-data";
 import type { Pod as PodV2 } from "@/lib/pods-v2/types";
 import {
   DOCUMENTS_TEAM_PRIMARY,
@@ -229,6 +237,68 @@ export function classifyClientsForUser(
             lane: strategistLane(card),
           });
         }
+      }
+    }
+  }
+  return out;
+}
+
+/* The user's own granular subtasks across every card - the "on track with
+ * everything" layer under the card-level view. Same roster resolution as the
+ * cards, so ownership matches the board exactly. Only surfaces UNLOCKED steps
+ * (locked ones aren't actionable yet); done ones are kept so progress reads. */
+export interface MySubtask {
+  subtask: Subtask;
+  status: SubtaskStatus;
+  cardId: string;
+  cardTitle: string;
+  clientId: string;
+  clientName: string;
+  projectId: string;
+  projectName: string;
+}
+
+export function subtasksForUser(
+  clients: MockClient[],
+  identity: MyWorkIdentity,
+  pods: MockPod[],
+): MySubtask[] {
+  const podById = new Map(pods.map((p) => [p.id, p]));
+  const needle = identity.name.trim().toLowerCase();
+  const out: MySubtask[] = [];
+  for (const client of clients) {
+    for (const project of client.projects) {
+      const pod = project.podId ? podById.get(project.podId) : undefined;
+      const isStrategistPod =
+        identity.croLeadPodIds.length > 0 &&
+        !!project.podId &&
+        identity.croLeadPodIds.includes(project.podId);
+      for (const rawCard of project.deliverables) {
+        const card = resolveCardAssignees(rawCard, pod);
+        const subs = card.subtasks ?? [];
+        if (subs.length === 0) continue;
+        const statuses = subtaskStatuses(card);
+        subs.forEach((s, i) => {
+          if (statuses[i] === "locked") return; // not yet actionable
+          const mine =
+            s.role === "strategist"
+              ? isStrategistPod
+              : (() => {
+                  const owner = subtaskAssigneeName(card, s.role);
+                  return !!owner && owner.trim().toLowerCase() === needle;
+                })();
+          if (!mine) return;
+          out.push({
+            subtask: s,
+            status: statuses[i],
+            cardId: card.id,
+            cardTitle: card.title,
+            clientId: client.id,
+            clientName: client.name,
+            projectId: project.id,
+            projectName: project.name,
+          });
+        });
       }
     }
   }

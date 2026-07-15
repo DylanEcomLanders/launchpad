@@ -15,8 +15,7 @@ import {
 } from "@/lib/kpi/metrics";
 import { TREND_WEEKS, RATE_GOOD, RATE_WARN, LATE_WARN_DAYS, LATE_BAD_DAYS } from "@/lib/kpi/config";
 import type { KpiPeriod, OverdueRow, BreakdownRow } from "@/lib/kpi/types";
-import { Table, THead, TBody, TR, TH, TD, Num, Badge, Avatar } from "@/components/ui";
-import { LineChart } from "@/components/line-chart";
+import { Table, THead, TBody, TR, TH, TD, Num, Badge, Avatar, StatCard } from "@/components/ui";
 
 /* ── Delivery KPIs ──
  * Delivery reporting off the Project Delivery data (same live board /kanban
@@ -83,6 +82,7 @@ export default function KpiPage() {
   const items = useMemo(() => getDeliveryItems(clients, rosterPods), [clients, rosterPods]);
   const win = useMemo(() => periodWindow(period, offset), [period, offset]);
   const summary = useMemo(() => computeSummary(items, period, offset), [items, period, offset]);
+  const prevSummary = useMemo(() => computeSummary(items, period, offset + 1), [items, period, offset]);
   const overdue = useMemo(() => computeOverdue(items, period, offset), [items, period, offset]);
   const pods = useMemo(() => computePodBreakdown(items, period, offset), [items, period, offset]);
   const members = useMemo(() => computeMemberBreakdown(items, period, offset), [items, period, offset]);
@@ -90,6 +90,14 @@ export default function KpiPage() {
 
   const asOfLabel = fmtDate(new Date(win.asOfMs).toISOString().slice(0, 10));
   const sourceLabel = loading ? "syncing…" : source === "supabase" ? "live" : "sample data";
+
+  // Deltas vs the previous period + recent-week sparklines for the summary cards.
+  const diff = (a: number | null, b: number | null) =>
+    a === null || b === null ? null : Math.round((a - b) * 10) / 10;
+  const vsLast = `vs last ${period}`;
+  const otSeries = trend.map((p) => p.onTimeRate).filter((n): n is number => n !== null);
+  const delSeries = trend.map((p) => p.delivered);
+  const turnSeries = trend.map((p) => p.avgTurnaround).filter((n): n is number => n !== null);
 
   return (
     <div className="px-6 pb-20 pt-10 md:px-10">
@@ -114,30 +122,42 @@ export default function KpiPage() {
       {/* ── Delivery summary ── */}
       <Section label={`Delivery · ${win.label}`}>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatTile label="On-time rate" value={<span className={rateColor(summary.onTimeRate)}>{fmtRate(summary.onTimeRate)}</span>} hint={`${summary.onTimeCount} on time · ${summary.lateCount} late`} />
-          <StatTile label="Delivered" value={String(summary.delivered)} hint={win.label} />
-          <StatTile
-            label={win.isCurrent ? "Currently overdue" : "Overdue at close"}
-            value={<span className={summary.currentlyOverdue > 0 ? "text-status-late" : "text-foreground"}>{summary.currentlyOverdue}</span>}
-            hint={win.isCurrent ? "open · past due now" : `open · as of ${asOfLabel}`}
+          <StatCard
+            label="On-time rate"
+            value={fmtRate(summary.onTimeRate)}
+            delta={diff(summary.onTimeRate, prevSummary.onTimeRate)}
+            deltaUnit=" pts"
+            deltaCaption={vsLast}
+            series={otSeries}
           />
-          <StatTile label="Avg turnaround" value={fmtDays(summary.avgTurnaroundDays)} hint="started → delivered" />
+          <StatCard
+            label="Delivered"
+            value={String(summary.delivered)}
+            delta={summary.delivered - prevSummary.delivered}
+            deltaCaption={vsLast}
+            series={delSeries}
+          />
+          <StatCard
+            label={win.isCurrent ? "Currently overdue" : "Overdue at close"}
+            value={String(summary.currentlyOverdue)}
+            delta={summary.currentlyOverdue - prevSummary.currentlyOverdue}
+            deltaCaption={vsLast}
+            lowerIsBetter
+          />
+          <StatCard
+            label="Avg turnaround"
+            value={fmtDays(summary.avgTurnaroundDays)}
+            delta={diff(summary.avgTurnaroundDays, prevSummary.avgTurnaroundDays)}
+            deltaUnit="d"
+            deltaCaption={vsLast}
+            lowerIsBetter
+            series={turnSeries}
+          />
         </div>
       </Section>
 
       {/* ── Testing engine ── */}
       <TestStrip win={win} />
-
-      {/* ── On-time trend ── */}
-      <Section label={`On-time trend · last ${trend.length} weeks`}>
-        <div className="rounded border border-border-faint bg-surface p-5">
-          <LineChart
-            className="h-40 w-full"
-            labels={trend.map((p) => p.label)}
-            series={[{ key: "on-time", color: "var(--color-status-ontrack)", points: trend.map((p) => p.onTimeRate) }]}
-          />
-        </div>
-      </Section>
 
       {/* ── Overdue + breakdowns ── */}
       <div className="space-y-8">

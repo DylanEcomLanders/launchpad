@@ -18,12 +18,20 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
+  type CardSize,
+  type Cycle,
   type DesignHandoff,
+  type DevHandoff,
+  type EngagementStatus,
   type MockClient,
   type MockDeliverable,
   type MockPod,
   type MockProject,
   type OnboardingBrief,
+  type StrategyHandoff,
+  type Subtask,
+  type TestRun,
+  type TierName,
   type TrackedMetric,
 } from "@/lib/projects/mock-data";
 import type {
@@ -64,11 +72,26 @@ interface KanbanProjectRow {
   phase2_deadline: string | null;
   brief: string | null;
   figma_url: string | null;
+  tier: TierName | null;
+  mrr: number | null;
+  engagement_status: EngagementStatus | null;
+}
+
+interface KanbanCycleRow {
+  id: string;
+  project_id: string;
+  month_index: number;
+  is_first_cycle: boolean;
+  pool_total: number | null;
+  pool_rolled_in: number | null;
+  pool_rolled_out: number | null;
 }
 
 interface KanbanTaskRow {
   id: string;
   project_id: string;
+  size: CardSize | null;
+  cycle_id: string | null;
   title: string;
   phase: PreviewPhase;
   category: string | null;
@@ -80,6 +103,10 @@ interface KanbanTaskRow {
   start_date: string | null;
   on_hold: boolean;
   design_handoff: DesignHandoff | null;
+  strategy_handoff: StrategyHandoff | null;
+  dev_handoff: DevHandoff | null;
+  tests: TestRun[] | null;
+  subtasks: Subtask[] | null;
   phase_history: PhaseHistoryEntry[];
   revision_requested: boolean;
   approved_at: string | null;
@@ -123,6 +150,12 @@ function taskRowToMock(r: KanbanTaskRow): MockDeliverable {
     startDate: r.start_date ?? undefined,
     onHold: r.on_hold || undefined,
     designHandoff: r.design_handoff ?? undefined,
+    strategyHandoff: r.strategy_handoff ?? undefined,
+    devHandoff: r.dev_handoff ?? undefined,
+    tests: r.tests ?? undefined,
+    subtasks: r.subtasks ?? undefined,
+    size: r.size ?? undefined,
+    cycleId: r.cycle_id ?? undefined,
     /* hoursInPhase is a runtime field (worker computed). DB doesn't store it
      * yet; default 0 so the type stays satisfied. Status decoration falls
      * back to phase_history-driven dates. */
@@ -161,7 +194,34 @@ function projectRowToMock(
     phase2Deadline: r.phase2_deadline ?? undefined,
     brief: r.brief ?? undefined,
     figmaUrl: r.figma_url ?? undefined,
+    tier: r.tier ?? undefined,
+    mrr: r.mrr ?? undefined,
+    engagementStatus: r.engagement_status ?? undefined,
     deliverables,
+  };
+}
+
+function cycleRowToMock(r: KanbanCycleRow): Cycle {
+  return {
+    id: r.id,
+    projectId: r.project_id,
+    monthIndex: r.month_index,
+    isFirstCycle: r.is_first_cycle,
+    poolTotal: r.pool_total ?? 0,
+    poolRolledIn: r.pool_rolled_in ?? 0,
+    poolRolledOut: r.pool_rolled_out ?? 0,
+  };
+}
+
+function mockCycleToRow(c: Cycle): KanbanCycleRow {
+  return {
+    id: c.id,
+    project_id: c.projectId,
+    month_index: c.monthIndex,
+    is_first_cycle: c.isFirstCycle,
+    pool_total: c.poolTotal,
+    pool_rolled_in: c.poolRolledIn,
+    pool_rolled_out: c.poolRolledOut,
   };
 }
 
@@ -213,6 +273,9 @@ function mockProjectToRow(clientId: string, p: MockProject): KanbanProjectRow {
     phase2_deadline: p.phase2Deadline ?? null,
     brief: p.brief ?? null,
     figma_url: p.figmaUrl ?? null,
+    tier: p.tier ?? null,
+    mrr: p.mrr ?? null,
+    engagement_status: p.engagementStatus ?? null,
   };
 }
 
@@ -245,6 +308,21 @@ function mockTaskToRow(projectId: string, d: MockDeliverable): KanbanTaskRow {
           persistScreenshotValue(d.testResult.screenshot) ?? undefined,
       }
     : null;
+  /* Each run carries its own screenshot(s) - path-extract them too so no
+   * run in the array persists an expired signed URL. */
+  const persistedTests: TestRun[] | null = d.tests
+    ? d.tests.map((run) => ({
+        ...run,
+        screenshot: persistScreenshotValue(run.screenshot) ?? undefined,
+        result: run.result
+          ? {
+              ...run.result,
+              screenshot:
+                persistScreenshotValue(run.result.screenshot) ?? undefined,
+            }
+          : undefined,
+      }))
+    : null;
   return {
     id: d.id,
     project_id: projectId,
@@ -259,6 +337,12 @@ function mockTaskToRow(projectId: string, d: MockDeliverable): KanbanTaskRow {
     start_date: d.startDate ?? null,
     on_hold: !!d.onHold,
     design_handoff: d.designHandoff ?? null,
+    strategy_handoff: d.strategyHandoff ?? null,
+    dev_handoff: d.devHandoff ?? null,
+    tests: persistedTests,
+    subtasks: d.subtasks ?? null,
+    size: d.size ?? null,
+    cycle_id: d.cycleId ?? null,
     phase_history: d.phaseHistory ?? [],
     revision_requested: !!d.revisionRequested,
     approved_at: d.approvedAt ?? null,
@@ -274,6 +358,108 @@ function mockTaskToRow(projectId: string, d: MockDeliverable): KanbanTaskRow {
     screenshot_url: persistScreenshotValue(d.screenshot),
     test_result: persistedTestResult,
   };
+}
+
+// ─── Activity log ───────────────────────────────────────────────────────────
+
+/* Append-only feed of who did what. Written fire-and-forget alongside the
+ * mutation that triggered it; never throws (logging must not break a move).
+ * Denormalised card/client/project names so the feed stays readable after
+ * the underlying rows are renamed or deleted. */
+export type KanbanActivityAction =
+  | "moved"
+  | "created"
+  | "deleted"
+  | "concluded_test"
+  | "submitted_handover";
+
+export interface KanbanActivity {
+  id: string;
+  actor: string;
+  action: KanbanActivityAction;
+  cardId?: string;
+  cardTitle: string;
+  clientName?: string;
+  projectName?: string;
+  fromPhase?: PreviewPhase;
+  toPhase?: PreviewPhase;
+  detail?: string;
+  createdAt: string; // ISO timestamp
+}
+
+interface KanbanActivityRow {
+  id: string;
+  actor: string;
+  action: string;
+  card_id: string | null;
+  card_title: string;
+  client_name: string | null;
+  project_name: string | null;
+  from_phase: string | null;
+  to_phase: string | null;
+  detail: string | null;
+  created_at: string;
+}
+
+function activityRowToObj(r: KanbanActivityRow): KanbanActivity {
+  return {
+    id: r.id,
+    actor: r.actor,
+    action: r.action as KanbanActivityAction,
+    cardId: r.card_id ?? undefined,
+    cardTitle: r.card_title,
+    clientName: r.client_name ?? undefined,
+    projectName: r.project_name ?? undefined,
+    fromPhase: (r.from_phase as PreviewPhase) ?? undefined,
+    toPhase: (r.to_phase as PreviewPhase) ?? undefined,
+    detail: r.detail ?? undefined,
+    createdAt: r.created_at,
+  };
+}
+
+function activityObjToRow(a: KanbanActivity): KanbanActivityRow {
+  return {
+    id: a.id,
+    actor: a.actor,
+    action: a.action,
+    card_id: a.cardId ?? null,
+    card_title: a.cardTitle,
+    client_name: a.clientName ?? null,
+    project_name: a.projectName ?? null,
+    from_phase: a.fromPhase ?? null,
+    to_phase: a.toPhase ?? null,
+    detail: a.detail ?? null,
+    created_at: a.createdAt,
+  };
+}
+
+/* Newest first. Capped so the feed stays cheap; the panel paginates in
+ * memory if we ever need more. Returns [] (never throws) so a logging
+ * outage never blanks the board. */
+export async function fetchKanbanActivity(
+  limit = 200,
+): Promise<KanbanActivity[]> {
+  if (!isSupabaseConfigured()) return [];
+  const { data, error } = await supabase
+    .from("kanban_activity")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("[kanban/data] fetchKanbanActivity failed:", error);
+    return [];
+  }
+  return (data ?? []).map((r) => activityRowToObj(r as KanbanActivityRow));
+}
+
+/* Fire-and-forget insert. Swallows errors (console only) - a failed log
+ * must never surface a toast or block the mutation it accompanies. */
+export async function logKanbanActivity(entry: KanbanActivity): Promise<void> {
+  if (!isSupabaseConfigured()) return;
+  const { error } = await supabase
+    .from("kanban_activity")
+    .insert(activityObjToRow(entry));
+  if (error) console.error("[kanban/data] logKanbanActivity failed:", error);
 }
 
 // ─── Reads ──────────────────────────────────────────────────────────────────
@@ -358,6 +544,12 @@ async function rewriteScreenshotsToSignedUrls(
         if (isStoragePath(d.testResult?.screenshot)) {
           paths.push(d.testResult!.screenshot as string);
         }
+        for (const run of d.tests ?? []) {
+          if (isStoragePath(run.screenshot)) paths.push(run.screenshot as string);
+          if (isStoragePath(run.result?.screenshot)) {
+            paths.push(run.result!.screenshot as string);
+          }
+        }
       }
     }
   }
@@ -374,6 +566,19 @@ async function rewriteScreenshotsToSignedUrls(
             ...d.testResult,
             screenshot: signed[d.testResult.screenshot],
           };
+        }
+        if (d.tests) {
+          d.tests = d.tests.map((run) => ({
+            ...run,
+            screenshot:
+              run.screenshot && signed[run.screenshot]
+                ? signed[run.screenshot]
+                : run.screenshot,
+            result:
+              run.result?.screenshot && signed[run.result.screenshot]
+                ? { ...run.result, screenshot: signed[run.result.screenshot] }
+                : run.result,
+          }));
         }
       }
     }
@@ -468,6 +673,59 @@ export async function deleteTasks(ids: string[]): Promise<void> {
   if (error) console.error("[kanban/data] deleteTasks failed:", error);
 }
 
+// ─── Cycles (token-meter pool periods) ──────────────────────────────────────
+
+/* Resilient like the activity feed: returns [] on any error (including the
+ * table not existing yet because migration 053 hasn't been pasted). A missing
+ * cycles table must never break the board - the meter just won't render until
+ * the migration lands + a cycle is created. */
+export async function fetchCycles(): Promise<Cycle[]> {
+  if (!isSupabaseConfigured()) return [];
+  const { data, error } = await supabase.from("cycles").select("*");
+  if (error) {
+    console.error("[kanban/data] fetchCycles failed:", error);
+    return [];
+  }
+  return (data ?? []).map((r) => cycleRowToMock(r as KanbanCycleRow));
+}
+
+export async function upsertCycles(cycles: Cycle[]): Promise<void> {
+  if (!isSupabaseConfigured() || cycles.length === 0) return;
+  const { error } = await supabase
+    .from("cycles")
+    .upsert(cycles.map(mockCycleToRow));
+  if (error) {
+    console.error("[kanban/data] upsertCycles failed:", error);
+    throw new Error(`upsertCycles: ${error.message}`);
+  }
+}
+
+export async function deleteCycles(ids: string[]): Promise<void> {
+  if (!isSupabaseConfigured() || ids.length === 0) return;
+  const { error } = await supabase.from("cycles").delete().in("id", ids);
+  if (error) console.error("[kanban/data] deleteCycles failed:", error);
+}
+
+/* Diff two cycle arrays and mirror the delta (upsert changed, delete removed).
+ * Cycles are tiny (one per active retainer per month), so a full compare is
+ * cheap. Same additive + explicit-delete posture as the rest of the layer. */
+export async function syncCyclesDiff(
+  prev: Cycle[],
+  next: Cycle[],
+): Promise<void> {
+  if (!isSupabaseConfigured()) return;
+  const prevById = new Map(prev.map((c) => [c.id, c]));
+  const nextById = new Map(next.map((c) => [c.id, c]));
+  const changed: Cycle[] = [];
+  for (const c of next) {
+    const before = prevById.get(c.id);
+    if (!before || JSON.stringify(before) !== JSON.stringify(c)) changed.push(c);
+  }
+  const removedIds = [...prevById.keys()].filter((id) => !nextById.has(id));
+  await upsertCycles(changed);
+  await deleteCycles(removedIds);
+}
+
 // ─── Seed (first-run only) ──────────────────────────────────────────────────
 
 /* Drop MOCK_CLIENTS + MOCK_PODS into a virgin DB so the team has something
@@ -560,7 +818,10 @@ export async function syncClientsDiff(
         pBefore.phase1Deadline !== p.phase1Deadline ||
         pBefore.phase2Deadline !== p.phase2Deadline ||
         pBefore.brief !== p.brief ||
-        pBefore.figmaUrl !== p.figmaUrl
+        pBefore.figmaUrl !== p.figmaUrl ||
+        pBefore.tier !== p.tier ||
+        pBefore.mrr !== p.mrr ||
+        pBefore.engagementStatus !== p.engagementStatus
       ) {
         projectChanged.push({ clientId: c.id, project: p });
       }

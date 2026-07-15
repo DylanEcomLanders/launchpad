@@ -8,7 +8,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Table, THead, TBody, TR, TH, TD, Num } from "@/components/ui";
+import { Table, THead, TBody, TR, TH, TD, Num, StatCard } from "@/components/ui";
 import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { listEngagements } from "@/lib/command-centre/store";
 import { stateWord, daysUntil, complianceState, itemDueISO, itemOverdue, type Engagement, type Client } from "@/lib/command-centre/model";
@@ -33,17 +33,6 @@ function weekLabel(days: Date[]) {
   const mon = days[0], fri = days[4];
   const m = (d: Date) => d.toLocaleDateString("en-GB", { month: "short" });
   return mon.getMonth() === fri.getMonth() ? `${mon.getDate()}–${fri.getDate()} ${m(fri)}` : `${mon.getDate()} ${m(mon)} – ${fri.getDate()} ${m(fri)}`;
-}
-
-function StatTile({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: "warn" | "bad" }) {
-  const c = tone === "bad" ? "text-status-late" : tone === "warn" ? "text-status-approaching" : "text-foreground";
-  return (
-    <div className="rounded border border-border-faint bg-surface p-5">
-      <div className="text-2xs font-medium uppercase tracking-wider text-subtle">{label}</div>
-      <div className={`mt-2 text-xl font-semibold tabular-nums ${c}`}>{value}</div>
-      {hint && <div className="mt-1 text-2xs text-subtle">{hint}</div>}
-    </div>
-  );
 }
 
 type Chip = { engId: string; client: string; label: string; overdue: boolean };
@@ -120,14 +109,46 @@ export default function ClientsPage() {
   const stats = useMemo(() => {
     const retainers = rows.filter((r) => r.engagement.type === "retainer");
     const projects = rows.filter((r) => r.engagement.type === "project");
+    // A month ago: what did the current book look like then? Engagements that
+    // had already started count toward the prior-month figure. This can't see
+    // churn (inactive engagements are dropped), so it reads net-new movement.
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    const startedBeforeMonthAgo = (r: Row) =>
+      new Date(r.engagement.startDate) <= monthAgo;
+    const prevMrr = retainers
+      .filter(startedBeforeMonthAgo)
+      .reduce((s, r) => s + r.engagement.value, 0);
+    const prevProjects = projects.filter(startedBeforeMonthAgo).length;
+    const mrr = retainers.reduce((s, r) => s + r.engagement.value, 0);
     return {
-      mrr: retainers.reduce((s, r) => s + r.engagement.value, 0),
+      mrr,
+      mrrDelta: mrr - prevMrr,
       retainerCount: retainers.length,
       projectCount: projects.length,
+      projectDelta: projects.length - prevProjects,
       projectVal: projects.reduce((s, r) => s + r.engagement.value, 0),
       renewalsSoon: retainers.filter((r) => { const d = daysUntil(r.engagement.renewalDate); return d !== null && d <= 30; }).length,
       attention: rows.filter((r) => stateWord(r.engagement).tone !== "ok").length,
     };
+  }, [rows]);
+
+  // Derived monthly trajectory for the sparklines: for each of the last 6
+  // months, the book as it stood at that month's end (engagements already
+  // started). Grounded in real start dates; can't reflect past churn.
+  const series = useMemo(() => {
+    const retainers = rows.filter((r) => r.engagement.type === "retainer");
+    const projects = rows.filter((r) => r.engagement.type === "project");
+    const now = new Date();
+    const mrr: number[] = [];
+    const proj: number[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const started = (r: Row) => new Date(r.engagement.startDate) <= monthEnd;
+      mrr.push(retainers.filter(started).reduce((s, r) => s + r.engagement.value, 0));
+      proj.push(projects.filter(started).length);
+    }
+    return { mrr, proj };
   }, [rows]);
 
   return (
@@ -138,10 +159,33 @@ export default function ClientsPage() {
       </header>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Current MRR" value={`£${stats.mrr.toLocaleString()}`} hint={`${stats.retainerCount} retainers`} />
-        <StatTile label="Projects in flight" value={String(stats.projectCount)} hint={`£${stats.projectVal.toLocaleString()} in scope`} />
-        <StatTile label="Renewals ≤30d" value={String(stats.renewalsSoon)} hint={stats.renewalsSoon ? "approaching" : "none due"} tone={stats.renewalsSoon ? "warn" : undefined} />
-        <StatTile label="Needs attention" value={String(stats.attention)} hint="gaps or overdue" tone={stats.attention ? "bad" : undefined} />
+        <StatCard
+          label="Current MRR"
+          value={`£${stats.mrr.toLocaleString()}`}
+          delta={stats.mrrDelta}
+          deltaPrefix="£"
+          deltaCaption="vs last month"
+          series={series.mrr}
+        />
+        <StatCard
+          label="Projects in flight"
+          value={String(stats.projectCount)}
+          delta={stats.projectDelta}
+          deltaCaption="vs last month"
+          series={series.proj}
+        />
+        <StatCard
+          label="Renewals ≤30d"
+          value={String(stats.renewalsSoon)}
+          deltaCaption={stats.renewalsSoon ? "approaching" : "none due"}
+          tone={stats.renewalsSoon ? "warn" : undefined}
+        />
+        <StatCard
+          label="Needs attention"
+          value={String(stats.attention)}
+          deltaCaption="gaps or overdue"
+          tone={stats.attention ? "bad" : undefined}
+        />
       </div>
 
       <PrepCalendar rows={rows} />

@@ -45,6 +45,61 @@ export interface Client {
   createdAt: string;
 }
 
+/** A PDF (or other file) attached to an engagement - an invoice, agreement,
+ *  deck. Billing lives in Xero; these are reference documents. The bytes live
+ *  in the `client-documents` storage bucket at `path`; this is just metadata. */
+export interface ClientDoc {
+  id: string;
+  name: string; // original filename
+  path: string; // storage path in client-documents
+  sizeBytes?: number;
+  kind?: "invoice" | "agreement" | "other";
+  uploadedAt: string;
+  uploadedBy?: string;
+}
+
+/** A banked win - entered by hand for the POC (no kanban link). Shows in the
+ *  client-facing Results section. Outcomes, not due-dates. */
+export type ResultOutcome = "winner" | "loser" | "inconclusive" | "shipped";
+export const RESULT_OUTCOME_LABEL: Record<ResultOutcome, string> = {
+  winner: "Winner",
+  loser: "Loser",
+  inconclusive: "Inconclusive",
+  shipped: "Shipped",
+};
+export interface BankedResult {
+  id: string;
+  title: string;
+  hypothesis?: string; // what we believed + why we tested it
+  metric?: string; // e.g. "CVR", "AOV", "RPV"
+  upliftPct?: number; // signed, e.g. 8 or -3
+  outcome: ResultOutcome;
+  date: string; // ISO yyyy-mm-dd
+  note?: string;
+}
+
+/** A piece of live work - entered by hand for the POC. Client-facing In-flight
+ *  shows the title + phase, never dates. Phases are the client-legible pipeline
+ *  (a manual stand-in for the kanban rollup). */
+export type WorkPhase = "strategy" | "design" | "development" | "optimisation";
+export const WORK_PHASE_ORDER: WorkPhase[] = [
+  "strategy",
+  "design",
+  "development",
+  "optimisation",
+];
+export const WORK_PHASE_LABEL: Record<WorkPhase, string> = {
+  strategy: "Strategy",
+  design: "Design",
+  development: "Development",
+  optimisation: "Optimisation",
+};
+export interface WorkItem {
+  id: string;
+  title: string;
+  phase: WorkPhase;
+}
+
 export interface Engagement {
   id: string;
   clientId: string;
@@ -60,6 +115,15 @@ export interface Engagement {
   pod?: string;
   csm?: string;
   items: ChecklistItem[];
+  /** Attached reference PDFs (invoices, agreements). Metadata only. */
+  documents?: ClientDoc[];
+  /** Banked wins, entered by hand (POC). Client-facing Results section. */
+  results?: BankedResult[];
+  /** Live work, entered by hand (POC). Client-facing In-flight section. */
+  workItems?: WorkItem[];
+  /** Random slug for the isolated client link (/client/[token]). Not the
+   *  engagement id, so the link can't be traced back to internal routes. */
+  portalToken?: string;
   createdAt: string;
 }
 
