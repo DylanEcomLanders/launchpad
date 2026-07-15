@@ -19,6 +19,118 @@ const testStore = createStore<Test>({ table: "tests", lsKey: "launchpad-tests" }
 function nowISO(): string {
   return new Date().toISOString();
 }
+
+/* ── Seed ──
+ * A few realistic surfaces + tests tied to live mock projects (pdp-build /
+ * full-site / hero-refresh) so the Results Engine renders before the seam is
+ * wired to real launches. Seeded once when both stores are empty; editable and
+ * deletable like anything else. Replaced by real seam-created surfaces later. */
+const SEED_NOW = "2026-07-05T09:00:00Z";
+const SEED_SURFACES: ResultsSurface[] = [
+  {
+    id: "surface-harvestory-pdp",
+    projectId: "pdp-build",
+    sourceTaskId: "h-live1",
+    title: "PDP",
+    liveUrl: "https://harvestory.com/products/daily-greens",
+    controlBenchmark: { CVR: 3.1, AOV: 148, RPV: 4.59 },
+    status: "active",
+    created_at: SEED_NOW,
+    updated_at: SEED_NOW,
+  },
+  {
+    id: "surface-ironpaws-home",
+    projectId: "full-site",
+    sourceTaskId: "i1",
+    title: "Homepage",
+    liveUrl: "https://ironpaws.com",
+    controlBenchmark: { CVR: 2.4, AOV: 96 },
+    status: "active",
+    created_at: SEED_NOW,
+    updated_at: SEED_NOW,
+  },
+  {
+    id: "surface-acme-hero",
+    projectId: "hero-refresh",
+    sourceTaskId: "a1",
+    title: "Hero",
+    liveUrl: "https://acmeskincare.com",
+    controlBenchmark: { CVR: 1.9, AOV: 172 },
+    status: "active",
+    created_at: SEED_NOW,
+    updated_at: SEED_NOW,
+  },
+];
+const SEED_TESTS: Test[] = [
+  {
+    id: "test-h-hero-cta", surfaceId: "surface-harvestory-pdp", status: "won",
+    hypothesis: "A benefit-led hero CTA (\"Feel the difference\") beats the generic \"Shop now\".",
+    variantDesc: "Benefit-led CTA copy + sticky ATC on mobile", primaryMetric: "Add-to-cart rate",
+    upliftPct: 8, significanceReachedPct: 96, outcome: "winner",
+    declaredBy: "Aanchal", declaredAt: "2026-06-09T10:00:00Z",
+    winEvidence: { what: "Add-to-cart rate", magnitude: "+8% (mobile +12%)", link: "https://harvestory.com/?cta=v2" },
+    concludedAt: "2026-06-09",
+    clientPublished: true, clientSummary: "Testing a clearer, benefit-led call-to-action on the product page.",
+    clientResult: "The new wording lifted add-to-cart by 8% — now live for everyone.",
+    created_at: SEED_NOW, updated_at: SEED_NOW,
+  },
+  {
+    id: "test-h-bundle", surfaceId: "surface-harvestory-pdp", status: "reading",
+    hypothesis: "Inline bundle cards convert better than the dropdown picker.",
+    variantDesc: "Inline bundle selector", primaryMetric: "CVR", startedAt: "2026-06-20",
+    significanceReachedPct: 88, clientPublished: false,
+    created_at: SEED_NOW, updated_at: SEED_NOW,
+  },
+  {
+    id: "test-h-reviews", surfaceId: "surface-harvestory-pdp", status: "backlog",
+    hypothesis: "Moving reviews above the fold builds trust earlier and lifts CVR.",
+    primaryMetric: "CVR", clientPublished: false,
+    created_at: SEED_NOW, updated_at: SEED_NOW,
+  },
+  {
+    id: "test-i-home-hero", surfaceId: "surface-ironpaws-home", status: "live",
+    hypothesis: "A quiz-first homepage hero drives more qualified sessions than the product grid.",
+    variantDesc: "Quiz-first hero", primaryMetric: "RPV", startedAt: "2026-06-12", trafficSplit: "50/50",
+    clientPublished: false, created_at: SEED_NOW, updated_at: SEED_NOW,
+  },
+  {
+    id: "test-i-pricing", surfaceId: "surface-ironpaws-home", status: "lost",
+    hypothesis: "Showing per-month subscription pricing lifts conversion.",
+    variantDesc: "Per-month price breakdown", primaryMetric: "CVR",
+    upliftPct: -7, significanceReachedPct: 92, outcome: "loser", concludedAt: "2026-05-12",
+    notes: "Customers anchored on the smaller number and bounced. Reverted to total price.",
+    clientPublished: true, clientSummary: "Tested a per-month price breakdown on the subscription.",
+    clientResult: "It didn't help conversion, so we kept the clearer total price. A useful rule-out.",
+    created_at: SEED_NOW, updated_at: SEED_NOW,
+  },
+  {
+    id: "test-a-adv", surfaceId: "surface-acme-hero", status: "backlog",
+    hypothesis: "A clinical-study advertorial pre-sells better than the standard hero.",
+    primaryMetric: "CVR", clientPublished: false,
+    created_at: SEED_NOW, updated_at: SEED_NOW,
+  },
+];
+
+// Cache the seed as ONE shared promise so concurrent callers (the page loads
+// surfaces + tests via Promise.all) all await the same completion — otherwise
+// the second caller reads before the first finishes writing.
+let seedPromise: Promise<void> | null = null;
+function seedIfEmpty(): Promise<void> {
+  if (!seedPromise) seedPromise = doSeed();
+  return seedPromise;
+}
+async function doSeed(): Promise<void> {
+  const [surfaces, tests] = await Promise.all([surfaceStore.getAll(), testStore.getAll()]);
+  if (surfaces.length > 0 || tests.length > 0) return;
+  // Per-item guard: create() writes to localStorage even when the Supabase
+  // insert throws (table not yet migrated), so each seed still lands locally.
+  for (const s of SEED_SURFACES) {
+    try { await surfaceStore.create(s); } catch { /* supabase table absent — LS still written */ }
+  }
+  for (const t of SEED_TESTS) {
+    try { await testStore.create(t); } catch { /* supabase table absent — LS still written */ }
+  }
+}
 function newId(prefix: string): string {
   const rand =
     typeof crypto !== "undefined" && crypto.randomUUID
@@ -30,6 +142,7 @@ function newId(prefix: string): string {
 /* ── Surfaces ── */
 
 export async function getSurfaces(): Promise<ResultsSurface[]> {
+  await seedIfEmpty();
   return surfaceStore.getAll();
 }
 
@@ -86,6 +199,7 @@ export async function updateSurface(
 /* ── Tests ── */
 
 export async function getTests(): Promise<Test[]> {
+  await seedIfEmpty();
   return testStore.getAll();
 }
 

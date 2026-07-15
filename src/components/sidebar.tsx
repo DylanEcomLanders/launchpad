@@ -28,6 +28,7 @@ import {
   BanknotesIcon as PixelCoins,
   FunnelIcon as PixelFunnel,
   RectangleGroupIcon as PixelGrid,
+  BeakerIcon as PixelBeaker,
   TrophyIcon as PixelTrophy,
   HeartIcon as PixelHeart,
   HomeIcon as PixelHome,
@@ -154,6 +155,14 @@ const kpiItem = {
   label: "KPIs",
   href: "/kpi",
   icon: <PixelChart className="size-4" />,
+};
+/* Results Engine — Surface B: the strategist's optimisation board (surfaces +
+ * tests moving Backlog → Live → Reading → Won/Lost). The cyclic counterpart to
+ * the linear Delivery board. */
+const resultsEngineItem = {
+  label: "Results Engine",
+  href: "/results-engine",
+  icon: <PixelBeaker className="size-4" />,
 };
 /* Results Library — concluded test outcomes (winners / losers). Promoted out of
  * the board's view dropdown to a first-class Client Health destination. */
@@ -356,6 +365,7 @@ const navSections: NavSection[] = [
       onboardingItem,
       { ...clientsItem, roles: ADMIN_CRO },
       missionControlItem,
+      { ...resultsEngineItem, roles: ADMIN_CRO },
       { ...resultsItem, roles: ADMIN_CRO },
       { ...kpiItem, roles: ADMIN_CRO },
     ],
