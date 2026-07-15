@@ -59,6 +59,7 @@ import {
 import { Field, Pill, ProjectCard, Segmented } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { DeliveryTableView } from "@/components/kanban/delivery-table";
+import { createSurfaceForLaunch } from "@/lib/results-engine/data";
 import type { KanbanActivity } from "@/lib/kanban/data";
 import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
@@ -1255,6 +1256,25 @@ export default function KanbanPage() {
         projectName: beforeMove.projectName,
         fromPhase: beforeMove.phase,
         toPhase: targetPhase,
+      });
+    }
+    /* ── The seam ── entering Launch auto-creates this build's Results Engine
+     * surface, carrying its live URL + any recorded benchmark metrics. Fire-and-
+     * forget; createSurfaceForLaunch is idempotent per source card, so a re-drop
+     * won't duplicate. This is the single hand-off the two-surface model rests on. */
+    if (beforeMove && targetPhase === "launch" && beforeMove.phase !== "launch") {
+      const benchmark: Record<string, string | number> = {};
+      for (const m of beforeMove.metrics ?? []) {
+        if (m.interim) benchmark[m.name] = m.interim;
+      }
+      createSurfaceForLaunch({
+        projectId: beforeMove.projectId,
+        sourceTaskId: beforeMove.id,
+        title: beforeMove.title,
+        liveUrl: beforeMove.liveTestUrl,
+        controlBenchmark: Object.keys(benchmark).length ? benchmark : undefined,
+      }).catch(() => {
+        /* offline / store unavailable — the surface can be created later */
       });
     }
   }
