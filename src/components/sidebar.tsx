@@ -29,7 +29,6 @@ import {
   FunnelIcon as PixelFunnel,
   RectangleGroupIcon as PixelGrid,
   BeakerIcon as PixelBeaker,
-  TrophyIcon as PixelTrophy,
   HeartIcon as PixelHeart,
   HomeIcon as PixelHome,
   ArrowTrendingUpIcon as PixelPulse,
@@ -164,13 +163,9 @@ const resultsEngineItem = {
   href: "/results-engine",
   icon: <PixelBeaker className="size-4" />,
 };
-/* Results Library — concluded test outcomes (winners / losers). Promoted out of
- * the board's view dropdown to a first-class Client Health destination. */
-const resultsItem = {
-  label: "Results Library",
-  href: "/kanban?view=results",
-  icon: <PixelTrophy className="size-4" />,
-};
+/* Results Library was a separate nav item; it's now the Library view INSIDE the
+ * Results Engine (a view over won records, not a second surface — §4). The
+ * legacy kanban results bank stays reachable at /kanban?view=results. */
 const onboardingItem = {
   label: "Onboarding",
   href: "/tools/onboarding-inbox",
@@ -366,7 +361,6 @@ const navSections: NavSection[] = [
       { ...clientsItem, roles: ADMIN_CRO },
       missionControlItem,
       { ...resultsEngineItem, roles: ADMIN_CRO },
-      { ...resultsItem, roles: ADMIN_CRO },
       { ...kpiItem, roles: ADMIN_CRO },
     ],
   },

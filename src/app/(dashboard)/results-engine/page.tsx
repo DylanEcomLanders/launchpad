@@ -9,11 +9,13 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { XMarkIcon, TrophyIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, TrophyIcon, EyeIcon, EyeSlashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { Segmented } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import {
   getSurfaces,
   getTests,
+  addTest,
   setTestStatus,
   declareWin,
   concludeTest,
@@ -37,6 +39,8 @@ export default function ResultsEnginePage() {
   const [loading, setLoading] = useState(true);
   const [clientFilter, setClientFilter] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [view, setView] = useState<"board" | "library">("board");
+  const [addOpen, setAddOpen] = useState(false);
 
   const load = useCallback(async () => {
     const [s, t] = await Promise.all([getSurfaces(), getTests()]);
@@ -94,27 +98,54 @@ export default function ResultsEnginePage() {
   const concluded = tests.filter((t) => t.status === "won" || t.status === "lost").length;
   const winRate = concluded > 0 ? Math.round((won / concluded) * 100) : null;
 
+  // Library = the won records as a view (§4), not a second store.
+  const wonTests = useMemo(
+    () => shown.filter((t) => t.status === "won").sort((a, b) => (b.declaredAt ?? "").localeCompare(a.declaredAt ?? "")),
+    [shown],
+  );
+
   return (
     <div className="px-6 pb-24 pt-10 md:px-10">
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-foreground">Results Engine</h1>
           <p className="mt-1 text-sm text-muted">
-            Every live page under optimisation and the tests running against it.
+            {view === "board"
+              ? "Every live page under optimisation and the tests running against it."
+              : "Won tests — the proof shelf. Every win, ready to reuse."}
           </p>
         </div>
-        <select
-          value={clientFilter}
-          onChange={(e) => setClientFilter(e.target.value)}
-          className="rounded border border-border-faint bg-surface px-3 py-1.5 text-sm text-foreground focus:border-subtle focus:outline-none"
-        >
-          <option value="all">All clients</option>
-          {clientOptions.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <Segmented
+            value={view}
+            onChange={(v) => setView(v as "board" | "library")}
+            options={[
+              { value: "board", label: "Board" },
+              { value: "library", label: "Library" },
+            ]}
+          />
+          <select
+            value={clientFilter}
+            onChange={(e) => setClientFilter(e.target.value)}
+            className="rounded border border-border-faint bg-surface px-3 py-1.5 text-sm text-foreground focus:border-subtle focus:outline-none"
+          >
+            <option value="all">All clients</option>
+            {clientOptions.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {view === "board" && surfaces.length > 0 && (
+            <button
+              onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded bg-foreground px-3 py-2 text-xs font-medium text-background transition-opacity hover:opacity-90"
+            >
+              <PlusIcon className="size-3.5" />
+              New test
+            </button>
+          )}
+        </div>
       </header>
 
       {/* KPI strip — the Results Engine's own small set */}
@@ -127,6 +158,13 @@ export default function ResultsEnginePage() {
 
       {loading ? (
         <p className="py-16 text-center text-sm text-subtle">Loading…</p>
+      ) : view === "library" ? (
+        <LibraryView
+          tests={wonTests}
+          surfaceById={surfaceById}
+          clientForSurface={clientForSurface}
+          onOpen={setSelectedId}
+        />
       ) : (
         <div className="grid gap-3 lg:grid-cols-5">
           {TEST_STATUS_ORDER.map((status) => {
@@ -208,6 +246,178 @@ export default function ResultsEnginePage() {
           }}
         />
       )}
+
+      {addOpen && (
+        <AddTestModal
+          surfaces={surfaces}
+          clientForSurface={clientForSurface}
+          onClose={() => setAddOpen(false)}
+          onAdded={async () => {
+            setAddOpen(false);
+            await load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Library — the won proof shelf (a view over won records, §4) ── */
+function LibraryView({
+  tests,
+  surfaceById,
+  clientForSurface,
+  onOpen,
+}: {
+  tests: Test[];
+  surfaceById: Map<string, ResultsSurface>;
+  clientForSurface: (s: ResultsSurface | undefined) => { id: string; name: string } | undefined;
+  onOpen: (id: string) => void;
+}) {
+  if (tests.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-border-faint px-6 py-16 text-center">
+        <p className="text-sm font-medium text-foreground">No wins yet</p>
+        <p className="mt-1 text-xs text-subtle">
+          Declared wins graduate here automatically as proof assets.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {tests.map((t) => {
+        const surface = surfaceById.get(t.surfaceId);
+        const client = clientForSurface(surface);
+        return (
+          <button
+            key={t.id}
+            onClick={() => onOpen(t.id)}
+            className="flex flex-col rounded-lg border border-border-faint bg-surface p-4 text-left transition-colors hover:border-border"
+          >
+            <div className="flex items-center gap-2">
+              <TrophyIcon className="size-3.5 text-status-ontrack" />
+              <span className="text-2xs font-medium uppercase tracking-wider text-status-ontrack">Won</span>
+              {t.clientPublished && <EyeIcon className="ml-auto size-3.5 text-subtle" title="Published to client" />}
+            </div>
+            <p className="mt-2.5 text-sm font-medium leading-snug text-foreground">
+              {t.hypothesis ?? "Untitled test"}
+            </p>
+            <p className="mt-1.5 text-2xs text-muted">
+              {surface?.title ?? "—"}
+              {client ? ` · ${client.name}` : ""}
+            </p>
+            <div className="mt-3 flex items-baseline gap-2 border-t border-border-faint pt-3">
+              {t.primaryMetric && <span className="text-xs text-muted">{t.primaryMetric}</span>}
+              {typeof t.upliftPct === "number" && (
+                <span className="font-mono text-sm font-semibold tabular-nums text-status-ontrack">
+                  {t.upliftPct > 0 ? "+" : ""}
+                  {t.upliftPct}%
+                </span>
+              )}
+              {typeof t.significanceReachedPct === "number" && (
+                <span className="ml-auto text-2xs tabular-nums text-subtle">{t.significanceReachedPct}% conf.</span>
+              )}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Add a test to a surface's Backlog ── */
+function AddTestModal({
+  surfaces,
+  clientForSurface,
+  onClose,
+  onAdded,
+}: {
+  surfaces: ResultsSurface[];
+  clientForSurface: (s: ResultsSurface | undefined) => { id: string; name: string } | undefined;
+  onClose: () => void;
+  onAdded: () => Promise<void>;
+}) {
+  const [surfaceId, setSurfaceId] = useState(surfaces[0]?.id ?? "");
+  const [hypothesis, setHypothesis] = useState("");
+  const [metric, setMetric] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    if (!surfaceId || !hypothesis.trim()) return;
+    setBusy(true);
+    try {
+      await addTest({ surfaceId, hypothesis: hypothesis.trim(), primaryMetric: metric.trim() || undefined });
+      await onAdded();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-lg border border-border bg-background p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">New test</h2>
+          <button onClick={onClose} className="text-subtle transition-colors hover:text-foreground">
+            <XMarkIcon className="size-5" />
+          </button>
+        </div>
+        <div className="space-y-3">
+          <label className="block">
+            <span className="mb-1 block text-3xs uppercase tracking-wider text-subtle">Surface</span>
+            <select
+              value={surfaceId}
+              onChange={(e) => setSurfaceId(e.target.value)}
+              className="w-full rounded border border-border-faint bg-surface px-2.5 py-1.5 text-sm text-foreground focus:border-subtle focus:outline-none"
+            >
+              {surfaces.map((s) => {
+                const c = clientForSurface(s);
+                return (
+                  <option key={s.id} value={s.id}>
+                    {s.title}
+                    {c ? ` · ${c.name}` : ""}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-3xs uppercase tracking-wider text-subtle">Hypothesis</span>
+            <textarea
+              value={hypothesis}
+              onChange={(e) => setHypothesis(e.target.value)}
+              rows={3}
+              placeholder="What you believe + why, in one sentence."
+              className="w-full resize-y rounded border border-border-faint bg-surface px-2.5 py-1.5 text-sm text-foreground placeholder:text-subtle focus:border-subtle focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-3xs uppercase tracking-wider text-subtle">Primary metric (optional)</span>
+            <input
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
+              placeholder="CVR"
+              className="w-full rounded border border-border-faint bg-surface px-2.5 py-1.5 text-sm text-foreground placeholder:text-subtle focus:border-subtle focus:outline-none"
+            />
+          </label>
+        </div>
+        <div className="mt-5 flex items-center gap-2">
+          <button
+            onClick={save}
+            disabled={busy || !surfaceId || !hypothesis.trim()}
+            className="rounded bg-foreground px-4 py-2 text-xs font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-40"
+          >
+            Add to backlog
+          </button>
+          <button onClick={onClose} className="rounded border border-border-faint px-4 py-2 text-xs text-muted hover:text-foreground">
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
