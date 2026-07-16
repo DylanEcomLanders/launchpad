@@ -10,9 +10,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Table, THead, TBody, TR, TH, TD, Num, StatCard } from "@/components/ui";
 import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { listEngagements } from "@/lib/command-centre/store";
+import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import { rosterFromKanban } from "@/lib/clients/roster";
 import { stateWord, daysUntil, complianceState, itemDueISO, itemOverdue, type Engagement, type Client } from "@/lib/command-centre/model";
-import { NewEngagementModal } from "./_new-engagement";
 
 type Row = { engagement: Engagement; client: Client };
 type Filter = "all" | "retainer" | "project";
@@ -100,9 +100,15 @@ export default function ClientsPage() {
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
-  const [showNew, setShowNew] = useState(false);
 
-  useEffect(() => { setRows(listEngagements().filter((r) => r.engagement.status === "active")); }, []);
+  const { clients: kanbanClients } = useKanbanData();
+  useEffect(() => {
+    let cancelled = false;
+    rosterFromKanban(kanbanClients).then((r) => {
+      if (!cancelled) setRows(r.filter((x) => x.engagement.status === "active"));
+    });
+    return () => { cancelled = true; };
+  }, [kanbanClients]);
 
   const shown = useMemo(() => rows.filter((r) => filter === "all" || r.engagement.type === filter), [rows, filter]);
 
@@ -206,9 +212,6 @@ export default function ClientsPage() {
             ))}
           </div>
         </div>
-        <button onClick={() => setShowNew(true)} className="flex h-8 items-center gap-1.5 rounded border border-border px-2.5 text-xs text-muted transition-colors hover:text-foreground">
-          <PlusIcon className="size-3.5" />New engagement
-        </button>
       </div>
 
       {/* table */}
@@ -252,7 +255,6 @@ export default function ClientsPage() {
         </Table>
       </div>
 
-      {showNew && <NewEngagementModal onClose={() => setShowNew(false)} onCreated={(id) => router.push(`/clients/${id}`)} />}
     </div>
   );
 }
