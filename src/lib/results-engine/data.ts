@@ -327,3 +327,31 @@ export async function deleteTest(id: string): Promise<void> {
 export async function getWonTests(): Promise<Test[]> {
   return (await testStore.getAll()).filter((t) => t.status === "won");
 }
+
+/* ── The client projection (§7) ──
+ * A read-only, curated view of a client's optimisation, keyed off their projects
+ * (client identity = kanban_clients, resolved by the caller via project → client).
+ * Only PUBLISHED tests surface, and only their client face. Wins AND losses show,
+ * ordered oldest → newest, so the portal reads as the iteration JOURNEY — losses
+ * framed as steps toward the win, not hidden. Never a copy: this reads the one
+ * canonical record. */
+export interface ClientOptimisation {
+  surface: ResultsSurface;
+  /** Published tests on this surface, oldest → newest (the journey). */
+  journey: Test[];
+}
+export async function getClientOptimisation(projectIds: string[]): Promise<ClientOptimisation[]> {
+  const pids = new Set(projectIds);
+  const [surfaces, tests] = await Promise.all([getSurfaces(), getTests()]);
+  const published = tests.filter((t) => t.clientPublished);
+  const dateKey = (t: Test) => t.concludedAt ?? t.startedAt ?? t.created_at ?? "";
+  return surfaces
+    .filter((s) => pids.has(s.projectId))
+    .map((surface) => ({
+      surface,
+      journey: published
+        .filter((t) => t.surfaceId === surface.id)
+        .sort((a, b) => dateKey(a).localeCompare(dateKey(b))),
+    }))
+    .filter((g) => g.journey.length > 0);
+}
