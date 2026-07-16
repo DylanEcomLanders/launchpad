@@ -19,6 +19,9 @@
  */
 
 import { ReactNode, useEffect, useRef, useState } from "react";
+import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import { getClientOptimisation, type ClientOptimisation } from "@/lib/results-engine/data";
+import { OptimisationFeed } from "@/components/client-portal/optimisation-feed";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -177,12 +180,38 @@ export default function ClientProfilePage() {
   const [showNew, setShowNew] = useState(false);
   const [view, setView] = useState<EngagementView | null | undefined>(undefined);
   const [resp, setResp] = useState<Responsibilities | null>(null);
+  const { clients: kanbanClients } = useKanbanData();
+  const [optGroups, setOptGroups] = useState<ClientOptimisation[]>([]);
 
   const reload = () => {
     setView(getEngagementView(id));
     setResp(getResponsibilities());
   };
   useEffect(reload, [id]);
+
+  /* Optimisation projection (§7 internal face): resolve this client to their
+   * kanban projects (by name — the canonical client identity is kanban_clients)
+   * and read their published Results-Engine journey. Read-only, no copy. */
+  useEffect(() => {
+    if (!view) {
+      setOptGroups([]);
+      return;
+    }
+    const name = view.client.name.trim().toLowerCase();
+    const kc = kanbanClients.find((c) => c.name.trim().toLowerCase() === name);
+    const projectIds = kc ? kc.projects.map((p) => p.id) : [];
+    if (projectIds.length === 0) {
+      setOptGroups([]);
+      return;
+    }
+    let cancelled = false;
+    getClientOptimisation(projectIds).then((g) => {
+      if (!cancelled) setOptGroups(g);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [view, kanbanClients]);
 
   if (view === undefined) return <div className="px-6 pt-10 md:px-10" />;
   if (view === null)
@@ -421,6 +450,12 @@ export default function ClientProfilePage() {
           items={workItems}
           onChanged={reload}
         />
+      </Section>
+
+      {/* Optimisation — the client's live Results-Engine journey (§7), projected
+          off kanban_clients. Read-only; the strategist controls what publishes. */}
+      <Section visibility="client" eyebrow="Optimisation">
+        <OptimisationFeed groups={optGroups} />
       </Section>
 
       {/* 5 · RESULTS — the wins · client (outcomes, never due-dates) */}
