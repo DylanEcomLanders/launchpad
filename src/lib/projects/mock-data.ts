@@ -156,6 +156,9 @@ export interface Subtask {
 export interface MockDeliverable {
   id: string;
   title: string;
+  /** Card path (§2). `build` = the full run to live (default). `audit` = a
+   *  Setup → Strategy → Done diagnostic that NEVER enters the build columns. */
+  cardType?: "audit" | "build";
   /** Deliverable type — shown as the card header (PDP / Component / Cart / etc) */
   category?: string;
   /** Primary designer — owner of net-new design work (Strategy + Design phases) */
@@ -174,6 +177,12 @@ export interface MockDeliverable {
   /** Actual start date — ISO yyyy-mm-dd. Optional context for retrofitted work
    *  (when it really began), editable in the detail modal. Doesn't drive colour. */
   startDate?: string;
+  /** Per-card deadlines (§8), ISO yyyy-mm-dd. The board consumes these directly —
+   *  `internalDeadline` (our target) drives the in-stage ETA colour, `clientDeadline`
+   *  (what we told the client) is the outer bound. HOW they're set is decoupled:
+   *  manual now, the future auto-deadline layer populates the same fields. */
+  internalDeadline?: string;
+  clientDeadline?: string;
   /** Paused / waiting on the client. Freezes the deadline clock: the card reads
    *  neutral (not overdue) and drops out of the at-risk count while we wait. */
   onHold?: boolean;

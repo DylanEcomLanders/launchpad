@@ -99,8 +99,14 @@ export const PREVIEW_THRESHOLDS: Record<PreviewPhase, PreviewThreshold> = {
 
 export type StuckStatus = "on-track" | "approaching" | "stuck";
 
+/* Client-hold columns: the client owns the wait, so the delivery clock pauses —
+ * a card sitting here never reads as "stuck" on us. (§2/§8: pausing here lets the
+ * internal deadline shift cleanly when the client is slow.) */
+export const CLIENT_HOLD_PHASES = new Set<PreviewPhase>(["external-revisions", "client-approval"]);
+
 export function statusForHoursInPhase(phase: PreviewPhase | undefined, hoursInPhase: number): StuckStatus {
   if (!phase || phase === "not-started") return "on-track";
+  if (CLIENT_HOLD_PHASES.has(phase)) return "on-track"; // clock paused — client's wait
   const t = PREVIEW_THRESHOLDS[phase];
   if (!t || t.expectedHours === 0) return "on-track";
   if (hoursInPhase >= t.stuckHours) return "stuck";

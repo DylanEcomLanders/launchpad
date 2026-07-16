@@ -143,6 +143,26 @@ const LAUNCH_TESTING_DEV = "Archie";
  * deliverable, so the pod's designer field stays intact for later phases. */
 const STRATEGY_OWNER = "Aanchal";
 
+/* ── Central role registry (§3) ──
+ * Agency-wide roles, one holder each, config not per-card. The heads OWN the QA
+ * stages (their sign-off advances the card) but are NOT the card's assignee —
+ * the assignee stays the pod member doing the work, so projects don't dump into
+ * two people's lists. The heads work a cross-pod review queue instead. Fill
+ * these with real names in config; blank = not yet assigned. */
+const CENTRAL_ROLES = {
+  pm: "", // Setup owner + default client chaser
+  strategist: STRATEGY_OWNER, // Strategy + the whole Results Engine
+  head_designer: "", // owns Internal Revisions sign-off (review queue)
+  head_developer: "", // owns Internal QA sign-off (review queue)
+} as const;
+/* Which central role owns each column's sign-off (owner ≠ assignee). */
+const PHASE_OWNER_ROLE: Partial<Record<PreviewPhase, keyof typeof CENTRAL_ROLES>> = {
+  "not-started": "pm",
+  strategy: "strategist",
+  "internal-revisions": "head_designer",
+  qa: "head_developer",
+};
+
 /* Tickets column SLA breakdown by category. Fire short-circuits to stuck the
  * moment it lands; Bug runs on a 24h clock with 12h amber; Ticket runs on
  * 48h with 24h amber. Used by ticketCategoryStatus to override the phase-
@@ -340,6 +360,17 @@ const PHASE_2_ORDER: PreviewPhase[] = ["development", "qa", "launch"];
  * for the Results Engine (optimisation is a separate surface). */
 const OFF_BOARD_PHASES = new Set<PreviewPhase>(["documents", "test-backlog", "launch-testing"]);
 const BOARD_PHASES = PREVIEW_PHASES.filter((p) => !OFF_BOARD_PHASES.has(p.value));
+
+/* Build columns an audit card may never enter (audit = Setup → Strategy → Done). */
+const AUDIT_BLOCKED_PHASES = new Set<PreviewPhase>([
+  "design",
+  "internal-revisions",
+  "external-revisions",
+  "development",
+  "qa",
+  "client-approval",
+  "launch",
+]);
 
 /* Phase value → human label, for the activity feed (avoids showing raw
  * enum values like "internal-revisions"). */
@@ -1125,6 +1156,14 @@ export default function KanbanPage() {
           window.dispatchEvent(
             new CustomEvent("kanban-gate-blocked", { detail: { message } }),
           );
+        }
+        // Audit path: an audit card is Setup → Strategy → Done only. It never
+        // enters the build columns (design through launch).
+        if (current.cardType === "audit" && AUDIT_BLOCKED_PHASES.has(targetPhase)) {
+          blockGate(
+            `"${current.title}" is an audit — it stays on the Setup → Strategy → Done path and doesn't enter the build.`,
+          );
+          return;
         }
         // Design gate: a card entering any Phase 2 build phase from outside
         // Phase 2 must carry a submitted design handover. This is the only
