@@ -22,6 +22,7 @@ import {
   declareWin,
   concludeTest,
   setClientPublished,
+  backfillResultsEngine,
 } from "@/lib/results-engine/data";
 import {
   TEST_STATUS_ORDER,
@@ -51,8 +52,13 @@ export default function ResultsEnginePage() {
     setLoading(false);
   }, []);
   useEffect(() => {
-    load();
-  }, [load]);
+    (async () => {
+      // Consolidate existing kanban delivery tests into the canonical record
+      // (idempotent) once the live clients are available, then load.
+      if (clients.length) await backfillResultsEngine(clients).catch(() => {});
+      await load();
+    })();
+  }, [clients, load]);
 
   // project → client, so a surface (and its tests) resolve to a client name.
   const projectToClient = useMemo(() => {

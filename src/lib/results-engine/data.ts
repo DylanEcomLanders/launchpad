@@ -8,6 +8,7 @@
  */
 
 import { createStore } from "@/lib/supabase-store";
+import type { MockClient } from "@/lib/projects/mock-data";
 import type { ResultsSurface, Test, TestStatus, TestOutcome } from "./types";
 
 const surfaceStore = createStore<ResultsSurface>({
@@ -30,7 +31,7 @@ const SEED_SURFACES: ResultsSurface[] = [
   {
     id: "surface-harvestory-pdp",
     projectId: "pdp-build",
-    sourceTaskId: "h-live1",
+    sourceTaskId: "proj-pdp-build",
     title: "PDP",
     liveUrl: "https://harvestory.com/products/daily-greens",
     controlBenchmark: { CVR: 3.1, AOV: 148, RPV: 4.59 },
@@ -41,7 +42,7 @@ const SEED_SURFACES: ResultsSurface[] = [
   {
     id: "surface-ironpaws-home",
     projectId: "full-site",
-    sourceTaskId: "i1",
+    sourceTaskId: "proj-full-site",
     title: "Homepage",
     liveUrl: "https://ironpaws.com",
     controlBenchmark: { CVR: 2.4, AOV: 96 },
@@ -52,7 +53,7 @@ const SEED_SURFACES: ResultsSurface[] = [
   {
     id: "surface-acme-hero",
     projectId: "hero-refresh",
-    sourceTaskId: "a1",
+    sourceTaskId: "proj-hero-refresh",
     title: "Hero",
     liveUrl: "https://acmeskincare.com",
     controlBenchmark: { CVR: 1.9, AOV: 172 },
@@ -185,7 +186,13 @@ export async function createSurfaceForLaunch(input: {
     created_at: now,
     updated_at: now,
   };
-  await surfaceStore.create(surface);
+  // create() writes localStorage even when the Supabase insert throws (table
+  // not yet migrated), so the surface still lands locally — swallow + return it.
+  try {
+    await surfaceStore.create(surface);
+  } catch {
+    /* supabase table absent — LS write already happened */
+  }
   return surface;
 }
 
@@ -354,4 +361,90 @@ export async function getClientOptimisation(projectIds: string[]): Promise<Clien
         .sort((a, b) => dateKey(a).localeCompare(dateKey(b))),
     }))
     .filter((g) => g.journey.length > 0);
+}
+
+/* ── Consolidation backfill (decision 2) ──
+ * Bring existing kanban delivery tests into the ONE canonical record: every
+ * launched/live build gets a surface (idempotent per source card, aligns with
+ * the seam + seeds), and any concluded testResult becomes a test. Idempotent —
+ * safe to run every load; the Results Engine page calls it once with the live
+ * kanban clients. A migrated winner carries a declaration so the §6 gate holds.
+ * (ab_tests isn't client-linked, so it's not pulled in here — noted for later.) */
+export async function backfillResultsEngine(clients: MockClient[]): Promise<void> {
+  const [surfaces, tests] = await Promise.all([getSurfaces(), getTests()]);
+  const surfaceByTask = new Map(
+    surfaces.filter((s) => s.sourceTaskId).map((s) => [s.sourceTaskId as string, s]),
+  );
+  const haveTest = new Set(tests.map((t) => t.id));
+
+  for (const c of clients) {
+    for (const proj of c.projects) {
+      // Cards with REAL test signal become tests — a recorded result, a live
+      // date, a live URL, or explicitly queued. A card merely sitting in the
+      // launch column but never actually tested is skipped (not noise).
+      const testCards = proj.deliverables.filter(
+        (d) => !!d.testResult || !!d.liveStartedAt || !!d.liveTestUrl || d.phase === "test-backlog",
+      );
+      if (testCards.length === 0) continue;
+
+      // ONE surface per project — the live page these tests run against. Keyed by
+      // project so the seam, seeds, and this backfill all converge on one surface.
+      const surfaceKey = `proj-${proj.id}`;
+      let surface = surfaceByTask.get(surfaceKey);
+      if (!surface) {
+        const benchmark: Record<string, string | number> = {};
+        for (const d of testCards) for (const m of d.metrics ?? []) if (m.interim && !(m.name in benchmark)) benchmark[m.name] = m.interim;
+        surface = await createSurfaceForLaunch({
+          projectId: proj.id,
+          sourceTaskId: surfaceKey,
+          title: proj.name,
+          liveUrl: testCards.find((d) => d.liveTestUrl)?.liveTestUrl,
+          controlBenchmark: Object.keys(benchmark).length ? benchmark : undefined,
+        });
+        surfaceByTask.set(surfaceKey, surface);
+      }
+
+      for (const d of testCards) {
+        const tid = `test-mig-${d.id}`;
+        if (haveTest.has(tid)) continue;
+        const r = d.testResult;
+        const now = nowISO();
+        const status: TestStatus = r
+          ? r.outcome === "winner"
+            ? "won"
+            : "lost"
+          : d.phase === "test-backlog"
+            ? "backlog"
+            : d.liveStartedAt
+              ? "live"
+              : "reading";
+        const test: Test = {
+          id: tid,
+          surfaceId: surface.id,
+          status,
+          hypothesis: d.title, // kanban has no structured hypothesis
+          liveUrl: d.liveTestUrl,
+          startedAt: d.liveStartedAt,
+          primaryMetric: r?.metric,
+          upliftPct: r?.upliftPct,
+          significanceReachedPct: r?.confidencePct,
+          concludedAt: r?.concludedAt,
+          notes: r?.notes,
+          outcome: r?.outcome,
+          ...(status === "won"
+            ? { declaredBy: "migrated", declaredAt: r?.concludedAt ? `${r.concludedAt}T00:00:00Z` : now }
+            : {}),
+          clientPublished: false,
+          created_at: now,
+          updated_at: now,
+        };
+        try {
+          await testStore.create(test);
+        } catch {
+          /* supabase table absent — create() still wrote LS */
+        }
+        haveTest.add(tid);
+      }
+    }
+  }
 }
