@@ -11,6 +11,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { XMarkIcon, TrophyIcon, EyeIcon, EyeSlashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { Segmented } from "@/components/ui";
+import { OptimisationFeed } from "@/components/client-portal/optimisation-feed";
+import type { ClientOptimisation } from "@/lib/results-engine/data";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import {
   getSurfaces,
@@ -39,7 +41,7 @@ export default function ResultsEnginePage() {
   const [loading, setLoading] = useState(true);
   const [clientFilter, setClientFilter] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [view, setView] = useState<"board" | "library">("board");
+  const [view, setView] = useState<"board" | "library" | "client">("board");
   const [addOpen, setAddOpen] = useState(false);
 
   const load = useCallback(async () => {
@@ -104,6 +106,22 @@ export default function ResultsEnginePage() {
     [shown],
   );
 
+  // Client view = the §7 projection preview: the client-face journey for the
+  // filtered client (published tests only, wins + losses oldest → newest).
+  const clientGroups = useMemo<ClientOptimisation[]>(() => {
+    const published = tests.filter((t) => t.clientPublished);
+    const dateKey = (t: Test) => t.concludedAt ?? t.startedAt ?? t.created_at ?? "";
+    return surfaces
+      .filter((s) => clientFilter === "all" || clientForSurface(s)?.id === clientFilter)
+      .map((surface) => ({
+        surface,
+        journey: published
+          .filter((t) => t.surfaceId === surface.id)
+          .sort((a, b) => dateKey(a).localeCompare(dateKey(b))),
+      }))
+      .filter((g) => g.journey.length > 0);
+  }, [surfaces, tests, clientFilter, clientForSurface]);
+
   return (
     <div className="px-6 pb-24 pt-10 md:px-10">
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
@@ -112,16 +130,19 @@ export default function ResultsEnginePage() {
           <p className="mt-1 text-sm text-muted">
             {view === "board"
               ? "Every live page under optimisation and the tests running against it."
-              : "Won tests — the proof shelf. Every win, ready to reuse."}
+              : view === "library"
+                ? "Won tests — the proof shelf. Every win, ready to reuse."
+                : "What the client sees — the published optimisation journey."}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Segmented
             value={view}
-            onChange={(v) => setView(v as "board" | "library")}
+            onChange={(v) => setView(v as "board" | "library" | "client")}
             options={[
               { value: "board", label: "Board" },
               { value: "library", label: "Library" },
+              { value: "client", label: "Client view" },
             ]}
           />
           <select
@@ -148,8 +169,8 @@ export default function ResultsEnginePage() {
         </div>
       </header>
 
-      {/* KPI strip — the Results Engine's own small set */}
-      <div className="mb-7 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      {/* KPI strip — the Results Engine's own small set (internal; hidden in the client preview) */}
+      <div className={`mb-7 grid grid-cols-2 gap-2.5 sm:grid-cols-4 ${view === "client" ? "hidden" : ""}`}>
         <Kpi label="Surfaces" value={surfaces.length} />
         <Kpi label="Tests live" value={liveCount} />
         <Kpi label="Wins" value={won} tone="ok" />
@@ -158,6 +179,13 @@ export default function ResultsEnginePage() {
 
       {loading ? (
         <p className="py-16 text-center text-sm text-subtle">Loading…</p>
+      ) : view === "client" ? (
+        <div className="max-w-2xl">
+          <div className="mb-5 rounded-lg border border-border-faint bg-surface px-4 py-3 text-2xs text-subtle">
+            Preview only — this is the curated client face. Publish a test from the board to add it here.
+          </div>
+          <OptimisationFeed groups={clientGroups} />
+        </div>
       ) : view === "library" ? (
         <LibraryView
           tests={wonTests}
