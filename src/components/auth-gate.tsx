@@ -13,12 +13,13 @@ import {
 
 const STORAGE_KEY = "launchpad-auth";
 const ROLE_KEY = "launchpad-role";
-// TEMP: client-side password fallback restored so local/dev login works
-// without the server env vars. Re-remove at merge once AUTH_SESSION_SECRET +
-// ADMIN/CRO/TEAM_PASSWORD are set (login then goes only through /api/auth/gate).
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025";
-const CRO_PASSWORD = process.env.NEXT_PUBLIC_CRO_PASSWORD || "cro2025";
-const TEAM_PASSWORD = process.env.NEXT_PUBLIC_TEAM_PASSWORD || "team2026";
+/* The gate passwords used to live here as NEXT_PUBLIC_* with hardcoded
+ * fallbacks, which meant they shipped inside the client bundle: readable by
+ * anyone who opened devtools, and working regardless of what Vercel was set
+ * to, since `|| "ecomlanders2025"` can't be turned off by removing an env var.
+ * Login now goes only through POST /api/auth/gate, which compares against
+ * server-only ADMIN/CRO/TEAM_PASSWORD and mints a SIGNED httpOnly cookie.
+ * Nothing here knows a password anymore. */
 
 /* Cookie shadow of the sessionStorage role. Set so server-side API routes
  * (which can't read sessionStorage) can validate that the caller went
@@ -327,11 +328,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     async (e: React.FormEvent) => {
       e.preventDefault();
       const candidate = input;
-      /* Primary path: validate server-side at /api/auth/gate, which sets
-       * a SIGNED httpOnly session cookie that API routes trust (C1 fix).
-       * Falls back to the legacy client comparison when the server gate
-       * isn't configured yet (AUTH_SESSION_SECRET / *_PASSWORD unset), so
-       * nothing breaks during the transition. */
+      /* The ONLY path: validate server-side at /api/auth/gate, which compares
+       * against server-only env vars and sets a SIGNED httpOnly session cookie
+       * that API routes can trust. There is deliberately no client-side
+       * fallback - the old one compared against passwords baked into the
+       * bundle, so it authenticated people the server would have refused, and
+       * no Vercel setting could switch it off. Fails closed: a network error
+       * or an unconfigured role is a failed login, not a free pass. */
       try {
         const res = await fetch("/api/auth/gate", {
           method: "POST",
@@ -346,14 +349,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           }
         }
       } catch {
-        /* network issue - fall through to the legacy comparison */
+        /* network issue - fall through to the error state below */
       }
-
-      // TEMP legacy fallback so local/dev login works. Re-remove at merge once
-      // the server env vars are set (then only /api/auth/gate authenticates).
-      if (candidate === ADMIN_PASSWORD) return enterAs("admin");
-      if (candidate === CRO_PASSWORD) return enterAs("cro");
-      if (candidate === TEAM_PASSWORD) return enterAs("team");
 
       setError(true);
       setShaking(true);
