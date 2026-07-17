@@ -107,6 +107,13 @@ export async function POST(req: NextRequest) {
       id: matched.id,
       full_name: matched.data.full_name ?? "",
       email: matched.data.email ?? "",
+      /* The person record is the TRUTH for which pod member this human is.
+       * app_users.pod_member_id is only a copy, stamped once when their login
+       * was provisioned: assigning someone to a pod afterwards never reached
+       * it, and a second login for the same human missed it entirely. Callers
+       * derive from this instead, so a pod change takes effect immediately
+       * with no re-provisioning and no SQL. */
+      pod_member_id: matched.data.pod_member_id ?? null,
     },
     diagnostic,
   });

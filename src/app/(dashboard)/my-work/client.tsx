@@ -130,9 +130,59 @@ export default function MyWorkClient() {
     return out;
   }, [data.pods]);
 
-  // Auth-resolved member id (magic-link sessions). Shared-password admin
-  // sessions land here as null and fall through to the picker.
-  const authMemberId = me?.pod_member_id ?? null;
+  /* Which pod member this human is, DERIVED from their person record rather
+   * than read off app_users.pod_member_id.
+   *
+   * That field is only a copy: set-user-credentials stamps it once when a
+   * login is provisioned, and nothing updates it afterwards. So assigning
+   * someone to a pod never reached their login (it needed a re-provision, or
+   * hand-written SQL), and a second login for the same human missed the link
+   * entirely - which is exactly how Hitesh ended up with two rows, one linked
+   * and one not, signing in with the wrong one.
+   *
+   * resolve-person matches on pod_member_id, then email, then full name, and
+   * reads company_people with the service role (team-role users can't read it
+   * under the current RLS). The person record is the truth: change someone's
+   * pod there and it takes effect on their next load, with no re-provisioning.
+   * The stale copy stays as a fallback so anyone already linked keeps working
+   * if the lookup fails. */
+  const [personPodMemberId, setPersonPodMemberId] = useState<string | null>(null);
+  const [personChecked, setPersonChecked] = useState(false);
+  useEffect(() => {
+    if (!me) {
+      setPersonChecked(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/me/resolve-person", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: me.email,
+            name: me.name,
+            pod_member_id: me.pod_member_id,
+          }),
+        });
+        if (res.ok) {
+          const body = (await res.json()) as {
+            person?: { pod_member_id?: string | null } | null;
+          };
+          if (!cancelled) setPersonPodMemberId(body.person?.pod_member_id ?? null);
+        }
+      } catch {
+        /* fall back to the stored copy below */
+      } finally {
+        if (!cancelled) setPersonChecked(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [me]);
+
+  const authMemberId = personPodMemberId ?? me?.pod_member_id ?? null;
 
   const [pickedMemberId, setPickedMemberId] = useState<string | null>(null);
 
@@ -550,6 +600,37 @@ export default function MyWorkClient() {
 
   // Shared-password admin with no linked identity AND nothing picked yet:
   // surface the picker as the primary action instead of dead-ending in a CTA.
+  /* Still resolving the person record - hold rather than flash the picker at
+   * someone who is about to be identified a moment later. */
+  if (!memberId && !personChecked) {
+    return <div className="min-h-screen bg-background" />;
+  }
+
+  /* A MEMBER with no link fails CLOSED. The picker below lists every person on
+   * every pod, so showing it here handed any member a way into their
+   * colleagues' work - the opposite of the "members stay locked to their own
+   * assigned work so they can't snoop" rule this page is built on. That rule
+   * only ever held while the link resolved; unlinked, it failed open. */
+  if (!memberId && !canViewAs) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="mx-auto max-w-3xl px-6 py-16">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
+            My Tasks
+          </p>
+          <h1 className="mt-2 text-[28px] leading-tight">
+            <span className="font-bold">Your account isn&apos;t linked yet</span>
+          </h1>
+          <p className="mt-3 text-sm text-muted">
+            We can&apos;t tell which pod member you are, so there are no tasks to
+            show. Ask an admin to link {me?.name || "your account"} to a pod
+            member on your person record, then reload this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!memberId) {
     return (
       <div className="min-h-screen bg-background text-foreground">
