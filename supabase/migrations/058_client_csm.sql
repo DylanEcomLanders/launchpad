@@ -40,3 +40,17 @@ create table if not exists public.client_csm (
 
 comment on table public.client_csm is
   'CSM-owned overlay on the canonical client (kanban_clients), keyed 1:1 by its id. Holds what delivery cannot derive: renewal date, MRR, and the cadence/compliance checklist. Per-client, shared across all of that client''s engagements.';
+
+-- Same access shape as every other kanban table (see 053 / 054): RLS on, with
+-- a permissive policy. Without this the table would be the only one here with
+-- no policy at all, and createStore's writes would be rejected.
+alter table public.client_csm enable row level security;
+drop policy if exists client_csm_all on public.client_csm;
+create policy client_csm_all on public.client_csm
+  for all to anon, authenticated using (true) with check (true);
+
+-- updated_at maintained by the same trigger function the kanban tables use.
+drop trigger if exists client_csm_touch_updated_at on public.client_csm;
+create trigger client_csm_touch_updated_at
+  before update on public.client_csm
+  for each row execute function kanban_touch_updated_at();
