@@ -100,8 +100,10 @@ function isTeamAllowedPath(pathname: string): boolean {
      * lands on /me instead via the redirect below. */
     pathname === "/me" ||
     pathname.startsWith("/me/") ||
-    pathname === "/hero-offer" ||
-    pathname.startsWith("/hero-offer/") ||
+    /* /hero-offer is NOT here: it's the commercial offer (positioning +
+     * pricing), admin/CRO only. It was briefly open to members as useful
+     * reference, but a member's surfaces are their own work (My Tasks), the
+     * client work (Onboarding, Delivery) and the team tools. */
     pathname === "/my-work" ||
     /* Delivery — members (team role) get the full kanban board so
      * fulfilment/delivery people like Alister can see + drive client
@@ -115,15 +117,18 @@ function isTeamAllowedPath(pathname: string): boolean {
      * covers the whole flow. (The legacy /tools/onboarding list + [id] pages
      * stay admin-only; the inbox superseded them.) */
     pathname.startsWith("/tools/onboarding-inbox") ||
-    pathname === "/workspace" ||
-    pathname.startsWith("/workspace/") ||
+    /* SOPs. It has always been in the member sidebar, but was never on this
+     * list, so clicking it bounced them straight back out. */
+    pathname.startsWith("/tools/sop-library") ||
+    /* /workspace + /pods-v2 are NOT here: legacy surfaces, superseded by
+     * Delivery. They were reachable by typing the URL even though neither
+     * appears in a member's sidebar - hidden from the nav is not the same as
+     * blocked. */
     pathname === "/wiki-v2" ||
     pathname.startsWith("/wiki-v2/") ||
     pathname === "/tasks" ||
     pathname.startsWith("/team/") || // Toolbox tool pages
     pathname.startsWith("/portal/") ||
-    pathname === "/pods-v2" ||
-    pathname.startsWith("/pods-v2/") ||
     pathname === "/rd" ||
     pathname.startsWith("/rd/") ||
     pathname === "/changelog"

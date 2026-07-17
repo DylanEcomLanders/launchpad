@@ -368,18 +368,19 @@ const navSections: NavSection[] = [
    * playbook it sells. Offer used to be its own top-level entry, which read as
    * an orphan sitting under Sales.
    *
-   * The role gate is on the ITEM, not the section, deliberately: Outbound is
-   * admin/CRO, but the Offer playbook is for everyone. Gating the section would
-   * hide the playbook from the team. So a member sees Acquisition → Offer;
-   * admin/CRO see both. (Empty sections are dropped by the filter, so no role
-   * ends up with a stray header.) */
+   * Admin/CRO only, section-wide. Offer was briefly open to everyone on the
+   * grounds that the playbook is useful reference for the team, but it's
+   * commercial: how the offer is positioned and priced. A member's surfaces are
+   * their own work (My Tasks), the client work (Onboarding, Delivery) and the
+   * team tools. Acquisition isn't one of them. */
   {
     title: "Acquisition",
     icon: <PixelFunnel className="size-4" />,
     group: "lifecycle",
+    roles: ADMIN_CRO,
     items: [
       { ...outboundItem, roles: ADMIN_CRO },
-      { label: "Offer", href: "/hero-offer", icon: <PixelTag className="size-4" /> },
+      { ...heroOfferItem, roles: ADMIN_CRO },
     ],
   },
   /* Production (advertorial) shelved from the nav 2026-07-07. Route + store +
@@ -444,7 +445,6 @@ export function Sidebar() {
    * footer links. Mirrors the sidebar order top-down. */
   const paletteItems: CommandItem[] = [
     { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my tasks", "assigned"] },
-    { label: heroOfferItem.label, href: heroOfferItem.href, group: "Pinned", icon: heroOfferItem.icon, keywords: ["conversion engine", "playbook", "offer"] },
     { label: trainingItem.label, href: trainingItem.href, group: "Pinned", icon: trainingItem.icon, keywords: ["wiki", "sop", "knowledge", "playbook", "learning"] },
     { label: submitInvoiceItem.label, href: submitInvoiceItem.href, group: "Pinned", icon: submitInvoiceItem.icon, keywords: ["invoice", "expenses", "submit", "pay"] },
     // Delivery (kanban board) — visible to everyone including members.
@@ -454,6 +454,7 @@ export function Sidebar() {
     // Admin/CRO surfaces.
     ...(role !== "team"
       ? [
+          { label: heroOfferItem.label, href: heroOfferItem.href, group: "Pinned", icon: heroOfferItem.icon, keywords: ["conversion engine", "playbook", "offer"] },
           { label: clientsItem.label, href: clientsItem.href, group: "Pinned", icon: clientsItem.icon, keywords: ["clients", "command centre", "csm", "engagements", "accounts", "retention"] },
           { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery", "legacy"] },
           { label: kpiItem.label, href: kpiItem.href, group: "Pinned", icon: kpiItem.icon, keywords: ["metrics", "throughput", "on-time"] },
