@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { isStaging } from "@/lib/env";
+import { canAccessPath } from "@/lib/auth/access";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   findAppUserByEmail,
@@ -86,53 +87,16 @@ export async function signOut(): Promise<void> {
   }
 }
 
-/** Members now use the same dashboard shell as admins, but only reach their
- * own surfaces: Mission Control, My Work, Workspace (their pod), Wiki, the
- * Toolbox tools (carried from the retired Team Hub, still under /team/*),
- * the live task board, client portals, and R&D. Admin-only areas (finance,
- * company, offer, agents, settings, acquisition/delivery/ops sections) are
- * not listed here, so a member hitting one is redirected to /my-work. */
+/** Members use the same dashboard shell as admins but reach only their own
+ * surfaces. The list lives in src/lib/auth/access.ts (TEAM_ROUTES) - a member
+ * hitting anything else is redirected to /my-work by the guard below. */
 function isTeamAllowedPath(pathname: string): boolean {
-  return (
-    /* "/" used to be allowed here so team had something to land on,
-     * but it's the admin Toolkit (Payment Link / Invoice Generator /
-     * Dev Hours / Intelligems / etc) - admin-only by intent. Team
-     * lands on /me instead via the redirect below. */
-    pathname === "/me" ||
-    pathname.startsWith("/me/") ||
-    /* /hero-offer is NOT here: it's the commercial offer (positioning +
-     * pricing), admin/CRO only. It was briefly open to members as useful
-     * reference, but a member's surfaces are their own work (My Tasks), the
-     * client work (Onboarding, Delivery) and the team tools. */
-    pathname === "/my-work" ||
-    /* Delivery — members (team role) get the full kanban board so
-     * fulfilment/delivery people like Alister can see + drive client
-     * work, not just their own tasks. The management surfaces around
-     * it (Onboarding, Old Delivery, KPIs, Sales, Retention, Finance,
-     * Admin) stay admin-only via the sidebar gates below. */
-    pathname === "/kanban" ||
-    pathname.startsWith("/kanban/") ||
-    /* Onboarding inbox - members handle new-client onboarding too. The inbox
-     * reviews each submission in its own slide-in drawer, so this one route
-     * covers the whole flow. (The legacy /tools/onboarding list + [id] pages
-     * stay admin-only; the inbox superseded them.) */
-    pathname.startsWith("/tools/onboarding-inbox") ||
-    /* SOPs. It has always been in the member sidebar, but was never on this
-     * list, so clicking it bounced them straight back out. */
-    pathname.startsWith("/tools/sop-library") ||
-    /* /workspace + /pods-v2 are NOT here: legacy surfaces, superseded by
-     * Delivery. They were reachable by typing the URL even though neither
-     * appears in a member's sidebar - hidden from the nav is not the same as
-     * blocked. */
-    pathname === "/wiki-v2" ||
-    pathname.startsWith("/wiki-v2/") ||
-    pathname === "/tasks" ||
-    pathname.startsWith("/team/") || // Toolbox tool pages
-    pathname.startsWith("/portal/") ||
-    pathname === "/rd" ||
-    pathname.startsWith("/rd/") ||
-    pathname === "/changelog"
-  );
+  /* Delegates to the single access map (src/lib/auth/access.ts). This used to
+   * be its own hand-maintained list, which drifted from the sidebar and the
+   * command palette in both directions: Hero Offer was hidden from the nav but
+   * left reachable here, and SOPs was in the nav but missing here, so members
+   * were bounced out of a link they could see. One list now, three readers. */
+  return canAccessPath("team", pathname);
 }
 
 type Mode = "credentials" | "password";

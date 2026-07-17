@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { canSeeHref } from "@/lib/auth/access";
 import { StarIcon } from "@heroicons/react/24/solid";
 /* Sidebar icons: heroicons-outline (the DESIGN.md set), aliased to the former
  * pixel-icon names so every nav entry keeps its reference while rendering the
@@ -415,11 +416,20 @@ export function Sidebar() {
   /* Per-item role gating: a section can mix team-visible and admin-only items
    * (Delivery is everyone; Onboarding/KPIs are admin/cro), so filter items by
    * role and drop any section left empty for this role. */
+  /* Two gates, deliberately. The explicit `roles` list is editorial: it's how
+   * Finance ends up admin/CRO even though the router would allow it. canSeeHref
+   * is structural: it drops anything the ROUTER would bounce, so the nav can
+   * never offer a member a link that redirects them (SOPs was in their sidebar
+   * for months while the route list rejected it) and can never leave one
+   * reachable that the nav hides (Hero Offer). Same source as auth-gate. */
   const visibleSections = navSections
     .filter((s) => !s.roles || (role !== "team" && s.roles.includes(role)))
     .map((s) => ({
       ...s,
-      items: s.items.filter((i) => !i.roles || i.roles.includes(role)),
+      items: s.items.filter(
+        (i) =>
+          (!i.roles || i.roles.includes(role)) && canSeeHref(role, i.href),
+      ),
     }))
     .filter((s) => s.items.length > 0 || s.href);
 
@@ -478,7 +488,13 @@ export function Sidebar() {
     { label: shortcutsItem.label, href: shortcutsItem.href, group: "System", icon: shortcutsItem.icon, keywords: ["quick", "tools", "favorites"] },
     { label: "Changelog", href: "/changelog", group: "System" },
     ...(role === "admin" ? [{ label: "Settings", href: "/company/settings", group: "System" }] : []),
-  ];
+    /* Structural backstop: drop anything the ROUTER would bounce this role out
+     * of, whatever the per-entry gates above say. ⌘K is the easiest place for
+     * a surface to leak - it's a flat list that everything gets spread into
+     * (teamItems is "searchable for everyone"), so an admin-only tool added
+     * there is one keystroke from every member with nobody noticing. Hero
+     * Offer sat here, gated out of the sidebar and open in the palette. */
+  ].filter((i) => canSeeHref(role, i.href));
 
 
   // Poll onboarding submissions every 5 minutes
