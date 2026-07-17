@@ -10,6 +10,7 @@
  * separate mock import.
  */
 
+import { cardDueDate } from "@/lib/projects/mock-data";
 import type { MockClient, MockPod } from "@/lib/projects/mock-data";
 import { DELIVERED_PHASES } from "./config";
 import type { DeliveryItem } from "./types";
@@ -18,12 +19,13 @@ export function getDeliveryItems(
   clients: MockClient[],
   pods: MockPod[],
 ): DeliveryItem[] {
-  const podName = new Map(pods.map((p) => [p.id, p.name]));
+  const podById = new Map(pods.map((p) => [p.id, p]));
   const out: DeliveryItem[] = [];
 
   for (const client of clients) {
     for (const project of client.projects) {
-      const pod = project.podId ? podName.get(project.podId) ?? null : null;
+      const podObj = project.podId ? podById.get(project.podId) : undefined;
+      const pod = podObj?.name ?? null;
 
       for (const d of project.deliverables) {
         const history = d.phaseHistory ?? [];
@@ -42,10 +44,26 @@ export function getDeliveryItems(
           projectId: project.id,
           projectName: project.name,
           pod,
-          // Owner = whoever carries it to launch (dev), else the designer.
-          owner: d.developer ?? d.designer ?? null,
+          /* Owner = whoever carries it to launch (dev), else the designer.
+           *
+           * Precedence is deliberately the OPPOSITE of the board's. The board
+           * and /my-work resolve live (`pod.designer ?? card.designer`) because
+           * they answer "who owns this NOW". KPI is historical — it answers
+           * "who delivered this" — so the name stamped on the card at the time
+           * wins, and a later pod change never retroactively re-credits past
+           * work to someone who never touched it.
+           *
+           * The pod roster is only a FALLBACK, for cards that were never
+           * stamped (e.g. added before a pod existed). Without it those
+           * deliveries resolved to null and were credited to nobody in the
+           * per-member breakdown — real work landing in no one's column. */
+          owner: d.developer ?? d.designer ?? podObj?.developer ?? podObj?.designer ?? null,
           phase: d.phase,
-          dueDate: d.dueDate ?? null,
+          /* Via cardDueDate: a scheduled build's due date is its Launch column,
+           * not the raw field. Reading d.dueDate left every scheduled card with
+           * a null date, and the dashboard's onTime check treats null as "not
+           * measurable" - so on-time % would have quietly stopped counting them. */
+          dueDate: cardDueDate(d) ?? null,
           isDelivered,
           deliveredAt: deliveredEntry?.enteredAt ?? null,
           startedAt: history[0]?.enteredAt ?? null,

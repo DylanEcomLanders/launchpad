@@ -167,12 +167,19 @@ export async function createSurfaceForLaunch(input: {
   controlBenchmark?: Record<string, string | number>;
   portalId?: string;
 }): Promise<ResultsSurface> {
-  if (input.sourceTaskId) {
-    const existing = (await surfaceStore.getAll()).find(
-      (s) => s.sourceTaskId === input.sourceTaskId,
-    );
-    if (existing) return existing;
-  }
+  /* ONE surface per PROJECT — the live page the tests run against. A project's
+   * cards are sections of that page (Hero, Ingredients, Reviews…), so a second
+   * card launching must NOT mint a second surface.
+   *
+   * Dedupe on projectId, not sourceTaskId: the seam used to key sourceTaskId on
+   * the card id while the backfill keyed it `proj-<projectId>`, so the two never
+   * matched and one live page ended up with several surfaces (inflating the
+   * Surfaces count + win rate). sourceTaskId stays what its type says it is —
+   * traceability back to the card that launched first. */
+  const existing = (await surfaceStore.getAll()).find(
+    (s) => s.projectId === input.projectId,
+  );
+  if (existing) return existing;
   const now = nowISO();
   const surface: ResultsSurface = {
     id: newId("surface"),
@@ -223,6 +230,7 @@ export async function addTest(input: {
   hypothesis?: string;
   primaryMetric?: string;
   variantDesc?: string;
+  expectedLiftPct?: number;
 }): Promise<Test> {
   const now = nowISO();
   const test: Test = {
@@ -232,6 +240,7 @@ export async function addTest(input: {
     hypothesis: input.hypothesis,
     primaryMetric: input.primaryMetric,
     variantDesc: input.variantDesc,
+    expectedLiftPct: input.expectedLiftPct,
     clientPublished: false,
     created_at: now,
     updated_at: now,
@@ -297,7 +306,7 @@ export async function declareWin(
 export async function concludeTest(
   id: string,
   outcome: Exclude<TestOutcome, "winner">,
-  detail?: { metric?: string; upliftPct?: number; confidencePct?: number; notes?: string },
+  detail?: { metric?: string; upliftPct?: number; confidencePct?: number; notes?: string; whyItWorked?: string },
 ): Promise<void> {
   await testStore.update(id, {
     status: "lost",
@@ -306,6 +315,8 @@ export async function concludeTest(
     upliftPct: detail?.upliftPct,
     significanceReachedPct: detail?.confidencePct,
     notes: detail?.notes,
+    // A loss carries its learning too — often the more instructive record.
+    ...(detail?.whyItWorked ? { whyItWorked: detail.whyItWorked } : {}),
     concludedAt: nowISO().slice(0, 10),
     updated_at: nowISO(),
   });
@@ -372,9 +383,9 @@ export async function getClientOptimisation(projectIds: string[]): Promise<Clien
  * (ab_tests isn't client-linked, so it's not pulled in here — noted for later.) */
 export async function backfillResultsEngine(clients: MockClient[]): Promise<void> {
   const [surfaces, tests] = await Promise.all([getSurfaces(), getTests()]);
-  const surfaceByTask = new Map(
-    surfaces.filter((s) => s.sourceTaskId).map((s) => [s.sourceTaskId as string, s]),
-  );
+  /* Keyed by PROJECT, matching createSurfaceForLaunch's dedupe — so a surface
+   * the seam already created for this project is reused instead of duplicated. */
+  const surfaceByProject = new Map(surfaces.map((s) => [s.projectId, s]));
   const haveTest = new Set(tests.map((t) => t.id));
 
   for (const c of clients) {
@@ -387,21 +398,21 @@ export async function backfillResultsEngine(clients: MockClient[]): Promise<void
       );
       if (testCards.length === 0) continue;
 
-      // ONE surface per project — the live page these tests run against. Keyed by
-      // project so the seam, seeds, and this backfill all converge on one surface.
-      const surfaceKey = `proj-${proj.id}`;
-      let surface = surfaceByTask.get(surfaceKey);
+      /* ONE surface per project — the live page these tests run against. The
+       * seam, seeds and this backfill all dedupe on projectId, so they converge
+       * on the same surface instead of each minting their own. */
+      let surface = surfaceByProject.get(proj.id);
       if (!surface) {
         const benchmark: Record<string, string | number> = {};
         for (const d of testCards) for (const m of d.metrics ?? []) if (m.interim && !(m.name in benchmark)) benchmark[m.name] = m.interim;
         surface = await createSurfaceForLaunch({
           projectId: proj.id,
-          sourceTaskId: surfaceKey,
+          sourceTaskId: `proj-${proj.id}`,
           title: proj.name,
           liveUrl: testCards.find((d) => d.liveTestUrl)?.liveTestUrl,
           controlBenchmark: Object.keys(benchmark).length ? benchmark : undefined,
         });
-        surfaceByTask.set(surfaceKey, surface);
+        surfaceByProject.set(proj.id, surface);
       }
 
       for (const d of testCards) {

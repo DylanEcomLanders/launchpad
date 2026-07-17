@@ -244,11 +244,18 @@ export function limboStatusFor(rounds: number): LimboStatus {
 // Falls back to primary if no secondary is configured for a deliverable.
 
 export interface RolePool {
+  strategist?: string;          // owns Strategy (+ the Results Engine)
   designer?: string;            // primary designer (owner)
   secondaryDesigner?: string;   // revisions + design-side tickets
   developer?: string;           // primary developer (owner)
   secondaryDeveloper?: string;  // dev tickets + bugs
 }
+
+/* The agency's single strategist, for now global (one person owns Strategy +
+ * the Results Engine across every pod). When Strategy has no explicit
+ * strategist on the pool, ownership falls back here so the board badge and
+ * /my-work agree. Mirrors DOCUMENTS_TEAM_PRIMARY for the docs lane. */
+export const STRATEGY_OWNER = "Aanchal";
 
 /* Documents are always owned by Alister regardless of which pod owns
  * the project. Aanchal (strategist) doesn't go in the secondary slot
@@ -295,23 +302,69 @@ export function activeAssigneeFor(phase: PreviewPhase | undefined, roles: RolePo
       // central-role model).
       return secondary(roles.secondaryDesigner, roles.designer);
     case "strategy":
+      // Strategy is the strategist's — they scope the work before design picks
+      // it up. Falls back to the global STRATEGY_OWNER so the badge is never
+      // empty, then to the designer if even that isn't set.
+      return primary(roles.strategist || STRATEGY_OWNER || roles.designer);
     case "design":
       return primary(roles.designer);
     case "development":
     case "launch":
-    case "launch-testing":
       return primary(roles.developer);
+    case "launch-testing":
+      // Live test running — the strategist's, same as the Results Engine.
+      return primary(roles.strategist || STRATEGY_OWNER || roles.developer);
     case "qa":
       // Secondary developer owns QA - primary built it, secondary tests it
       // (fresh eyes catch what the builder missed).
       return secondary(roles.secondaryDeveloper, roles.developer);
     case "test-backlog":
-      // Queued test ideas: the strategist's pipeline. Assignee-wise the card
-      // shows whoever will pick the build up first.
-      return primary(roles.designer || roles.developer);
+      // Queued test ideas: the strategist's pipeline.
+      return primary(roles.strategist || STRATEGY_OWNER || roles.designer);
     default:
       // not-started or unset — show the primary owner who'll pick it up first
       return primary(roles.designer || roles.developer);
+  }
+}
+
+/* ── The to-do lane for a card's ACTIVE owner ──
+ * Single source shared by the board and /my-work so the two never disagree:
+ * the person activeAssigneeFor() names as the current owner sees the card in
+ * exactly this lane. Non-owners derive todo/done from phase order separately.
+ *   todo         = queued for the owner, not started (Setup, Strategy, Tickets)
+ *   in_progress  = the ball is in the owner's court (Design, Dev, QA, Launch)
+ *   done         = the ball is with a reviewer/client (revisions, approval)
+ *                  unless it was kicked back to the owner (revisionRequested). */
+export type WorkLane = "todo" | "in_progress" | "done";
+export function ownerLaneForPhase(
+  phase: PreviewPhase | undefined,
+  revisionRequested?: boolean,
+): WorkLane {
+  switch (phase) {
+    case "not-started":
+    case "strategy":
+    case "tickets":
+    case "test-backlog":
+      return "todo";
+    case "internal-revisions":
+      // Design under internal review — the primary designer only acts on a
+      // kickback; otherwise the ball is with the reviewer.
+      return revisionRequested ? "in_progress" : "done";
+    case "external-revisions":
+    case "client-approval":
+      // The secondary designer's active work: implement the client's edits and
+      // build the desktop versions while the client reviews. Actionable, not a
+      // passive wait.
+      return "in_progress";
+    case "design":
+    case "development":
+    case "documents":
+    case "qa":
+    case "launch":
+    case "launch-testing":
+      return "in_progress";
+    default:
+      return "done";
   }
 }
 

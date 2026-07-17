@@ -169,10 +169,17 @@ export interface MockDeliverable {
   developer?: string;
   /** Secondary developer — picks up tickets, bugs, post-launch tweaks */
   secondaryDeveloper?: string;
-  /** Target completion date — ISO yyyy-mm-dd. Drives the date stamp on the card
-   *  AND the card's health colour (overdue=red, due today/tomorrow=amber). When
-   *  unset the card is "undated": it reads neutral and never overdue, so
-   *  retrofitted work doesn't flood the board red until real dates are added. */
+  /** The build schedule: a date per column, typed by the PM. THE source for
+   *  when anything on this card is due. A card in Design compares itself to
+   *  phaseDeadlines.design and goes red once it passes; a column with no date
+   *  reads neutral and never goes red. Read it via cardSchedule() and
+   *  cardDueDate(), never raw, so the arithmetic stays in one place. */
+  phaseDeadlines?: Partial<Record<PreviewPhase, string>>;
+  /** Overall completion date — ISO yyyy-mm-dd. For a build this is DERIVED from
+   *  phaseDeadlines.launch (read it via cardDueDate); the raw field is what a
+   *  ticket or a document carries, since they never run the columns. When
+   *  neither exists the card is "undated": it reads neutral and never overdue,
+   *  so retrofitted work doesn't flood the board red. */
   dueDate?: string;
   /** Actual start date — ISO yyyy-mm-dd. Optional context for retrofitted work
    *  (when it really began), editable in the detail modal. Doesn't drive colour. */
@@ -551,81 +558,187 @@ export interface SubtaskTemplateItem {
   role: SubtaskRole;
   unlock: SubtaskUnlock;
   kind?: SubtaskKind;
-  /** Working-day budget for this step at the BASELINE 15-day turnaround. Budgets
-   *  cascade from the project start date to give each subtask its own deadline;
-   *  20 / 25-day builds scale proportionally. The whole build lands by ~day 12
-   *  of 15 (a 3-day buffer before the client-facing deadline). */
-  days?: number;
 }
 export const SUBTASK_TEMPLATE: SubtaskTemplateItem[] = [
-  { group: "strategy", title: "Brief provided", role: "strategist", unlock: "sequential", days: 2 },
-  { group: "design", title: "Initial Design", role: "primary_designer", unlock: "sequential", days: 3 },
-  { group: "design", title: "Internal Revisions", role: "primary_designer", unlock: "sequential", days: 1 },
-  { group: "design", title: "Client Revisions", role: "secondary_designer", unlock: "sequential", days: 2 },
-  { group: "design", title: "Desktop Viewports Created", role: "secondary_designer", unlock: "sequential", days: 1 },
-  { group: "design", title: "Development Handover Complete", role: "primary_designer", unlock: "sequential", kind: "design_handoff", days: 0 },
-  { group: "development", title: "Development", role: "primary_dev", unlock: "sequential", days: 2 },
-  { group: "development", title: "Internal QA", role: "secondary_dev", unlock: "sequential", days: 1 },
-  { group: "development", title: "Client Approval", role: "primary_dev", unlock: "sequential", days: 0 },
-  { group: "development", title: "Launch Ready and Test Setup", role: "primary_dev", unlock: "sequential", days: 0 },
-  { group: "optimisation", title: "Benchmarks Recorded", role: "strategist", unlock: "sequential", days: 0 },
-  { group: "optimisation", title: "First Test Live", role: "strategist", unlock: "sequential", days: 0 },
-  { group: "optimisation", title: "Results Recorded", role: "strategist", unlock: "sequential", days: 0 },
+  { group: "strategy", title: "Brief provided", role: "strategist", unlock: "sequential" },
+  { group: "design", title: "Desktop Viewports Created", role: "secondary_designer", unlock: "sequential" },
+  { group: "design", title: "Development Handover Complete", role: "primary_designer", unlock: "sequential", kind: "design_handoff" },
+  { group: "development", title: "Launch Ready and Test Setup", role: "primary_dev", unlock: "sequential" },
 ];
 
-/** The deadline for a subtask, cascaded from the project start date. Sums the
- *  day budgets of every template step up to and including this one, scaled by
- *  turnaround (baseline 15), and adds that many calendar days to the start.
- *  Returns undefined when there's no start date / turnaround (retainers, or a
- *  step with no budget). Deadlines only exist for build projects. */
-export function subtaskDeadline(
-  title: string,
-  startDate: string | undefined,
-  turnaroundDays: number | undefined,
-): string | undefined {
-  if (!startDate || !turnaroundDays) return undefined;
-  let cumulative = 0;
-  let found = false;
-  for (const t of SUBTASK_TEMPLATE) {
-    cumulative += t.days ?? 0;
-    if (t.title === title) {
-      found = true;
-      break;
-    }
-  }
-  if (!found) return undefined;
-  const scaled = Math.round((cumulative * turnaroundDays) / 15);
-  const d = new Date(`${startDate}T09:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + scaled);
-  return d.toISOString().slice(0, 10);
-}
+/* Steps the template used to seed that the BOARD now answers. "Initial Design",
+ * "Development", "Internal QA" and friends only ever restated the column the
+ * card was sitting in, so ticking them was double-entry: two places to say the
+ * same thing, and two places to disagree. The optimisation three went with the
+ * phases that left for the Results Engine. What survives is the work the board
+ * CAN'T see: artifacts (desktop viewports) and gates (the design handover).
+ *
+ * Cards seeded before the cut still carry these, so they're pruned on seed.
+ * These steps also carried the day budgets that dated the checklist - that
+ * whole cascade is gone; the schedule the PM types on the card is the only
+ * source now (see cardSchedule). */
+const RETIRED_SUBTASK_TITLES = new Set([
+  "Initial Design",
+  "Internal Revisions",
+  "Client Revisions",
+  "Development",
+  "Internal QA",
+  "Client Approval",
+  "Benchmarks Recorded",
+  "First Test Live",
+  "Results Recorded",
+]);
 
-/* Seed a group's template onto a card the first time it enters that group.
- * No-op if the group already has any subtasks (so re-entry / edits are safe).
- * Returns a NEW array when it seeds, or the original when it doesn't. */
-export function seedSubtasksForGroup(
-  existing: Subtask[] | undefined,
-  group: SubtaskGroup,
+/* Bring a card's checklist in line with the template: seed anything missing,
+ * drop the retired steps, keep every custom task the PM added.
+ *
+ * The whole template seeds at once (it's four steps), so a card carries its
+ * roadmap from creation and the later steps read as locked rather than absent.
+ * Template steps come first in template order - subtaskStatuses() gates on the
+ * subtasks BEFORE this one in the same group, so order is behaviour, not
+ * presentation. Custom tasks follow.
+ *
+ * Returns the ORIGINAL array when nothing changes: callers pass the result
+ * straight to onUpdate() from an effect, so a fresh array every call would
+ * write on every mount. */
+export function seedSubtasks(
+  existing?: Subtask[],
+  template: SubtaskTemplateItem[] = SUBTASK_TEMPLATE,
 ): Subtask[] {
   const subs = existing ?? [];
-  if (subs.some((s) => s.group === group)) return subs;
   const rand = () =>
     typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : `sub-${Math.random().toString(36).slice(2, 9)}`;
-  const additions: Subtask[] = SUBTASK_TEMPLATE.filter(
-    (t) => t.group === group,
-  ).map((t) => ({
-    id: rand(),
-    title: t.title,
-    group: t.group,
-    role: t.role,
-    unlock: t.unlock,
-    kind: t.kind,
-    done: false,
+  const kept = subs.filter((s) => !RETIRED_SUBTASK_TITLES.has(s.title));
+  const byTitle = new Map(kept.map((s) => [s.title, s]));
+  const templateTitles = new Set(template.map((t) => t.title));
+  const next: Subtask[] = [
+    // Template steps, in template order, preserving any existing done state.
+    ...template.map(
+      (t) =>
+        byTitle.get(t.title) ?? {
+          id: rand(),
+          title: t.title,
+          group: t.group,
+          role: t.role,
+          unlock: t.unlock,
+          kind: t.kind,
+          done: false,
+        },
+    ),
+    // Anything the PM added by hand, in the order they added it.
+    ...kept.filter((s) => !templateTitles.has(s.title)),
+  ];
+  const unchanged =
+    next.length === subs.length && next.every((s, i) => s.id === subs[i].id);
+  return unchanged ? subs : next;
+}
+
+/* Which template steps a card actually runs. Not every card takes the build
+ * path: a bug ticket doesn't need a brief or a design handover, and an audit is
+ * a Setup → Strategy → Done diagnostic that never enters the build columns.
+ * They still keep anything a PM added by hand. */
+export function templateForCard(
+  d: Pick<MockDeliverable, "phase" | "cardType">,
+): SubtaskTemplateItem[] {
+  if (d.phase === "tickets" || d.phase === "documents") return [];
+  if (d.cardType === "audit")
+    return SUBTASK_TEMPLATE.filter((t) => t.group === "strategy");
+  return SUBTASK_TEMPLATE;
+}
+
+/** A card's checklist, normalised. THE way to read subtasks: the card face and
+ *  the modal both go through here, so neither can show a list the other
+ *  doesn't. Pure - persistence happens whenever the card is next saved. */
+export function checklistFor(
+  d: Pick<MockDeliverable, "phase" | "cardType" | "subtasks">,
+): Subtask[] {
+  return seedSubtasks(d.subtasks, templateForCard(d));
+}
+
+/* ── The build schedule ──
+ * ONE source: the dates a PM types onto the card, per column. There is no
+ * cascade and no day-budget table - the two that used to compute this from
+ * startDate + turnaroundDays disagreed with each other (Design was day 3 in one
+ * and day 4 in the other), because a schedule guessed from a budget was never
+ * as good as the one the PM already knows. A column with no date is simply
+ * undated: it reads neutral and never goes red.
+ *
+ * The map: a card sitting in Design reads its OWN "design" date. That's the
+ * whole mapping - no lookup, no anchoring, no derivation. */
+
+function daysBetweenISO(fromISO: string, toISO: string): number {
+  const a = new Date(`${fromISO}T00:00:00Z`).getTime();
+  const b = new Date(`${toISO}T00:00:00Z`).getTime();
+  return Math.round((b - a) / (1000 * 60 * 60 * 24));
+}
+
+/** Columns that carry a date, in board order. Setup has no work to date; the
+ *  SLA columns (tickets / documents) run their own clocks; Done is terminal;
+ *  the Results Engine phases live off this board. */
+export const SCHEDULE_PHASES: PreviewPhase[] = [
+  "strategy",
+  "design",
+  "internal-revisions",
+  "external-revisions",
+  "development",
+  "qa",
+  "client-approval",
+  "launch",
+];
+
+/** Days added to the planned span to get the figure you quote the client. The
+ *  plan is the internal target; the quote carries the buffer. */
+export const CLIENT_BUFFER_DAYS = 3;
+
+export interface ScheduleRow {
+  phase: PreviewPhase;
+  date?: string;
+}
+
+export interface CardSchedule {
+  rows: ScheduleRow[];
+  /** Span in days from the first dated column to the last. undefined until at
+   *  least two columns are dated - one date is a point, not a duration. */
+  plannedDays?: number;
+  /** What to tell the client: the plan plus the buffer. */
+  clientDays?: number;
+  /** What the build was sold as, for comparison. Never computed FROM. */
+  contractedDays?: number;
+}
+
+/** A card's typed schedule, plus the arithmetic on top of it. */
+export function cardSchedule(
+  d: Pick<MockDeliverable, "phaseDeadlines"> & { turnaroundDays?: number },
+): CardSchedule {
+  const rows: ScheduleRow[] = SCHEDULE_PHASES.map((phase) => ({
+    phase,
+    date: d.phaseDeadlines?.[phase],
   }));
-  if (additions.length === 0) return subs;
-  return [...subs, ...additions];
+  const dated = rows.map((r) => r.date).filter((x): x is string => !!x);
+  if (dated.length < 2) {
+    return { rows, contractedDays: d.turnaroundDays };
+  }
+  // Sorted, not first/last by column order: a half-filled schedule shouldn't
+  // report a negative span just because the PM dated Launch before Design.
+  const sorted = [...dated].sort();
+  const planned = daysBetweenISO(sorted[0], sorted[sorted.length - 1]);
+  return {
+    rows,
+    plannedDays: planned,
+    clientDays: planned + CLIENT_BUFFER_DAYS,
+    contractedDays: d.turnaroundDays,
+  };
+}
+
+/** When a card is due overall: its Launch date. Falls back to the hand-set
+ *  card date, which is all a ticket or a document has (they never run columns).
+ *  One answer, so the board sort, the health colour and My Tasks agree. */
+export function cardDueDate(
+  d: Pick<MockDeliverable, "phaseDeadlines" | "dueDate">,
+): string | undefined {
+  return d.phaseDeadlines?.launch ?? d.dueDate;
 }
 
 /* ── Multi-test helpers ──

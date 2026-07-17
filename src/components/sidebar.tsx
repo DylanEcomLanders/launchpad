@@ -364,19 +364,23 @@ const navSections: NavSection[] = [
       { ...kpiItem, roles: ADMIN_CRO },
     ],
   },
+  /* Acquisition — how work comes in: the outbound motion + the Hero Offer
+   * playbook it sells. Offer used to be its own top-level entry, which read as
+   * an orphan sitting under Sales.
+   *
+   * The role gate is on the ITEM, not the section, deliberately: Outbound is
+   * admin/CRO, but the Offer playbook is for everyone. Gating the section would
+   * hide the playbook from the team. So a member sees Acquisition → Offer;
+   * admin/CRO see both. (Empty sections are dropped by the filter, so no role
+   * ends up with a stray header.) */
   {
-    title: "Sales",
+    title: "Acquisition",
     icon: <PixelFunnel className="size-4" />,
     group: "lifecycle",
-    roles: ADMIN_CRO,
-    items: [outboundItem],
-  },
-  {
-    title: "Offer",
-    icon: <PixelTag className="size-4" />,
-    group: "lifecycle",
-    href: "/hero-offer",
-    items: [],
+    items: [
+      { ...outboundItem, roles: ADMIN_CRO },
+      { label: "Offer", href: "/hero-offer", icon: <PixelTag className="size-4" /> },
+    ],
   },
   /* Production (advertorial) shelved from the nav 2026-07-07. Route + store +
    * kit still live under /production and skills/advertorial; re-add this section
@@ -547,7 +551,10 @@ export function Sidebar() {
      * top-link row style so icons, spacing + active state line up. */
     return (
       <div key={section.title}>
-        <div className="px-2.5 pb-1 pt-0.5 text-3xs font-semibold uppercase tracking-wider text-subtle">
+        {/* Section label. Mono + one size down + wide tracking separates it from
+            the items by TEXTURE rather than weight, so it reads as a different
+            layer while still whispering (DESIGN.md §1). */}
+        <div className="px-2.5 pb-1 pt-0.5 font-mono text-4xs font-medium uppercase tracking-widest text-subtle">
           {section.title}
         </div>
         <div className="space-y-0.5">
@@ -632,7 +639,7 @@ export function Sidebar() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           fixed md:relative z-50 md:z-0
-          h-full bg-background text-foreground border-r border-border font-heading
+          h-full bg-background text-foreground border-r border-border
           flex flex-col
           transition-all duration-200 ease-in-out
           ${collapsed ? "md:w-16" : "md:w-56"}

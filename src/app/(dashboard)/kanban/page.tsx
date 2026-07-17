@@ -58,8 +58,12 @@ import {
 } from "@/lib/projects/preview-phases";
 import { Field, Pill, ProjectCard, Segmented } from "@/components/ui";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
-import { DeliveryTableView } from "@/components/kanban/delivery-table";
 import { createSurfaceForLaunch } from "@/lib/results-engine/data";
+import {
+  moveDeliverable as moveDeliverableCore,
+  PHASE_2_ORDER,
+} from "@/lib/kanban/move-deliverable";
+import { STRATEGY_OWNER } from "@/lib/projects/preview-phases";
 import type { KanbanActivity } from "@/lib/kanban/data";
 import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
@@ -71,9 +75,10 @@ import {
   subtaskStatuses,
   subtaskAssigneeName,
   subtaskGroupForPhase,
-  seedSubtasksForGroup,
-  SUBTASK_TEMPLATE,
-  subtaskDeadline,
+  checklistFor,
+  cardSchedule,
+  cardDueDate,
+  SCHEDULE_PHASES,
   SUBTASK_ROLE_LABEL,
   SUBTASK_GROUP_ORDER,
   SUBTASK_GROUP_LABEL,
@@ -138,30 +143,16 @@ const TICKET_CATEGORIES: {
  * deploy rollback if it tanks). Applied both on move and on direct add. */
 const LAUNCH_TESTING_TESTER = "Aanchal";
 const LAUNCH_TESTING_DEV = "Archie";
-/* Strategy phase has a single owner - Aanchal scopes every brief before
- * it lands on the design pod. Surfaced at display time, not stored on the
- * deliverable, so the pod's designer field stays intact for later phases. */
-const STRATEGY_OWNER = "Aanchal";
-
-/* ── Central role registry (§3) ──
- * Agency-wide roles, one holder each, config not per-card. The heads OWN the QA
- * stages (their sign-off advances the card) but are NOT the card's assignee —
- * the assignee stays the pod member doing the work, so projects don't dump into
- * two people's lists. The heads work a cross-pod review queue instead. Fill
- * these with real names in config; blank = not yet assigned. */
-const CENTRAL_ROLES = {
-  pm: "", // Setup owner + default client chaser
-  strategist: STRATEGY_OWNER, // Strategy + the whole Results Engine
-  head_designer: "", // owns Internal Revisions sign-off (review queue)
-  head_developer: "", // owns Internal QA sign-off (review queue)
-} as const;
-/* Which central role owns each column's sign-off (owner ≠ assignee). */
-const PHASE_OWNER_ROLE: Partial<Record<PreviewPhase, keyof typeof CENTRAL_ROLES>> = {
-  "not-started": "pm",
-  strategy: "strategist",
-  "internal-revisions": "head_designer",
-  qa: "head_developer",
-};
+/* STRATEGY_OWNER lives in preview-phases (imported above) — it's the same
+ * constant activeAssigneeFor uses to own the Strategy phase, so the board badge
+ * and /my-work can't drift apart. Don't redeclare it here.
+ *
+ * The old CENTRAL_ROLES / PHASE_OWNER_ROLE registry was removed: it modelled the
+ * heads (Head Designer / Head Developer) working a cross-pod review queue, which
+ * we've decided against. Revisions + Internal QA stay ASSIGNED to the pod's
+ * designer/dev; the leads review by looking at the whole board ("All projects"
+ * view) rather than carrying cards of their own. The registry was also dead —
+ * declared and never read anywhere. */
 
 /* Tickets column SLA breakdown by category. Fire short-circuits to stuck the
  * moment it lands; Bug runs on a 24h clock with 12h amber; Ticket runs on
@@ -290,87 +281,19 @@ function scaledStatus(
  * Ext Rev -> Dev). All cards in a project share the schedule.
  */
 
-const PHASE_DAYS_BY_TURNAROUND: Record<
-  15 | 20 | 25,
-  Record<PreviewPhase, number>
-> = {
-  15: {
-    tickets: 0,
-    documents: 0,
-    "not-started": 0,
-    strategy: 2,
-    design: 4,
-    "internal-revisions": 1,
-    "external-revisions": 3,
-    development: 3,
-    qa: 1,
-    "client-approval": 1,
-    launch: 0,
-    done: 0,
-    "test-backlog": 0,
-    "launch-testing": 1,
-  },
-  20: {
-    tickets: 0,
-    documents: 0,
-    "not-started": 0,
-    strategy: 3,
-    design: 5,
-    "internal-revisions": 1,
-    "external-revisions": 3,
-    development: 5,
-    qa: 2,
-    "client-approval": 1,
-    launch: 0,
-    done: 0,
-    "test-backlog": 0,
-    "launch-testing": 1,
-  },
-  25: {
-    tickets: 0,
-    documents: 0,
-    "not-started": 0,
-    strategy: 3,
-    design: 6,
-    "internal-revisions": 2,
-    "external-revisions": 3,
-    development: 7,
-    qa: 2,
-    "client-approval": 1,
-    launch: 0,
-    done: 0,
-    "test-backlog": 0,
-    "launch-testing": 2,
-  },
-};
-
 const PHASE_1_ORDER: PreviewPhase[] = [
   "strategy",
   "design",
   "internal-revisions",
 ];
-const PHASE_2_ORDER: PreviewPhase[] = ["development", "qa", "launch"];
 
-/* Board columns exclude Documents: retainer reports / decks / monthly breakdowns
- * now live in the Clients Command Centre, not on the delivery board. The phase
- * stays in the model so existing data + phase logic are unaffected; it just
- * isn't rendered as a column. */
 /* The Delivery board's columns: the linear build flow, ending at Done.
- * `documents` is hidden; `test-backlog` + `launch-testing` have LEFT the board
- * for the Results Engine (optimisation is a separate surface). */
+ * `documents` is hidden (retainer reports / decks live in the Clients Command
+ * Centre); `test-backlog` + `launch-testing` have LEFT the board for the
+ * Results Engine. The phases stay in the model so existing data + phase logic
+ * are unaffected; they just aren't rendered as columns. */
 const OFF_BOARD_PHASES = new Set<PreviewPhase>(["documents", "test-backlog", "launch-testing"]);
 const BOARD_PHASES = PREVIEW_PHASES.filter((p) => !OFF_BOARD_PHASES.has(p.value));
-
-/* Build columns an audit card may never enter (audit = Setup → Strategy → Done). */
-const AUDIT_BLOCKED_PHASES = new Set<PreviewPhase>([
-  "design",
-  "internal-revisions",
-  "external-revisions",
-  "development",
-  "qa",
-  "client-approval",
-  "launch",
-]);
 
 /* Phase value → human label, for the activity feed (avoids showing raw
  * enum values like "internal-revisions"). */
@@ -399,7 +322,7 @@ function relativeTime(iso: string): string {
 }
 
 /* ── Phase bands ──
- * Presentation grouping ONLY: the ten underlying phases are untouched (every
+ * Presentation grouping ONLY: the underlying phases are untouched (every
  * consumer of deliverable.phase keeps working). Columns render clustered under
  * three phase headers with per-phase ownership; Tickets + Not started sit
  * outside the bands (triage / backlog, not build flow). The design-to-dev
@@ -432,47 +355,10 @@ const PHASE_BANDS: {
   },
 ];
 
-const INTERNAL_BUFFER_DAYS = 3;
-
 function addCalendarDays(iso: string, days: number): string {
   const d = new Date(`${iso}T09:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
-}
-
-/** Internal due date for a given phase on a build project. Returns null if
- *  the phase isn't part of the build flow (tickets/documents) or if the
- *  phase belongs to Phase 2 and the client hasn't approved yet ("TBC"). */
-function phaseInternalDueDate(
-  phase: PreviewPhase,
-  project: {
-    type?: "build" | "retainer";
-    turnaroundDays?: 15 | 20 | 25;
-    startDate?: string;
-    clientApprovedAt?: string;
-  },
-): string | null {
-  if (project.type !== "build" || !project.turnaroundDays || !project.startDate)
-    return null;
-  const budget = PHASE_DAYS_BY_TURNAROUND[project.turnaroundDays];
-  if (PHASE_1_ORDER.includes(phase)) {
-    let cumulative = 0;
-    for (const p of PHASE_1_ORDER) {
-      cumulative += budget[p];
-      if (p === phase) break;
-    }
-    return addCalendarDays(project.startDate, cumulative);
-  }
-  if (PHASE_2_ORDER.includes(phase)) {
-    if (!project.clientApprovedAt) return null;
-    let cumulative = 0;
-    for (const p of PHASE_2_ORDER) {
-      cumulative += budget[p];
-      if (p === phase) break;
-    }
-    return addCalendarDays(project.clientApprovedAt, cumulative);
-  }
-  return null;
 }
 
 /** Card status driven by the dated phase deadline (manual override or
@@ -483,27 +369,13 @@ function phaseInternalDueDate(
  *  No buffer - day-after-due is red. */
 function deadlineStatus(
   phase: PreviewPhase,
-  project: {
-    type?: "build" | "retainer";
-    turnaroundDays?: 15 | 20 | 25;
-    startDate?: string;
-    clientApprovedAt?: string;
-    phase1Deadline?: string;
-    phase2Deadline?: string;
-  },
+  d: Pick<MockDeliverable, "phaseDeadlines">,
   todayISO: string,
 ): StuckStatus | null {
-  /* Manual phase-bucket deadlines take precedence. Phase 1 cards
-   * (strategy / design / int-rev / ext-rev) compare to phase1Deadline;
-   * Phase 2 cards (dev / qa / launch) compare to phase2Deadline. */
-  const isPhase1 = PHASE_1_ORDER.includes(phase) || phase === "external-revisions";
-  const isPhase2 = PHASE_2_ORDER.includes(phase);
-  const manualDue = isPhase1
-    ? project.phase1Deadline
-    : isPhase2
-      ? project.phase2Deadline
-      : undefined;
-  const due = manualDue ?? phaseInternalDueDate(phase, project);
+  /* The card's own date for the column it's in. Nothing is computed - the PM
+   * typed this - so there's no cascade to disagree with and no anchor to wait
+   * on. No date for this column = null = neutral, never red. */
+  const due = d.phaseDeadlines?.[phase];
   if (!due) return null;
   if (todayISO.localeCompare(due) > 0) return "stuck";
   if (due.localeCompare(addDaysISO(todayISO, 1)) <= 0) return "approaching";
@@ -718,7 +590,6 @@ export default function KanbanPage() {
   /* Board vs Table: two reads of the same delivery data. Board is the kanban;
    * Table is the phase-banded deliverable list. Top-level switch, above the
    * board's own project/pod scoping. */
-  const [layoutView, setLayoutView] = useState<"board" | "table">("board");
   /* Deep-link into Results from the sidebar (?view=results). Read once on mount;
    * no Suspense boundary needed vs useSearchParams. */
   useEffect(() => {
@@ -733,40 +604,17 @@ export default function KanbanPage() {
    * title / client name / assignee. Cleared with Esc when focused.
    * Press / from anywhere to jump focus into it. */
   const [searchQuery, setSearchQuery] = useState("");
-  const [mineOnly, setMineOnly] = useState(false);
+  // "Mine only" filter + its toggle were removed; the board always shows all.
+  const mineOnly = false;
   /* Add-client modal open state. Designed in-app dialog instead of
    * window.prompt - matches the rest of the kanban's look. */
   const [addClientOpen, setAddClientOpen] = useState(false);
-  /* Card density. Persisted in localStorage so the choice sticks
-   * across sessions.
-   *   "cosy" - default, full card detail with breathing room
-   *   "glance" - minimal status bars so admin can scan amber/reds
-   *              across every column in one look. Killer for the
-   *              All / Pod views where you want to spot trouble. */
-  const [density, setDensity] = useState<"cosy" | "glance">("cosy");
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("launchpad-kanban-density");
-    if (saved === "glance" || saved === "cosy") setDensity(saved);
-  }, []);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem("launchpad-kanban-density", density);
-  }, [density]);
-  /* Board layout. "full" = every phase its own column (11 across). "condensed"
-   * = one column per pipeline stage (band), with each card's exact phase shown
-   * as a pill - fits a laptop screen. Persisted like density; "full" default so
-   * nothing the team already knows changes unless they opt in. */
-  const [layout, setLayout] = useState<"full" | "condensed">("condensed");
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("launchpad-kanban-layout");
-    if (saved === "full" || saved === "condensed") setLayout(saved);
-  }, []);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem("launchpad-kanban-layout", layout);
-  }, [layout]);
+  // Card density is fixed to "cosy" now (the density toggle was removed).
+  const density: "cosy" | "glance" = "cosy";
+  /* Board layout is always "full" — every phase its own column, so the whole
+   * flow reads left-to-right. The old "condensed" (one column per band) option
+   * was removed: the full board makes the pipeline easier to follow. */
+  const layout = "full" as const;
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   /* Keyboard shortcuts. "/" from anywhere → focus search. Esc while
@@ -883,7 +731,6 @@ export default function KanbanPage() {
   const [onboardingPreviewOpen, setOnboardingPreviewOpen] =
     useState<boolean>(false);
 
-  const [rulesOpen, setRulesOpen] = useState<boolean>(false);
 
   const [bankOutcome, setBankOutcome] = useState<TestOutcome | "all">("all");
   const [bankClient, setBankClient] = useState<string>("all");
@@ -1097,8 +944,11 @@ export default function KanbanPage() {
         if (STATUS_RANK[aStatus] !== STATUS_RANK[bStatus]) {
           return STATUS_RANK[aStatus] - STATUS_RANK[bStatus];
         }
-        const aDue = a.dueDate ?? "9999-12-31";
-        const bDue = b.dueDate ?? "9999-12-31";
+        // Via cardDueDate: a scheduled build's date is its Launch column, not
+        // the raw field. Reading d.dueDate here sorted every scheduled card to
+        // the bottom as if it were dated year 9999.
+        const aDue = cardDueDate(a) ?? "9999-12-31";
+        const bDue = cardDueDate(b) ?? "9999-12-31";
         if (aDue !== bDue) return aDue.localeCompare(bDue);
         return a.title.localeCompare(b.title);
       });
@@ -1138,181 +988,41 @@ export default function KanbanPage() {
     [allDeliverables, activeId],
   );
 
+  /* Thin wrapper over the shared move core (src/lib/kanban/move-deliverable).
+   * The rules — gates, revision bookkeeping, subtask seeding, the Launch seam —
+   * live there so /my-work moves through exactly the same path. This just
+   * applies the result: surface a blocked gate, commit state, fire effects. */
   function moveDeliverable(
     id: string,
     targetPhase: PreviewPhase,
     opts?: { bypassHandoffGate?: boolean },
   ) {
-    /* Design-to-dev gate, checked BEFORE the state update (updaters run at
-     * render time, so a flag set inside one isn't readable here). A card
-     * entering any Phase 2 build phase from outside Phase 2 must carry a
-     * submitted design handover. The submit-handover flow passes
-     * bypassHandoffGate because it stamps the handover and moves in the same
-     * tick, before state has re-rendered. */
-    if (!opts?.bypassHandoffGate) {
-      const current = allDeliverables.find((d) => d.id === id);
-      if (current) {
-        function blockGate(message: string) {
-          window.dispatchEvent(
-            new CustomEvent("kanban-gate-blocked", { detail: { message } }),
-          );
-        }
-        // Audit path: an audit card is Setup → Strategy → Done only. It never
-        // enters the build columns (design through launch).
-        if (current.cardType === "audit" && AUDIT_BLOCKED_PHASES.has(targetPhase)) {
-          blockGate(
-            `"${current.title}" is an audit — it stays on the Setup → Strategy → Done path and doesn't enter the build.`,
-          );
-          return;
-        }
-        // Design gate: a card entering any Phase 2 build phase from outside
-        // Phase 2 must carry a submitted design handover. This is the only
-        // handover the playbook gates on - the "Development Handover Complete"
-        // step in the Design phase. Strategy and Development progress freely
-        // via their checklists; only the design-to-build handover is a gate.
-        if (
-          PHASE_2_ORDER.includes(targetPhase) &&
-          !PHASE_2_ORDER.includes(current.phase) &&
-          !current.designHandoff?.submittedAt
-        ) {
-          blockGate(
-            `"${current.title}" needs its design handover (Figma, Loom, fonts) submitted before it can enter the build. Open the card to complete it.`,
-          );
-          return;
-        }
-      }
+    const res = moveDeliverableCore(clients, pods, id, targetPhase, opts);
+    if (!res.ok) {
+      window.dispatchEvent(
+        new CustomEvent("kanban-gate-blocked", { detail: { message: res.reason } }),
+      );
+      return;
     }
-    /* Snapshot the card BEFORE the move so the activity log can record the
-     * from-phase + names. Read from allDeliverables (carries client/project
-     * names). Logged after setClients, gated on the same no-op rules the
-     * updater uses, so a same-phase drop or a ticket move logs nothing. */
-    const beforeMove = allDeliverables.find((d) => d.id === id);
-    setClients((prev) => {
-      const next = cloneClients(prev);
-      for (const c of next) {
-        for (const p of c.projects) {
-          const d = p.deliverables.find((x) => x.id === id);
-          if (!d) continue;
-          if (d.phase === targetPhase) return next;
-          // Tickets are handled in place (resolved via completedAt), never
-          // dragged between columns. Block moving a ticket out, or anything in.
-          if (d.phase === "tickets" || targetPhase === "tickets") return next;
-          const fromIdx = PREVIEW_PHASES.findIndex((x) => x.value === d.phase);
-          const toIdx = PREVIEW_PHASES.findIndex((x) => x.value === targetPhase);
-          // Backward move flags the card as needing revisions. Forward move
-          // past the original kickback clears it. (Tickets / documents /
-          // not-started arent part of the build flow so dont count.)
-          const inFlow =
-            fromIdx >= 0 &&
-            toIdx >= 0 &&
-            !["tickets", "documents", "not-started"].includes(d.phase) &&
-            !["tickets", "documents", "not-started"].includes(targetPhase);
-          if (inFlow && toIdx < fromIdx) {
-            d.revisionRequested = true;
-          } else if (inFlow && toIdx > fromIdx && d.revisionRequested) {
-            // Once the card progresses past where it was bounced from, clear
-            // the tag. Heuristic: progression beyond the original phase.
-            d.revisionRequested = false;
-          }
-          // Internal approval is only meaningful while sitting in Internal
-          // Rev awaiting the designer's send-to-client. Drag the card out
-          // (Ext Rev = "I've sent it") and the green clears.
-          if (
-            d.phase === "internal-revisions" &&
-            targetPhase !== "internal-revisions"
-          ) {
-            d.approvedAt = undefined;
-          }
-          // clientApprovedAt is set by the PM explicitly (via the "Mark
-          // client approved" action in the Build schedule), not auto-fired
-          // on card moves. Card drag-drops shouldn't accidentally lock the
-          // Phase 2 schedule.
-          // Stamp the send-to-client moment when card enters External Rev.
-          // Anchors the 48h client-review clock. Clear when card leaves.
-          if (
-            d.phase !== "external-revisions" &&
-            targetPhase === "external-revisions"
-          ) {
-            d.sentToClientAt = MOCK_TODAY;
-          }
-          if (
-            d.phase === "external-revisions" &&
-            targetPhase !== "external-revisions"
-          ) {
-            d.sentToClientAt = undefined;
-          }
-          // Snapshot previous active assignee BEFORE the phase change so we
-          // can compare against the new one and fire a notification when the
-          // owner has actually changed (most phase moves do change owner).
-          const prevAssignee = activeAssigneeFor(d.phase, {
-            designer: d.designer,
-            secondaryDesigner: d.secondaryDesigner,
-            developer: d.developer,
-            secondaryDeveloper: d.secondaryDeveloper,
-          }).name;
-          d.phase = targetPhase;
-          d.hoursInPhase = 0;
-          // Entering a phase seeds that group's subtask template (no-op if the
-          // group already carries any subtasks).
-          d.subtasks = seedSubtasksForGroup(
-            d.subtasks,
-            subtaskGroupForPhase(targetPhase),
-          );
-          const stamp = MOCK_TODAY;
-          const history = d.phaseHistory ? [...d.phaseHistory] : [];
-          history.push({ phase: targetPhase, enteredAt: stamp });
-          d.phaseHistory = history;
-          const nextAssignee = activeAssigneeFor(targetPhase, {
-            designer: d.designer,
-            secondaryDesigner: d.secondaryDesigner,
-            developer: d.developer,
-            secondaryDeveloper: d.secondaryDeveloper,
-          }).name;
-          if (nextAssignee && nextAssignee !== prevAssignee) {
-            notifyAssigneeChange(id, targetPhase);
-          }
-          return next;
-        }
-      }
-      return next;
-    });
-    /* Log the move. Skip no-ops (same phase), ticket in/out (handled in
-     * place), and bypass-gate moves (the handover submit logs its own
-     * entry, so we don't double up with a redundant "moved to Development"). */
-    if (
-      beforeMove &&
-      !opts?.bypassHandoffGate &&
-      beforeMove.phase !== targetPhase &&
-      beforeMove.phase !== "tickets" &&
-      targetPhase !== "tickets"
-    ) {
+    if (!res.moved) return; // no-op: same phase, ticket in/out, or unknown card
+    setClients(res.clients);
+    /* Skip the log on bypass-gate moves — the handover submit logs its own
+     * entry, so we don't double up with a redundant "moved to Development". */
+    if (!opts?.bypassHandoffGate) {
       logActivity({
         actor: actorName,
         action: "moved",
-        cardId: id,
-        cardTitle: beforeMove.title,
-        clientName: beforeMove.clientName,
-        projectName: beforeMove.projectName,
-        fromPhase: beforeMove.phase,
-        toPhase: targetPhase,
+        cardId: res.moved.cardId,
+        cardTitle: res.moved.cardTitle,
+        clientName: res.moved.clientName,
+        projectName: res.moved.projectName,
+        fromPhase: res.moved.fromPhase,
+        toPhase: res.moved.toPhase,
       });
     }
-    /* ── The seam ── entering Launch auto-creates this build's Results Engine
-     * surface, carrying its live URL + any recorded benchmark metrics. Fire-and-
-     * forget; createSurfaceForLaunch is idempotent per source card, so a re-drop
-     * won't duplicate. This is the single hand-off the two-surface model rests on. */
-    if (beforeMove && targetPhase === "launch" && beforeMove.phase !== "launch") {
-      const benchmark: Record<string, string | number> = {};
-      for (const m of beforeMove.metrics ?? []) {
-        if (m.interim) benchmark[m.name] = m.interim;
-      }
-      createSurfaceForLaunch({
-        projectId: beforeMove.projectId,
-        sourceTaskId: beforeMove.id,
-        title: beforeMove.title,
-        liveUrl: beforeMove.liveTestUrl,
-        controlBenchmark: Object.keys(benchmark).length ? benchmark : undefined,
-      }).catch(() => {
+    if (res.moved.assigneeChanged) notifyAssigneeChange(id, targetPhase);
+    if (res.seam) {
+      createSurfaceForLaunch(res.seam).catch(() => {
         /* offline / store unavailable — the surface can be created later */
       });
     }
@@ -1792,60 +1502,6 @@ export default function KanbanPage() {
     });
   }
 
-  // PM action - mark client approval. Anchors all Phase 2 deadlines from
-  // this date. Accepts an ISO so the PM can backdate (client approved
-  // yesterday, getting around to it today).
-  function setClientApproval(projectId: string, iso: string | undefined) {
-    setClients((prev) => {
-      const next = cloneClients(prev);
-      for (const c of next) {
-        const p = c.projects.find((x) => x.id === projectId);
-        if (p) p.clientApprovedAt = iso;
-      }
-      return next;
-    });
-  }
-
-  // Manual client-facing Phase 1 deadline. When set, overrides the
-  // computed per-phase due dates for every Phase 1 card on the project.
-  function setProjectPhase1Deadline(projectId: string, iso: string | undefined) {
-    setClients((prev) => {
-      const next = cloneClients(prev);
-      for (const c of next) {
-        const p = c.projects.find((x) => x.id === projectId);
-        if (p) p.phase1Deadline = iso;
-      }
-      return next;
-    });
-  }
-
-  // Manual client-facing Phase 2 deadline. Same override semantics as
-  // setProjectPhase1Deadline scoped to Phase 2 cards.
-  function setProjectPhase2Deadline(projectId: string, iso: string | undefined) {
-    setClients((prev) => {
-      const next = cloneClients(prev);
-      for (const c of next) {
-        const p = c.projects.find((x) => x.id === projectId);
-        if (p) p.phase2Deadline = iso;
-      }
-      return next;
-    });
-  }
-
-  // Project-level client approval reset. Wipes p.clientApprovedAt so Phase 2
-  // deadlines go back to TBC. Useful when a card was dragged into Dev
-  // accidentally and triggered the stamp.
-  function resetClientApproval(projectId: string) {
-    setClients((prev) => {
-      const next = cloneClients(prev);
-      for (const c of next) {
-        const p = c.projects.find((x) => x.id === projectId);
-        if (p) p.clientApprovedAt = undefined;
-      }
-      return next;
-    });
-  }
-
   // Notification stub - fires when a card moves into a phase whose active
   // assignee differs from the current one. Real Slack wiring lands later
   // (Viktor). Console-logged for now so the trace is visible in dev.
@@ -1876,9 +1532,6 @@ export default function KanbanPage() {
   const activePod = pods.find((p) => p.id === podId);
 
   function headerTitle(): { bold: string; light: string } {
-    if (layoutView === "table") {
-      return { bold: "Deliverables", light: "" };
-    }
     if (viewMode === "results") {
       return { bold: "Results Library", light: "" };
     }
@@ -1931,7 +1584,7 @@ export default function KanbanPage() {
                 pool. Derived, no hand-maths. Never gates - an exhausted pool
                 shows overage, it never blocks work. Commercial data is admin/CRO
                 only: a designer (member) never sees it. */}
-            {canManage && layoutView === "board" && viewMode === "project" && meterTier && activeCycleReadout && (
+            {canManage && viewMode === "project" && meterTier && activeCycleReadout && (
               <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-2xs font-medium tabular-nums">
                 <span className="capitalize text-foreground">{meterTier}</span>
                 <span className="text-subtle">·</span>
@@ -1965,7 +1618,7 @@ export default function KanbanPage() {
               </div>
             )}
             <div className="mt-2 flex items-center gap-2 min-w-0">
-              {layoutView === "board" && viewMode === "project" && clients.length > 0 ? (
+              {viewMode === "project" && clients.length > 0 ? (
                 <>
                   <KanbanClientPicker
                     variant="title"
@@ -2010,7 +1663,7 @@ export default function KanbanPage() {
                       />
                     )}
                 </>
-              ) : layoutView === "board" && viewMode === "pod" && pods.length > 0 ? (
+              ) : viewMode === "pod" && pods.length > 0 ? (
                 <>
                   <KanbanPodPicker
                     variant="title"
@@ -2054,47 +1707,25 @@ export default function KanbanPage() {
             </div>
           </div>
 
-          {/* RIGHT ZONE - display only. How you view the board: search,
-              view scope, and Display options. No client-specific controls. */}
+          {/* RIGHT ZONE — how you view the board: search, view scope, activity.
+              No layout/table/density options — the full board is the one view. */}
           <div className="flex items-center gap-2">
             <SyncErrorToast />
             <GateBlockedToast />
-            <Segmented
-              value={layoutView}
-              onChange={(v) => setLayoutView(v as "board" | "table")}
-              options={[
-                { value: "board", label: "Board" },
-                { value: "table", label: "Table" },
-              ]}
+            <SearchControl
+              query={searchQuery}
+              onChange={setSearchQuery}
+              inputRef={searchInputRef}
             />
-            {layoutView === "board" && (
-              <>
-                <SearchControl
-                  query={searchQuery}
-                  onChange={setSearchQuery}
-                  inputRef={searchInputRef}
-                />
-                <ViewModeMenu value={viewMode} onChange={setViewMode} />
-                <Pill
-                  active={activityOpen}
-                  onClick={() => setActivityOpen((v) => !v)}
-                  title="Activity log"
-                >
-                  <ClockIcon className="size-3.5" />
-                  Activity
-                </Pill>
-                <OverflowMenu
-                  density={density}
-                  onSetDensity={setDensity}
-                  layout={layout}
-                  onSetLayout={setLayout}
-                  onOpenRules={() => setRulesOpen(true)}
-                  mineOnly={mineOnly}
-                  onToggleMine={() => setMineOnly((v) => !v)}
-                  showMine={!!meName}
-                />
-              </>
-            )}
+            <ViewModeMenu value={viewMode} onChange={setViewMode} />
+            <Pill
+              active={activityOpen}
+              onClick={() => setActivityOpen((v) => !v)}
+              title="Activity log"
+            >
+              <ClockIcon className="size-3.5" />
+              Activity
+            </Pill>
           </div>
         </div>
 
@@ -2102,8 +1733,8 @@ export default function KanbanPage() {
             an inline switch above), so they reserve no row and the board sits
             at the same Y. Only results still carries a sub-row (its filters),
             so only it reserves the height. */}
-        <div className={`shrink-0 ${layoutView === "board" && viewMode === "results" ? "min-h-[56px]" : ""}`}>
-          {layoutView === "board" && viewMode === "results" && (
+        <div className={`shrink-0 ${viewMode === "results" ? "min-h-[56px]" : ""}`}>
+          {viewMode === "results" && (
             <ResultsBankFilters
               outcome={bankOutcome}
               client={bankClient}
@@ -2124,11 +1755,7 @@ export default function KanbanPage() {
             view mode toggle block above). The vertical jolt here was the
             real one. */}
 
-        {layoutView === "table" ? (
-          <div className="flex-1 min-h-0 overflow-y-auto pt-1">
-            <DeliveryTableView clients={clients} loading={loading} />
-          </div>
-        ) : viewMode === "results" ? (
+        {viewMode === "results" ? (
           <ResultsBankGrid
             cards={resultCards}
             onOpen={(id) => setActiveId(id)}
@@ -2191,7 +1818,6 @@ export default function KanbanPage() {
         )}
       </div>
 
-      {rulesOpen && <PhaseRulesModal onClose={() => setRulesOpen(false)} />}
 
       {addClientOpen && (
         <NewClientModal
@@ -2325,23 +1951,11 @@ export default function KanbanPage() {
           onUndoApprove={() => undoApproveInternal(activeDeliverable.id)}
           onCompleteTicket={() => completeTicket(activeDeliverable.id)}
           onUncompleteTicket={() => uncompleteTicket(activeDeliverable.id)}
-          onResetClientApproval={() =>
-            resetClientApproval(activeDeliverable.projectId)
-          }
           onApproveQA={() => approveQA(activeDeliverable.id)}
           onKickbackFromQA={() => kickbackFromQA(activeDeliverable.id)}
           onDelete={() => deleteDeliverable(activeDeliverable.id)}
           onSetProjectStartDate={(iso) =>
             setProjectStartDate(activeDeliverable.projectId, iso)
-          }
-          onSetClientApproval={(iso) =>
-            setClientApproval(activeDeliverable.projectId, iso)
-          }
-          onSetPhase1Deadline={(iso) =>
-            setProjectPhase1Deadline(activeDeliverable.projectId, iso)
-          }
-          onSetPhase2Deadline={(iso) =>
-            setProjectPhase2Deadline(activeDeliverable.projectId, iso)
           }
         />
       )}
@@ -3000,33 +2614,20 @@ function Card({
   // 1. Tickets - per-category SLAs (Ticket 48h, Bug 24h, Fire ASAP)
   // 2. Documents - dated by each card's own dueDate (retainer reports)
   // 3. External Revisions - 48h client clock anchored to sentToClientAt
-  // 4. Phase 1 / Phase 2 build phases - dated by project startDate +
-  //    clientApprovedAt + phase budgets
+  // 4. Build columns - the card's own typed date for the column it's in
   // 5. Fallback - legacy time-in-phase scaled by turnaround
   const dated =
-    d.projectType === "build"
-      ? deadlineStatus(
-          d.phase,
-          {
-            type: d.projectType,
-            turnaroundDays: d.turnaroundDays,
-            startDate: d.projectStartDate,
-            clientApprovedAt: d.projectClientApprovedAt,
-            phase1Deadline: d.projectPhase1Deadline,
-            phase2Deadline: d.projectPhase2Deadline,
-          },
-          MOCK_TODAY,
-        )
-      : null;
+    d.projectType === "build" ? deadlineStatus(d.phase, d, MOCK_TODAY) : null;
   /* Per-card dueDate takes top priority - if the card has an explicit
    * due date, the colour reflects that against today's clock per
    * Dylan's rule: overdue=red, due today OR tomorrow=amber (imminent),
    * further out=green. Falls through to the phase-specific engine below
    * when no dueDate is set. */
-  const cardDueStatus: StuckStatus | null = d.dueDate
+  const cardDue = cardDueDate(d);
+  const cardDueStatus: StuckStatus | null = cardDue
     ? (() => {
-        if (MOCK_TODAY.localeCompare(d.dueDate) > 0) return "stuck";
-        if (d.dueDate.localeCompare(addDaysISO(MOCK_TODAY, 1)) <= 0)
+        if (MOCK_TODAY.localeCompare(cardDue) > 0) return "stuck";
+        if (cardDue.localeCompare(addDaysISO(MOCK_TODAY, 1)) <= 0)
           return "approaching";
         return "on-track";
       })()
@@ -3056,7 +2657,9 @@ function Card({
   const neutralTiming = onHold || undated;
   const status: StuckStatus = neutralTiming ? "on-track" : rawStatus;
   const live = d.phase === "launch-testing" && d.liveStartedAt && !d.testResult;
-  const subs = d.subtasks ?? [];
+  // Normalised, same as the modal - the card face must never show a checklist
+  // the modal doesn't.
+  const subs = useMemo(() => checklistFor(d), [d]);
   const subDone = subs.filter((s) => s.done).length;
   // Approved-internally cards stay in Internal Revisions and read GREEN so
   // the primary designer knows it's signed off and needs sending to the
@@ -3126,46 +2729,16 @@ function Card({
     secondaryDeveloper: d.secondaryDeveloper,
   });
 
-  /* What's being worked on, on the card face: the first "available" subtask
-   * (the one the modal rings). When a card has no subtasks yet, fall back to
-   * the first template step for its phase group - display only, nothing is
-   * seeded or persisted - so every build card shows a step, not just a phase.
+  /* What's being worked on, on the card face: the first "available" subtask -
+   * the one the modal rings. The step name is what the board CAN'T show (the
+   * column already says the phase), so this is the artifact or gate due next.
    * Tickets / backlog / documents don't carry a step. */
-  const displaySub: { title: string; owner?: string } | undefined = (() => {
+  const displaySub: Subtask | undefined = (() => {
     if (["tickets", "not-started", "documents"].includes(d.phase)) return undefined;
-    const statuses = subtaskStatuses(d);
+    const statuses = subtaskStatuses({ ...d, subtasks: subs });
     const idx = statuses.findIndex((s) => s === "available");
-    if (idx >= 0) {
-      return { title: subs[idx].title, owner: subtaskAssigneeName(d, subs[idx].role) };
-    }
-    if (subs.length > 0) return undefined; // all done / locked - nothing active
-    // No subtasks yet: show the step matching the card's CURRENT phase (not the
-    // group's first step), so a card in Internal Review reads "Internal
-    // Revisions", not "Initial Design".
-    const stepByPhase: Partial<Record<PreviewPhase, string>> = {
-      strategy: "Brief provided",
-      design: "Initial Design",
-      "internal-revisions": "Internal Revisions",
-      "external-revisions": "Client Revisions",
-      development: "Development",
-      qa: "Internal QA",
-      "test-backlog": "First Test Live",
-      "launch-testing": "First Test Live",
-    };
-    const stepTitle = stepByPhase[d.phase];
-    const tmpl = stepTitle
-      ? SUBTASK_TEMPLATE.find((t) => t.title === stepTitle)
-      : undefined;
-    return tmpl
-      ? { title: tmpl.title, owner: subtaskAssigneeName(d, tmpl.role) }
-      : undefined;
+    return idx >= 0 ? subs[idx] : undefined; // else all done / locked
   })();
-
-  /* Deadline for the active subtask, cascaded from the project start via the
-   * turnaround day budgets (built by ~day 12 of 15). */
-  const activeSubDue = displaySub
-    ? subtaskDeadline(displaySub.title, d.projectStartDate, d.turnaroundDays)
-    : undefined;
 
   /* Health as a labelled pill (never a border). On-track reads "On track"; only
    * late / due-soon shift colour. Neutral-timing + backlog show nothing. */
@@ -3186,25 +2759,17 @@ function Card({
         ? "bg-status-approaching/15 text-status-approaching"
         : "bg-status-ontrack/15 text-status-ontrack";
 
-  /* Phase deadline (the existing turnaround-derived per-phase due date). */
+  /* The date this card is working to, right now: its OWN date for the column
+   * it's sitting in. The SLA columns answer a different question (how long has
+   * the client had it) and keep their own clocks. */
   const phaseDeadlineText: string | null = (() => {
     if (d.phase === "documents" && d.dueDate) return formatShortDate(d.dueDate);
     if (d.phase === "external-revisions" && d.sentToClientAt)
       return formatShortDate(
         addCalendarDays(d.sentToClientAt, EXT_REV_EXPECTED_DAYS),
       );
-    const due =
-      d.projectType === "build"
-        ? phaseInternalDueDate(d.phase, {
-            type: d.projectType,
-            turnaroundDays: d.turnaroundDays,
-            startDate: d.projectStartDate,
-            clientApprovedAt: d.projectClientApprovedAt,
-          })
-        : null;
-    if (due) return formatShortDate(due);
-    if (d.dueDate) return formatShortDate(d.dueDate);
-    return null;
+    const due = d.phaseDeadlines?.[d.phase] ?? cardDueDate(d);
+    return due ? formatShortDate(due) : null;
   })();
 
   /* Glance mode short-circuit: cards collapse to a thin bar that
@@ -3273,11 +2838,6 @@ function Card({
             <span className="min-w-0 truncate text-foreground">
               {displaySub.title}
             </span>
-            {activeSubDue && (
-              <span className="shrink-0 text-subtle">
-                · {formatShortDate(activeSubDue)}
-              </span>
-            )}
           </span>
         ) : withClientCallout ? (
           withClientCallout
@@ -3720,107 +3280,6 @@ function DarkConfirm({
   );
 }
 
-function PhaseRulesModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl rounded bg-background border border-border p-6"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-3xs font-medium text-subtle">
-              Mission Control
-            </p>
-            <h2 className="text-xl font-bold text-foreground mt-1">
-              Phase rules
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="size-8 rounded-full bg-surface border border-border text-subtle hover:text-white flex items-center justify-center"
-          >
-            <XMarkIcon className="size-4" />
-          </button>
-        </div>
-
-        <p className="text-sm text-muted mb-4">
-          Expected vs stuck thresholds are measured in UK working hours (Mon-Fri,
-          9-5 Europe/London, excl bank holidays). 1 day = {WORKING_HOURS_PER_DAY}{" "}
-          working hours.
-        </p>
-
-        <div className="rounded border border-border divide-y divide-border">
-          <div className="grid grid-cols-3 px-4 py-2.5 text-3xs font-medium text-subtle">
-            <span>Phase</span>
-            <span className="text-right">Expected (internal)</span>
-            <span className="text-right">Stuck (client-facing)</span>
-          </div>
-          {PREVIEW_PHASES.map((p) => {
-            const t = PREVIEW_THRESHOLDS[p.value];
-            return (
-              <div
-                key={p.value}
-                className="grid grid-cols-3 px-4 py-2.5 text-2xs"
-              >
-                <span className="inline-flex items-center gap-2 text-foreground">
-                  <span
-                    className="size-2 rounded-full"
-                    style={{ background: p.color }}
-                  />
-                  {p.label}
-                </span>
-                <span className="text-right tabular-nums text-muted">
-                  {t.expectedHours === 0 ? "-" : formatHours(t.expectedHours)}
-                </span>
-                <span className="text-right tabular-nums text-muted">
-                  {t.stuckHours === 0 ? "-" : formatHours(t.stuckHours)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-3 text-3xs">
-          <div className="rounded border border-border bg-surface p-3">
-            <p className="font-bold text-4xs text-subtle">
-              On track
-            </p>
-            <p className="mt-1 text-muted">
-              Below the internal deadline. Neutral border.
-            </p>
-          </div>
-          <div className="rounded border border-status-approaching/40 bg-status-approaching/5 p-3">
-            <p className="font-bold text-4xs text-status-approaching">
-              Approaching
-            </p>
-            <p className="mt-1 text-muted">
-              Past internal deadline, before the client knows. Window to unblock.
-            </p>
-          </div>
-          <div className="rounded border border-status-late/40 bg-status-late/5 p-3">
-            <p className="font-bold text-4xs text-status-late">
-              Stuck
-            </p>
-            <p className="mt-1 text-muted">
-              Past the client-facing deadline. Surface and escalate.
-            </p>
-          </div>
-        </div>
-
-        <p className="mt-4 text-3xs text-subtle">
-          Limbo / revision-round badges fire at R3 (heating) and R4+ (limbo) by
-          counting how many times a deliverable has bounced through
-          internal-revisions or external-revisions.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 /* Custom dark-themed date picker. Replaces the native input which always
  * leaked browser-default chrome. Trigger button shows the formatted date or
  * a placeholder; click opens a popover with a calendar grid. Mon-Sun week,
@@ -4069,11 +3528,16 @@ const HANDOFF_INPUT =
 function DesignHandoffSection({
   deliverable: d,
   canManage,
+  title,
+  owner,
   onSaveDraft,
   onSubmit,
 }: {
   deliverable: ContextDeliverable;
   canManage: boolean;
+  /** The subtask's title - this renders in its place, so it wears its name. */
+  title: string;
+  owner?: string;
   onSaveDraft: (h: DesignHandoff) => void;
   onSubmit: (h: DesignHandoff) => void;
 }) {
@@ -4129,15 +3593,28 @@ function DesignHandoffSection({
       { label: "Assets", url: h.assetsUrl },
     ];
     return (
-      <section className="border-t border-white/[0.05] pt-6">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h3 className="text-3xs font-medium text-subtle">Design handover</h3>
-          <span className="text-3xs text-status-ontrack">
-            Submitted {formatShortDate(h.submittedAt!)}
-            {h.submittedBy ? ` · ${h.submittedBy}` : ""}
-          </span>
+      <div className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <CheckCircleIcon className="size-4 shrink-0 text-status-ontrack" />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm text-subtle line-through">{title}</div>
+            <div className="mt-0.5 text-3xs text-subtle">
+              Submitted {formatShortDate(h.submittedAt!)}
+              {h.submittedBy ? ` · ${h.submittedBy}` : ""}
+            </div>
+          </div>
+          {canManage && (
+            <button
+              onClick={() =>
+                onSaveDraft({ ...h, submittedAt: undefined, submittedBy: undefined })
+              }
+              className="shrink-0 text-3xs text-subtle transition-colors hover:text-foreground"
+            >
+              Reopen
+            </button>
+          )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-1.5 pl-7">
           {links
             .filter((l) => l.url?.trim())
             .map((l) => (
@@ -4146,62 +3623,57 @@ function DesignHandoffSection({
                 href={l.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded border border-border bg-surface px-2.5 py-1.5 text-2xs text-muted transition-colors hover:text-foreground"
+                className="rounded border border-border bg-surface px-2 py-1 text-3xs text-muted transition-colors hover:text-foreground"
               >
                 {l.label} ↗
               </a>
             ))}
         </div>
         {h.notes?.trim() && (
-          <p className="mt-3 text-xs leading-relaxed text-muted">{h.notes}</p>
+          <p className="mt-2 pl-7 text-xs leading-relaxed text-muted">{h.notes}</p>
         )}
-        {canManage && (
-          <button
-            onClick={() =>
-              onSaveDraft({ ...h, submittedAt: undefined, submittedBy: undefined })
-            }
-            className="mt-3 text-2xs text-subtle transition-colors hover:text-foreground"
-          >
-            Reopen handover
-          </button>
-        )}
-      </section>
+      </div>
     );
   }
 
-  /* Collapsed by default: a single prompt row + button. The form only opens
-   * when you choose to work on the handover, so a card that isn't ready to
-   * hand off yet stays quiet. */
+  /* Collapsed by default: reads as one more row in the checklist - same
+   * padding, same type scale, same marker column - with the action on the
+   * right. It IS a checklist step (the gate), so it shouldn't look like a
+   * panel bolted into the middle of the list. The form only opens when you
+   * choose to work on it, so a card that isn't ready to hand off stays quiet. */
   if (!open) {
     return (
-      <section className="flex items-center justify-between gap-3 rounded border border-border-faint bg-surface px-4 py-3">
-        <div className="min-w-0">
-          <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
-            Design handover
-          </h3>
-          <p className="mt-0.5 text-2xs text-muted">
-            {started
-              ? `In progress. Missing: ${missing.join(", ") || "nothing"}.`
-              : "Package Figma, Loom + fonts for dev. Submitting moves the card to Development."}
-          </p>
+      <div className="flex items-center gap-3 px-4 py-3">
+        <span className="inline-block size-4 shrink-0 rounded-full border border-border" />
+        <div className="min-w-0 flex-1">
+          <div className="text-sm text-foreground">{title}</div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-3xs text-subtle">
+            {owner && <span className="text-muted">{owner}</span>}
+            <span>
+              {owner ? "· " : ""}
+              {started
+                ? `missing ${missing.join(", ")}`
+                : "Figma, Loom + fonts for dev"}
+            </span>
+          </div>
         </div>
         {canManage && (
           <button
             onClick={() => setOpen(true)}
-            className="shrink-0 rounded-md border border-border bg-surface px-2.5 py-1.5 text-2xs font-medium text-muted transition-colors hover:text-foreground"
+            className="shrink-0 text-3xs text-subtle transition-colors hover:text-foreground"
           >
             {started ? "Continue" : "Start handover"}
           </button>
         )}
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="rounded border border-border-faint bg-surface p-5">
+    <section className="bg-surface-raised/30 p-4">
       <div className="mb-1 flex items-center justify-between gap-3">
         <h3 className="text-3xs font-medium uppercase tracking-wider text-subtle">
-          Design handover
+          {title}
         </h3>
         <button
           onClick={() => setOpen(false)}
@@ -4310,6 +3782,7 @@ function SubtaskRow({
   owner,
   isNextActionable,
   canManage,
+  lockNote,
   onToggle,
   onRemove,
 }: {
@@ -4318,6 +3791,10 @@ function SubtaskRow({
   owner?: string;
   isNextActionable: boolean;
   canManage: boolean;
+  /* Why this row is locked, when the reason isn't "an earlier step" - i.e. the
+   * card hasn't reached its phase yet. All four steps show at once now, so a
+   * locked row has to say which it is. */
+  lockNote?: string;
   onToggle: () => void;
   onRemove: () => void;
 }) {
@@ -4359,13 +3836,15 @@ function SubtaskRow({
           ) : s.role ? (
             <span>{SUBTASK_ROLE_LABEL[s.role]}</span>
           ) : null}
-          {s.dueDate && <span>· {formatShortDate(s.dueDate)}</span>}
           {s.unlock === "client_approval" && (
             <span>· unlocks on client approval</span>
           )}
-          {status === "locked" && s.unlock === "sequential" && (
-            <span>· waiting on earlier steps</span>
-          )}
+          {status === "locked" &&
+            (lockNote ? (
+              <span>· {lockNote}</span>
+            ) : s.unlock === "sequential" ? (
+              <span>· waiting on earlier steps</span>
+            ) : null)}
         </div>
       </div>
       {canManage && (
@@ -4478,12 +3957,6 @@ function AddSubtaskForm({
 
 /* Small phase tag for a group header. Strategy + Design = Phase 1, Development
  * = Phase 2, Optimisation = Phase 3 (mirrors the board's phase bands). */
-const GROUP_PHASE_TAG: Record<SubtaskGroup, string> = {
-  strategy: "Phase 1",
-  design: "Phase 1",
-  development: "Phase 2",
-  optimisation: "Phase 3",
-};
 
 /* Surface resource chip: opens the link in a new tab, with an inline edit
  * pencil for managers. Renders a dashed "Add {label}" when empty. */
@@ -4711,14 +4184,10 @@ interface DetailModalProps {
   onUndoApprove: () => void;
   onCompleteTicket: () => void;
   onUncompleteTicket: () => void;
-  onResetClientApproval: () => void;
   onApproveQA: () => void;
   onKickbackFromQA: () => void;
   onDelete: () => void;
   onSetProjectStartDate: (iso: string | undefined) => void;
-  onSetClientApproval: (iso: string | undefined) => void;
-  onSetPhase1Deadline: (iso: string | undefined) => void;
-  onSetPhase2Deadline: (iso: string | undefined) => void;
 }
 
 function DetailModal({
@@ -4734,14 +4203,10 @@ function DetailModal({
   onUndoApprove,
   onCompleteTicket,
   onUncompleteTicket,
-  onResetClientApproval,
   onApproveQA,
   onKickbackFromQA,
   onDelete,
   onSetProjectStartDate,
-  onSetClientApproval,
-  onSetPhase1Deadline,
-  onSetPhase2Deadline,
 }: DetailModalProps) {
   const status = statusForHoursInPhase(d.phase, d.hoursInPhase);
   const style = STUCK_STYLES[status];
@@ -4771,32 +4236,32 @@ function DetailModal({
   // Phase history collapsible in the footer.
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // ── Phase-grouped checklist ──
-  // The group matching the card's current phase is the active one.
+  // ── Checklist ──
+  // A flat list of the four steps the board can't answer for itself. The group
+  // no longer shows (the columns say which phase we're in); it survives on the
+  // subtask because subtaskStatuses() locks on it, which is what makes the
+  // later steps read as a roadmap rather than as work going begging. A task
+  // added by hand joins the group the card is in now.
   const currentGroup = subtaskGroupForPhase(d.phase);
-  // The modal shows ONE phase at a time - the active one by default - with a
-  // switcher to click into another. Keeps the card short (no long scroll) and
-  // focused on what's happening now. Re-seeds to the active phase on card switch.
-  const [viewedGroup, setViewedGroup] = useState<SubtaskGroup>(currentGroup);
-  useEffect(() => {
-    setViewedGroup(subtaskGroupForPhase(d.phase));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d.id]);
 
-  // Materialise a group's template the moment it is viewed, if the card has
-  // none for it yet. Keyed on viewedGroup so switching to a phase the card
-  // hasn't reached (e.g. Optimisation while still in Design) still surfaces
-  // that phase's preloaded checklist. Seeds each group at most once.
-  useEffect(() => {
-    if (!(d.subtasks ?? []).some((s) => s.group === viewedGroup)) {
-      onUpdate({ subtasks: seedSubtasksForGroup(d.subtasks, viewedGroup) });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d.id, viewedGroup]);
+  // The checklist in line with the template: seeded if the card had none, with
+  // the retired steps pruned off one seeded before the cut. Derived rather than
+  // read straight off the card so EVERY viewer sees the right list, whether or
+  // not they can write.
+  const subs = useMemo(() => checklistFor(d), [d]);
 
-  // Derived subtask state for the grouped checklist.
-  const subs = d.subtasks ?? [];
-  const subStatuses = subtaskStatuses(d);
+  // Persist that normalisation, but only for someone who can manage the card -
+  // opening it read-only shouldn't write. checklistFor returns the same array
+  // when there's nothing to do, so this settles after one pass rather than
+  // writing on every mount.
+  useEffect(() => {
+    if (canManage && subs !== d.subtasks) onUpdate({ subtasks: subs });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.id, subs, canManage]);
+
+  // Statuses come off the NORMALISED list: subStatuses is indexed alongside
+  // subs, so feeding it the raw card would misalign the two.
+  const subStatuses = subtaskStatuses({ ...d, subtasks: subs });
   // Index of the single "next actionable" subtask (first available, in array
   // order) - gets the periwinkle ring so the eye lands on what to do next.
   const nextActionableIdx = subStatuses.findIndex((s) => s === "available");
@@ -4964,8 +4429,37 @@ function DetailModal({
   ];
   const pipelineIdx = PIPELINE.indexOf(d.phase);
 
-  const hasBuildSchedule =
-    d.projectType === "build" && !!d.projectStartDate && !!d.turnaroundDays;
+  /* Does this card run the build columns, and so carry a schedule?
+   *
+   * Tested as "not a retainer" rather than "is a build" on purpose: project.type
+   * is OPTIONAL in the data, and the convention across the app (see roster.ts)
+   * is that anything not explicitly "retainer" is a build. Checking === "build"
+   * silently hid the schedule on every project whose type was never set.
+   *
+   * Also deliberately NOT gated on a start date existing - this is the only
+   * place a date can be SET, so requiring one was a catch-22 that stranded a
+   * card on "TBC" with no way in. Excludes the card types that never run the
+   * flow, matching templateForCard: triage tickets, retainer documents, and
+   * audit diagnostics (Setup → Strategy → Done). */
+  const canEditSchedule =
+    d.projectType !== "retainer" &&
+    d.cardType !== "audit" &&
+    !["tickets", "documents"].includes(d.phase);
+
+  /* The typed schedule + the arithmetic on top of it (planned span, the figure
+   * to quote the client, the contracted comparison). */
+  const schedule = cardSchedule(d);
+  const isDone = d.phase === "done";
+
+  /* Set or clear one column's date. Clearing drops the key entirely rather than
+   * storing a blank, so cardSchedule sees a genuinely undated column (neutral)
+   * instead of an empty string that sorts before every real date. */
+  function onSetPhaseDeadline(phase: PreviewPhase, iso: string | undefined) {
+    const next = { ...(d.phaseDeadlines ?? {}) };
+    if (iso) next[phase] = iso;
+    else delete next[phase];
+    onUpdate({ phaseDeadlines: Object.keys(next).length ? next : undefined });
+  }
 
   // Optimisation group body: the full multi-test workflow, relocated from
   // the old Optimisation tab. Rendered inside the grouped checklist.
@@ -5439,32 +4933,142 @@ function DetailModal({
 
         {/* ── Surface: always-visible core info ── */}
         <div className="px-6 pb-6 space-y-5 border-b border-border-faint">
-          {/* The three dates that matter, at a glance. Editable lower, in the
-              Development group schedule anchors. */}
-          <div className="grid grid-cols-3 gap-6">
+          {/* Project-level, and the only date here that is TYPED: it is shared by
+              every card on this project, unlike the per-card schedule below.
+              Client approved / Phase 1 / Phase 2 used to be typed here too -
+              they are all derived from the schedule now, so asking for them
+              twice was just a second answer waiting to disagree. */}
+          {canEditSchedule && (
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs text-subtle">
+                Start date
+                <span className="ml-1.5 text-3xs text-subtle/60">
+                  whole project
+                </span>
+              </span>
+              {canManage ? (
+                <div className="w-[150px] shrink-0">
+                  <DarkDatePicker
+                    value={d.projectStartDate}
+                    onChange={(v) => onSetProjectStartDate(v)}
+                    placeholder="Set start date"
+                  />
+                </div>
+              ) : (
+                <span className="shrink-0 text-sm text-foreground">
+                  {d.projectStartDate ? formatShortDate(d.projectStartDate) : "TBC"}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* ── The build schedule ──
+           * The PM types a date per column; nothing is computed from a budget.
+           * A card in Design compares itself to the Design date and goes red
+           * once it passes. Undated columns stay neutral, so a half-planned
+           * card doesn't read late. */}
+          {canEditSchedule && (
             <div>
-              <div className="text-xs text-subtle">Start date</div>
-              <div className="mt-1 text-sm text-foreground">
-                {d.projectStartDate ? formatShortDate(d.projectStartDate) : "TBC"}
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="font-mono text-4xs font-medium uppercase tracking-widest text-subtle">
+                  Schedule
+                </span>
+                {schedule.plannedDays != null && (
+                  <span className="text-2xs text-muted">
+                    {schedule.plannedDays} days
+                    {schedule.clientDays != null && (
+                      <>
+                        {" · tell the client "}
+                        <span className="text-foreground">
+                          {schedule.clientDays}
+                        </span>
+                      </>
+                    )}
+                    {schedule.contractedDays != null && (
+                      <span
+                        className={
+                          schedule.plannedDays > schedule.contractedDays
+                            ? "text-status-late"
+                            : "text-subtle"
+                        }
+                        title={
+                          schedule.plannedDays > schedule.contractedDays
+                            ? "Planned longer than this build was sold for"
+                            : "What the build was sold as"
+                        }
+                      >
+                        {" · contracted "}
+                        {schedule.contractedDays}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+              <div>
+                {schedule.rows.map((row) => {
+                  const isNow = row.phase === d.phase;
+                  const late =
+                    !!row.date &&
+                    !isDone &&
+                    MOCK_TODAY.localeCompare(row.date) > 0;
+                  /* Phase 1 ends when the client has it; Phase 2 ends at
+                   * launch. These used to be typed by hand above - they're
+                   * just the last date of each bucket, so they're read off
+                   * the schedule instead. */
+                  const bucketEnd =
+                    row.phase === "external-revisions"
+                      ? "Phase 1 ends"
+                      : row.phase === "launch"
+                        ? "Phase 2 ends"
+                        : null;
+                  return (
+                    <div
+                      key={row.phase}
+                      className="flex items-center justify-between gap-3 border-t border-border-faint/60 py-1.5 first:border-t-0"
+                    >
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <span
+                          className={`size-1.5 shrink-0 rounded-full ${
+                            isNow ? "bg-ring" : "bg-transparent"
+                          }`}
+                          title={isNow ? "The column this card is in now" : undefined}
+                        />
+                        <span
+                          className={`truncate text-xs ${
+                            isNow ? "text-foreground" : "text-subtle"
+                          }`}
+                        >
+                          {phaseLabel(row.phase)}
+                        </span>
+                        {bucketEnd && (
+                          <span className="shrink-0 text-4xs text-subtle/60">
+                            {bucketEnd}
+                          </span>
+                        )}
+                      </span>
+                      {canManage ? (
+                        <div className="w-[150px] shrink-0">
+                          <DarkDatePicker
+                            value={row.date}
+                            onChange={(v) => onSetPhaseDeadline(row.phase, v)}
+                            placeholder="No date"
+                          />
+                        </div>
+                      ) : (
+                        <span
+                          className={`shrink-0 text-xs ${
+                            late ? "text-status-late" : "text-foreground"
+                          }`}
+                        >
+                          {row.date ? formatShortDate(row.date) : "No date"}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            <div>
-              <div className="text-xs text-subtle">Phase 1 deadline</div>
-              <div className="mt-1 text-sm text-foreground">
-                {d.projectPhase1Deadline
-                  ? formatShortDate(d.projectPhase1Deadline)
-                  : "TBC"}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-subtle">Phase 2 deadline</div>
-              <div className="mt-1 text-sm text-foreground">
-                {d.projectPhase2Deadline
-                  ? formatShortDate(d.projectPhase2Deadline)
-                  : "TBC"}
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Resource links: Figma + Strategy brief. The surface is the single
               home for both - view (open) and edit right here, so the lane tabs
@@ -5608,308 +5212,166 @@ function DetailModal({
           )}
         </div>
 
-        {/* ── Phase-grouped checklist ── */}
-        <div className="px-6 py-5 space-y-4">
-          {(() => {
-            const currentIdx = SUBTASK_GROUP_ORDER.indexOf(currentGroup);
-
-            // Render a single group's body (no header - the switcher handles
-            // phase selection; only the viewed group is shown).
-            const renderGroup = (group: SubtaskGroup) => {
-              const idx = SUBTASK_GROUP_ORDER.indexOf(group);
-              const rel: "past" | "current" | "future" =
-                idx < currentIdx ? "past" : idx === currentIdx ? "current" : "future";
-              // Every group (incl. optimisation) is a plain checklist now.
-              const groupSubs = subs.filter((s) => s.group === group);
-
-              return (
-                <section
-                  key={group}
-                  className={`rounded border bg-surface ${
-                    rel === "current"
-                      ? "border-ring ring-1 ring-ring/40 bg-ring/5"
-                      : "border-border-faint"
-                  }`}
-                >
-                    <div>
-                        <>
-                          <div className="divide-y divide-border-faint">
-                            {groupSubs.map((s) => {
-                              const globalIdx = subs.indexOf(s);
-                              const status = subStatuses[globalIdx];
-                              // Handover rows expand into the reused form.
-                              if (s.kind === "design_handoff") {
-                                return (
-                                  <div key={s.id} className="p-4">
-                                    <DesignHandoffSection
-                                      deliverable={d}
-                                      canManage={canManage}
-                                      onSaveDraft={(h) =>
-                                        onUpdate({ designHandoff: h })
-                                      }
-                                      onSubmit={onSubmitHandoff}
-                                    />
-                                  </div>
-                                );
-                              }
-                              if (s.kind === "dev_handoff") {
-                                return (
-                                  <div key={s.id} className="p-4">
-                                    <DevHandoffSection
-                                      deliverable={d}
-                                      canManage={canManage}
-                                      onSubmit={onSubmitDevHandoff}
-                                      onReopen={() =>
-                                        onUpdate({
-                                          devHandoff: {
-                                            ...(d.devHandoff ?? {}),
-                                            submittedAt: undefined,
-                                            submittedBy: undefined,
-                                          },
-                                        })
-                                      }
-                                    />
-                                  </div>
-                                );
-                              }
-                              return (
-                                <SubtaskRow
-                                  key={s.id}
-                                  subtask={s}
-                                  status={status}
-                                  owner={ownerFor(s)}
-                                  isNextActionable={globalIdx === nextActionableIdx}
-                                  canManage={canManage}
-                                  onToggle={() => toggleSubtask(s.id)}
-                                  onRemove={() => removeSubtask(s.id)}
-                                />
-                              );
-                            })}
-                          </div>
-
-                          {/* Internal-revisions sign-off lives in Design */}
-                          {group === "design" &&
-                            canManage &&
-                            d.phase === "internal-revisions" &&
-                            !d.testResult && (
-                              <div className="border-t border-border-faint p-4">
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <p
-                                      className={`text-3xs font-medium uppercase tracking-wider ${
-                                        d.approvedAt
-                                          ? "text-status-ontrack"
-                                          : "text-subtle"
-                                      }`}
-                                    >
-                                      {d.approvedAt
-                                        ? "Approved - send to client"
-                                        : "Internal sign-off"}
-                                    </p>
-                                    <p className="text-sm text-foreground mt-1">
-                                      {d.approvedAt
-                                        ? `Signed off ${formatShortDate(d.approvedAt)}. Drag the card to External Revisions once you have sent it.`
-                                        : "Approve and hand to the primary designer to send, or bounce back to Design."}
-                                    </p>
-                                  </div>
-                                  {d.approvedAt ? (
-                                    <button
-                                      onClick={onUndoApprove}
-                                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-foreground transition-colors"
-                                    >
-                                      <ArrowUturnLeftIcon className="size-3" />
-                                      Undo
-                                    </button>
-                                  ) : (
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <button
-                                        onClick={onRequestRevisions}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
-                                      >
-                                        <ArrowUturnLeftIcon className="size-3" />
-                                        Request revisions
-                                      </button>
-                                      <button
-                                        onClick={onApproveInternal}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
-                                      >
-                                        <CheckCircleIcon className="size-3.5" />
-                                        Approve
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                          {/* QA sign-off lives in Development */}
-                          {group === "development" &&
-                            canManage &&
-                            d.phase === "qa" &&
-                            !d.testResult && (
-                              <div className="border-t border-border-faint p-4">
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <p className="text-3xs font-medium uppercase tracking-wider text-subtle">
-                                      QA sign-off
-                                    </p>
-                                    <p className="text-sm text-foreground mt-1">
-                                      Approve to push to Launch & Testing, or send
-                                      back to Dev if anything broke.
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <button
-                                      onClick={onKickbackFromQA}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
-                                    >
-                                      <ArrowUturnLeftIcon className="size-3" />
-                                      Send back
-                                    </button>
-                                    <button
-                                      onClick={onApproveQA}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
-                                    >
-                                      <CheckCircleIcon className="size-3.5" />
-                                      Approve → Launch
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                          {/* Admin build-schedule anchors live in Development */}
-                          {group === "development" &&
-                            canManage &&
-                            hasBuildSchedule && (
-                              <div className="border-t border-border-faint p-4">
-                                <h3 className="mb-3 text-3xs font-medium uppercase tracking-wider text-subtle">
-                                  Schedule
-                                </h3>
-                                <div className="space-y-3 text-xs">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-subtle shrink-0">
-                                      Project start
-                                    </span>
-                                    <div className="min-w-0 flex-1 max-w-[200px]">
-                                      <DarkDatePicker
-                                        value={d.projectStartDate}
-                                        onChange={(v) => onSetProjectStartDate(v)}
-                                        placeholder="Set start date"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-subtle shrink-0">
-                                      Client approved
-                                    </span>
-                                    <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-                                      <div className="max-w-[200px] flex-1">
-                                        <DarkDatePicker
-                                          value={d.projectClientApprovedAt}
-                                          onChange={(v) => onSetClientApproval(v)}
-                                          placeholder="Mark approved"
-                                        />
-                                      </div>
-                                      {d.projectClientApprovedAt && (
-                                        <button
-                                          onClick={onResetClientApproval}
-                                          className="text-3xs text-subtle hover:text-status-late transition-colors shrink-0"
-                                          title="Reset client approval - Phase 2 dates go back to TBC"
-                                        >
-                                          Reset
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-subtle shrink-0">
-                                      Phase 1 deadline
-                                    </span>
-                                    <div className="min-w-0 flex-1 max-w-[200px]">
-                                      <DarkDatePicker
-                                        value={d.projectPhase1Deadline}
-                                        onChange={(v) => onSetPhase1Deadline(v)}
-                                        placeholder="Set Phase 1 due"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-subtle shrink-0">
-                                      Phase 2 deadline
-                                    </span>
-                                    <div className="min-w-0 flex-1 max-w-[200px]">
-                                      <DarkDatePicker
-                                        value={d.projectPhase2Deadline}
-                                        onChange={(v) => onSetPhase2Deadline(v)}
-                                        placeholder="Set Phase 2 due"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                          {/* Add a one-off task to this group */}
-                          {canManage && (
-                            <div className="border-t border-border-faint">
-                              <AddSubtaskForm
-                                group={group}
-                                existing={subs}
-                                onCommit={commitSubtasks}
-                              />
-                            </div>
-                          )}
-                        </>
-                    </div>
-                </section>
-              );
-            };
-
-            // Phase switcher: click a phase to view it. Active phase selected
-            // by default; done phases show a check, upcoming a lock.
-            const switcher = (
-              <div className="flex flex-wrap items-center gap-1.5">
-                {SUBTASK_GROUP_ORDER.map((group) => {
-                  const idx = SUBTASK_GROUP_ORDER.indexOf(group);
-                  const rel =
-                    idx < currentIdx
-                      ? "past"
-                      : idx === currentIdx
-                        ? "current"
-                        : "future";
-                  const active = group === viewedGroup;
+        {/* ── Checklist ──
+         * Four steps, flat. The board answers "what phase is this in", so the
+         * checklist only carries what the board can't see: the artifacts and
+         * the handover gate. The sign-offs below key off the PHASE alone - the
+         * phases are mutually exclusive, so at most one can ever show. */}
+        <div className="px-6 py-5">
+          <section className="rounded border border-border-faint bg-surface">
+            <div className="divide-y divide-border-faint">
+              {subs.map((s, i) => {
+                // The handover row expands into the reused form.
+                if (s.kind === "design_handoff") {
                   return (
-                    <button
-                      key={group}
-                      type="button"
-                      onClick={() => setViewedGroup(group)}
-                      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-2xs font-medium transition-colors ${
-                        active
-                          ? "bg-surface-raised text-foreground ring-1 ring-ring/40"
-                          : "text-muted hover:text-foreground"
+                    <DesignHandoffSection
+                      key={s.id}
+                      deliverable={d}
+                      canManage={canManage}
+                      title={s.title}
+                      owner={ownerFor(s)}
+                      onSaveDraft={(h) => onUpdate({ designHandoff: h })}
+                      onSubmit={onSubmitHandoff}
+                    />
+                  );
+                }
+                if (s.kind === "dev_handoff") {
+                  return (
+                    <div key={s.id} className="p-4">
+                      <DevHandoffSection
+                        deliverable={d}
+                        canManage={canManage}
+                        onSubmit={onSubmitDevHandoff}
+                        onReopen={() =>
+                          onUpdate({
+                            devHandoff: {
+                              ...(d.devHandoff ?? {}),
+                              submittedAt: undefined,
+                              submittedBy: undefined,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  );
+                }
+                // Locked because the card hasn't got to this step's phase yet,
+                // rather than because something earlier is outstanding.
+                const phaseAhead =
+                  SUBTASK_GROUP_ORDER.indexOf(s.group) >
+                  SUBTASK_GROUP_ORDER.indexOf(currentGroup);
+                return (
+                  <SubtaskRow
+                    key={s.id}
+                    subtask={s}
+                    status={subStatuses[i]}
+                    owner={ownerFor(s)}
+                    isNextActionable={i === nextActionableIdx}
+                    canManage={canManage}
+                    lockNote={
+                      phaseAhead
+                        ? `unlocks in ${SUBTASK_GROUP_LABEL[s.group]}`
+                        : undefined
+                    }
+                    onToggle={() => toggleSubtask(s.id)}
+                    onRemove={() => removeSubtask(s.id)}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Internal-revisions sign-off */}
+            {canManage && d.phase === "internal-revisions" && !d.testResult && (
+              <div className="border-t border-border-faint p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p
+                      className={`text-3xs font-medium uppercase tracking-wider ${
+                        d.approvedAt ? "text-status-ontrack" : "text-subtle"
                       }`}
                     >
-                      {rel === "past" ? (
-                        <CheckCircleIcon className="size-3.5 text-status-ontrack" />
-                      ) : rel === "future" ? (
-                        <LockClosedIcon className="size-3 text-subtle" />
-                      ) : (
-                        <span className="size-1.5 rounded-full bg-ring" />
-                      )}
-                      {SUBTASK_GROUP_LABEL[group]}
+                      {d.approvedAt ? "Approved - send to client" : "Internal sign-off"}
+                    </p>
+                    <p className="text-sm text-foreground mt-1">
+                      {d.approvedAt
+                        ? `Signed off ${formatShortDate(d.approvedAt)}. Drag the card to External Revisions once you have sent it.`
+                        : "Approve and hand to the primary designer to send, or bounce back to Design."}
+                    </p>
+                  </div>
+                  {d.approvedAt ? (
+                    <button
+                      onClick={onUndoApprove}
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-surface text-muted border border-border hover:text-foreground transition-colors"
+                    >
+                      <ArrowUturnLeftIcon className="size-3" />
+                      Undo
                     </button>
-                  );
-                })}
+                  ) : (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={onRequestRevisions}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
+                      >
+                        <ArrowUturnLeftIcon className="size-3" />
+                        Request revisions
+                      </button>
+                      <button
+                        onClick={onApproveInternal}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                      >
+                        <CheckCircleIcon className="size-3.5" />
+                        Approve
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            );
-            return (
-              <>
-                {switcher}
-                {renderGroup(viewedGroup)}
-              </>
-            );
-          })()}
+            )}
+
+            {/* QA sign-off */}
+            {canManage && d.phase === "qa" && !d.testResult && (
+              <div className="border-t border-border-faint p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-3xs font-medium uppercase tracking-wider text-subtle">
+                      QA sign-off
+                    </p>
+                    <p className="text-sm text-foreground mt-1">
+                      Approve to push to Launch & Testing, or send back to Dev if
+                      anything broke.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={onKickbackFromQA}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-late/10 text-status-late border border-status-late/20 hover:bg-status-late/20 transition-colors"
+                    >
+                      <ArrowUturnLeftIcon className="size-3" />
+                      Send back
+                    </button>
+                    <button
+                      onClick={onApproveQA}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-3xs font-medium bg-status-ontrack text-white hover:opacity-90 transition-opacity"
+                    >
+                      <CheckCircleIcon className="size-3.5" />
+                      Approve → Launch
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Add a one-off task; it joins the phase the card is in now. */}
+            {canManage && (
+              <div className="border-t border-border-faint">
+                <AddSubtaskForm
+                  group={currentGroup}
+                  existing={subs}
+                  onCommit={commitSubtasks}
+                />
+              </div>
+            )}
+          </section>
         </div>
 
 
@@ -6959,124 +6421,6 @@ function ActivityRow({ a }: { a: KanbanActivity }) {
         {context && <span aria-hidden>•</span>}
         <span className="shrink-0">{relativeTime(a.createdAt)}</span>
       </div>
-    </div>
-  );
-}
-
-function OverflowMenu({
-  density,
-  onSetDensity,
-  layout,
-  onSetLayout,
-  onOpenRules,
-  mineOnly,
-  onToggleMine,
-  showMine,
-}: {
-  density: "cosy" | "glance";
-  onSetDensity: (d: "cosy" | "glance") => void;
-  layout: "full" | "condensed";
-  onSetLayout: (l: "full" | "condensed") => void;
-  onOpenRules: () => void;
-  /** "Mine only" filter, so it lives in the Display menu. */
-  mineOnly: boolean;
-  onToggleMine: () => void;
-  /** Hide the Mine row when there's no signed-in name to filter by. */
-  showMine: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  /* Click-outside closes. */
-  useEffect(() => {
-    if (!open) return;
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
-  /* Active when any non-default view/filter is set, so the pill signals
-     "something is on" at a glance (Linear-style). */
-  const isActive = mineOnly;
-
-  return (
-    <div ref={ref} className="relative">
-      <Pill
-        tone="action"
-        active={open || isActive}
-        className="pl-2 pr-2.5"
-        title="Display options"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <AdjustmentsHorizontalIcon className="size-3.5" />
-        Display
-      </Pill>
-      {open && (
-        <div className="absolute right-0 top-9 z-40 w-56 bg-background rounded ring-1 ring-panel-line overflow-hidden">
-          {showMine && (
-            <button
-              onClick={onToggleMine}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors border-b border-border-faint"
-            >
-              <span>Mine only</span>
-              <span
-                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-                  mineOnly ? "bg-foreground" : "bg-white/[0.12]"
-                }`}
-              >
-                <span
-                  className={`inline-block size-3 rounded-full bg-background transition-transform ${
-                    mineOnly ? "translate-x-3.5" : "translate-x-0.5"
-                  }`}
-                />
-              </span>
-            </button>
-          )}
-          <div className="p-2 border-b border-border-faint">
-            <div className="text-4xs text-subtle font-semibold px-2 mb-2">
-              Board layout
-            </div>
-            <Segmented
-              variant="ghost"
-              className="w-full [&>button]:flex-1"
-              value={layout}
-              onChange={onSetLayout}
-              options={[
-                { label: "Full", value: "full" },
-                { label: "Condensed", value: "condensed" },
-              ]}
-            />
-          </div>
-          <div className="p-2 border-b border-border-faint">
-            <div className="text-4xs text-subtle font-semibold px-2 mb-2">
-              Card density
-            </div>
-            <Segmented
-              variant="ghost"
-              className="w-full [&>button]:flex-1"
-              value={density}
-              onChange={onSetDensity}
-              options={[
-                { label: "Cosy", value: "cosy" },
-                { label: "Glance", value: "glance" },
-              ]}
-            />
-          </div>
-          <button
-            onClick={() => {
-              setOpen(false);
-              onOpenRules();
-            }}
-            className="w-full text-left px-4 py-2.5 text-2xs text-foreground hover:bg-surface-hover transition-colors"
-          >
-            Phase rules
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -6,15 +6,15 @@
  * DESIGN.md: Table primitive, muted-status Badge, heroicons, dense + ordered.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Table, THead, TBody, TR, TH, TD, Num, StatCard } from "@/components/ui";
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
-import { rosterFromKanban } from "@/lib/clients/roster";
+import { rosterFromKanban, type RosterRow } from "@/lib/clients/roster";
 import { stateWord, daysUntil, complianceState, itemDueISO, itemOverdue, type Engagement, type Client } from "@/lib/command-centre/model";
 
-type Row = { engagement: Engagement; client: Client };
+type Row = RosterRow;
 type Filter = "all" | "retainer" | "project";
 
 const WD = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -36,6 +36,76 @@ function weekLabel(days: Date[]) {
 }
 
 type Chip = { engId: string; client: string; label: string; overdue: boolean };
+
+/* One engagement row. `indented` = it's a child under a collapsed client group,
+ * so lead with the engagement name; otherwise (a client with a single
+ * engagement) lead with the client name — the row stands in for both. */
+function engagementRow(
+  row: Row,
+  clientName: string,
+  router: ReturnType<typeof useRouter>,
+  indented: boolean,
+) {
+  const e = row.engagement;
+  const st = stateWord(e);
+  const comp = complianceState(e);
+  const days = daysUntil(e.type === "project" ? e.targetEndDate : e.renewalDate);
+  return (
+    <TR
+      key={e.id}
+      className="cursor-pointer"
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(`/clients/${e.id}`)}
+      onKeyDown={(ev) => ev.key === "Enter" && router.push(`/clients/${e.id}`)}
+    >
+      <TD className="text-foreground">
+        {indented ? (
+          <span className="flex items-center gap-2 pl-6">
+            <span className="text-muted">{e.name ?? (e.type === "retainer" ? "Retainer" : "Project")}</span>
+          </span>
+        ) : (
+          // Reserve the chevron's slot so single-client names line up with the
+          // collapsible (multi-engagement) client rows.
+          <span className="inline-flex items-center gap-2">
+            <span className="size-3.5 shrink-0" aria-hidden />
+            <span className="font-medium">{clientName}</span>
+          </span>
+        )}
+      </TD>
+      <TD className="text-muted capitalize">{e.type}{e.tier ? ` · £${e.tier}` : ""}</TD>
+      <TD className="text-muted">{e.goal === "renew" ? "Renewal" : "Convert"}</TD>
+      <TD align="right"><Num className="text-muted">£{e.value.toLocaleString()}{e.type === "retainer" ? "/mo" : ""}</Num></TD>
+      <TD className="text-muted">{e.csm ?? "—"}</TD>
+      <TD>
+        {e.status !== "active" ? (
+          <span className="inline-flex items-center gap-1.5 text-xs text-subtle">
+            <span className="size-1.5 rounded-full bg-subtle" />
+            {e.status === "churned" ? "Churned" : "Complete"}
+          </span>
+        ) : row.needsSetup ? (
+          /* Never let an un-set-up engagement read as healthy: with no pod or no
+             deliverables it's in no KPI and no one's task list. */
+          <span
+            className="inline-flex items-center gap-1.5 text-xs text-status-approaching"
+            title={`Not set up on the delivery board (${row.setupGap}). It won't appear in KPIs or anyone's tasks until it is.`}
+          >
+            <span className="size-1.5 rounded-full bg-status-approaching" />
+            Needs setup
+            <span className="text-subtle">· {row.setupGap}</span>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+            <span className={`size-1.5 rounded-full ${st.tone === "ok" ? "bg-status-ontrack" : st.tone === "warn" ? "bg-status-approaching" : "bg-status-late"}`} />
+            {st.word}
+            {st.tone === "bad" && comp.done < comp.total ? <span className="text-subtle">· {comp.total - comp.done} missing</span> : null}
+          </span>
+        )}
+      </TD>
+      <TD align="right"><Num className={days !== null && days <= 14 ? "text-status-approaching" : "text-muted"}>{days === null ? "—" : `${days}d`}</Num></TD>
+    </TR>
+  );
+}
 
 function PrepCalendar({ rows }: { rows: Row[] }) {
   const router = useRouter();
@@ -105,12 +175,46 @@ export default function ClientsPage() {
   useEffect(() => {
     let cancelled = false;
     rosterFromKanban(kanbanClients).then((r) => {
-      if (!cancelled) setRows(r.filter((x) => x.engagement.status === "active"));
+      // One row per engagement — active first, then completed/churned, so an
+      // upsell from a single build to a retainer shows both with their status.
+      if (cancelled) return;
+      const rank = (s: Engagement["status"]) => (s === "active" ? 0 : 1);
+      setRows(r.slice().sort((a, b) => rank(a.engagement.status) - rank(b.engagement.status)));
     });
     return () => { cancelled = true; };
   }, [kanbanClients]);
 
   const shown = useMemo(() => rows.filter((r) => filter === "all" || r.engagement.type === filter), [rows, filter]);
+
+  // Group engagements under their client — a client can hold several (a build
+  // upsold onto a retainer, month-2/3 blocks, past projects). One collapsible
+  // parent per client, with the engagement count + a rollup on the header.
+  const groups = useMemo(() => {
+    const byClient = new Map<string, { client: Client; rows: Row[] }>();
+    /* Seed EVERY kanban client first, so a client with no projects yet (easy to
+     * create from the board's Add-client) still shows instead of silently
+     * vanishing from the roster. Only on the unfiltered view — under a
+     * type filter an engagement-less client is just noise. */
+    if (filter === "all") {
+      for (const kc of kanbanClients) {
+        byClient.set(kc.id, { client: { id: kc.id, name: kc.name, createdAt: "" }, rows: [] });
+      }
+    }
+    for (const row of shown) {
+      const g = byClient.get(row.client.id) ?? { client: row.client, rows: [] };
+      g.rows.push(row);
+      byClient.set(row.client.id, g);
+    }
+    return [...byClient.values()];
+  }, [shown, kanbanClients, filter]);
+
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
 
   const stats = useMemo(() => {
     const retainers = rows.filter((r) => r.engagement.type === "retainer");
@@ -135,7 +239,9 @@ export default function ClientsPage() {
       projectDelta: projects.length - prevProjects,
       projectVal: projects.reduce((s, r) => s + r.engagement.value, 0),
       renewalsSoon: retainers.filter((r) => { const d = daysUntil(r.engagement.renewalDate); return d !== null && d <= 30; }).length,
-      attention: rows.filter((r) => stateWord(r.engagement).tone !== "ok").length,
+      /* Un-set-up engagements count as attention: they're live but invisible in
+         KPIs + everyone's tasks until a pod + deliverables exist. */
+      attention: rows.filter((r) => r.needsSetup || stateWord(r.engagement).tone !== "ok").length,
     };
   }, [rows]);
 
@@ -199,7 +305,9 @@ export default function ClientsPage() {
       {/* toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-xs text-subtle tabular-nums">{shown.length} engagements</span>
+          <span className="text-xs text-subtle tabular-nums">
+            {groups.length} client{groups.length === 1 ? "" : "s"} · {shown.length} engagement{shown.length === 1 ? "" : "s"}
+          </span>
           <div className="flex gap-1">
             {(["all", "retainer", "project"] as Filter[]).map((f) => (
               <button
@@ -229,26 +337,90 @@ export default function ClientsPage() {
             </TR>
           </THead>
           <TBody>
-            {shown.map(({ engagement: e, client }) => {
-              const st = stateWord(e);
-              const comp = complianceState(e);
-              const days = daysUntil(e.type === "project" ? e.targetEndDate : e.renewalDate);
+            {groups.map((g) => {
+              /* A client with no projects at all. It used to be dropped from the
+                 roster entirely — a real client silently disappearing. Show it,
+                 flagged, so someone can give it an engagement. */
+              if (g.rows.length === 0) {
+                return (
+                  <TR key={g.client.id} hover={false}>
+                    <TD className="text-foreground">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="size-3.5 shrink-0" aria-hidden />
+                        <span className="font-medium">{g.client.name}</span>
+                      </span>
+                    </TD>
+                    <TD className="text-subtle">—</TD>
+                    <TD className="text-subtle">—</TD>
+                    <TD align="right"><Num className="text-subtle">—</Num></TD>
+                    <TD className="text-subtle">—</TD>
+                    <TD>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-status-approaching">
+                        <span className="size-1.5 rounded-full bg-status-approaching" />
+                        No engagement yet
+                      </span>
+                    </TD>
+                    <TD align="right"><Num className="text-subtle">—</Num></TD>
+                  </TR>
+                );
+              }
+              const single = g.rows.length === 1;
+              const isOpen = expanded.has(g.client.id);
+              // Rollup for the client header row (multi-engagement clients).
+              const mrr = g.rows
+                .filter((r) => r.engagement.type === "retainer" && r.engagement.status === "active")
+                .reduce((s, r) => s + r.engagement.value, 0);
+              const soonest = g.rows
+                .map((r) =>
+                  daysUntil(r.engagement.type === "project" ? r.engagement.targetEndDate : r.engagement.renewalDate),
+                )
+                .filter((d): d is number => d !== null)
+                .sort((a, b) => a - b)[0];
+              const needsSetup = g.rows.some((r) => r.needsSetup);
+              const worst = g.rows
+                .filter((r) => r.engagement.status === "active")
+                .reduce<"ok" | "warn" | "bad">((acc, r) => {
+                  const t = stateWord(r.engagement).tone;
+                  const rank = { ok: 0, warn: 1, bad: 2 } as const;
+                  return rank[t] > rank[acc] ? t : acc;
+                }, "ok");
+
+              // Single engagement → the client row IS the engagement row.
+              if (single) return engagementRow(g.rows[0], g.client.name, router, false);
+
               return (
-                <TR key={e.id} className="cursor-pointer" role="link" tabIndex={0} onClick={() => router.push(`/clients/${e.id}`)} onKeyDown={(ev) => ev.key === "Enter" && router.push(`/clients/${e.id}`)}>
-                  <TD className="text-foreground">{client.name}</TD>
-                  <TD className="text-muted capitalize">{e.type}{e.tier ? ` · £${e.tier}` : ""}</TD>
-                  <TD className="text-muted">{e.goal === "renew" ? "Renewal" : "Convert"}</TD>
-                  <TD align="right"><Num className="text-muted">£{e.value.toLocaleString()}{e.type === "retainer" ? "/mo" : ""}</Num></TD>
-                  <TD className="text-muted">{e.csm ?? "—"}</TD>
-                  <TD>
-                    <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-                      <span className={`size-1.5 rounded-full ${st.tone === "ok" ? "bg-status-ontrack" : st.tone === "warn" ? "bg-status-approaching" : "bg-status-late"}`} />
-                      {st.word}
-                      {st.tone === "bad" && comp.done < comp.total ? <span className="text-subtle">· {comp.total - comp.done} missing</span> : null}
-                    </span>
-                  </TD>
-                  <TD align="right"><Num className={days !== null && days <= 14 ? "text-status-approaching" : "text-muted"}>{days === null ? "—" : `${days}d`}</Num></TD>
-                </TR>
+                <Fragment key={g.client.id}>
+                  <TR className="cursor-pointer" onClick={() => toggle(g.client.id)}>
+                    <TD className="text-foreground">
+                      <span className="inline-flex items-center gap-2">
+                        {isOpen ? <ChevronDownIcon className="size-3.5 text-subtle" /> : <ChevronRightIcon className="size-3.5 text-subtle" />}
+                        <span className="font-medium">{g.client.name}</span>
+                        <span className="rounded-full border border-border-faint px-1.5 py-0.5 text-3xs tabular-nums text-subtle">
+                          {g.rows.length}
+                        </span>
+                      </span>
+                    </TD>
+                    <TD className="text-subtle">—</TD>
+                    <TD className="text-subtle">—</TD>
+                    <TD align="right"><Num className="text-muted">{mrr > 0 ? `£${mrr.toLocaleString()}/mo` : "—"}</Num></TD>
+                    <TD className="text-subtle">—</TD>
+                    <TD>
+                      {needsSetup ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-status-approaching">
+                          <span className="size-1.5 rounded-full bg-status-approaching" />
+                          Needs setup
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+                          <span className={`size-1.5 rounded-full ${worst === "ok" ? "bg-status-ontrack" : worst === "warn" ? "bg-status-approaching" : "bg-status-late"}`} />
+                          {worst === "ok" ? "On track" : worst === "warn" ? "Watch" : "Needs attention"}
+                        </span>
+                      )}
+                    </TD>
+                    <TD align="right"><Num className={soonest !== undefined && soonest <= 14 ? "text-status-approaching" : "text-muted"}>{soonest === undefined ? "—" : `${soonest}d`}</Num></TD>
+                  </TR>
+                  {isOpen && g.rows.map((r) => engagementRow(r, g.client.name, router, true))}
+                </Fragment>
               );
             })}
           </TBody>

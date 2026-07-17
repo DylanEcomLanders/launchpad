@@ -25,7 +25,7 @@ import {
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import { getPortals, createPortal, updatePortal } from "@/lib/portal/data";
 import type { PortalData, ScopeItem } from "@/lib/portal/types";
-import { spawnEngagementFromOnboarding } from "@/lib/engagement-spawn";
+import { promoteOnboardingToKanban } from "@/lib/onboarding-to-kanban";
 import { PAGE_LABEL, type PageType } from "@/lib/pods-v2/types";
 import { Table, THead, TBody, TR, TH, TD, Badge } from "@/components/ui";
 
@@ -658,15 +658,17 @@ export default function OnboardingInboxPage() {
                             onClick={async () => {
                               setSaving(true);
                               try {
-                                const result = spawnEngagementFromOnboarding(selected);
+                                const result = await promoteOnboardingToKanban(selected);
                                 await updateSubmission(selected.id, {
                                   status: "approved",
+                                  assigned_client_id: result.clientId,
+                                  assigned_project_id: result.projectId,
                                   assigned_at: new Date().toISOString(),
                                   assigned_by: "pm",
                                 });
-                                router.push(`/workspace/clients/${result.clientId}`);
+                                router.push(`/clients/${result.projectId}`);
                               } catch (err) {
-                                console.error("Failed to spawn engagement:", err);
+                                console.error("Failed to create client:", err);
                               }
                               setSaving(false);
                             }}
@@ -677,7 +679,7 @@ export default function OnboardingInboxPage() {
                             <div>
                               <p className="text-sm font-medium">{saving ? "Creating..." : "Create client engagement"}</p>
                               <p className="text-2xs text-background/50">
-                                Parks a client (sits in purgatory). Assign to a pod from /pods-v2 to seed the build.
+                                Creates the client and first project on the delivery board. Scope its deliverables there.
                               </p>
                             </div>
                           </button>

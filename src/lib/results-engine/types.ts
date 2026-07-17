@@ -43,6 +43,9 @@ export interface Test {
   controlDesc?: string;
   variantDesc?: string;
   primaryMetric?: string;
+  /** The lift we predicted at ideation. Shown against the actual upliftPct so we
+   *  can see how well we called it. Captured when the test is created. */
+  expectedLiftPct?: number;
   trafficSplit?: string;
   tool?: string;
   baselineValue?: number;
@@ -54,6 +57,9 @@ export interface Test {
   startedAt?: string;
   concludedAt?: string;
   notes?: string;
+  /** The reusable learning: WHY it moved (or didn't). The point of the archive —
+   *  what we'd carry into the next test. Free-text, written by the strategist. */
+  whyItWorked?: string;
 
   // ── the win declaration (§6 hard gate) ──
   // A human call by the strategist. `declaredAt` present IS the recorded
@@ -75,7 +81,7 @@ export interface Test {
 export const TEST_STATUS_ORDER: TestStatus[] = ["backlog", "live", "reading", "won", "lost"];
 
 export const TEST_STATUS_META: Record<TestStatus, { label: string; color: string }> = {
-  backlog: { label: "Backlog", color: "#71717A" },
+  backlog: { label: "Ideating", color: "#71717A" },
   live: { label: "Live", color: "#0EA5E9" },
   reading: { label: "Reading", color: "#EAB308" },
   won: { label: "Won", color: "#10B981" },

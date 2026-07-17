@@ -109,7 +109,7 @@ export default function DashboardLayout({
         </header>
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin bg-background">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin bg-background [scrollbar-gutter:stable]">
             {/* Umbrella strips sit outside PageTransition so they persist
                 while only the page below them re-keys on navigation. Only
                 one strip ever renders for a given route — the path lists

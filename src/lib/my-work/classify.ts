@@ -45,7 +45,18 @@ import type { Pod as PodV2 } from "@/lib/pods-v2/types";
 import {
   DOCUMENTS_TEAM_PRIMARY,
   DOCUMENTS_TEAM_SECONDARY,
+  STRATEGY_OWNER,
+  PREVIEW_PHASES,
+  activeAssigneeFor,
+  ownerLaneForPhase,
+  type PreviewPhase,
+  type RolePool,
 } from "@/lib/projects/preview-phases";
+
+/* The delivery chain in order — used to tell "handed off past me" (Done) from
+ * "not reached me yet" (hidden) for cards I'm attached to but don't currently
+ * own. */
+const PHASE_ORDER: PreviewPhase[] = PREVIEW_PHASES.map((p) => p.value);
 
 export type MyWorkLane = "todo" | "in_progress" | "done";
 
@@ -86,72 +97,17 @@ export function buildMyWorkIdentity(
   return { name: displayName, croLeadPodIds };
 }
 
-/* Which slot on the card matches the user (if any). Senior = primary,
- * junior = secondary. */
-function detectAssignmentRole(
-  card: MockDeliverable,
-  name: string,
-): MyWorkRole | null {
+/* Which named slot the user occupies on a card — used only for the display
+ * `role` tag. Ownership + lane come from activeAssigneeFor, not this. */
+function roleForUser(card: MockDeliverable, name: string): MyWorkRole | null {
   const needle = name.trim().toLowerCase();
-  const eq = (v: string | undefined) =>
-    !!v && v.trim().toLowerCase() === needle;
+  const eq = (v: string | undefined) => !!v && v.trim().toLowerCase() === needle;
   if (eq(card.designer)) return "senior_designer";
   if (eq(card.secondaryDesigner)) return "junior_designer";
   if (eq(card.developer)) return "senior_developer";
   if (eq(card.secondaryDeveloper)) return "junior_developer";
+  if (needle === STRATEGY_OWNER.trim().toLowerCase()) return "strategist";
   return null;
-}
-
-/* Designer + Developer share the in_progress logic almost verbatim - just
- * different "active phase" names. */
-function designerLane(card: MockDeliverable): MyWorkLane {
-  const phase = card.phase;
-  if (phase === "design") return "in_progress";
-  if (phase === "internal-revisions") {
-    /* Kicked back by Dylan = back in their hands = in_progress.
-     * Otherwise (waiting on Dylan OR approved) = done from their POV. */
-    return card.revisionRequested ? "in_progress" : "done";
-  }
-  if (phase === "external-revisions") {
-    /* Client kicked back = in_progress; otherwise out with client = done. */
-    return card.revisionRequested ? "in_progress" : "done";
-  }
-  if (
-    phase === "development" ||
-    phase === "qa" ||
-    phase === "client-approval" ||
-    phase === "launch" ||
-    phase === "done" ||
-    phase === "launch-testing"
-  ) {
-    // Out of the designer's hands once it's in build / approval / launch.
-    return "done";
-  }
-  return "todo";
-}
-
-function developerLane(card: MockDeliverable): MyWorkLane {
-  const phase = card.phase;
-  if (phase === "development") return "in_progress";
-  if (phase === "qa") {
-    return card.revisionRequested ? "in_progress" : "done";
-  }
-  if (phase === "launch") return "in_progress"; // dev owns go-live
-  if (phase === "client-approval") return "done"; // out with the client
-  if (phase === "done" || phase === "launch-testing") return "done";
-  return "todo";
-}
-
-function strategistLane(card: MockDeliverable): MyWorkLane {
-  if (card.phase === "strategy") return "todo";
-  if (card.phase === "test-backlog") return "todo"; // queued test ideas
-  if (card.phase === "launch-testing") {
-    if (card.testResult) return "done";
-    if (card.liveStartedAt) return "in_progress";
-    return "todo";
-  }
-  /* Defensive fallback - strategist only scopes to those phases. */
-  return "todo";
 }
 
 export interface ClassifiedCard {
@@ -190,59 +146,63 @@ function resolveCardAssignees(
   };
 }
 
-/* Walk every client → project → card and emit one entry per (card, role)
- * match. One card can produce multiple entries if the user is e.g. the
- * senior designer AND the strategist for the same project's launch-testing
- * card (rare but valid). */
+/* Walk every client → project → card and emit the cards this user owns or has
+ * owned. Ownership is the SAME function the board badge uses (activeAssigneeFor),
+ * so /my-work and the kanban can never disagree about who a card belongs to:
+ *   - active owner now       → actionable (ownerLaneForPhase → todo/in_progress)
+ *   - handed off past me      → Done (context / recent completions)
+ *   - not reached me yet      → hidden (not my card)
+ * Strategy resolves to the strategist (STRATEGY_OWNER) and QA to the secondary
+ * dev, exactly as on the board. */
 export function classifyClientsForUser(
   clients: MockClient[],
   identity: MyWorkIdentity,
   pods: MockPod[],
 ): ClassifiedCard[] {
   const podById = new Map(pods.map((p) => [p.id, p]));
+  const me = identity.name.trim().toLowerCase();
   const out: ClassifiedCard[] = [];
   for (const client of clients) {
     for (const project of client.projects) {
       const pod = project.podId ? podById.get(project.podId) : undefined;
       for (const rawCard of project.deliverables) {
         const card = resolveCardAssignees(rawCard, pod);
-        /* Drop tests that are concluded and not in launch-testing
-         * (defensive - shouldn't happen but keeps the board clean). */
-        const assignment = detectAssignmentRole(card, identity.name);
-        const isStrategistScope =
-          identity.croLeadPodIds.length > 0 &&
-          project.podId &&
-          identity.croLeadPodIds.includes(project.podId) &&
-          (card.phase === "strategy" ||
-            card.phase === "test-backlog" ||
-            card.phase === "launch-testing");
+        const roles: RolePool = {
+          designer: card.designer,
+          secondaryDesigner: card.secondaryDesigner,
+          developer: card.developer,
+          secondaryDeveloper: card.secondaryDeveloper,
+          // strategist is global for now → activeAssigneeFor falls back to
+          // STRATEGY_OWNER; pod-level strategists slot in here later.
+        };
+        // Phase indices where I'm the active owner on this card.
+        const myIdxs: number[] = [];
+        PHASE_ORDER.forEach((ph, i) => {
+          if (activeAssigneeFor(ph, roles).name.trim().toLowerCase() === me) myIdxs.push(i);
+        });
+        if (myIdxs.length === 0) continue;
 
-        if (assignment) {
-          const lane =
-            assignment === "senior_designer" || assignment === "junior_designer"
-              ? designerLane(card)
-              : developerLane(card);
-          out.push({
-            card,
-            clientId: client.id,
-            clientName: client.name,
-            projectId: project.id,
-            projectName: project.name,
-            role: assignment,
-            lane,
-          });
+        const curIdx = PHASE_ORDER.indexOf(card.phase);
+        if (curIdx < 0) continue;
+
+        let lane: MyWorkLane;
+        if (myIdxs.includes(curIdx)) {
+          lane = ownerLaneForPhase(card.phase, card.revisionRequested);
+        } else if (curIdx > Math.max(...myIdxs)) {
+          lane = "done"; // fully handed off past every phase I own
+        } else {
+          continue; // upcoming, or a gap between my phases — not mine right now
         }
-        if (isStrategistScope) {
-          out.push({
-            card,
-            clientId: client.id,
-            clientName: client.name,
-            projectId: project.id,
-            projectName: project.name,
-            role: "strategist",
-            lane: strategistLane(card),
-          });
-        }
+
+        out.push({
+          card,
+          clientId: client.id,
+          clientName: client.name,
+          projectId: project.id,
+          projectName: project.name,
+          role: roleForUser(card, identity.name) ?? "senior_designer",
+          lane,
+        });
       }
     }
   }
@@ -275,10 +235,9 @@ export function subtasksForUser(
   for (const client of clients) {
     for (const project of client.projects) {
       const pod = project.podId ? podById.get(project.podId) : undefined;
-      const isStrategistPod =
-        identity.croLeadPodIds.length > 0 &&
-        !!project.podId &&
-        identity.croLeadPodIds.includes(project.podId);
+      // Strategist is global for now — the one STRATEGY_OWNER owns strategist
+      // subtasks on every pod, matching activeAssigneeFor.
+      const isStrategist = needle === STRATEGY_OWNER.trim().toLowerCase();
       for (const rawCard of project.deliverables) {
         const card = resolveCardAssignees(rawCard, pod);
         const subs = card.subtasks ?? [];
@@ -288,7 +247,7 @@ export function subtasksForUser(
           if (statuses[i] === "locked") return; // not yet actionable
           const mine =
             s.role === "strategist"
-              ? isStrategistPod
+              ? isStrategist
               : (() => {
                   const owner = subtaskAssigneeName(card, s.role);
                   return !!owner && owner.trim().toLowerCase() === needle;
@@ -361,6 +320,10 @@ export function dragActionFor(
     if (role === "senior_developer" || role === "junior_developer") {
       return { kind: "phase_move", phase: "qa" };
     }
+    if (role === "strategist" && card.phase === "strategy") {
+      // Strategy done → hand the card to design.
+      return { kind: "phase_move", phase: "design" };
+    }
     return { kind: "noop", reason: "role doesn't drag todo→done" };
   }
 
@@ -383,11 +346,23 @@ export function dragActionFor(
       if (card.phase === "development") {
         return { kind: "phase_move", phase: "qa" };
       }
-      if (card.phase === "qa" && card.revisionRequested) {
-        return { kind: "patch", patch: { revisionRequested: false } };
+      if (card.phase === "qa") {
+        // Kicked back → re-submit (clear flag); otherwise QA passed → hand to
+        // the client-approval hold.
+        return card.revisionRequested
+          ? { kind: "patch", patch: { revisionRequested: false } }
+          : { kind: "phase_move", phase: "client-approval" };
+      }
+      if (card.phase === "launch") {
+        // Go-live complete → Done. (The Results Engine surface was already
+        // created when the card ENTERED Launch on the board, not here.)
+        return { kind: "phase_move", phase: "done" };
       }
     }
     if (role === "strategist") {
+      if (card.phase === "strategy") {
+        return { kind: "phase_move", phase: "design" };
+      }
       return {
         kind: "noop",
         reason: "Open the card to conclude a live test.",

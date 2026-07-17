@@ -15,6 +15,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useWorkspaceData, todayYMD } from "@/lib/workspace/use-workspace-data";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import { moveDeliverable as moveDeliverableCore } from "@/lib/kanban/move-deliverable";
+import { createSurfaceForLaunch } from "@/lib/results-engine/data";
+import { cardDueDate } from "@/lib/projects/mock-data";
 import type { MockDeliverable, MockProject } from "@/lib/projects/mock-data";
 import { useCurrentUser, useRole } from "@/components/auth-gate";
 import {
@@ -174,7 +177,16 @@ export default function MyWorkClient() {
   /* Kanban data is the source of truth for cards. The classifier
    * matches them to the active user by name + role and assigns a
    * lane. */
-  const { clients: kanbanClients, setClients: setKanbanClients, pods: kanbanPods } = useKanbanData();
+  const {
+    clients: kanbanClients,
+    setClients: setKanbanClients,
+    pods: kanbanPods,
+    logActivity,
+  } = useKanbanData();
+
+  /* A move the board's gate refuses (e.g. entering the build without a design
+   * handover) surfaces here rather than failing silently. */
+  const [gateMsg, setGateMsg] = useState<string | null>(null);
 
   /* pods-v2 snapshot for strategist scope detection (the kanban's
    * MockPod doesn't carry role metadata). */
@@ -209,8 +221,12 @@ export default function MyWorkClient() {
       title: c.card.title,
       lane: c.lane,
       role: c.role,
-      state: deriveState(c.card.dueDate, today),
-      dueDate: c.card.dueDate ?? "",
+      /* Via cardDueDate, NOT the raw field: a scheduled build's date is its
+       * Launch column. Reading d.dueDate here left every scheduled card
+       * undated, so My Tasks would say "on track" while the board showed the
+       * same card red. The two have to agree. */
+      state: deriveState(cardDueDate(c.card), today),
+      dueDate: cardDueDate(c.card) ?? "",
     }));
   }, [identity, kanbanClients, kanbanPods, today]);
 
@@ -452,34 +468,48 @@ export default function MyWorkClient() {
       }
       return;
     }
-    setKanbanClients((prev) =>
-      prev.map((client) => ({
-        ...client,
-        projects: client.projects.map((p) => ({
-          ...p,
-          deliverables: p.deliverables.map((d) => {
-            if (d.id !== it.cardId) return d;
-            if (action.kind === "patch") return { ...d, ...action.patch };
-            if (action.kind === "phase_move") {
-              const enteredAt = today;
-              return {
-                ...d,
-                phase: action.phase,
-                phaseHistory: [
-                  ...(d.phaseHistory ?? []),
-                  { phase: action.phase, enteredAt },
-                ],
-                /* Clear revision_requested when moving forward so the
-                 * card doesn't carry a stale kickback flag into the
-                 * next phase. */
-                revisionRequested: false,
-              };
-            }
-            return d;
-          }),
+    if (action.kind === "patch") {
+      /* Flag-only edit (e.g. clearing a kickback). No phase change, so no
+       * gates or seams apply — a direct patch is correct here. */
+      setKanbanClients((prev) =>
+        prev.map((client) => ({
+          ...client,
+          projects: client.projects.map((p) => ({
+            ...p,
+            deliverables: p.deliverables.map((d) =>
+              d.id === it.cardId ? { ...d, ...action.patch } : d,
+            ),
+          })),
         })),
-      })),
-    );
+      );
+      return;
+    }
+    /* Phase moves go through the SAME core the board uses, so the design→dev
+     * handover gate, revision bookkeeping, subtask seeding, the hoursInPhase
+     * reset, the activity log and the Launch seam all apply from here too.
+     * This used to mutate state directly and skipped every one of them. */
+    const res = moveDeliverableCore(kanbanClients, kanbanPods, it.cardId, action.phase);
+    if (!res.ok) {
+      setGateMsg(res.reason);
+      return;
+    }
+    if (!res.moved) return;
+    setKanbanClients(res.clients);
+    logActivity({
+      actor: displayName || "Someone",
+      action: "moved",
+      cardId: res.moved.cardId,
+      cardTitle: res.moved.cardTitle,
+      clientName: res.moved.clientName,
+      projectName: res.moved.projectName,
+      fromPhase: res.moved.fromPhase,
+      toPhase: res.moved.toPhase,
+    });
+    if (res.seam) {
+      createSurfaceForLaunch(res.seam).catch(() => {
+        /* offline / store unavailable — the surface can be created later */
+      });
+    }
   }
 
   /* Kanban "Revisions needed" callout - matches by display name
@@ -575,6 +605,21 @@ export default function MyWorkClient() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* A move the board's gate refused. Same rules as the board, surfaced
+          here instead of the drag silently doing nothing. */}
+      {gateMsg && (
+        <div className="fixed inset-x-0 top-3 z-50 flex justify-center px-4">
+          <div className="flex max-w-xl items-start gap-3 rounded border border-status-late/30 bg-surface-raised px-4 py-3">
+            <p className="text-xs leading-relaxed text-foreground">{gateMsg}</p>
+            <button
+              onClick={() => setGateMsg(null)}
+              className="shrink-0 text-2xs text-muted transition-colors hover:text-foreground"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
       <div className="mx-auto px-4 sm:px-6 py-8">
         {/* Header: same eyebrow + bold-title pattern as /kanban */}
         <div className="flex items-end justify-between gap-6 mb-8">

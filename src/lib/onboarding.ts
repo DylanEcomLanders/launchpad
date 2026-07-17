@@ -77,6 +77,11 @@ export interface OnboardingSubmission {
    * variant name (e.g., "Lavender oil" for one of three PDPs). */
   deliverables?: { id: string; type: string; label: string }[];
   assigned_portal_id?: string;
+  /** kanban_clients.id created on approval — the canonical client this intake
+   *  became. Present = already promoted to the delivery board (idempotency). */
+  assigned_client_id?: string;
+  /** kanban_projects.id of the first project created alongside the client. */
+  assigned_project_id?: string;
   assigned_by?: string;
   assigned_at?: string;
 }

@@ -107,6 +107,8 @@ interface KanbanTaskRow {
   dev_handoff: DevHandoff | null;
   tests: TestRun[] | null;
   subtasks: Subtask[] | null;
+  /** The typed build schedule: { design: "2026-07-27", ... }. Migration 057. */
+  phase_deadlines: Partial<Record<PreviewPhase, string>> | null;
   phase_history: PhaseHistoryEntry[];
   revision_requested: boolean;
   approved_at: string | null;
@@ -154,6 +156,7 @@ function taskRowToMock(r: KanbanTaskRow): MockDeliverable {
     devHandoff: r.dev_handoff ?? undefined,
     tests: r.tests ?? undefined,
     subtasks: r.subtasks ?? undefined,
+    phaseDeadlines: r.phase_deadlines ?? undefined,
     size: r.size ?? undefined,
     cycleId: r.cycle_id ?? undefined,
     /* hoursInPhase is a runtime field (worker computed). DB doesn't store it
@@ -341,6 +344,7 @@ function mockTaskToRow(projectId: string, d: MockDeliverable): KanbanTaskRow {
     dev_handoff: d.devHandoff ?? null,
     tests: persistedTests,
     subtasks: d.subtasks ?? null,
+    phase_deadlines: d.phaseDeadlines ?? null,
     size: d.size ?? null,
     cycle_id: d.cycleId ?? null,
     phase_history: d.phaseHistory ?? [],

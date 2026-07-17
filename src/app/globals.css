@@ -162,10 +162,15 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-body);
-  letter-spacing: -0.2px;
+  /* No global negative tracking. Tightening is a DISPLAY-type device: it makes
+   * a 28px headline sharp, but this UI lives at 10-14px (text-4xs…text-sm) and
+   * is deliberately dense, so a global -0.2px squeezed the text that could least
+   * afford it and read as cramped. Headings opt into tightening below; small UI
+   * text sits at the font's natural spacing. */
 }
 
-/* Headings use Inter with tighter tracking */
+/* Headings use Inter with tighter tracking — display sizes, where negative
+ * tracking belongs. */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   letter-spacing: -0.5px;
