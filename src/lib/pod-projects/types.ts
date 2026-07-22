@@ -79,6 +79,8 @@ export interface PodDoc {
   sections: DocSection[];
   /** ISO date the engagement started — drives the "Day X/90" chip. */
   startDate?: string;
+  /** Set when soft-deleted: hidden from the workspace, restorable from the trash. */
+  deleted_at?: string;
   created_at: string;
   updated_at: string;
 }

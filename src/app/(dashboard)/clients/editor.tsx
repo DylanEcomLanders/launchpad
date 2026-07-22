@@ -19,6 +19,7 @@ import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
+import { uploadImage, fileToDataUrl } from "@/lib/cx/images";
 import {
   Bars3BottomLeftIcon,
   BoldIcon,
@@ -128,23 +129,21 @@ function Toolbar({ editor }: { editor: Editor }) {
   );
 }
 
-/* Insert pasted/dropped image files as inline base64 nodes. Returns true when it
- * handled at least one image (so the editor preventDefaults). Base64 keeps it
- * dependency-free and consistent with the test-result screenshots; move doc
- * images to a Storage bucket if they grow heavy (see the persistence plan). */
+/* Insert pasted/dropped images. Uploads to the cx-images Storage bucket and
+ * inserts the URL; falls back to inline base64 if the bucket isn't set up yet.
+ * Returns true when it handled at least one image (so the editor preventDefaults). */
 function insertImageFiles(view: EditorView, files: FileList | null, pos?: number): boolean {
   const images = files ? Array.from(files).filter((f) => f.type.startsWith("image/")) : [];
   if (!images.length) return false;
   images.forEach((file) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const src = reader.result as string;
+    void (async () => {
+      const src = (await uploadImage(file)) ?? (await fileToDataUrl(file));
+      if (view.isDestroyed) return;
       const { schema, tr, selection } = view.state;
       const node = schema.nodes.image?.create({ src });
       if (!node) return;
       view.dispatch(tr.insert(pos ?? selection.from, node));
-    };
-    reader.readAsDataURL(file);
+    })();
   });
   return true;
 }

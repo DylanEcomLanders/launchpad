@@ -52,6 +52,10 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Migrations 059 to 063 (pod_docs, cx_cards, cx_people, cx_activity, hero_offer_doc). Until they are pasted the new surfaces run localStorage-only, so each write also best-efforts to Supabase and shares across the team the moment the tables exist." },
       { type: "added", text: "The legacy import now also creates a Clients workspace for each imported client, blank template pages ready to fill, grouped under the pod that matches its old pod (Pod 1/2/3). So every client on the Delivery board also has its /clients area. Purely additive and safe to re-run: it never overwrites a card you have already moved or a doc that already exists." },
       { type: "added", text: "Move a client between pods by dragging it: grab a client in the Clients rail and drop it on another pod. Admin/CRO only." },
+      { type: "added", text: "Pods and templates now sync across the whole team, not just the browser you edited them in. Custom pods, moves between pods, and template edits are stored in Supabase and shared, so a teammate sees the same structure you do." },
+      { type: "added", text: "Recently deleted: deleting a client now moves it to a recoverable trash in the Clients rail instead of vanishing. Restore it in one click, or delete it for good." },
+      { type: "improved", text: "Approving an onboarding now spins the client up on the new Delivery board directly, its Clients doc plus a card per scoped deliverable, instead of writing to the old kanban." },
+      { type: "improved", text: "Pasted and uploaded images go to a Supabase Storage bucket and are referenced by URL, so docs and test results stay light instead of carrying multi-MB base64 blobs. Falls back to inline base64 until the cx-images bucket is created." },
     ],
   },
   {

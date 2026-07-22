@@ -106,6 +106,39 @@ function defaultTemplateDoc(type: DocType): PodDoc {
   };
 }
 
+/* ── Cloud sync for pods + templates ──
+ * Stored as reserved rows in pod_docs (ids "__pods__" / "__templates__") so they
+ * need no extra migration. Both are filtered out of loadDocs by isLegacy (they
+ * have no top-level `sections`). Sync accessors keep reading the localStorage
+ * cache; loadPodsCloud/loadTemplatesCloud hydrate it from Supabase on mount, and
+ * savePods/saveTemplate best-effort the cloud row so team edits sync. */
+const PODS_ROW = "__pods__";
+const TEMPLATES_ROW = "__templates__";
+
+async function metaCloudLoad<T>(rowId: string, field: string): Promise<T[] | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { data, error } = await supabase.from("pod_docs").select("data").eq("id", rowId).maybeSingle();
+    if (error) return null;
+    const arr = (data?.data as Record<string, unknown> | undefined)?.[field];
+    return Array.isArray(arr) ? (arr as T[]) : null;
+  } catch {
+    return null;
+  }
+}
+function metaCloudSave(rowId: string, field: string, items: unknown[]): void {
+  if (!isSupabaseConfigured()) return;
+  void (async () => {
+    try {
+      await supabase
+        .from("pod_docs")
+        .upsert({ id: rowId, data: { [field]: items }, updated_at: new Date().toISOString() }, { onConflict: "id" });
+    } catch {
+      /* table missing / offline - localStorage already holds it */
+    }
+  })();
+}
+
 export function loadTemplates(): PodDoc[] {
   const ver = typeof window !== "undefined" ? Number(localStorage.getItem(TEMPLATE_VER_KEY) ?? "0") : TEMPLATE_VERSION;
   const stored = lsLoad<PodDoc>(TEMPLATES_KEY).filter((d) => d.isTemplate && Array.isArray(d.sections));
@@ -128,6 +161,29 @@ export function loadTemplates(): PodDoc[] {
 export function saveTemplate(doc: PodDoc): void {
   const next = loadTemplates().map((t) => (t.type === doc.type ? { ...doc, updated_at: new Date().toISOString() } : t));
   lsSave(TEMPLATES_KEY, next);
+  metaCloudSave(TEMPLATES_ROW, "templates", next);
+}
+
+/** Cloud-first templates: team edits win over local defaults. Hydrates the LS
+ *  cache (and pins the template version) so the sync loadTemplates() and newDoc()
+ *  then clone the shared version rather than rebuilding defaults. */
+export async function loadTemplatesCloud(): Promise<PodDoc[]> {
+  const cloud = await metaCloudLoad<PodDoc>(TEMPLATES_ROW, "templates");
+  const valid = (cloud ?? []).filter((d) => d?.isTemplate && Array.isArray(d.sections));
+  if (valid.length) {
+    const byType = new Map(valid.map((t) => [t.type, t]));
+    const result = [byType.get("retainer") ?? defaultTemplateDoc("retainer"), byType.get("project") ?? defaultTemplateDoc("project")];
+    lsSave(TEMPLATES_KEY, result);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(TEMPLATE_VER_KEY, String(TEMPLATE_VERSION));
+      } catch {
+        /* storage full */
+      }
+    }
+    return result;
+  }
+  return loadTemplates();
 }
 
 /* ── Pods ── */
@@ -150,6 +206,20 @@ export function loadPods(): Pod[] {
 
 export function savePods(pods: Pod[]): void {
   lsSave(PODS_KEY, pods);
+  metaCloudSave(PODS_ROW, "pods", pods);
+}
+
+/** Cloud-first pods (falls back to LS/seed). Reconciles seed pods additively so
+ *  Pod 1/2/3 always exist. Call on mount to hydrate the cache. */
+export async function loadPodsCloud(): Promise<Pod[]> {
+  const cloud = await metaCloudLoad<Pod>(PODS_ROW, "pods");
+  if (cloud && cloud.length) {
+    const missing = SEED_PODS.filter((sp) => !cloud.some((p) => p.id === sp.id));
+    const merged = missing.length ? [...cloud, ...missing] : cloud;
+    lsSave(PODS_KEY, merged);
+    return merged;
+  }
+  return loadPods();
 }
 
 let podSeq = 0;
@@ -178,8 +248,8 @@ export async function loadDocs(): Promise<PodDoc[]> {
         const fresh = mapped.filter((d) => !isLegacy(d));
         if (fresh.length) {
           const refreshed = refreshDemoSections(fresh);
-          lsSave(DOCS_KEY, refreshed);
-          return refreshed;
+          lsSave(DOCS_KEY, refreshed); // cache keeps soft-deleted rows for the trash
+          return refreshed.filter((d) => !d.deleted_at);
         }
       }
     } catch {
@@ -190,7 +260,7 @@ export async function loadDocs(): Promise<PodDoc[]> {
   if (stored.length) {
     const refreshed = refreshDemoSections(stored);
     lsSave(DOCS_KEY, refreshed);
-    return refreshed;
+    return refreshed.filter((d) => !d.deleted_at);
   }
   const seeded = seedDocs();
   if (typeof window !== "undefined") {
@@ -226,9 +296,31 @@ export async function saveDoc(doc: PodDoc): Promise<void> {
   await cloudUpsert(next); // additive — never a destructive diff
 }
 
+/** Soft delete: mark the doc deleted and keep the row so it can be restored from
+ *  the trash. loadDocs hides it; loadDeletedDocs surfaces it. */
 export async function removeDoc(id: string): Promise<void> {
-  const all = lsLoad<PodDoc>(DOCS_KEY).filter((d) => d.id !== id);
-  lsSave(DOCS_KEY, all);
+  const all = lsLoad<PodDoc>(DOCS_KEY);
+  const doc = all.find((d) => d.id === id);
+  if (!doc) return;
+  const next: PodDoc = { ...doc, deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+  lsSave(DOCS_KEY, all.map((d) => (d.id === id ? next : d)));
+  await cloudUpsert(next);
+}
+
+/** Bring a soft-deleted doc back. */
+export async function restoreDoc(id: string): Promise<void> {
+  const all = lsLoad<PodDoc>(DOCS_KEY);
+  const doc = all.find((d) => d.id === id);
+  if (!doc) return;
+  const restored: PodDoc = { ...doc, updated_at: new Date().toISOString() };
+  delete restored.deleted_at;
+  lsSave(DOCS_KEY, all.map((d) => (d.id === id ? restored : d)));
+  await cloudUpsert(restored); // data no longer carries deleted_at
+}
+
+/** Permanently remove a doc (from the trash). Not recoverable. */
+export async function purgeDoc(id: string): Promise<void> {
+  lsSave(DOCS_KEY, lsLoad<PodDoc>(DOCS_KEY).filter((d) => d.id !== id));
   if (isSupabaseConfigured()) {
     try {
       await supabase.from("pod_docs").delete().eq("id", id);
@@ -236,6 +328,14 @@ export async function removeDoc(id: string): Promise<void> {
       /* LS already updated */
     }
   }
+}
+
+/** Soft-deleted docs, newest first, for the trash view. Reads the cache that
+ *  loadDocs populates (which includes deleted rows). */
+export function loadDeletedDocs(): PodDoc[] {
+  return lsLoad<PodDoc>(DOCS_KEY)
+    .filter((d) => !!d.deleted_at && !isLegacy(d))
+    .sort((a, b) => (a.deleted_at! < b.deleted_at! ? 1 : -1));
 }
 
 let seq = 0;

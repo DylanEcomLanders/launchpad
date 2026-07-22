@@ -12,6 +12,7 @@ import {
   PlusIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import type { Pod, PodDoc } from "@/lib/pod-projects/types";
 
@@ -23,6 +24,8 @@ export function Rail({
   onNewDoc,
   onAddPod,
   onMoveDoc,
+  onOpenTrash,
+  trashCount = 0,
   canEdit = true,
 }: {
   pods: Pod[];
@@ -32,6 +35,8 @@ export function Rail({
   onNewDoc: (podId: string) => void;
   onAddPod: (name: string) => void;
   onMoveDoc?: (docId: string, podId: string) => void;
+  onOpenTrash?: () => void;
+  trashCount?: number;
   canEdit?: boolean;
 }) {
   const [podClosed, setPodClosed] = useState<Record<string, boolean>>({});
@@ -225,6 +230,15 @@ export function Rail({
           </div>
         )}
       </nav>
+
+      {canEdit && onOpenTrash && (
+        <button
+          onClick={onOpenTrash}
+          className="flex items-center gap-1.5 border-t border-border-faint px-4 py-2 text-left text-3xs text-subtle transition-colors hover:text-foreground"
+        >
+          <TrashIcon className="size-3.5" /> Recently deleted{trashCount > 0 ? ` (${trashCount})` : ""}
+        </button>
+      )}
 
       <div className="flex items-center gap-3 border-t border-border-faint px-4 py-2 text-3xs text-subtle">
         <span className="flex items-center gap-1.5">

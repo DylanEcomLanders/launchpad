@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRole } from "@/components/auth-gate";
-import { TrashIcon, ArrowDownTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, ArrowDownTrayIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import { Rail } from "./rail";
 import { PageNav } from "./page-nav";
@@ -25,12 +25,15 @@ import { WipReflection } from "./wip-reflection";
 import { ReportExport } from "./report-export";
 import {
   loadDocs,
-  loadPods,
-  loadTemplates,
+  loadPodsCloud,
+  loadTemplatesCloud,
   saveTemplate,
   addPod,
   saveDoc,
   removeDoc,
+  restoreDoc,
+  purgeDoc,
+  loadDeletedDocs,
   newDoc,
   setSectionBody,
   setSectionRows,
@@ -76,17 +79,20 @@ export default function PodProjectsPage() {
   const [newFor, setNewFor] = useState<string | null>(null);
   const [autoEditId, setAutoEditId] = useState<string | null>(null);
   const [printing, setPrinting] = useState(false);
+  const [showTrash, setShowTrash] = useState(false);
+  const [deletedDocs, setDeletedDocs] = useState<PodDoc[]>([]);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     (async () => {
-      setPods(loadPods());
-      const d = await loadDocs();
+      // Cloud-first so pods, templates and docs are all shared across the team.
+      const [d, cloudPods, templates] = await Promise.all([loadDocs(), loadPodsCloud(), loadTemplatesCloud()]);
+      setPods(cloudPods);
+      setDeletedDocs(loadDeletedDocs());
       // Templates live in the same docs state (flagged isTemplate) so every
       // editor handler works on them uniformly; they're grouped separately in
       // the rail and persist to their own store.
-      const templates = loadTemplates();
       setDocs([...d, ...templates]);
       const first = d[0] ?? null;
       setActiveId(first?.id ?? null);
@@ -216,11 +222,32 @@ export default function PodProjectsPage() {
 
   function deleteActive() {
     if (!active || active.isTemplate) return;
-    if (!confirm(`Delete "${active.title}"? This cannot be undone.`)) return;
-    const remaining = docs.filter((d) => d.id !== active.id);
+    if (!confirm(`Delete "${active.title}"? You can restore it from Recently deleted.`)) return;
+    const removed = active;
+    const remaining = docs.filter((d) => d.id !== removed.id);
     setDocs(remaining);
     selectDoc(remaining.find((d) => !d.isTemplate)?.id ?? "");
-    void removeDoc(active.id);
+    void removeDoc(removed.id).then(() => setDeletedDocs(loadDeletedDocs()));
+  }
+
+  function openTrash() {
+    setDeletedDocs(loadDeletedDocs());
+    setShowTrash(true);
+  }
+  async function restoreFromTrash(id: string) {
+    const doc = deletedDocs.find((d) => d.id === id);
+    await restoreDoc(id);
+    if (doc) {
+      const revived = { ...doc };
+      delete revived.deleted_at;
+      setDocs((prev) => (prev.some((d) => d.id === id) ? prev : [...prev, revived]));
+    }
+    setDeletedDocs(loadDeletedDocs());
+  }
+  async function purgeFromTrash(id: string) {
+    if (!confirm("Permanently delete this client? This cannot be undone.")) return;
+    await purgeDoc(id);
+    setDeletedDocs(loadDeletedDocs());
   }
 
   const relationshipLabel = relationship(active?.startDate);
@@ -235,6 +262,8 @@ export default function PodProjectsPage() {
         onNewDoc={(podId) => setNewFor(podId)}
         onAddPod={(name) => setPods(addPod(name, pods))}
         onMoveDoc={moveDocToPod}
+        onOpenTrash={openTrash}
+        trashCount={deletedDocs.length}
         canEdit={canEdit}
       />
 
@@ -390,7 +419,72 @@ export default function PodProjectsPage() {
           onCreate={(title, type, tier) => createDoc(newFor, title, type, tier)}
         />
       )}
+
+      {showTrash && (
+        <TrashModal
+          docs={deletedDocs}
+          onRestore={restoreFromTrash}
+          onPurge={purgeFromTrash}
+          onClose={() => setShowTrash(false)}
+        />
+      )}
     </div>
+  );
+}
+
+/* Recently deleted: restore a soft-deleted client, or remove it for good. */
+function TrashModal({
+  docs,
+  onRestore,
+  onPurge,
+  onClose,
+}: {
+  docs: PodDoc[];
+  onRestore: (id: string) => void;
+  onPurge: (id: string) => void;
+  onClose: () => void;
+}) {
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-[10vh]" onClick={onClose}>
+      <div className="w-full max-w-md overflow-hidden rounded border border-border bg-surface" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-border-faint px-4 py-3">
+          <span className="text-2xs font-semibold uppercase tracking-wide text-subtle">Recently deleted</span>
+          <button onClick={onClose} className="rounded p-1 text-subtle hover:bg-surface-raised hover:text-foreground">
+            <XMarkIcon className="size-4" />
+          </button>
+        </div>
+        <div className="max-h-[60vh] overflow-y-auto scrollbar-thin px-2 py-2">
+          {docs.length === 0 ? (
+            <p className="px-2 py-8 text-center text-sm text-subtle">Nothing here. Deleted clients show up for recovery.</p>
+          ) : (
+            docs.map((d) => (
+              <div key={d.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-surface-hover">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm text-foreground">{d.title}</div>
+                  <div className="text-2xs text-subtle">
+                    Deleted {d.deleted_at ? new Date(d.deleted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}
+                  </div>
+                </div>
+                <button
+                  onClick={() => onRestore(d.id)}
+                  className="shrink-0 rounded border border-border px-2 py-1 text-2xs font-medium text-foreground hover:bg-surface-raised"
+                >
+                  Restore
+                </button>
+                <button
+                  onClick={() => onPurge(d.id)}
+                  title="Delete forever"
+                  className="shrink-0 rounded p-1.5 text-subtle hover:bg-status-late/10 hover:text-status-late"
+                >
+                  <TrashIcon className="size-3.5" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 

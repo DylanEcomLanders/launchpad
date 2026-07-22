@@ -12,6 +12,7 @@ import { createPortal } from "react-dom";
 import { PlusIcon, TrashIcon, PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { TEST_STATUSES } from "@/lib/pod-projects/templates";
 import type { TestRow, TestStatus } from "@/lib/pod-projects/types";
+import { uploadImage } from "@/lib/cx/images";
 
 const tone = (s: TestStatus) => TEST_STATUSES.find((x) => x.value === s)?.tone ?? "text-muted";
 
@@ -61,7 +62,8 @@ export function ResultsTable({
     const added: string[] = [];
     for (const f of Array.from(files)) {
       try {
-        added.push(await fileToDataUrl(f));
+        // Upload to Storage (permanent URL); fall back to a downscaled base64.
+        added.push((await uploadImage(f)) ?? (await fileToDataUrl(f)));
       } catch {
         /* skip bad image */
       }

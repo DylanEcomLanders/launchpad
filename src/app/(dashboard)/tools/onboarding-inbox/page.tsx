@@ -26,7 +26,7 @@ import {
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import { getPortals, createPortal, updatePortal } from "@/lib/portal/data";
 import type { PortalData, ScopeItem } from "@/lib/portal/types";
-import { promoteOnboardingToKanban } from "@/lib/onboarding-to-kanban";
+import { createEngagementFromOnboarding } from "@/lib/cx/from-onboarding";
 import { PAGE_LABEL, type PageType } from "@/lib/pods-v2/types";
 import { Table, THead, TBody, TR, TH, TD, Badge } from "@/components/ui";
 
@@ -667,22 +667,18 @@ export default function OnboardingInboxPage() {
                             onClick={async () => {
                               setSaving(true);
                               try {
-                                const result = await promoteOnboardingToKanban(selected);
+                                // New model: create the Clients doc + a Delivery
+                                // card per deliverable on the cx_* board.
+                                const result = await createEngagementFromOnboarding(selected);
                                 await updateSubmission(selected.id, {
                                   status: "approved",
                                   assigned_client_id: result.clientId,
-                                  assigned_project_id: result.projectId,
                                   assigned_at: new Date().toISOString(),
                                   assigned_by: "pm",
                                 });
-                                // The old /clients/[id] profile is gone (the pod
-                                // workspace lives at /clients now); land on the
-                                // Delivery board. NOTE: promoteOnboardingToKanban
-                                // still writes to the LEGACY kanban - rewire it to
-                                // create a cx_card directly as a follow-up.
                                 router.push("/delivery");
                               } catch (err) {
-                                console.error("Failed to create client:", err);
+                                console.error("Failed to create engagement:", err);
                               }
                               setSaving(false);
                             }}
