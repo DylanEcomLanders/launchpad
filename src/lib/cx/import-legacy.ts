@@ -11,7 +11,10 @@
  */
 
 import { fetchKanban } from "@/lib/kanban/data";
-import { saveCard, savePerson, loadPeople, newPerson } from "./data";
+import { saveCard, savePerson, loadPeople, loadCards, newPerson } from "./data";
+import { loadDocs, saveDoc, loadPods, loadTemplates } from "@/lib/pod-projects/data";
+import { templateSections } from "@/lib/pod-projects/templates";
+import type { PodDoc } from "@/lib/pod-projects/types";
 import type { CxCard, CxStage, PersonRole } from "./types";
 
 /** Legacy PreviewPhase -> new board column. `documents` and the post-launch test
@@ -44,6 +47,7 @@ export interface ImportSummary {
   cards: number;
   peopleAdded: number;
   clients: number;
+  docsCreated: number;
 }
 
 export async function importLegacyKanban(): Promise<ImportSummary> {
@@ -91,7 +95,9 @@ export async function importLegacyKanban(): Promise<ImportSummary> {
     peopleAdded++;
   }
 
-  /* 2. Cards: one cx_card per legacy deliverable. */
+  /* 2. Cards: one cx_card per legacy deliverable. Skip any card that already
+   *    exists so a re-run never resets a card you've since moved on the board. */
+  const existingCardIds = new Set((await loadCards()).map((c) => c.id));
   const clientIds = new Set<string>();
   let cards = 0;
   const now = new Date().toISOString();
@@ -99,6 +105,7 @@ export async function importLegacyKanban(): Promise<ImportSummary> {
     clientIds.add(client.id);
     for (const project of client.projects) {
       for (const d of project.deliverables) {
+        if (existingCardIds.has(`cx-k-${d.id}`)) continue;
         const stage = mapStage(d.phase);
         const dueByStage: Partial<Record<CxStage, string>> = {};
         if (d.phaseDeadlines) {
@@ -130,5 +137,45 @@ export async function importLegacyKanban(): Promise<ImportSummary> {
     }
   }
 
-  return { cards, peopleAdded, clients: clientIds.size };
+  /* 3. Clients workspace: one doc per client, so each imported client has a
+   *    /clients area (blank template pages, ready to fill). Doc id matches the
+   *    card clientId so the board's client list stays deduped. Grouped under the
+   *    seeded pod whose name matches the legacy pod (Pod 1/2/3), else Pod 1.
+   *    Idempotent: never overwrites a doc that already exists. */
+  const pods = loadPods();
+  const podIdByName = new Map(pods.map((p) => [p.name.trim().toLowerCase(), p.id]));
+  const fallbackPodId = pods[0]?.id ?? "pod-1";
+  const legacyPodName = new Map(snap.pods.map((p) => [p.id, p.name]));
+
+  const existingDocs = await loadDocs();
+  const existingIds = new Set(existingDocs.map((d) => d.id));
+  const retainerTemplate = loadTemplates().find((t) => t.type === "retainer");
+  let docsCreated = 0;
+
+  for (const client of snap.clients) {
+    const docId = `cx-k-client-${client.id}`;
+    if (existingIds.has(docId)) continue;
+    const legacyPodId = client.projects.find((p) => p.podId)?.podId;
+    const podName = legacyPodId ? legacyPodName.get(legacyPodId) : undefined;
+    const podId = (podName && podIdByName.get(podName.trim().toLowerCase())) || fallbackPodId;
+    const sections = retainerTemplate
+      ? (JSON.parse(JSON.stringify(retainerTemplate.sections)) as PodDoc["sections"])
+      : templateSections("retainer");
+    const doc: PodDoc = {
+      id: docId,
+      podId,
+      title: client.name,
+      type: "retainer",
+      tier: "core",
+      sections,
+      startDate: now.slice(0, 10),
+      created_at: now,
+      updated_at: now,
+    };
+    await saveDoc(doc);
+    existingIds.add(docId);
+    docsCreated++;
+  }
+
+  return { cards, peopleAdded, clients: clientIds.size, docsCreated };
 }

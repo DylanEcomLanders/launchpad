@@ -130,7 +130,7 @@ export default function DeliveryPage() {
       const [cs, ppl] = await Promise.all([loadCards(), loadPeople()]);
       setCards(cs);
       setPeople(ppl);
-      alert(`Imported ${res.cards} cards across ${res.clients} clients, added ${res.peopleAdded} people.`);
+      alert(`Imported ${res.cards} cards and created ${res.docsCreated} client areas across ${res.clients} clients, added ${res.peopleAdded} people.`);
     } catch (err) {
       alert(`Import failed: ${err instanceof Error ? err.message : "unknown error"}`);
     }
