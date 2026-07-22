@@ -57,6 +57,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Approving an onboarding now spins the client up on the new Delivery board directly, its Clients doc plus a card per scoped deliverable, instead of writing to the old kanban." },
       { type: "improved", text: "Pasted and uploaded images go to a Supabase Storage bucket and are referenced by URL, so docs and test results stay light instead of carrying multi-MB base64 blobs. Falls back to inline base64 until the cx-images bucket is created." },
       { type: "improved", text: "Delivery board permissions for members: they can move cards through the stages (drag) but no longer add cards or manage the People roster, and opening a card is read-only. Admin/CRO keep full control." },
+      { type: "fixed", text: "Scrollbars in the Clients and Delivery areas were bright white and heavy; they now use the same slim, muted style as the rest of the app." },
     ],
   },
   {

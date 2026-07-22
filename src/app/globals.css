@@ -307,23 +307,25 @@ h1, h2, h3, h4, h5, h6 {
   display: none;
 }
 
-/* Thin minimal scrollbar */
+/* Thin minimal scrollbar — slim + muted, matches the app's global bars rather
+ * than the old bright #D4D4D4 that read as heavy white lines. */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: #D4D4D4 transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 .scrollbar-thin::-webkit-scrollbar {
-  width: 2px;
+  width: 6px;
+  height: 6px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #D4D4D4;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #A0A0A0;
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* Funnel Knowledge Base prose styles */
