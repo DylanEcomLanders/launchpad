@@ -223,12 +223,16 @@ export default function DeliveryPage() {
           <button onClick={() => setShowActivity(true)} className={ghostBtn}>
             <ClockIcon className="size-4" /> Activity
           </button>
-          <button onClick={() => setShowPeople(true)} className={ghostBtn}>
-            <UsersIcon className="size-4" /> People
-          </button>
-          <button onClick={openNew} className={primaryBtn}>
-            <PlusIcon className="size-4" /> New card
-          </button>
+          {isAdmin && (
+            <button onClick={() => setShowPeople(true)} className={ghostBtn}>
+              <UsersIcon className="size-4" /> People
+            </button>
+          )}
+          {isAdmin && (
+            <button onClick={openNew} className={primaryBtn}>
+              <PlusIcon className="size-4" /> New card
+            </button>
+          )}
         </div>
       </div>
 
@@ -288,6 +292,7 @@ export default function DeliveryPage() {
           isNew={isNew}
           clients={clientOptions}
           people={people}
+          canEdit={isAdmin}
           onChange={setEditing}
           onSave={persistEdit}
           onDelete={del}
@@ -408,6 +413,7 @@ function CardEditor({
   isNew,
   clients,
   people,
+  canEdit = true,
   onChange,
   onSave,
   onDelete,
@@ -417,6 +423,7 @@ function CardEditor({
   isNew: boolean;
   clients: ClientOption[];
   people: CxPerson[];
+  canEdit?: boolean;
   onChange: (c: CxCard) => void;
   onSave: () => void;
   onDelete: () => void;
@@ -429,7 +436,8 @@ function CardEditor({
   const activeRole = activeRoleForStage(card.stage);
 
   return (
-    <Overlay onClose={onClose} title={isNew ? "New card" : "Edit card"}>
+    <Overlay onClose={onClose} title={isNew ? "New card" : canEdit ? "Edit card" : "Card"}>
+      <fieldset disabled={!canEdit} className="contents">
       <div className="space-y-4 px-4 py-4">
         <Field label="Title">
           <input
@@ -530,9 +538,10 @@ function CardEditor({
           </>
         )}
       </div>
+      </fieldset>
 
       <div className="flex items-center justify-between border-t border-border-faint px-4 py-3">
-        {!isNew ? (
+        {canEdit && !isNew ? (
           <button
             onClick={onDelete}
             className="inline-flex items-center gap-1.5 rounded px-2 py-1.5 text-xs text-status-late hover:bg-status-late/10"
@@ -542,13 +551,22 @@ function CardEditor({
         ) : (
           <span />
         )}
-        <button
-          onClick={onSave}
-          disabled={!card.title.trim()}
-          className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90 disabled:opacity-40"
-        >
-          {isNew ? "Add card" : "Done"}
-        </button>
+        {canEdit ? (
+          <button
+            onClick={onSave}
+            disabled={!card.title.trim()}
+            className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90 disabled:opacity-40"
+          >
+            {isNew ? "Add card" : "Done"}
+          </button>
+        ) : (
+          <button
+            onClick={onClose}
+            className="rounded border border-border px-3 py-1.5 text-xs font-medium text-muted hover:bg-surface-hover hover:text-foreground"
+          >
+            Close
+          </button>
+        )}
       </div>
     </Overlay>
   );

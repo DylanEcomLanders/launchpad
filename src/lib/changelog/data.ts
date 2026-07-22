@@ -56,6 +56,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Recently deleted: deleting a client now moves it to a recoverable trash in the Clients rail instead of vanishing. Restore it in one click, or delete it for good." },
       { type: "improved", text: "Approving an onboarding now spins the client up on the new Delivery board directly, its Clients doc plus a card per scoped deliverable, instead of writing to the old kanban." },
       { type: "improved", text: "Pasted and uploaded images go to a Supabase Storage bucket and are referenced by URL, so docs and test results stay light instead of carrying multi-MB base64 blobs. Falls back to inline base64 until the cx-images bucket is created." },
+      { type: "improved", text: "Delivery board permissions for members: they can move cards through the stages (drag) but no longer add cards or manage the People roster, and opening a card is read-only. Admin/CRO keep full control." },
     ],
   },
   {
