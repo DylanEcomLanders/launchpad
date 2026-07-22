@@ -24,7 +24,7 @@ export const CX_STAGES: CxStageMeta[] = [
   { value: "external-revisions", label: "External Revisions", activeRole: "secondaryDesigner" },
   { value: "development", label: "Development", activeRole: "primaryDeveloper" },
   { value: "qa", label: "Internal QA", activeRole: "secondaryDeveloper" },
-  { value: "client-approval", label: "Client Approval" },
+  { value: "client-approval", label: "Client Approval", activeRole: "secondaryDeveloper" },
   { value: "launch", label: "Launch", activeRole: "devLead" },
   { value: "done", label: "Done" },
 ];

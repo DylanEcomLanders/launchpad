@@ -39,7 +39,6 @@ import {
   activeOwner,
   activeRoleForStage,
   stageLabel,
-  cardPeople,
   cardDue,
   dueTone,
   ticketBreached,
@@ -107,7 +106,9 @@ export default function DeliveryPage() {
   const filtered = useMemo(() => {
     return cards.filter((c) => {
       if (filterClient && c.clientId !== filterClient) return false;
-      if (filterPerson && !cardPeople(c).includes(filterPerson)) return false;
+      // Person filter = who's responsible for the card RIGHT NOW (the active owner
+      // for its current stage), not just anyone assigned somewhere on it.
+      if (filterPerson && activeOwner(c, c.stage)?.name !== filterPerson) return false;
       return true;
     });
   }, [cards, filterClient, filterPerson]);
