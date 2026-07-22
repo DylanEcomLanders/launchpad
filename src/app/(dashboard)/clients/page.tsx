@@ -1,432 +1,476 @@
 "use client";
 
-/* ── Clients — founder list view ──
- * One line per engagement: client, type, goal, value, owner, state, days to
- * renewal/end. Clicks through to the profile. No charts, no stat cards.
- * DESIGN.md: Table primitive, muted-status Badge, heroicons, dense + ordered.
+/* ── Pod Projects ──
+ * A Google-Docs-style workspace for pod delivery. Three columns:
+ *   pods → docs  |  sections (tabs)  |  the isolated section editor.
+ * Sections isolate — clicking "Week 1" shows just that section's body — so the
+ * doc reads as navigable tabs, not one long scroll. Each doc seeds from the
+ * retainer / one-time template so the spine is always there.
+ *
+ * Prototype: localStorage-backed (see lib/pod-projects/data.ts), seeded with
+ * Pod 1 + two example docs. Migration 059 wires the shared Supabase table.
  */
 
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Table, THead, TBody, TR, TH, TD, Num, StatCard } from "@/components/ui";
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
-import { useKanbanData } from "@/lib/kanban/use-kanban-data";
-import { rosterFromKanban, type RosterRow } from "@/lib/clients/roster";
-import { stateWord, daysUntil, complianceState, itemDueISO, itemOverdue, type Engagement, type Client } from "@/lib/command-centre/model";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useRole } from "@/components/auth-gate";
+import { TrashIcon, ArrowDownTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
+import { Rail } from "./rail";
+import { PageNav } from "./page-nav";
+import { DocEditor } from "./editor";
+import { ResultsTable } from "./results-table";
+import { JournalNotes } from "./journal-notes";
+import { WipReflection } from "./wip-reflection";
+import { ReportExport } from "./report-export";
+import {
+  loadDocs,
+  loadPods,
+  loadTemplates,
+  saveTemplate,
+  addPod,
+  saveDoc,
+  removeDoc,
+  newDoc,
+  setSectionBody,
+  setSectionRows,
+  newTestRow,
+  setSectionEntries,
+  newNoteEntry,
+  addSection,
+  renameSection,
+  deleteSection,
+  toggleSectionDone,
+} from "@/lib/pod-projects/data";
+import { flattenSections, firstLeaf, BRIEF_BLOCK } from "@/lib/pod-projects/templates";
+import type { Pod, PodDoc, DocSection, DocType, RetainerTier } from "@/lib/pod-projects/types";
 
-type Row = RosterRow;
-type Filter = "all" | "retainer" | "project";
+const TIER_LABEL: Record<RetainerTier, string> = {
+  lite: "Lite",
+  core: "Core",
+  growth: "Growth",
+  scale: "Scale",
+};
 
-const WD = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-
-function weekDays(today = new Date(), offsetWeeks = 0): Date[] {
-  const dow = today.getDay(); // 0 Sun … 6 Sat
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((dow + 6) % 7));
-  if (dow === 0 || dow === 6) monday.setDate(monday.getDate() + 7); // weekend → show next week
-  monday.setDate(monday.getDate() + offsetWeeks * 7);
-  monday.setHours(0, 0, 0, 0);
-  return WD.map((_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d; });
+/** "Started 9 Jul 2026 · 2 weeks in" — the start date + a hint at how long
+ *  we've been working together. */
+function relationship(startDate?: string): string | null {
+  if (!startDate) return null;
+  const start = new Date(startDate);
+  if (Number.isNaN(start.getTime())) return null;
+  const days = Math.max(0, Math.floor((Date.now() - start.getTime()) / 864e5));
+  const since =
+    days < 1 ? "today" : days < 14 ? `${days} day${days === 1 ? "" : "s"} in` : days < 60 ? `${Math.round(days / 7)} weeks in` : `${Math.round(days / 30)} months in`;
+  const label = start.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return `Started ${label} · ${since}`;
 }
-function sameDay(a: Date, b: Date) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
-function weekLabel(days: Date[]) {
-  const mon = days[0], fri = days[4];
-  const m = (d: Date) => d.toLocaleDateString("en-GB", { month: "short" });
-  return mon.getMonth() === fri.getMonth() ? `${mon.getDate()}–${fri.getDate()} ${m(fri)}` : `${mon.getDate()} ${m(mon)} – ${fri.getDate()} ${m(fri)}`;
-}
 
-type Chip = { engId: string; client: string; label: string; overdue: boolean };
+export default function PodProjectsPage() {
+  const role = useRole();
+  const canEdit = role === "admin" || role === "cro"; // members get a read-only view
+  const [pods, setPods] = useState<Pod[]>([]);
+  const [docs, setDocs] = useState<PodDoc[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [sectionId, setSectionId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [newFor, setNewFor] = useState<string | null>(null);
+  const [autoEditId, setAutoEditId] = useState<string | null>(null);
+  const [printing, setPrinting] = useState(false);
 
-/* One engagement row. `indented` = it's a child under a collapsed client group,
- * so lead with the engagement name; otherwise (a client with a single
- * engagement) lead with the client name — the row stands in for both. */
-function engagementRow(
-  row: Row,
-  clientName: string,
-  router: ReturnType<typeof useRouter>,
-  indented: boolean,
-) {
-  const e = row.engagement;
-  const st = stateWord(e);
-  const comp = complianceState(e);
-  const days = daysUntil(e.type === "project" ? e.targetEndDate : e.renewalDate);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      setPods(loadPods());
+      const d = await loadDocs();
+      // Templates live in the same docs state (flagged isTemplate) so every
+      // editor handler works on them uniformly; they're grouped separately in
+      // the rail and persist to their own store.
+      const templates = loadTemplates();
+      setDocs([...d, ...templates]);
+      const first = d[0] ?? null;
+      setActiveId(first?.id ?? null);
+      setSectionId(first ? firstLeaf(first.sections)?.id ?? null : null);
+      setLoading(false);
+    })();
+  }, []);
+
+  const active = useMemo(() => docs.find((d) => d.id === activeId) ?? null, [docs, activeId]);
+  const section = useMemo(
+    () => (active ? flattenSections(active.sections).find((s) => s.id === sectionId) ?? null : null),
+    [active, sectionId],
+  );
+
+  /* Route persistence: templates save to their own store, clients to theirs. */
+  const persistDoc = useCallback((doc: PodDoc) => {
+    if (doc.isTemplate) saveTemplate(doc);
+    else void saveDoc(doc);
+  }, []);
+
+  const persist = useCallback(
+    (doc: PodDoc) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => persistDoc(doc), 700);
+    },
+    [persistDoc],
+  );
+
+  // Selecting a doc lands on its first content-bearing section.
+  function selectDoc(id: string) {
+    setActiveId(id);
+    const doc = docs.find((d) => d.id === id);
+    setSectionId(doc ? firstLeaf(doc.sections)?.id ?? null : null);
+  }
+
+  function selectSection(s: DocSection) {
+    setSectionId(s.id);
+  }
+
+  function handleAddSection(parentId: string | null) {
+    if (!active) return;
+    const { doc, section } = addSection(active, parentId);
+    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
+    setSectionId(section.id);
+    setAutoEditId(section.id);
+    void persistDoc(doc);
+  }
+
+  function handleRenameSection(id: string, title: string) {
+    if (!active) return;
+    setAutoEditId(null);
+    const doc = renameSection(active, id, title);
+    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
+    persist(doc);
+  }
+
+  function handleToggleDone() {
+    if (!active || !section) return;
+    const doc = toggleSectionDone(active, section.id);
+    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
+    persist(doc);
+  }
+
+
+  function handleDeleteSection(id: string) {
+    if (!active) return;
+    const flat = flattenSections(active.sections);
+    const target = flat.find((s) => s.id === id);
+    const childIds = target?.children?.map((c) => c.id) ?? [];
+    const doc = deleteSection(active, id);
+    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
+    // If the open section was deleted (or was a child of a deleted group), land
+    // on the doc's first section again.
+    if (sectionId === id || childIds.includes(sectionId ?? "")) {
+      setSectionId(firstLeaf(doc.sections)?.id ?? null);
+    }
+    void persistDoc(doc);
+  }
+
+  const handleBodyChange = useCallback(
+    (html: string) => {
+      if (!active || !section) return;
+      const updated = setSectionBody(active, section.id, html);
+      setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
+      persist(updated);
+    },
+    [active, section, persist],
+  );
+
+  const handleRowsChange = useCallback(
+    (rows: Parameters<typeof setSectionRows>[2]) => {
+      if (!active || !section) return;
+      const updated = setSectionRows(active, section.id, rows);
+      setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
+      persist(updated);
+    },
+    [active, section, persist],
+  );
+
+  const handleEntriesChange = useCallback(
+    (entries: Parameters<typeof setSectionEntries>[2]) => {
+      if (!active || !section) return;
+      const updated = setSectionEntries(active, section.id, entries);
+      setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
+      persist(updated);
+    },
+    [active, section, persist],
+  );
+
+  function createDoc(podId: string, title: string, type: DocType, tier?: RetainerTier) {
+    const doc = newDoc(podId, title, type, tier);
+    setDocs((prev) => [...prev, doc]);
+    setActiveId(doc.id);
+    setSectionId(firstLeaf(doc.sections)?.id ?? null);
+    void saveDoc(doc);
+    setNewFor(null);
+  }
+
+  function deleteActive() {
+    if (!active || active.isTemplate) return;
+    if (!confirm(`Delete "${active.title}"? This cannot be undone.`)) return;
+    const remaining = docs.filter((d) => d.id !== active.id);
+    setDocs(remaining);
+    selectDoc(remaining.find((d) => !d.isTemplate)?.id ?? "");
+    void removeDoc(active.id);
+  }
+
+  const relationshipLabel = relationship(active?.startDate);
+
   return (
-    <TR
-      key={e.id}
-      className="cursor-pointer"
-      role="link"
-      tabIndex={0}
-      onClick={() => router.push(`/clients/${e.id}`)}
-      onKeyDown={(ev) => ev.key === "Enter" && router.push(`/clients/${e.id}`)}
-    >
-      <TD className="text-foreground">
-        {indented ? (
-          <span className="flex items-center gap-2 pl-6">
-            <span className="text-muted">{e.name ?? (e.type === "retainer" ? "Retainer" : "Project")}</span>
-          </span>
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+      <Rail
+        pods={pods}
+        docs={docs}
+        activeDocId={activeId}
+        onSelectDoc={selectDoc}
+        onNewDoc={(podId) => setNewFor(podId)}
+        onAddPod={(name) => setPods(addPod(name, pods))}
+        canEdit={canEdit}
+      />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        {loading ? (
+          <div className="grid flex-1 place-items-center text-sm text-subtle">Loading…</div>
+        ) : !active ? (
+          <div className="grid flex-1 place-items-center px-6 text-center">
+            <div>
+              <p className="text-sm text-muted">No document selected.</p>
+              <p className="mt-1 text-xs text-subtle">
+                Pick one from a pod, or hover a pod and hit + to start a new one.
+              </p>
+            </div>
+          </div>
         ) : (
-          // Reserve the chevron's slot so single-client names line up with the
-          // collapsible (multi-engagement) client rows.
-          <span className="inline-flex items-center gap-2">
-            <span className="size-3.5 shrink-0" aria-hidden />
-            <span className="font-medium">{clientName}</span>
-          </span>
+          <>
+            {/* Doc header — title with inline meta (type · relationship) on the
+                left, the page actions on the right. */}
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border-faint px-6 py-3">
+              <div className="min-w-[12rem] flex-1">
+                <input
+                  value={active.title}
+                  readOnly={!canEdit}
+                  onChange={(e) => {
+                    const updated = { ...active, title: e.target.value };
+                    setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
+                    persist(updated);
+                  }}
+                  className="w-full min-w-0 truncate bg-transparent font-heading text-xl font-medium tracking-tight text-foreground focus:outline-none"
+                />
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-2xs text-subtle">
+                  {active.isTemplate ? (
+                    <span className="inline-flex items-center gap-1.5 text-ring">
+                      <span className="size-1.5 rounded-full bg-ring" />
+                      Template · edits apply to new {active.type === "retainer" ? "retainer" : "one-time"} clients
+                    </span>
+                  ) : (
+                    <>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className={`size-1.5 rounded-full ${active.type === "retainer" ? "bg-status-ontrack" : "bg-subtle"}`} />
+                        {active.type === "retainer"
+                          ? `${active.tier ? TIER_LABEL[active.tier] : "Core"} retainer`
+                          : "One-time project"}
+                      </span>
+                      {relationshipLabel && (
+                        <>
+                          <span aria-hidden>·</span>
+                          <span className="tabular-nums">{relationshipLabel}</span>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-1.5">
+                {canEdit && !active.isTemplate && section && section.kind !== "wip" && (
+                  <button
+                    onClick={handleToggleDone}
+                    title={section.done ? "Mark page as not done" : "Mark page complete"}
+                    className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-2xs font-medium transition-colors ${
+                      section.done
+                        ? "text-status-ontrack hover:bg-surface-hover"
+                        : "text-muted hover:bg-surface-hover hover:text-foreground"
+                    }`}
+                  >
+                    {section.done ? <CheckCircleSolid className="size-4" /> : <CheckCircleIcon className="size-4" />}
+                    {section.done ? "Completed" : "Mark complete"}
+                  </button>
+                )}
+                {!active.isTemplate && section?.kind !== "journal" && section?.kind !== "wip" && (
+                  <button
+                    onClick={() => setPrinting(true)}
+                    title="Export a client PDF"
+                    className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-2xs font-medium text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+                  >
+                    <ArrowDownTrayIcon className="size-4" /> Export
+                  </button>
+                )}
+                {canEdit && !active.isTemplate && (
+                  <button
+                    onClick={deleteActive}
+                    title="Delete document"
+                    className="flex size-8 items-center justify-center rounded-md text-subtle transition-colors hover:bg-surface-hover hover:text-danger"
+                  >
+                    <TrashIcon className="size-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1">
+              {!section ? (
+                <div className="grid h-full place-items-center text-sm text-subtle">
+                  Pick a page above.
+                </div>
+              ) : section.kind === "results" ? (
+                <ResultsTable
+                  rows={section.rows ?? []}
+                  onChange={handleRowsChange}
+                  onAddRow={() => handleRowsChange([...(section.rows ?? []), newTestRow()])}
+                  canEdit={canEdit}
+                />
+              ) : section.kind === "journal" ? (
+                <JournalNotes
+                  entries={section.entries ?? []}
+                  onChange={handleEntriesChange}
+                  onAdd={() => handleEntriesChange([newNoteEntry(), ...(section.entries ?? [])])}
+                  canEdit={canEdit}
+                />
+              ) : section.kind === "wip" ? (
+                <WipReflection clientId={active.id} />
+              ) : (
+                <DocEditor
+                  contentKey={`${active.id}::${section.id}`}
+                  initialBody={section.body}
+                  onChange={handleBodyChange}
+                  editable={canEdit}
+                  appendAction={
+                    section.id === "first-week-wins/strategy-brief"
+                      ? { label: "Add page brief", html: BRIEF_BLOCK }
+                      : undefined
+                  }
+                />
+              )}
+            </div>
+          </>
         )}
-      </TD>
-      <TD className="text-muted capitalize">{e.type}{e.tier ? ` · £${e.tier}` : ""}</TD>
-      <TD className="text-muted">{e.goal === "renew" ? "Renewal" : "Convert"}</TD>
-      <TD align="right"><Num className="text-muted">£{e.value.toLocaleString()}{e.type === "retainer" ? "/mo" : ""}</Num></TD>
-      <TD className="text-muted">{e.csm ?? "—"}</TD>
-      <TD>
-        {e.status !== "active" ? (
-          <span className="inline-flex items-center gap-1.5 text-xs text-subtle">
-            <span className="size-1.5 rounded-full bg-subtle" />
-            {e.status === "churned" ? "Churned" : "Complete"}
-          </span>
-        ) : row.needsSetup ? (
-          /* Never let an un-set-up engagement read as healthy: with no pod or no
-             deliverables it's in no KPI and no one's task list. */
-          <span
-            className="inline-flex items-center gap-1.5 text-xs text-status-approaching"
-            title={`Not set up on the delivery board (${row.setupGap}). It won't appear in KPIs or anyone's tasks until it is.`}
-          >
-            <span className="size-1.5 rounded-full bg-status-approaching" />
-            Needs setup
-            <span className="text-subtle">· {row.setupGap}</span>
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-            <span className={`size-1.5 rounded-full ${st.tone === "ok" ? "bg-status-ontrack" : st.tone === "warn" ? "bg-status-approaching" : "bg-status-late"}`} />
-            {st.word}
-            {st.tone === "bad" && comp.done < comp.total ? <span className="text-subtle">· {comp.total - comp.done} missing</span> : null}
-          </span>
-        )}
-      </TD>
-      <TD align="right"><Num className={days !== null && days <= 14 ? "text-status-approaching" : "text-muted"}>{days === null ? "—" : `${days}d`}</Num></TD>
-    </TR>
+      </div>
+
+      {active && (
+        <PageNav
+          sections={active.sections}
+          activeId={sectionId}
+          autoEditId={autoEditId}
+          onSelect={selectSection}
+          onAddSection={handleAddSection}
+          onRename={handleRenameSection}
+          onDelete={handleDeleteSection}
+          canEdit={canEdit}
+        />
+      )}
+
+      {printing && active && section && (
+        <ReportExport doc={active} section={section} onClose={() => setPrinting(false)} />
+      )}
+
+      {newFor && (
+        <NewDocModal
+          podName={pods.find((p) => p.id === newFor)?.name ?? "pod"}
+          onCancel={() => setNewFor(null)}
+          onCreate={(title, type, tier) => createDoc(newFor, title, type, tier)}
+        />
+      )}
+    </div>
   );
 }
 
-function PrepCalendar({ rows }: { rows: Row[] }) {
-  const router = useRouter();
-  const [offset, setOffset] = useState(0);
-  const days = weekDays(new Date(), offset);
-  const today = new Date();
-  const eyebrow = offset === 0 ? "This week" : offset === -1 ? "Last week" : offset === 1 ? "Next week" : "Week";
-  const buckets: Chip[][] = days.map(() => []);
+/* ── New-doc modal ── */
+function NewDocModal({
+  podName,
+  onCancel,
+  onCreate,
+}: {
+  podName: string;
+  onCancel: () => void;
+  onCreate: (title: string, type: DocType, tier?: RetainerTier) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState<DocType>("retainer");
+  const [tier, setTier] = useState<RetainerTier>("core");
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
-  rows.forEach(({ engagement: e, client }) => {
-    e.items.forEach((item) => {
-      const dueISO = itemDueISO(item, e.startDate);
-      if (!dueISO) return;
-      const due = new Date(dueISO + "T00:00:00");
-      const overdue = itemOverdue(item, e.startDate);
-      const chip: Chip = { engId: e.id, client: client.name, label: item.label, overdue };
-      const idx = days.findIndex((d) => sameDay(d, due));
-      if (idx >= 0) buckets[idx].push(chip);
-      else if (overdue && due < days[0]) buckets[0].push({ ...chip, overdue: true });
-    });
-  });
+  return createPortal(
+    <div className="fixed inset-0 z-50 grid place-items-center bg-background/60 p-4 backdrop-blur-[2px]">
+      <div className="w-full max-w-sm rounded-lg border border-panel-line bg-surface-raised p-5">
+        <h2 className="font-heading text-base font-medium text-foreground">New doc in {podName}</h2>
+        <p className="mt-0.5 text-xs text-subtle">Spins up from the matching template.</p>
 
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-3xs font-medium uppercase tracking-wider text-subtle">{eyebrow} · to prepare</p>
-        <div className="flex items-center gap-2">
-          {offset !== 0 && <button onClick={() => setOffset(0)} className="text-3xs text-subtle transition-colors hover:text-muted">This week</button>}
-          <button onClick={() => setOffset((o) => o - 1)} className="text-subtle transition-colors hover:text-foreground" aria-label="Previous week"><ChevronLeftIcon className="size-4" /></button>
-          <span className="min-w-[104px] text-center text-xs font-medium tabular-nums text-foreground">{weekLabel(days)}</span>
-          <button onClick={() => setOffset((o) => o + 1)} className="text-subtle transition-colors hover:text-foreground" aria-label="Next week"><ChevronRightIcon className="size-4" /></button>
+        <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-subtle">
+          Client / project
+        </label>
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && title.trim() && onCreate(title, type, type === "retainer" ? tier : undefined)}
+          placeholder="e.g. Lumen Skincare"
+          className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-subtle focus:border-foreground focus:outline-none focus:ring-1 focus:ring-ring/40"
+        />
+
+        <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-subtle">Type</label>
+        <div className="mt-1.5 grid grid-cols-2 gap-2">
+          {(["retainer", "project"] as DocType[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setType(t)}
+              className={`rounded-md border px-3 py-2 text-xs transition-colors ${
+                type === t
+                  ? "border-foreground/30 bg-surface text-foreground"
+                  : "border-border text-muted hover:text-foreground"
+              }`}
+            >
+              {t === "retainer" ? "Retainer" : "One-time project"}
+            </button>
+          ))}
         </div>
-      </div>
-      <div className="grid grid-cols-5 overflow-hidden rounded border border-border-faint bg-surface">
-        {days.map((d, i) => (
-          <div key={i} className={`min-h-[148px] p-3 ${i > 0 ? "border-l border-border-faint" : ""} ${sameDay(d, today) ? "bg-surface-raised" : ""}`}>
-            <div className="mb-2 flex items-baseline gap-1.5">
-              <span className="text-xs font-medium text-foreground">{WD[i]}</span>
-              <span className="text-3xs tabular-nums text-subtle">{d.getDate()}</span>
-            </div>
-            <div className="space-y-1">
-              {buckets[i].length === 0 && <span className="text-3xs text-subtle/50">—</span>}
-              {buckets[i].map((c, j) => (
+
+        {type === "retainer" && (
+          <>
+            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-subtle">Tier</label>
+            <div className="mt-1.5 grid grid-cols-4 gap-1.5">
+              {(Object.keys(TIER_LABEL) as RetainerTier[]).map((t) => (
                 <button
-                  key={j}
-                  onClick={() => router.push(`/clients/${c.engId}`)}
-                  className="flex w-full items-center gap-1.5 rounded border border-border-faint px-1.5 py-1 text-left text-3xs transition-colors hover:bg-background"
+                  key={t}
+                  onClick={() => setTier(t)}
+                  className={`rounded-md border px-2 py-1.5 text-2xs transition-colors ${
+                    tier === t
+                      ? "border-foreground/30 bg-surface text-foreground"
+                      : "border-border text-muted hover:text-foreground"
+                  }`}
                 >
-                  <span className={`size-1 shrink-0 rounded-full ${c.overdue ? "bg-status-late" : "bg-subtle"}`} />
-                  <span className="truncate text-muted"><span className="text-foreground">{c.client}</span> · {c.label}</span>
+                  {TIER_LABEL[t]}
                 </button>
               ))}
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+          </>
+        )}
 
-export default function ClientsPage() {
-  const router = useRouter();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [filter, setFilter] = useState<Filter>("all");
-
-  const { clients: kanbanClients } = useKanbanData();
-  useEffect(() => {
-    let cancelled = false;
-    rosterFromKanban(kanbanClients).then((r) => {
-      // One row per engagement — active first, then completed/churned, so an
-      // upsell from a single build to a retainer shows both with their status.
-      if (cancelled) return;
-      const rank = (s: Engagement["status"]) => (s === "active" ? 0 : 1);
-      setRows(r.slice().sort((a, b) => rank(a.engagement.status) - rank(b.engagement.status)));
-    });
-    return () => { cancelled = true; };
-  }, [kanbanClients]);
-
-  const shown = useMemo(() => rows.filter((r) => filter === "all" || r.engagement.type === filter), [rows, filter]);
-
-  // Group engagements under their client — a client can hold several (a build
-  // upsold onto a retainer, month-2/3 blocks, past projects). One collapsible
-  // parent per client, with the engagement count + a rollup on the header.
-  const groups = useMemo(() => {
-    const byClient = new Map<string, { client: Client; rows: Row[] }>();
-    /* Seed EVERY kanban client first, so a client with no projects yet (easy to
-     * create from the board's Add-client) still shows instead of silently
-     * vanishing from the roster. Only on the unfiltered view — under a
-     * type filter an engagement-less client is just noise. */
-    if (filter === "all") {
-      for (const kc of kanbanClients) {
-        byClient.set(kc.id, { client: { id: kc.id, name: kc.name, createdAt: "" }, rows: [] });
-      }
-    }
-    for (const row of shown) {
-      const g = byClient.get(row.client.id) ?? { client: row.client, rows: [] };
-      g.rows.push(row);
-      byClient.set(row.client.id, g);
-    }
-    return [...byClient.values()];
-  }, [shown, kanbanClients, filter]);
-
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const toggle = (id: string) =>
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-
-  const stats = useMemo(() => {
-    const retainers = rows.filter((r) => r.engagement.type === "retainer");
-    const projects = rows.filter((r) => r.engagement.type === "project");
-    // A month ago: what did the current book look like then? Engagements that
-    // had already started count toward the prior-month figure. This can't see
-    // churn (inactive engagements are dropped), so it reads net-new movement.
-    const monthAgo = new Date();
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-    const startedBeforeMonthAgo = (r: Row) =>
-      new Date(r.engagement.startDate) <= monthAgo;
-    const prevMrr = retainers
-      .filter(startedBeforeMonthAgo)
-      .reduce((s, r) => s + r.engagement.value, 0);
-    const prevProjects = projects.filter(startedBeforeMonthAgo).length;
-    const mrr = retainers.reduce((s, r) => s + r.engagement.value, 0);
-    return {
-      mrr,
-      mrrDelta: mrr - prevMrr,
-      retainerCount: retainers.length,
-      projectCount: projects.length,
-      projectDelta: projects.length - prevProjects,
-      projectVal: projects.reduce((s, r) => s + r.engagement.value, 0),
-      renewalsSoon: retainers.filter((r) => { const d = daysUntil(r.engagement.renewalDate); return d !== null && d <= 30; }).length,
-      /* Un-set-up engagements count as attention: they're live but invisible in
-         KPIs + everyone's tasks until a pod + deliverables exist. */
-      attention: rows.filter((r) => r.needsSetup || stateWord(r.engagement).tone !== "ok").length,
-    };
-  }, [rows]);
-
-  // Derived monthly trajectory for the sparklines: for each of the last 6
-  // months, the book as it stood at that month's end (engagements already
-  // started). Grounded in real start dates; can't reflect past churn.
-  const series = useMemo(() => {
-    const retainers = rows.filter((r) => r.engagement.type === "retainer");
-    const projects = rows.filter((r) => r.engagement.type === "project");
-    const now = new Date();
-    const mrr: number[] = [];
-    const proj: number[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      const started = (r: Row) => new Date(r.engagement.startDate) <= monthEnd;
-      mrr.push(retainers.filter(started).reduce((s, r) => s + r.engagement.value, 0));
-      proj.push(projects.filter(started).length);
-    }
-    return { mrr, proj };
-  }, [rows]);
-
-  return (
-    <div className="space-y-6 px-6 pb-20 pt-10 md:px-10">
-      <header>
-        <h1 className="text-xl font-semibold">Clients</h1>
-        <p className="mt-1 text-sm text-muted">Every engagement, its goal, and anything outstanding.</p>
-      </header>
-
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard
-          label="Current MRR"
-          value={`£${stats.mrr.toLocaleString()}`}
-          delta={stats.mrrDelta}
-          deltaPrefix="£"
-          deltaCaption="vs last month"
-          series={series.mrr}
-        />
-        <StatCard
-          label="Projects in flight"
-          value={String(stats.projectCount)}
-          delta={stats.projectDelta}
-          deltaCaption="vs last month"
-          series={series.proj}
-        />
-        <StatCard
-          label="Renewals ≤30d"
-          value={String(stats.renewalsSoon)}
-          deltaCaption={stats.renewalsSoon ? "approaching" : "none due"}
-          tone={stats.renewalsSoon ? "warn" : undefined}
-        />
-        <StatCard
-          label="Needs attention"
-          value={String(stats.attention)}
-          deltaCaption="gaps or overdue"
-          tone={stats.attention ? "bad" : undefined}
-        />
-      </div>
-
-      <PrepCalendar rows={rows} />
-
-      {/* toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-subtle tabular-nums">
-            {groups.length} client{groups.length === 1 ? "" : "s"} · {shown.length} engagement{shown.length === 1 ? "" : "s"}
-          </span>
-          <div className="flex gap-1">
-            {(["all", "retainer", "project"] as Filter[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`h-8 rounded border px-2.5 text-xs capitalize transition-colors ${filter === f ? "border-border bg-surface-raised text-foreground" : "border-border-faint text-muted hover:text-foreground"}`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onCancel} className="rounded-md px-3 py-1.5 text-xs text-muted hover:text-foreground">
+            Cancel
+          </button>
+          <button
+            disabled={!title.trim()}
+            onClick={() => onCreate(title, type, type === "retainer" ? tier : undefined)}
+            className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground transition-opacity disabled:opacity-40"
+          >
+            Create doc
+          </button>
         </div>
       </div>
-
-      {/* table */}
-      <div className="overflow-x-auto rounded border border-border-faint bg-surface">
-        <Table>
-          <THead>
-            <TR hover={false}>
-              <TH>Client</TH>
-              <TH>Type</TH>
-              <TH>Goal</TH>
-              <TH align="right">Value</TH>
-              <TH>Owner</TH>
-              <TH>State</TH>
-              <TH align="right">{filter === "project" ? "Ends in" : filter === "retainer" ? "Renews in" : "Renews / ends"}</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {groups.map((g) => {
-              /* A client with no projects at all. It used to be dropped from the
-                 roster entirely — a real client silently disappearing. Show it,
-                 flagged, so someone can give it an engagement. */
-              if (g.rows.length === 0) {
-                return (
-                  <TR key={g.client.id} hover={false}>
-                    <TD className="text-foreground">
-                      <span className="inline-flex items-center gap-2">
-                        <span className="size-3.5 shrink-0" aria-hidden />
-                        <span className="font-medium">{g.client.name}</span>
-                      </span>
-                    </TD>
-                    <TD className="text-subtle">—</TD>
-                    <TD className="text-subtle">—</TD>
-                    <TD align="right"><Num className="text-subtle">—</Num></TD>
-                    <TD className="text-subtle">—</TD>
-                    <TD>
-                      <span className="inline-flex items-center gap-1.5 text-xs text-status-approaching">
-                        <span className="size-1.5 rounded-full bg-status-approaching" />
-                        No engagement yet
-                      </span>
-                    </TD>
-                    <TD align="right"><Num className="text-subtle">—</Num></TD>
-                  </TR>
-                );
-              }
-              const single = g.rows.length === 1;
-              const isOpen = expanded.has(g.client.id);
-              // Rollup for the client header row (multi-engagement clients).
-              const mrr = g.rows
-                .filter((r) => r.engagement.type === "retainer" && r.engagement.status === "active")
-                .reduce((s, r) => s + r.engagement.value, 0);
-              const soonest = g.rows
-                .map((r) =>
-                  daysUntil(r.engagement.type === "project" ? r.engagement.targetEndDate : r.engagement.renewalDate),
-                )
-                .filter((d): d is number => d !== null)
-                .sort((a, b) => a - b)[0];
-              const needsSetup = g.rows.some((r) => r.needsSetup);
-              const worst = g.rows
-                .filter((r) => r.engagement.status === "active")
-                .reduce<"ok" | "warn" | "bad">((acc, r) => {
-                  const t = stateWord(r.engagement).tone;
-                  const rank = { ok: 0, warn: 1, bad: 2 } as const;
-                  return rank[t] > rank[acc] ? t : acc;
-                }, "ok");
-
-              // Single engagement → the client row IS the engagement row.
-              if (single) return engagementRow(g.rows[0], g.client.name, router, false);
-
-              return (
-                <Fragment key={g.client.id}>
-                  <TR className="cursor-pointer" onClick={() => toggle(g.client.id)}>
-                    <TD className="text-foreground">
-                      <span className="inline-flex items-center gap-2">
-                        {isOpen ? <ChevronDownIcon className="size-3.5 text-subtle" /> : <ChevronRightIcon className="size-3.5 text-subtle" />}
-                        <span className="font-medium">{g.client.name}</span>
-                        <span className="rounded-full border border-border-faint px-1.5 py-0.5 text-3xs tabular-nums text-subtle">
-                          {g.rows.length}
-                        </span>
-                      </span>
-                    </TD>
-                    <TD className="text-subtle">—</TD>
-                    <TD className="text-subtle">—</TD>
-                    <TD align="right"><Num className="text-muted">{mrr > 0 ? `£${mrr.toLocaleString()}/mo` : "—"}</Num></TD>
-                    <TD className="text-subtle">—</TD>
-                    <TD>
-                      {needsSetup ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-status-approaching">
-                          <span className="size-1.5 rounded-full bg-status-approaching" />
-                          Needs setup
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-                          <span className={`size-1.5 rounded-full ${worst === "ok" ? "bg-status-ontrack" : worst === "warn" ? "bg-status-approaching" : "bg-status-late"}`} />
-                          {worst === "ok" ? "On track" : worst === "warn" ? "Watch" : "Needs attention"}
-                        </span>
-                      )}
-                    </TD>
-                    <TD align="right"><Num className={soonest !== undefined && soonest <= 14 ? "text-status-approaching" : "text-muted"}>{soonest === undefined ? "—" : `${soonest}d`}</Num></TD>
-                  </TR>
-                  {isOpen && g.rows.map((r) => engagementRow(r, g.client.name, router, true))}
-                </Fragment>
-              );
-            })}
-          </TBody>
-        </Table>
-      </div>
-
-    </div>
+    </div>,
+    document.body,
   );
 }

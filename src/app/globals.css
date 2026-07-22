@@ -787,3 +787,278 @@ h1, h2, h3, h4, h5, h6 {
   animation: hero-offer-glow-pulse 2.8s ease-in-out infinite;
 }
 
+
+/* ── Pod Projects document editor (.pod-doc) ──
+ * Token-based, theme-aware prose for the TipTap canvas. Reads as a set
+ * document, not a Google Doc: Inter Tight headings, a comfortable measure,
+ * and — the whole point — tables that behave (token borders, header row,
+ * hover, resize handles). No hex literals; everything rides the tokens. */
+.pod-doc {
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+.pod-doc:focus { outline: none; }
+.pod-doc > * + * { margin-top: 0.85rem; }
+/* Prose blocks self-cap to a comfortable measure; tables span the full canvas
+   so wide grids (Test Results, ICE) don't wrap their headers. */
+.pod-doc p, .pod-doc ul, .pod-doc ol,
+.pod-doc h1, .pod-doc h2, .pod-doc h3, .pod-doc h4 { max-width: 68ch; }
+.pod-doc h1 {
+  font-family: var(--font-heading, inherit);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--foreground);
+  margin-top: 0;
+}
+.pod-doc h2 {
+  font-family: var(--font-heading, inherit);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin-top: 2rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--border);
+}
+.pod-doc h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-top: 1.4rem;
+}
+.pod-doc p { color: var(--foreground); }
+.pod-doc img, .pod-doc .pod-doc-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--color-border-faint);
+  margin: 0.5rem 0;
+}
+.pod-doc img.ProseMirror-selectednode { outline: 2px solid var(--ring); }
+.pod-doc strong { font-weight: 600; color: var(--foreground); }
+.pod-doc em { color: var(--muted); font-style: italic; }
+.pod-doc ul, .pod-doc ol { padding-left: 1.4rem; }
+.pod-doc ul { list-style-type: disc; }
+.pod-doc ol { list-style-type: decimal; }
+.pod-doc li { margin-top: 0.25rem; }
+.pod-doc li::marker { color: var(--subtle); }
+.pod-doc a { color: var(--ring); text-decoration: underline; text-underline-offset: 2px; }
+.pod-doc hr { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
+
+/* Placeholder for an empty doc. */
+.pod-doc p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--subtle);
+}
+
+/* Tables — the reason to leave Docs. TipTap wraps each table in .tableWrapper;
+   let that scroll horizontally so a wide grid (Test Results, ICE) keeps its
+   columns instead of crushing them (DESIGN.md: wide content scrolls in its own
+   overflow-x box). Columns size to content, headers stay on one line. */
+.pod-doc .tableWrapper { overflow-x: auto; margin: 1rem 0; }
+.pod-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+.pod-doc th, .pod-doc td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+  text-align: left;
+  position: relative;
+  min-width: 5.5rem;
+}
+.pod-doc th {
+  background: var(--color-surface-hover);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.pod-doc td p, .pod-doc th p { margin: 0; font-size: 0.875rem; }
+.pod-doc td:hover { background: var(--color-surface-hover); }
+/* Selected cell + column resize handle (TipTap). */
+.pod-doc .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ring);
+  opacity: 0.12;
+  pointer-events: none;
+}
+.pod-doc .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 3px;
+  background: var(--ring);
+  pointer-events: none;
+}
+.pod-doc.resize-cursor { cursor: col-resize; }
+
+/* Checklists (TipTap task list) — carded rows with real checkboxes; checked
+   items strike through and mute. Used by the Onboarding setup page. */
+.pod-doc ul[data-type="taskList"] {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pod-doc ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+}
+.pod-doc ul[data-type="taskList"] li + li { border-top: 1px solid var(--color-border-faint); }
+.pod-doc ul[data-type="taskList"] li > label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  user-select: none;
+}
+.pod-doc ul[data-type="taskList"] li > label > span { display: none; }
+.pod-doc ul[data-type="taskList"] li > label > input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--subtle);
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s, border-color 0.12s;
+}
+.pod-doc ul[data-type="taskList"] li > label > input:checked {
+  background: var(--foreground);
+  border-color: var(--foreground);
+}
+.pod-doc ul[data-type="taskList"] li > label > input:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1.5px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--background);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.pod-doc ul[data-type="taskList"] li > div { min-width: 0; flex: 1; }
+.pod-doc ul[data-type="taskList"] li > div p { margin: 0; font-size: 0.9375rem; }
+.pod-doc ul[data-type="taskList"] li[data-checked="true"] > div p {
+  text-decoration: line-through;
+  color: var(--subtle);
+}
+
+/* ── Pod Projects: client PDF sheet (.pod-print) ──
+ * A deliberately LIGHT, branded document surface for the client deliverable —
+ * independent of the app's dark theme, so explicit ink/paper colours are used
+ * here on purpose (this is a print artifact, not app chrome). */
+.pod-print {
+  color: #1a1b1e;
+  font-size: 11pt;
+  line-height: 1.65;
+}
+.pod-print-brand {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e5e5ea;
+}
+.pod-print-wordmark { font-weight: 700; letter-spacing: -0.01em; color: #1a1b1e; }
+.pod-print-date { font-size: 9pt; color: #8a8f98; }
+.pod-print h1 { font-size: 22pt; font-weight: 600; letter-spacing: -0.02em; margin: 0; color: #1a1b1e; }
+.pod-print-meta { margin: 4px 0 0; font-size: 9.5pt; color: #6b6f76; text-transform: uppercase; letter-spacing: 0.04em; }
+.pod-print-section { margin-top: 28px; page-break-inside: avoid; }
+.pod-print h2 {
+  font-size: 14pt; font-weight: 600; color: #1a1b1e;
+  margin: 28px 0 8px; padding-bottom: 5px; border-bottom: 1px solid #e5e5ea;
+}
+.pod-print h3 { font-size: 11.5pt; font-weight: 600; color: #2d2d2d; margin: 18px 0 6px; }
+.pod-print p { margin: 0 0 8px; color: #2d2d2d; }
+.pod-print strong { font-weight: 600; color: #1a1b1e; }
+.pod-print em { font-style: italic; color: #9a9da4; }
+.pod-print ul, .pod-print ol { margin: 0 0 8px; padding-left: 20px; }
+.pod-print li { margin: 2px 0; }
+.pod-print table { width: 100%; border-collapse: collapse; margin: 10px 0; page-break-inside: avoid; }
+.pod-print th, .pod-print td { border: 1px solid #d8d8dd; padding: 5px 8px; text-align: left; vertical-align: top; }
+.pod-print th { background: #f5f5f7; font-weight: 600; font-size: 9.5pt; color: #4a4a4a; }
+.pod-print td p, .pod-print th p { margin: 0; }
+.pod-print-empty { margin-top: 28px; font-style: italic; color: #9a9da4; }
+
+/* ── Projects: monthly slide deck (.pod-deck / .pod-slide) ──
+ * Landscape 16:9 slides, one topic each. Light like the one-pager. On screen
+ * they stack; in print each slide is a full landscape page. */
+.pod-slide {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #fff;
+  color: #1a1b1e;
+  border-radius: 12px;
+  padding: 48px 56px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.pod-slide h2 {
+  font-size: 20pt;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #1a1b1e;
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e5ea;
+}
+.pod-slide p { color: #2d2d2d; margin: 0 0 8px; font-size: 12pt; }
+.pod-slide strong { font-weight: 600; color: #1a1b1e; }
+.pod-slide ul, .pod-slide ol { margin: 0 0 8px; padding-left: 22px; }
+.pod-slide li { margin: 3px 0; font-size: 12pt; }
+.pod-slide table { width: 100%; border-collapse: collapse; margin: 4px 0; font-size: 11.5pt; }
+.pod-slide th, .pod-slide td { border: 1px solid #d8d8dd; padding: 7px 10px; text-align: left; }
+.pod-slide th { background: #f5f5f7; font-weight: 600; font-size: 10pt; color: #4a4a4a; }
+.pod-slide td p, .pod-slide th p { margin: 0; }
+.pod-slide-empty { font-style: italic; color: #9a9da4; }
+/* Cover slide */
+.pod-slide-cover { justify-content: space-between; background: #0e0e11; color: #f5f5f7; }
+.pod-slide-cover h1 { font-size: 34pt; font-weight: 600; letter-spacing: -0.02em; margin: 0; color: #fff; }
+.pod-slide-cover p { font-size: 15pt; color: #c7c9d1; margin: 6px 0 0; }
+.pod-slide-brand { font-weight: 700; letter-spacing: 0.02em; color: #f5f5f7; }
+.pod-slide-foot { font-size: 10pt; color: #8a8f98; }
+
+@media print {
+  .pod-deck { gap: 0 !important; }
+  .pod-slide {
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    page-break-after: always;
+    break-after: page;
+  }
+  .pod-slide:last-child { page-break-after: auto; break-after: auto; }
+}
+.pod-print-footer { margin-top: 32px; padding-top: 10px; border-top: 1px solid #e5e5ea; font-size: 8.5pt; color: #9a9da4; }
+
+/* Print: strip the app + toolbar so only the white sheet prints. */
+@media print {
+  body > *:not(.pod-print-root) { display: none !important; }
+  .pod-print-root { position: static !important; }
+  .pod-print-backdrop { background: #fff !important; }
+  .pod-print-toolbar { display: none !important; }
+  @page { margin: 18mm; }
+}

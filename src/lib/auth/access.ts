@@ -32,8 +32,9 @@ export type Role = "admin" | "cro" | "team";
  *  but never "/members". Prefix-matching without the boundary check is how you
  *  accidentally open a route that merely starts with the same letters. */
 export const TEAM_ROUTES: readonly string[] = [
-  "/my-work", // their tasks; also their landing after login
-  "/kanban", // Delivery - the board, read-only (canManage gates the edits)
+  "/delivery", // Delivery - the new cx_* board; their landing + "my tasks" (filtered to self)
+  "/clients", // the client delivery workspace (docs the whole pod edits)
+  "/kanban", // legacy board, still reachable by URL (unlinked from nav)
   "/tools/onboarding-inbox", // members handle new-client intake
   "/tools/sop-library", // SOPs
   "/wiki-v2", // Training
@@ -46,8 +47,7 @@ export const TEAM_ROUTES: readonly string[] = [
 
 /* Deliberately NOT on the list, so the next person doesn't wonder:
  *   /hero-offer  commercial - how the offer is positioned + priced
- *   /clients     client health, renewal, MRR
- *   /results-engine, /kpi   performance reporting
+ *   /results-engine, /kpi   performance reporting (currently shelved anyway)
  *   /sales, /outbound, /finance, /company, /admin
  *   /workspace, /pods-v2, /tasks   legacy, superseded by Delivery + My Tasks
  */

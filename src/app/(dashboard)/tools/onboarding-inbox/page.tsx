@@ -12,6 +12,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRole } from "@/components/auth-gate";
 import {
   CheckCircleIcon,
   ArrowTopRightOnSquareIcon,
@@ -90,6 +91,8 @@ function isNewSubmission(sub: OnboardingSubmission): boolean {
 
 export default function OnboardingInboxPage() {
   const router = useRouter();
+  const role = useRole();
+  const canEdit = role === "admin" || role === "cro"; // members get a read-only view
   const [submissions, setSubmissions] = useState<OnboardingSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<OnboardingSubmission | null>(null);
@@ -312,6 +315,8 @@ export default function OnboardingInboxPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  {canEdit && (
+                    <>
                   {selected.status !== "archived" ? (
                     <button
                       onClick={() => handleArchive(selected.id)}
@@ -350,12 +355,16 @@ export default function OnboardingInboxPage() {
                       Delete
                     </button>
                   )}
+                    </>
+                  )}
                   <button onClick={() => setSelected(null)} className="p-1.5 text-muted hover:text-foreground">
                     <XMarkIcon className="size-5" />
                   </button>
                 </div>
               </div>
 
+              {canEdit && (
+                <>
               {/* Readiness checklist */}
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -666,7 +675,12 @@ export default function OnboardingInboxPage() {
                                   assigned_at: new Date().toISOString(),
                                   assigned_by: "pm",
                                 });
-                                router.push(`/clients/${result.projectId}`);
+                                // The old /clients/[id] profile is gone (the pod
+                                // workspace lives at /clients now); land on the
+                                // Delivery board. NOTE: promoteOnboardingToKanban
+                                // still writes to the LEGACY kanban - rewire it to
+                                // create a cx_card directly as a follow-up.
+                                router.push("/delivery");
                               } catch (err) {
                                 console.error("Failed to create client:", err);
                               }
@@ -728,6 +742,8 @@ export default function OnboardingInboxPage() {
                     </section>
                   );
                 })()}
+                </>
+              )}
 
               {selected.status === "approved" && (
                 <section className="space-y-2 border-t border-border-faint pt-6">
@@ -741,16 +757,18 @@ export default function OnboardingInboxPage() {
                           : ""}
                       </span>
                     </div>
-                    <button
-                      onClick={async () => {
-                        if (!confirm("Send this submission back to pending? The linked engagement (if any) stays put, you can re-approve later.")) return;
-                        await updateSubmission(selected.id, { status: "pending", assigned_at: undefined, assigned_by: undefined });
-                      }}
-                      className="text-2xs font-medium text-muted hover:text-foreground hover:bg-surface px-2 py-1 rounded"
-                      title="Move back to pending"
-                    >
-                      ↩ Send back to pending
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Send this submission back to pending? The linked engagement (if any) stays put, you can re-approve later.")) return;
+                          await updateSubmission(selected.id, { status: "pending", assigned_at: undefined, assigned_by: undefined });
+                        }}
+                        className="text-2xs font-medium text-muted hover:text-foreground hover:bg-surface px-2 py-1 rounded"
+                        title="Move back to pending"
+                      >
+                        ↩ Send back to pending
+                      </button>
+                    )}
                   </div>
                   <ApprovedLinkRow submissionId={selected.id} />
                   {selected.assigned_portal_id && (
@@ -761,7 +779,7 @@ export default function OnboardingInboxPage() {
                       >
                         View portal <ArrowTopRightOnSquareIcon className="size-3" />
                       </Link>
-                      {(selected.deliverables?.length || 0) > 0 && (
+                      {canEdit && (selected.deliverables?.length || 0) > 0 && (
                         <button
                           onClick={async () => {
                             const portal = portals.find((p) => p.id === selected.assigned_portal_id);

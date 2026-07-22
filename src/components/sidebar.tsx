@@ -54,6 +54,8 @@ interface NavItem {
   /** Per-item visibility. Omit = everyone (incl. team). A section can mix
    *  team-visible and admin-only items (e.g. Delivery vs Onboarding). */
   roles?: ("admin" | "cro" | "team")[];
+  /** Shelved: rendered greyed + non-clickable (can't navigate to it for now). */
+  disabled?: boolean;
 }
 
 interface NavSection {
@@ -140,13 +142,12 @@ export const shelvedItems: NavItem[] = [
 ];
 
 /* Delivery — the kanban-style command surface over every client's
- * in-flight delivery work. Master view is the landing; drill into a single
- * client via the dropdown in the page header. Renamed from "Project
- * Delivery" to just "Delivery" since /workspace is now "Old Delivery"
- * (legacy, still in use until manual data migration completes). */
+ * in-flight delivery work. Points at the fresh, isolated /delivery board (the
+ * simple cx_* Trello-style kanban) — NOT the legacy /kanban, which stays
+ * reachable by URL but is unlinked from the nav. Visible to everyone. */
 const missionControlItem = {
   label: "Delivery",
-  href: "/kanban",
+  href: "/delivery",
   icon: <PixelBoard className="size-4" />,
 };
 /* Delivery KPIs — on-time / overdue / turnaround reporting off the ClickUp
@@ -179,9 +180,11 @@ const feedbackItem = {
   href: "/retention",
   icon: <PixelPulse className="size-4" />,
 };
-/* Clients — the Client Command Centre (CSM home): client roster, engagements,
- * compliance spine + cadence. Consolidates what Retention / client-health used
- * to cover. Lives at /clients. */
+/* Clients — the client delivery workspace (the "Pod 1 Projects" Google Doc
+ * rebuilt): one structured doc per engagement, grouped by pod, edited like a
+ * doc but with tables that work, templates, updates journal, test-results grid
+ * and a live Delivery reflection. Part of the isolated client-experience area
+ * (own cx_* data, no legacy hooks). Lives at /clients. */
 const clientsItem = {
   label: "Clients",
   href: "/clients",
@@ -279,13 +282,9 @@ const sopItem = {
  * carries a hint of the colour identity of its destination - the
  * playbook is special, the icon hints at it. */
 const heroOfferItem = {
-  label: "Hero Offer",
+  label: "Offer",
   href: "/hero-offer",
-  icon: (
-    <span className="size-5 rounded-md bg-surface-raised border border-border flex items-center justify-center shrink-0">
-      <StarIcon className="size-3 text-foreground" />
-    </span>
-  ),
+  icon: <StarIcon className="size-4" />,
 };
 
 /* Toolbox — the day-to-day tools every team member needs, carried over from
@@ -359,10 +358,10 @@ const navSections: NavSection[] = [
     group: "lifecycle",
     items: [
       onboardingItem,
-      { ...clientsItem, roles: ADMIN_CRO },
+      clientsItem,
       missionControlItem,
-      { ...resultsEngineItem, roles: ADMIN_CRO },
-      { ...kpiItem, roles: ADMIN_CRO },
+      { ...resultsEngineItem, roles: ADMIN_CRO, disabled: true },
+      { ...kpiItem, roles: ADMIN_CRO, disabled: true },
     ],
   },
   /* Acquisition — how work comes in: the outbound motion + the Hero Offer
@@ -380,7 +379,7 @@ const navSections: NavSection[] = [
     group: "lifecycle",
     roles: ADMIN_CRO,
     items: [
-      { ...outboundItem, roles: ADMIN_CRO },
+      { ...outboundItem, roles: ADMIN_CRO, disabled: true },
       { ...heroOfferItem, roles: ADMIN_CRO },
     ],
   },
@@ -454,7 +453,6 @@ export function Sidebar() {
   /* Build the searchable index: the 10 top-level surfaces + team tools +
    * footer links. Mirrors the sidebar order top-down. */
   const paletteItems: CommandItem[] = [
-    { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my tasks", "assigned"] },
     { label: trainingItem.label, href: trainingItem.href, group: "Pinned", icon: trainingItem.icon, keywords: ["wiki", "sop", "knowledge", "playbook", "learning"] },
     { label: submitInvoiceItem.label, href: submitInvoiceItem.href, group: "Pinned", icon: submitInvoiceItem.icon, keywords: ["invoice", "expenses", "submit", "pay"] },
     // Delivery (kanban board) — visible to everyone including members.
@@ -465,9 +463,8 @@ export function Sidebar() {
     ...(role !== "team"
       ? [
           { label: heroOfferItem.label, href: heroOfferItem.href, group: "Pinned", icon: heroOfferItem.icon, keywords: ["conversion engine", "playbook", "offer"] },
-          { label: clientsItem.label, href: clientsItem.href, group: "Pinned", icon: clientsItem.icon, keywords: ["clients", "command centre", "csm", "engagements", "accounts", "retention"] },
+          { label: clientsItem.label, href: clientsItem.href, group: "Pinned", icon: clientsItem.icon, keywords: ["clients", "docs", "workspace", "retainer", "delivery doc", "engagements", "csm", "projects"] },
           { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery", "legacy"] },
-          { label: kpiItem.label, href: kpiItem.href, group: "Pinned", icon: kpiItem.icon, keywords: ["metrics", "throughput", "on-time"] },
           { label: salesItem.label, href: salesItem.href, group: "Pinned", icon: salesItem.icon, keywords: ["pipeline", "leads", "deals", "outreach"] },
           { label: feedbackItem.label, href: feedbackItem.href, group: "Pinned", icon: feedbackItem.icon, keywords: ["retention", "csm", "client health"] },
           { label: financeItem.label, href: financeItem.href, group: "Pinned", icon: financeItem.icon, keywords: ["invoices", "expenses", "vat"] },
@@ -576,6 +573,19 @@ export function Sidebar() {
         </div>
         <div className="space-y-0.5">
           {section.items.map((item) => {
+            if (item.disabled) {
+              return (
+                <div
+                  key={item.href}
+                  aria-disabled="true"
+                  title="Shelved for now"
+                  className="flex cursor-not-allowed select-none items-center gap-2.5 rounded-md px-2.5 py-1 text-[13px] text-subtle/40"
+                >
+                  <span className="flex size-4 shrink-0 items-center justify-center text-subtle/40">{item.icon}</span>
+                  <span className="flex-1 truncate">{item.label}</span>
+                </div>
+              );
+            }
             const active = !item.external && isActive(item.href);
             const rowClass = `flex items-center gap-2.5 px-2.5 py-1 rounded-md text-[13px] transition-colors ${
               active
@@ -677,10 +687,10 @@ export function Sidebar() {
             event dispatched there (or ⌘K from anywhere). */}
         <nav className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* Overview (admin/CRO home) + My Tasks — pinned above the grouped
-              sections so home is always one click away. */}
+              sections so home is always one click away. Members work off the
+              Delivery board (filtered to themselves), so they don't get My Tasks. */}
           <div className="px-3 space-y-0.5">
             {role !== "team" && renderTopLink(overviewItem)}
-            {renderTopLink(myWorkItem)}
           </div>
 
           {/* Flat, always-visible sections: an uppercase label per group with

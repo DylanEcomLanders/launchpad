@@ -144,7 +144,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (fresh && typeof window !== "undefined") {
       const path = window.location.pathname;
       if (path === "/" || path === "/team") {
-        const target = user.role === "team" ? "/my-work" : "/";
+        const target = user.role === "team" ? "/delivery" : "/";
         if (path !== target) {
           window.location.replace(target);
           return true;
@@ -159,6 +159,27 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     async function boot() {
+      /* 0. DEV-ONLY auto-auth. Skips the login screen on the local `next dev`
+       * server so work-in-progress can be viewed without signing in. Gated on
+       * NODE_ENV === "development", which is ONLY ever true under `next dev` —
+       * every deployed build (Vercel main AND sandbox) runs `next build`, where
+       * NODE_ENV is "production" and this branch is dead code. Safe to leave in;
+       * it cannot bypass auth on any URL that isn't localhost. */
+      if (process.env.NODE_ENV === "development") {
+        /* Preview any role locally: set localStorage "dev-role" to
+         * "team" | "cro" | "admin" and reload. Defaults to admin. Dev-only. */
+        const override = localStorage.getItem("dev-role");
+        const devRole: UserRole = override === "team" || override === "cro" ? override : "admin";
+        sessionStorage.setItem(STORAGE_KEY, "true");
+        sessionStorage.setItem(ROLE_KEY, devRole);
+        setAuthed(true);
+        setRole(devRole);
+        setCurrentUser(getCachedCurrentUser());
+        setRoleCookie(devRole);
+        setChecking(false);
+        return;
+      }
+
       // 1. Legacy shared-password session still counts (transition window).
       const stored = sessionStorage.getItem(STORAGE_KEY);
       const storedRole = sessionStorage.getItem(ROLE_KEY) as UserRole | null;
@@ -217,11 +238,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return;
     const path = window.location.pathname;
     if (path === "/team" || !isTeamAllowedPath(path)) {
-      /* Members land straight on My Tasks - their day-to-day home.
-       * /me (profile / password / invoice) stays reachable by URL +
-       * via the Submit Invoice sidebar item, we just don't make the
-       * card-grid hub their landing. */
-      window.location.replace("/my-work");
+      /* Members land straight on the Delivery board - their day-to-day home
+       * (they filter it to themselves for "my tasks"). /my-work stays reachable
+       * by URL; it's just no longer their landing or a nav item. */
+      window.location.replace("/delivery");
     }
   }, [authed, role]);
 
@@ -282,7 +302,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       const landHome = path === "/" || path === "/team";
       const teamBlocked = r === "team" && !isTeamAllowedPath(path);
       if (landHome || teamBlocked) {
-        const target = r === "team" ? "/my-work" : "/";
+        const target = r === "team" ? "/delivery" : "/";
         if (path !== target) {
           window.location.replace(target);
           return;

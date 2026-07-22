@@ -37,6 +37,22 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-142",
+    date: "22 July 2026",
+    version: "3.3.0",
+    title: "A clean client-experience area: Clients docs and a fresh Delivery board, firewalled from the old data",
+    changes: [
+      { type: "added", text: "Clients, at /clients: one Google-Docs-style doc per engagement, grouped by pod, edited in TipTap with tables that actually work. Retainer and one-time templates the team edits itself (changes only flow into new clients, never existing ones), an Updates journal that dates every entry and lets you flag upsell opportunities, a structured Test Results grid that takes multiple screenshots per test, and per-report client PDF export (weekly one-pager, monthly slide deck). You can paste or drag an image straight into any doc now." },
+      { type: "added", text: "A fresh Delivery board at /delivery: a deliberately simple, Trello-style kanban on its own data, sharing nothing with the old /kanban. Cards drag across the flow (Tickets, Setup, Strategy, Design, Internal and External Revisions, Development, Internal QA, Client Approval, Launch, Done). Four assignees per card plus strategist and dev lead; whichever column a card sits in highlights the person who owns that stage. One expected-done date per stage flags a card late (red) or due today (orange). The Tickets column runs on SLAs: ticket 48h, bug 24h, fire immediate. Filter by client or by person to see just your work, manage the team in a People roster, and read an activity log of every card move." },
+      { type: "added", text: "A one-time import that pulls your existing kanban into the new board. It reads the old tables read-only (never touches them) and maps every deliverable to a card, carrying the stage, all four assignees and the per-stage dates across, and seeds the People roster from the names it finds. Idempotent, so it is safe to run more than once. Admins get an Import legacy button on the board." },
+      { type: "improved", text: "The Offer (formerly Hero Offer) is now an editable left-nav workspace: Overview, Price list, Resources and Info are each a TipTap doc the team amends in place, no code change needed. The presentable decks (pitch, kickoff, roadmap, monthly report) stay as their own structured tools." },
+      { type: "improved", text: "Roles are simpler. A team member sees only Onboarding, Clients and Delivery plus the Team area, and lands on the Delivery board. Clients is read-only for members (they see the single source of truth, they just cannot change it) and Onboarding is view-only too, so a member can review a submission but not archive, delete, or run the PM checklist." },
+      { type: "removed", text: "My Tasks. The Delivery board filtered to yourself is the replacement, so there is one board instead of a separate personal view to keep in sync." },
+      { type: "removed", text: "Results Engine, KPIs and Outbound are greyed out and unavailable for now, to be brought back once there is cadence and data worth reading. Their routes still exist; they are just shelved from the nav." },
+      { type: "added", text: "Migrations 059 to 063 (pod_docs, cx_cards, cx_people, cx_activity, hero_offer_doc). Until they are pasted the new surfaces run localStorage-only, so each write also best-efforts to Supabase and shares across the team the moment the tables exist." },
+    ],
+  },
+  {
     id: "cl-141",
     date: "17 July 2026",
     version: "3.2.0",
