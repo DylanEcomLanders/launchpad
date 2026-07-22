@@ -22,6 +22,7 @@ export function Rail({
   onSelectDoc,
   onNewDoc,
   onAddPod,
+  onMoveDoc,
   canEdit = true,
 }: {
   pods: Pod[];
@@ -30,10 +31,13 @@ export function Rail({
   onSelectDoc: (id: string) => void;
   onNewDoc: (podId: string) => void;
   onAddPod: (name: string) => void;
+  onMoveDoc?: (docId: string, podId: string) => void;
   canEdit?: boolean;
 }) {
   const [podClosed, setPodClosed] = useState<Record<string, boolean>>({});
   const [railCollapsed, setRailCollapsed] = useState(false);
+  const [draggedDocId, setDraggedDocId] = useState<string | null>(null);
+  const [dragOverPod, setDragOverPod] = useState<string | null>(null);
   const [addingPod, setAddingPod] = useState(false);
   const [podDraft, setPodDraft] = useState("");
   const podInputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +85,26 @@ export function Rail({
           const podDocs = docs.filter((d) => !d.isTemplate && d.podId === pod.id);
           const closed = podClosed[pod.id];
           return (
-            <div key={pod.id} className="mb-0.5">
+            <div
+              key={pod.id}
+              className={`mb-0.5 rounded-md ${dragOverPod === pod.id ? "bg-ring/10 ring-1 ring-ring/40" : ""}`}
+              onDragOver={(e) => {
+                if (!draggedDocId) return;
+                e.preventDefault();
+                if (dragOverPod !== pod.id) setDragOverPod(pod.id);
+              }}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setDragOverPod((cur) => (cur === pod.id ? null : cur));
+                }
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (draggedDocId && onMoveDoc) onMoveDoc(draggedDocId, pod.id);
+                setDraggedDocId(null);
+                setDragOverPod(null);
+              }}
+            >
               {/* Pod row */}
               <div className="group/pod flex items-center rounded-md pl-1.5 pr-1 hover:bg-surface-hover">
                 <button
@@ -121,10 +144,18 @@ export function Rail({
                     return (
                       <button
                         key={doc.id}
+                        draggable={canEdit && !!onMoveDoc}
+                        onDragStart={() => setDraggedDocId(doc.id)}
+                        onDragEnd={() => {
+                          setDraggedDocId(null);
+                          setDragOverPod(null);
+                        }}
                         onClick={() => onSelectDoc(doc.id)}
                         className={`flex w-full items-center gap-2 rounded-md py-1 pl-6 pr-2 text-left text-[13px] transition-colors ${
+                          draggedDocId === doc.id ? "opacity-40" : ""
+                        } ${
                           active ? "bg-surface-raised font-medium text-foreground" : "text-muted hover:bg-surface-hover hover:text-foreground"
-                        }`}
+                        } ${canEdit && onMoveDoc ? "cursor-grab active:cursor-grabbing" : ""}`}
                       >
                         <span
                           className={`size-1.5 shrink-0 rounded-full ${doc.type === "retainer" ? "bg-status-ontrack" : "bg-subtle"}`}

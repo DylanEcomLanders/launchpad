@@ -115,6 +115,15 @@ export default function PodProjectsPage() {
     [persistDoc],
   );
 
+  // Move a client doc to another pod (drag-drop in the rail).
+  function moveDocToPod(docId: string, podId: string) {
+    const doc = docs.find((d) => d.id === docId);
+    if (!doc || doc.isTemplate || doc.podId === podId) return;
+    const updated = { ...doc, podId, updated_at: new Date().toISOString() };
+    setDocs((prev) => prev.map((d) => (d.id === docId ? updated : d)));
+    persistDoc(updated);
+  }
+
   // Selecting a doc lands on its first content-bearing section.
   function selectDoc(id: string) {
     setActiveId(id);
@@ -225,6 +234,7 @@ export default function PodProjectsPage() {
         onSelectDoc={selectDoc}
         onNewDoc={(podId) => setNewFor(podId)}
         onAddPod={(name) => setPods(addPod(name, pods))}
+        onMoveDoc={moveDocToPod}
         canEdit={canEdit}
       />
 
