@@ -29,6 +29,7 @@ import {
   loadTemplatesCloud,
   saveTemplate,
   addPod,
+  savePods,
   saveDoc,
   removeDoc,
   restoreDoc,
@@ -125,6 +126,32 @@ export default function PodProjectsPage() {
     },
     [persistDoc],
   );
+
+  // Switch a client between retainer and one-time after creation. Sections are
+  // kept as-is; only the type (and default tier) change.
+  function changeType(type: DocType) {
+    if (!active || active.isTemplate || active.type === type) return;
+    const updated: PodDoc = {
+      ...active,
+      type,
+      tier: type === "retainer" ? active.tier ?? "core" : active.tier,
+      updated_at: new Date().toISOString(),
+    };
+    setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
+    persistDoc(updated);
+  }
+
+  // Delete a pod (only when empty, so no client is orphaned).
+  function deletePod(podId: string) {
+    if (docs.some((d) => !d.isTemplate && d.podId === podId)) {
+      alert("Move this pod's clients to another pod first (drag them), then you can delete it.");
+      return;
+    }
+    if (!confirm("Delete this pod?")) return;
+    const next = pods.filter((p) => p.id !== podId);
+    setPods(next);
+    savePods(next);
+  }
 
   // Move a client doc to another pod (drag-drop in the rail).
   function moveDocToPod(docId: string, podId: string) {
@@ -286,6 +313,7 @@ export default function PodProjectsPage() {
         onNewDoc={(podId) => setNewFor(podId)}
         onAddPod={(name) => setPods(addPod(name, pods))}
         onMoveDoc={moveDocToPod}
+        onDeletePod={deletePod}
         onOpenTrash={openTrash}
         trashCount={deletedDocs.length}
         canEdit={canEdit}
@@ -329,9 +357,25 @@ export default function PodProjectsPage() {
                     <>
                       <span className="inline-flex items-center gap-1.5">
                         <span className={`size-1.5 rounded-full ${active.type === "retainer" ? "bg-status-ontrack" : "bg-subtle"}`} />
-                        {active.type === "retainer"
-                          ? `${active.tier ? TIER_LABEL[active.tier] : "Core"} retainer`
-                          : "One-time project"}
+                        {canEdit ? (
+                          <select
+                            value={active.type}
+                            onChange={(e) => changeType(e.target.value as DocType)}
+                            title="Switch engagement type"
+                            className="-ml-0.5 cursor-pointer rounded bg-transparent text-2xs text-subtle outline-none hover:text-foreground focus:text-foreground"
+                          >
+                            <option value="retainer" className="bg-surface-raised text-foreground">
+                              {active.tier ? `${TIER_LABEL[active.tier]} retainer` : "Retainer"}
+                            </option>
+                            <option value="project" className="bg-surface-raised text-foreground">
+                              One-time project
+                            </option>
+                          </select>
+                        ) : active.type === "retainer" ? (
+                          `${active.tier ? TIER_LABEL[active.tier] : "Core"} retainer`
+                        ) : (
+                          "One-time project"
+                        )}
                       </span>
                       {relationshipLabel && (
                         <>

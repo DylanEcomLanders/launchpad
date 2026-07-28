@@ -24,6 +24,7 @@ export function Rail({
   onNewDoc,
   onAddPod,
   onMoveDoc,
+  onDeletePod,
   onOpenTrash,
   trashCount = 0,
   canEdit = true,
@@ -35,6 +36,7 @@ export function Rail({
   onNewDoc: (podId: string) => void;
   onAddPod: (name: string) => void;
   onMoveDoc?: (docId: string, podId: string) => void;
+  onDeletePod?: (podId: string) => void;
   onOpenTrash?: () => void;
   trashCount?: number;
   canEdit?: boolean;
@@ -120,6 +122,15 @@ export function Rail({
                   <span className="truncate text-xs font-medium text-foreground">{pod.name}</span>
                 </button>
                 <span className="px-1 text-3xs tabular-nums text-subtle group-hover/pod:hidden">{podDocs.length}</span>
+                {canEdit && onDeletePod && podDocs.length === 0 && (
+                  <button
+                    onClick={() => onDeletePod(pod.id)}
+                    title={`Delete ${pod.name}`}
+                    className="flex size-5 shrink-0 items-center justify-center rounded text-subtle opacity-0 transition-opacity hover:text-status-late group-hover/pod:opacity-100"
+                  >
+                    <TrashIcon className="size-3.5" />
+                  </button>
+                )}
                 {canEdit && (
                   <button
                     onClick={() => onNewDoc(pod.id)}

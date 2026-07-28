@@ -60,6 +60,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Scrollbars in the Clients and Delivery areas were bright white and heavy; they now use the same slim, muted style as the rest of the app." },
       { type: "fixed", text: "Filtering the Delivery board by a person now shows only the cards they own right now, the active owner for each card's current stage, not every card they happen to be assigned to somewhere. So a secondary developer filtering to themselves sees their Internal QA and Client Approval cards, not strategy cards they're merely listed on. Client Approval is now owned by the secondary developer." },
       { type: "added", text: "Deliverables panel on each client: a Deliverables button on the client doc opens that client's cards on the Delivery board and lets you add deliverables, which become cards (landing in Setup). So a client created in Clients can be turned into a kanban without leaving the doc, and Clients + Delivery are linked again through the client." },
+      { type: "added", text: "Switch a client between retainer and one-time after it is created: the engagement type in the doc header is now a dropdown (admin/CRO). The doc's pages stay as they are, only the type changes." },
+      { type: "added", text: "Delete an empty pod: hover a pod with no clients in the Clients rail and a delete button appears. A pod that still has clients is protected, move them out first (drag them to another pod), then delete it." },
     ],
   },
   {
