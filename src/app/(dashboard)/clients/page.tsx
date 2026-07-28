@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRole } from "@/components/auth-gate";
-import { TrashIcon, ArrowDownTrayIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, ArrowDownTrayIcon, CheckCircleIcon, XMarkIcon, ViewColumnsIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import { Rail } from "./rail";
 import { PageNav } from "./page-nav";
@@ -47,6 +47,9 @@ import {
 } from "@/lib/pod-projects/data";
 import { flattenSections, firstLeaf, BRIEF_BLOCK } from "@/lib/pod-projects/templates";
 import type { Pod, PodDoc, DocSection, DocType, RetainerTier } from "@/lib/pod-projects/types";
+import { loadCards, saveCard, removeCard, newCard, cardsForClient } from "@/lib/cx/data";
+import { stageLabel } from "@/lib/cx/stages";
+import type { CxCard } from "@/lib/cx/types";
 
 const TIER_LABEL: Record<RetainerTier, string> = {
   lite: "Lite",
@@ -81,6 +84,8 @@ export default function PodProjectsPage() {
   const [printing, setPrinting] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
   const [deletedDocs, setDeletedDocs] = useState<PodDoc[]>([]);
+  const [showDeliverables, setShowDeliverables] = useState(false);
+  const [clientCards, setClientCards] = useState<CxCard[]>([]);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -250,6 +255,25 @@ export default function PodProjectsPage() {
     setDeletedDocs(loadDeletedDocs());
   }
 
+  /* Deliverables: this client's cards on the Delivery board. Opening the panel
+   * loads them; adding one creates a card on the board (linked by the doc id). */
+  async function openDeliverables() {
+    if (!active) return;
+    const all = await loadCards();
+    setClientCards(cardsForClient(all, active.id));
+    setShowDeliverables(true);
+  }
+  async function addDeliverable(title: string) {
+    if (!active) return;
+    const card = newCard(active.id, active.title, title);
+    await saveCard(card);
+    setClientCards((prev) => [...prev, card]);
+  }
+  async function removeDeliverable(id: string) {
+    await removeCard(id);
+    setClientCards((prev) => prev.filter((c) => c.id !== id));
+  }
+
   const relationshipLabel = relationship(active?.startDate);
 
   return (
@@ -321,6 +345,15 @@ export default function PodProjectsPage() {
               </div>
 
               <div className="flex shrink-0 items-center gap-1.5">
+                {canEdit && !active.isTemplate && (
+                  <button
+                    onClick={openDeliverables}
+                    title="This client's cards on the Delivery board"
+                    className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-2xs font-medium text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+                  >
+                    <ViewColumnsIcon className="size-4" /> Deliverables
+                  </button>
+                )}
                 {canEdit && !active.isTemplate && section && section.kind !== "wip" && (
                   <button
                     onClick={handleToggleDone}
@@ -428,7 +461,97 @@ export default function PodProjectsPage() {
           onClose={() => setShowTrash(false)}
         />
       )}
+
+      {showDeliverables && active && (
+        <DeliverablesModal
+          clientName={active.title}
+          cards={clientCards}
+          onAdd={addDeliverable}
+          onRemove={removeDeliverable}
+          onClose={() => setShowDeliverables(false)}
+        />
+      )}
     </div>
+  );
+}
+
+/* This client's cards on the Delivery board: view them, and add deliverables
+ * that become cards on the board (linked to this client). */
+function DeliverablesModal({
+  clientName,
+  cards,
+  onAdd,
+  onRemove,
+  onClose,
+}: {
+  clientName: string;
+  cards: CxCard[];
+  onAdd: (title: string) => void;
+  onRemove: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const submit = () => {
+    const t = draft.trim();
+    if (!t) return;
+    onAdd(t);
+    setDraft("");
+  };
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-[10vh]" onClick={onClose}>
+      <div className="w-full max-w-md overflow-hidden rounded border border-border bg-surface" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-border-faint px-4 py-3">
+          <div>
+            <span className="text-2xs font-semibold uppercase tracking-wide text-subtle">Deliverables</span>
+            <p className="text-2xs text-subtle">On the Delivery board for {clientName}</p>
+          </div>
+          <button onClick={onClose} className="rounded p-1 text-subtle hover:bg-surface-raised hover:text-foreground">
+            <XMarkIcon className="size-4" />
+          </button>
+        </div>
+
+        <div className="max-h-[50vh] space-y-1 overflow-y-auto scrollbar-thin px-2 py-2">
+          {cards.length === 0 ? (
+            <p className="px-2 py-6 text-center text-sm text-subtle">No cards yet. Add a deliverable to put it on the board.</p>
+          ) : (
+            cards.map((c) => (
+              <div key={c.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-surface-hover">
+                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{c.title}</span>
+                <span className="shrink-0 text-2xs text-subtle">{stageLabel(c.stage)}</span>
+                <button
+                  onClick={() => onRemove(c.id)}
+                  title="Remove from board"
+                  className="shrink-0 rounded p-1.5 text-subtle hover:bg-status-late/10 hover:text-status-late"
+                >
+                  <TrashIcon className="size-3.5" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 border-t border-border-faint px-3 py-3">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+            placeholder="Add a deliverable…"
+            className="flex-1 rounded border border-border bg-surface-raised px-2.5 py-1.5 text-sm text-foreground outline-none placeholder:text-subtle/60 focus:border-ring"
+          />
+          <button
+            onClick={submit}
+            disabled={!draft.trim()}
+            className="inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90 disabled:opacity-40"
+          >
+            <PlusIcon className="size-4" /> Add
+          </button>
+        </div>
+        <div className="border-t border-border-faint px-4 py-2 text-2xs text-subtle">
+          New cards land in Setup on the Delivery board. Manage stages, assignees and dates there.
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
