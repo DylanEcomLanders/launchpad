@@ -143,7 +143,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
      * restored sessions pass fresh=false so navigating to "/" always works. */
     if (fresh && typeof window !== "undefined") {
       const path = window.location.pathname;
-      if (path === "/" || path === "/team") {
+      if (path === "/") {
         const target = user.role === "team" ? "/delivery" : "/";
         if (path !== target) {
           window.location.replace(target);
@@ -231,13 +231,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     };
   }, [finaliseSession]);
 
-  // Guard: a member on an admin-only route is sent to their home (My Work).
-  // The retired /team landing also bounces here (its tool sub-pages stay).
+  // Guard: a member on an admin-only route is sent to their home (Delivery).
+  // /team (Team Tools) is a real member destination, so it is NOT bounced.
   useEffect(() => {
     if (!authed || role !== "team") return;
     if (typeof window === "undefined") return;
     const path = window.location.pathname;
-    if (path === "/team" || !isTeamAllowedPath(path)) {
+    if (!isTeamAllowedPath(path)) {
       /* Members land straight on the Delivery board - their day-to-day home
        * (they filter it to themselves for "my tasks"). /my-work stays reachable
        * by URL; it's just no longer their landing or a nav item. */
@@ -299,7 +299,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       const path = typeof window !== "undefined" ? window.location.pathname : "/";
       // Admins/CRO land on the Overview home ("/"); members on My Tasks. Deep
       // links are respected, and members are kept out of admin-only routes.
-      const landHome = path === "/" || path === "/team";
+      const landHome = path === "/";
       const teamBlocked = r === "team" && !isTeamAllowedPath(path);
       if (landHome || teamBlocked) {
         const target = r === "team" ? "/delivery" : "/";

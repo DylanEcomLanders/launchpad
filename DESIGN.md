@@ -5,6 +5,60 @@ or in the token system (`src/app/globals.css`), DO NOT invent one — reuse the 
 existing pattern. Never introduce a new spacing value, radius, opacity, border treatment,
 or shadow. Reference surface: `src/app/(dashboard)/finance/page.tsx` (the calibrated bar).
 
+The look in one line: Linear-calm. Dark, monochrome, dense-but-ordered, one chromatic accent
+(periwinkle) used only for focus. Hierarchy from weight and opacity, never colour. No shadows,
+gradients, or glow on dark surfaces; borders + background steps do the elevation.
+
+## Design tokens — the actual values
+
+The whole app re-themes by swapping ~12 CSS variables (`src/app/globals.css`). Dark is the default
+look; light values are in brackets. Always reference the token name in code (`bg-surface`,
+`text-muted`, `text-status-late`) — never inline a hex.
+
+### Colour
+| Token | Role | Dark | Light |
+| --- | --- | --- | --- |
+| `background` | canvas | `#0A0A0C` | `#FCFCFC` |
+| `surface` | flat card / panel (one step up) | `#0E0E11` | `#FFFFFF` |
+| `surface-raised` | floating only: modals, dropdowns, hover | `#1A1A1E` | `#F6F6F7` |
+| `border` | control + table hairline | `rgba(255,255,255,.085)` | `rgba(0,0,0,.08)` |
+| `border-faint` | quiet card / internal divider hairline | `rgba(255,255,255,.04)` | (same idea) |
+| `foreground` | primary text | `#EDEEF0` | `#1A1A1C` |
+| `muted` | secondary text | `#8A8F98` | `#6B6F76` |
+| `subtle` | tertiary text / labels | `#5E616B` | `#9A9DA4` |
+| `accent` | primary action (mono, NOT a colour) | `#EDEEF0` | `#1A1A1C` |
+| `ring` | focus / active / selected ONLY | `#5E6AD2` | `#5E6AD2` |
+
+- The ONE chromatic accent is the periwinkle `ring` (`#5E6AD2`), used only for focus / selected
+  state. Everything else is monochrome.
+- Loud `success` `#4CB782` / `warning` `#E5A33D` / `danger` `#E5484D` are reserved for genuine
+  errors and destructive actions. For calm emphasis (status dots, overdue) use the muted status
+  palette below, not these.
+
+### Status palette (muted — dots, late / overdue emphasis)
+`status-ontrack` `#3FA372` · `status-approaching` `#C99A4D` · `status-late` `#C56B6B`
+
+### Chart series (the only sanctioned data-viz palette — never inline a chart hex)
+`chart-1..8`: `#8B93F8` · `#4FD1C5` · `#E5C07B` · `#E68FB0` · `#86C67C` · `#5EB0EF` · `#B794F4` · `#E0A878`
+
+### Type
+- Headings: **Inter Tight** (`font-heading`)
+- Body: **Articulat CF** (`font-body`), Inter fallback
+- Mono: **JetBrains Mono** (`font-mono`) — used for micro labels / meta subheaders (uppercase, wide tracking)
+- Scale (px): `2xs` 12 · `xs` 13 · `sm` 14 (body) · `base` 15 · `lg` 17 (card title) · `xl` 22
+  (section header) · `2xl` 28 (page title) · `3xl` 30 (display). Micro tier: `3xs` 11 · `4xs` 10 · `5xs` 9.
+
+### Radius
+Scale: `sm` 6 (chips/badges) · `md` 8 (buttons/inputs) · `lg` 10 (cards) · `xl` 14 (modals / app frame).
+NOTE the calibrated craft rule (§2) pins actual cards to a tight **4px `rounded`** — restrained reads
+as premium. Use the scale tokens for controls; keep cards at 4px.
+
+### Ecomlanders brand vs the app
+The APP is deliberately Linear-calm mono (all of the above). The MARKETING brand (funnel / site) is
+a separate system: lime accent `#CDF93A`, ink `#1a1b1e`, grey `#4a4a4a`, on Inter Tight / Articulat CF.
+Do not bring lime into the app, or the mono/periwinkle app tokens into marketing. app = mono +
+periwinkle ring; marketing = lime accent.
+
 ## 1. Hierarchy is built with weight and opacity, NOT size or colour
 - Max 3 text sizes per card: value (large), title (medium), label/caption (small). Never a 4th.
 - Muted text = the `text-muted` / `text-subtle` tokens, never a new grey.

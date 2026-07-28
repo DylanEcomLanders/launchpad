@@ -62,6 +62,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Deliverables panel on each client: a Deliverables button on the client doc opens that client's cards on the Delivery board and lets you add deliverables, which become cards (landing in Setup). So a client created in Clients can be turned into a kanban without leaving the doc, and Clients + Delivery are linked again through the client." },
       { type: "added", text: "Switch a client between retainer and one-time after it is created: the engagement type in the doc header is now a dropdown (admin/CRO). The doc's pages stay as they are, only the type changes." },
       { type: "added", text: "Delete an empty pod: hover a pod with no clients in the Clients rail and a delete button appears. A pod that still has clients is protected, move them out first (drag them to another pod), then delete it." },
+      { type: "fixed", text: "Members clicking Team Tools were bounced straight back to the Delivery board (a leftover from when /team was the old members' landing hub), so they couldn't open it. Team Tools is now a normal member destination. Submit Invoice was always reachable via its own nav item." },
     ],
   },
   {
