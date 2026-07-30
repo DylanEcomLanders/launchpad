@@ -96,7 +96,7 @@ const DRAFT_KEY = "el-onboarding-draft-v1";
  * Launchpad (dark surface, hairline borders, 4px radii, monochrome). */
 const inputClass =
   "w-full rounded border border-border bg-surface px-4 py-3 text-base text-foreground transition placeholder:text-subtle focus:border-foreground/30 focus:outline-none";
-const textareaClass = `${inputClass} min-h-[120px] resize-y leading-relaxed`;
+const textareaClass = `${inputClass} min-h-[84px] resize-y leading-relaxed`;
 const labelClass = "block text-sm font-medium text-foreground mb-2";
 const mono = { fontFamily: "var(--font-mono)" } as const;
 const requiredStar = <span className="text-status-late ml-0.5">*</span>;
@@ -112,6 +112,17 @@ function Field({ label, required, children }: { label: string; required?: boolea
 
 function Row({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 md:grid-cols-2 gap-5">{children}</div>;
+}
+
+// A labelled group of fields inside a step, so a section reads as a few small
+// clusters rather than one long stack of boxes.
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-5">
+      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle" style={mono}>{title}</p>
+      {children}
+    </section>
+  );
 }
 
 function ChipMultiSelect({ value, onChange, options }: { value: string; onChange: (next: string) => void; options: string[] }) {
@@ -475,166 +486,206 @@ export default function OnboardingFormPage() {
         </div>
 
         {/* Fields */}
-        <div className="space-y-8">
+        <div className="space-y-10">
           {/* 01 Brand information */}
           {step === 0 && (
             <>
-              <Row>
-                <Field label="Company / Brand Name" required>
-                  <input className={inputClass} value={form.company_name} onChange={set("company_name")} placeholder="e.g. Ecomlanders" />
+              <Group title="Basics">
+                <Row>
+                  <Field label="Company / brand name" required>
+                    <input className={inputClass} value={form.company_name} onChange={set("company_name")} placeholder="e.g. Ecomlanders" />
+                  </Field>
+                  <Field label="Website" required>
+                    <input className={inputClass} value={form.website_url} onChange={set("website_url")} placeholder="https://" />
+                  </Field>
+                </Row>
+                <Field label="Brief description" required>
+                  <textarea className={textareaClass} value={form.brief_description} onChange={set("brief_description")} placeholder="What does your brand do? Who do you serve?" />
                 </Field>
-                <Field label="Website URL" required>
-                  <input className={inputClass} value={form.website_url} onChange={set("website_url")} placeholder="e.g. https://ecomlanders.com" />
+                <Field label="Target customer" required>
+                  <textarea className={textareaClass} value={form.target_customer} onChange={set("target_customer")} placeholder="Demographics, lifestyle, what makes them buy..." />
                 </Field>
-              </Row>
-              <Field label="Brief description" required>
-                <textarea className={textareaClass} value={form.brief_description} onChange={set("brief_description")} placeholder="What does your brand do? Who do you serve?" />
-              </Field>
-              <Field label="Who is your target customer? (demographics, lifestyle, purchasing triggers)" required>
-                <textarea className={textareaClass} value={form.target_customer} onChange={set("target_customer")} placeholder="e.g. Women 25 to 45, health-conscious, active on Instagram..." />
-              </Field>
-              <Field label="What are your main USPs that set you apart?" required>
-                <textarea className={textareaClass} value={form.usps} onChange={set("usps")} />
-              </Field>
-              <Field label="Main products/offers you want us to focus on" required>
-                <textarea className={textareaClass} value={form.main_products} onChange={set("main_products")} />
-              </Field>
-              <Field label="Top competitors (URLs or brand names)">
-                <textarea className={textareaClass} value={form.top_competitors} onChange={set("top_competitors")} placeholder="e.g. https://competitor.com, another brand" />
-              </Field>
-              <Field label="Preferred brand tone of voice (authoritative, playful, luxury, etc.)" required>
-                <textarea className={textareaClass} value={form.tone_of_voice} onChange={set("tone_of_voice")} />
-              </Field>
-              <Field label="Core value props or benefits to highlight">
-                <textarea className={textareaClass} value={form.core_value_props} onChange={set("core_value_props")} />
-              </Field>
-              <Field label="Reviews, testimonials or press we should use (links)">
-                <textarea className={textareaClass} value={form.reviews_testimonials} onChange={set("reviews_testimonials")} />
-              </Field>
-              <Field label="Words, claims or imagery we MUST avoid">
-                <textarea className={textareaClass} value={form.words_to_avoid} onChange={set("words_to_avoid")} />
-              </Field>
-              <Field label="Link to your brand assets (logos, fonts, guidelines)">
-                <input className={inputClass} value={form.brand_assets_link} onChange={set("brand_assets_link")} placeholder="Google Drive, Dropbox, Figma, etc." />
-              </Field>
-              <Field label="How much creative freedom do we have?" required>
-                <ChoiceCards
-                  value={form.brand_flexibility}
-                  onChange={(v) => setForm((f) => ({ ...f, brand_flexibility: v }))}
-                  options={[
-                    { value: "strict", label: "Stick to brand", desc: "Follow our guidelines closely." },
-                    { value: "some", label: "Some room", desc: "On-brand, but you can push it." },
-                    { value: "open", label: "Go for it", desc: "Full creative freedom." },
-                  ]}
-                />
-              </Field>
+              </Group>
+
+              <Group title="Positioning">
+                <Field label="What sets you apart (USPs)" required>
+                  <textarea className={textareaClass} value={form.usps} onChange={set("usps")} />
+                </Field>
+                <Field label="Main products / offers to focus on" required>
+                  <textarea className={textareaClass} value={form.main_products} onChange={set("main_products")} />
+                </Field>
+                <Field label="Top competitors">
+                  <input className={inputClass} value={form.top_competitors} onChange={set("top_competitors")} placeholder="URLs or brand names" />
+                </Field>
+              </Group>
+
+              <Group title="Voice & guardrails">
+                <Row>
+                  <Field label="Tone of voice" required>
+                    <input className={inputClass} value={form.tone_of_voice} onChange={set("tone_of_voice")} placeholder="Authoritative, playful, luxury..." />
+                  </Field>
+                  <Field label="Brand assets link">
+                    <input className={inputClass} value={form.brand_assets_link} onChange={set("brand_assets_link")} placeholder="Drive, Dropbox, Figma..." />
+                  </Field>
+                </Row>
+                <Field label="Value props to highlight">
+                  <textarea className={textareaClass} value={form.core_value_props} onChange={set("core_value_props")} />
+                </Field>
+                <Row>
+                  <Field label="Reviews or press (links)">
+                    <input className={inputClass} value={form.reviews_testimonials} onChange={set("reviews_testimonials")} />
+                  </Field>
+                  <Field label="Words or claims to avoid">
+                    <input className={inputClass} value={form.words_to_avoid} onChange={set("words_to_avoid")} />
+                  </Field>
+                </Row>
+              </Group>
+
+              <Group title="Creative freedom">
+                <Field label="How much creative freedom do we have?" required>
+                  <ChoiceCards
+                    value={form.brand_flexibility}
+                    onChange={(v) => setForm((f) => ({ ...f, brand_flexibility: v }))}
+                    options={[
+                      { value: "strict", label: "Stick to brand", desc: "Follow our guidelines closely." },
+                      { value: "some", label: "Some room", desc: "On-brand, but you can push it." },
+                      { value: "open", label: "Go for it", desc: "Full creative freedom." },
+                    ]}
+                  />
+                </Field>
+              </Group>
             </>
           )}
 
           {/* 02 Access */}
           {step === 1 && (
             <>
-              <Field label="Your myshopify.com URL & collaborator code" required>
-                <input className={inputClass} value={form.myshopify_url} onChange={set("myshopify_url")} placeholder="e.g. ecomlanders.myshopify.com / code: XXXX" />
-              </Field>
-              <Field label="Analytics tools set up? (Clarity, Intelligems, GA4, etc.)">
-                <textarea className={textareaClass} value={form.analytics_software} onChange={set("analytics_software")} />
-              </Field>
-              <Field label="Tracking pixels, tags or survey tools already set up? (details)">
-                <textarea className={textareaClass} value={form.tracking_pixels} onChange={set("tracking_pixels")} />
-              </Field>
-              <Field label="Other integrations we should be aware of (email/SMS, reviews, loyalty)">
-                <textarea className={textareaClass} value={form.other_integrations} onChange={set("other_integrations")} />
-              </Field>
-              <Field label="Existing landing pages / funnels we should review (links)">
-                <textarea className={textareaClass} value={form.existing_landing_pages} onChange={set("existing_landing_pages")} />
-              </Field>
-              <Field label="Meta page name (so we can find running ads)">
-                <input className={inputClass} value={form.meta_page_name} onChange={set("meta_page_name")} placeholder="e.g. Ecomlanders on Facebook/Meta" />
-              </Field>
-              <div className="border-t border-border-faint pt-8">
-                <p className="mb-5 text-sm font-medium text-foreground">Who we&apos;re working with</p>
-                <div className="space-y-8">
-                  <Field label="Primary point of contact (name, are they in Slack?)" required>
-                    <input className={inputClass} value={form.primary_contact} onChange={set("primary_contact")} placeholder="e.g. Jane Doe, in Slack" />
+              <Group title="Store & tools">
+                <Field label="myshopify.com URL & collaborator code" required>
+                  <input className={inputClass} value={form.myshopify_url} onChange={set("myshopify_url")} placeholder="ecomlanders.myshopify.com / code: XXXX" />
+                </Field>
+                <Row>
+                  <Field label="Analytics tools">
+                    <input className={inputClass} value={form.analytics_software} onChange={set("analytics_software")} placeholder="Clarity, Intelligems, GA4..." />
                   </Field>
-                  <Row>
-                    <Field label="Who makes final approval decisions?">
-                      <input className={inputClass} value={form.approval_decision_maker} onChange={set("approval_decision_maker")} />
-                    </Field>
-                    <Field label="Which timezone does your team work out of?">
-                      <input className={inputClass} value={form.timezone} onChange={set("timezone")} placeholder="e.g. GMT / London" />
-                    </Field>
-                  </Row>
-                </div>
-              </div>
+                  <Field label="Meta page name">
+                    <input className={inputClass} value={form.meta_page_name} onChange={set("meta_page_name")} placeholder="To find running ads" />
+                  </Field>
+                </Row>
+                <Row>
+                  <Field label="Pixels / tags / surveys set up?">
+                    <input className={inputClass} value={form.tracking_pixels} onChange={set("tracking_pixels")} placeholder="Yes / no + details" />
+                  </Field>
+                  <Field label="Other integrations">
+                    <input className={inputClass} value={form.other_integrations} onChange={set("other_integrations")} placeholder="Email/SMS, reviews, loyalty..." />
+                  </Field>
+                </Row>
+                <Field label="Existing pages / funnels to review (links)">
+                  <input className={inputClass} value={form.existing_landing_pages} onChange={set("existing_landing_pages")} />
+                </Field>
+              </Group>
+
+              <Group title="Who we're working with">
+                <Field label="Primary point of contact" required>
+                  <input className={inputClass} value={form.primary_contact} onChange={set("primary_contact")} placeholder="Name, and are they in Slack?" />
+                </Field>
+                <Row>
+                  <Field label="Final approval decisions">
+                    <input className={inputClass} value={form.approval_decision_maker} onChange={set("approval_decision_maker")} />
+                  </Field>
+                  <Field label="Team timezone">
+                    <input className={inputClass} value={form.timezone} onChange={set("timezone")} placeholder="e.g. GMT / London" />
+                  </Field>
+                </Row>
+              </Group>
             </>
           )}
 
           {/* 03 Design */}
           {step === 2 && (
             <>
-              <Field label="Which direction feels most like you? (pick one)">
-                <StyleCards value={form.design_style} onChange={(v) => setForm((f) => ({ ...f, design_style: v }))} />
-              </Field>
-              <Field label="Page(s) being built or rebuilt (URLs)">
-                <textarea className={textareaClass} value={form.product_url} onChange={set("product_url")} placeholder="e.g. https://ecomlanders.com/products/example" />
-              </Field>
-              <Field label="Page type (select all that apply)">
-                <ChipMultiSelect value={form.page_type} onChange={(v) => setForm((f) => ({ ...f, page_type: v }))} options={["PDP", "Advertorial", "Hero Lander", "Listicle", "Homepage", "Bundle Builder", "Collection Page", "Cart / Checkout", "Other"]} />
-              </Field>
-              <Field label="Anything to prioritise or exclude, creatively?">
-                <textarea className={textareaClass} value={form.specific_direction} onChange={set("specific_direction")} placeholder="e.g. Push the subscription offer, avoid mentioning competitor X..." />
-              </Field>
+              <Group title="Direction">
+                <Field label="Which direction feels most like you? (pick one)">
+                  <StyleCards value={form.design_style} onChange={(v) => setForm((f) => ({ ...f, design_style: v }))} />
+                </Field>
+              </Group>
+
+              <Group title="Scope">
+                <Field label="Page(s) being built or rebuilt (URLs)">
+                  <input className={inputClass} value={form.product_url} onChange={set("product_url")} placeholder="https://..." />
+                </Field>
+                <Field label="Page type">
+                  <ChipMultiSelect value={form.page_type} onChange={(v) => setForm((f) => ({ ...f, page_type: v }))} options={["PDP", "Advertorial", "Hero Lander", "Listicle", "Homepage", "Bundle Builder", "Collection Page", "Cart / Checkout", "Other"]} />
+                </Field>
+                <Field label="Anything to prioritise or exclude, creatively?">
+                  <textarea className={textareaClass} value={form.specific_direction} onChange={set("specific_direction")} placeholder="Push the subscription offer, avoid competitor X..." />
+                </Field>
+              </Group>
             </>
           )}
 
           {/* 04 Development */}
           {step === 3 && (
             <>
-              <Field label="Which apps are you using that we should keep? (so our devs plan around them)">
-                <ChipMultiSelect value={form.dev_apps} onChange={(v) => setForm((f) => ({ ...f, dev_apps: v }))} options={APP_OPTIONS} />
-              </Field>
-              <Field label="Any other apps we didn't list?">
-                <input className={inputClass} value={form.dev_apps_other} onChange={set("dev_apps_other")} placeholder="e.g. a custom subscription app, a headless setup..." />
-              </Field>
-              <Field label="Where's your traffic coming from? (select all)">
-                <ChipMultiSelect value={form.traffic_source} onChange={(v) => setForm((f) => ({ ...f, traffic_source: v }))} options={["Meta (cold)", "Google", "Email", "Organic", "TikTok", "Mixed", "Other"]} />
-              </Field>
-              <Field label="Amazon ASIN(s), if applicable">
-                <input className={inputClass} value={form.amazon_asins} onChange={set("amazon_asins")} placeholder="e.g. B09XYZ1234" />
-              </Field>
-              <Field label="Industry compliance or restrictions (supplements, finance, skincare, etc.)">
-                <textarea className={textareaClass} value={form.compliance_restrictions} onChange={set("compliance_restrictions")} />
-              </Field>
+              <Group title="Your stack">
+                <Field label="Apps you use that we should keep">
+                  <ChipMultiSelect value={form.dev_apps} onChange={(v) => setForm((f) => ({ ...f, dev_apps: v }))} options={APP_OPTIONS} />
+                </Field>
+                <Field label="Any others we didn't list?">
+                  <input className={inputClass} value={form.dev_apps_other} onChange={set("dev_apps_other")} placeholder="Custom subscription app, headless setup..." />
+                </Field>
+              </Group>
+
+              <Group title="Context">
+                <Field label="Traffic sources">
+                  <ChipMultiSelect value={form.traffic_source} onChange={(v) => setForm((f) => ({ ...f, traffic_source: v }))} options={["Meta (cold)", "Google", "Email", "Organic", "TikTok", "Mixed", "Other"]} />
+                </Field>
+                <Row>
+                  <Field label="Amazon ASIN(s)">
+                    <input className={inputClass} value={form.amazon_asins} onChange={set("amazon_asins")} placeholder="e.g. B09XYZ1234" />
+                  </Field>
+                  <Field label="Compliance / restrictions">
+                    <input className={inputClass} value={form.compliance_restrictions} onChange={set("compliance_restrictions")} placeholder="Supplements, finance, skincare..." />
+                  </Field>
+                </Row>
+              </Group>
             </>
           )}
 
           {/* 05 Insights */}
           {step === 4 && (
             <>
-              <Field label="Primary goal of this project (increase CR, raise AOV, scale revenue, CLTV growth)" required>
-                <textarea className={textareaClass} value={form.primary_goal} onChange={set("primary_goal")} />
-              </Field>
-              <Field label="What does success look like, in your own words?" required>
-                <textarea className={textareaClass} value={form.success_definition} onChange={set("success_definition")} />
-              </Field>
-              <Field label="Current metrics you want to focus on">
-                <textarea className={textareaClass} value={form.current_metrics} onChange={set("current_metrics")} placeholder="e.g. CVR, AOV, bounce rate, ad ROAS..." />
-              </Field>
-              <Field label="Timeline expectations (launch dates, campaign deadlines, seasonal promotions)">
-                <textarea className={textareaClass} value={form.timeline_expectations} onChange={set("timeline_expectations")} />
-              </Field>
-              <Field label="Known conversion challenges (low mobile CR, cart abandonment, low email capture)">
-                <textarea className={textareaClass} value={form.conversion_challenges} onChange={set("conversion_challenges")} />
-              </Field>
-              <Field label="Most common objections or negative feedback from customers">
-                <textarea className={textareaClass} value={form.common_objections} onChange={set("common_objections")} />
-              </Field>
-              <Field label="Worked with agencies before? What worked / didn't work?">
-                <textarea className={textareaClass} value={form.previous_agencies} onChange={set("previous_agencies")} />
-              </Field>
-              <div className="border-t border-border-faint pt-8">
+              <Group title="Goals">
+                <Field label="Primary goal of this project" required>
+                  <textarea className={textareaClass} value={form.primary_goal} onChange={set("primary_goal")} placeholder="Increase CR, raise AOV, scale revenue, CLTV..." />
+                </Field>
+                <Field label="What does success look like, in your words?" required>
+                  <textarea className={textareaClass} value={form.success_definition} onChange={set("success_definition")} />
+                </Field>
+                <Row>
+                  <Field label="Metrics to focus on">
+                    <input className={inputClass} value={form.current_metrics} onChange={set("current_metrics")} placeholder="CVR, AOV, ROAS..." />
+                  </Field>
+                  <Field label="Timeline / key dates">
+                    <input className={inputClass} value={form.timeline_expectations} onChange={set("timeline_expectations")} placeholder="Launches, campaigns, seasonal" />
+                  </Field>
+                </Row>
+              </Group>
+
+              <Group title="What's held you back">
+                <Field label="Known conversion challenges">
+                  <textarea className={textareaClass} value={form.conversion_challenges} onChange={set("conversion_challenges")} placeholder="Low mobile CR, cart abandonment, weak email capture..." />
+                </Field>
+                <Field label="Common customer objections">
+                  <textarea className={textareaClass} value={form.common_objections} onChange={set("common_objections")} />
+                </Field>
+                <Field label="Past agencies: what worked / didn't">
+                  <textarea className={textareaClass} value={form.previous_agencies} onChange={set("previous_agencies")} />
+                </Field>
+              </Group>
+
+              <Group title="Extras">
+                <div>
                 <label className={labelClass}>Upload any extra assets or references</label>
                 <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded border border-dashed border-border bg-surface py-10 transition-colors hover:border-foreground/40">
                   {uploadingFiles ? (
@@ -659,10 +710,11 @@ export default function OnboardingFormPage() {
                     ))}
                   </div>
                 )}
-              </div>
-              <Field label="Anything else we should know before starting?">
-                <textarea className={textareaClass} value={form.additional_info} onChange={set("additional_info")} />
-              </Field>
+                </div>
+                <Field label="Anything else before we start?">
+                  <textarea className={textareaClass} value={form.additional_info} onChange={set("additional_info")} />
+                </Field>
+              </Group>
             </>
           )}
         </div>
