@@ -14,7 +14,7 @@
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircleIcon, LockClosedIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, LockClosedIcon, ArrowDownTrayIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { Logo } from "@/components/logo";
 import { SignaturePad } from "@/components/signature-pad";
 import { getCheckoutByToken, saveCheckout } from "@/lib/checkout/data";
@@ -435,6 +435,20 @@ function InvoiceStep({ checkout }: { checkout: Checkout }) {
         </button>
       </div>
       <p className="text-center text-2xs text-subtle">Copies have been saved and emailed to {checkout.email}.</p>
+
+      {/* Next step: onboarding. Prefilled with what we already know. */}
+      <div className="rounded-lg border border-border bg-surface-raised p-5">
+        <p className="text-sm font-semibold text-foreground">Last step: onboarding</p>
+        <p className="mt-1 text-2xs text-subtle">
+          Tell us about your brand and store so we can kick off. Takes about 10 minutes.
+        </p>
+        <a
+          href={`/onboard?company=${encodeURIComponent(checkout.company || checkout.clientName)}&contact=${encodeURIComponent(checkout.clientName)}`}
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90"
+        >
+          Start onboarding <ArrowRightIcon className="size-4" />
+        </a>
+      </div>
     </div>
   );
 }

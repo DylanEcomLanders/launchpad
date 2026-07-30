@@ -157,6 +157,20 @@ export default function OnboardingFormPage() {
         if (Array.isArray(saved.files)) setUploadedFiles(saved.files);
       }
     } catch {}
+    // Prefill from the checkout link (?company=&contact=), but never overwrite a
+    // value the client already entered / restored above.
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const company = q.get("company") ?? "";
+      const contact = q.get("contact") ?? "";
+      if (company || contact) {
+        setForm((prev) => ({
+          ...prev,
+          company_name: prev.company_name || company,
+          primary_contact: prev.primary_contact || contact,
+        }));
+      }
+    } catch {}
     setHydrated(true);
   }, []);
 
