@@ -53,7 +53,6 @@ export async function createCheckoutSession(c: Checkout): Promise<CheckoutSessio
   const plan: any = {
     company_id,
     currency: "gbp",
-    initial_price: c.amountGross,
     title: `${isRecurring ? "Retainer" : "Project"} - ${c.company || c.clientName}`.slice(0, 30),
     description: c.scope || `${isRecurring ? "Monthly retainer" : "Project"} for ${c.clientName}`,
     visibility: "hidden",
@@ -62,11 +61,16 @@ export async function createCheckoutSession(c: Checkout): Promise<CheckoutSessio
     ...productLink,
   };
   if (isRecurring) {
+    // Monthly retainer: charge the monthly amount today, then every 30 days.
+    // initial_price is an ADDITIONAL upfront charge on top of the first period,
+    // so keep it 0 (no setup fee) or the client is double-charged on day one.
     plan.plan_type = "renewal";
+    plan.initial_price = 0;
     plan.renewal_price = c.amountGross;
     plan.billing_period = 30; // days
   } else {
     plan.plan_type = "one_time";
+    plan.initial_price = c.amountGross;
     plan.renewal_price = 0;
   }
 
