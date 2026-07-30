@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
 
 interface FormData {
   // Brand & Business
@@ -183,6 +183,8 @@ export default function OnboardingFormPage() {
   }, [form, uploadedFiles, hydrated]);
 
   const sectionComplete = (i: number) => SECTIONS[i].required.every((k) => form[k].trim());
+  const filledRequired = REQUIRED_FIELDS.filter((k) => form[k].trim()).length;
+  const pct = Math.round((filledRequired / REQUIRED_FIELDS.length) * 100);
 
   const goto = (i: number) => {
     setStep(Math.max(0, Math.min(LAST, i)));
@@ -270,10 +272,10 @@ export default function OnboardingFormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Sticky top: brand + segmented progress (doubles as step nav) */}
-      <div className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-xl space-y-3 px-6 py-3.5">
+    <div className="min-h-screen bg-background text-foreground md:flex">
+      {/* Mobile top bar: brand + segmented progress (doubles as step nav) */}
+      <div className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-md md:hidden">
+        <div className="space-y-3 px-5 py-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -298,34 +300,71 @@ export default function OnboardingFormPage() {
         </div>
       </div>
 
-      {/* Form */}
+      {/* Left contents rail (desktop) */}
+      <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-border px-6 py-8 md:flex">
+        <div className="flex items-center gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/el-logo.svg" alt="Ecom Landers" className="h-5 w-5 brightness-0 invert" />
+          <span className="text-sm font-semibold tracking-tight text-foreground">Ecom Landers</span>
+        </div>
+
+        <p className="mt-9 mb-3 text-[10px] font-medium uppercase tracking-[0.2em] text-subtle" style={mono}>Contents</p>
+        <nav className="-mx-2 flex-1 space-y-0.5 overflow-y-auto scrollbar-thin">
+          {SECTIONS.map((s, i) => {
+            const active = i === step;
+            const done = SECTIONS[i].required.length > 0 && sectionComplete(i);
+            return (
+              <button
+                key={s.title}
+                type="button"
+                onClick={() => goto(i)}
+                className={`group flex w-full items-center gap-3 rounded px-2 py-2 text-left transition-colors ${active ? "bg-surface" : "hover:bg-surface/60"}`}
+              >
+                <span className={`w-5 shrink-0 text-[11px] tabular-nums ${active ? "text-foreground" : "text-subtle"}`} style={mono}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className={`flex-1 text-[13px] leading-snug ${active ? "font-medium text-foreground" : "text-muted group-hover:text-foreground"}`}>
+                  {s.title}
+                </span>
+                {done && !active && <CheckIcon className="size-3.5 shrink-0 text-subtle" />}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="mt-6 border-t border-border-faint pt-5">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-surface">
+            <div className="h-full rounded-full bg-foreground transition-all duration-500" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="mt-3 flex items-center justify-between text-[11px] text-subtle">
+            <span className="truncate">{form.company_name ? `Onboarding · ${form.company_name}` : "Client Onboarding"}</span>
+            <span className="shrink-0 tabular-nums">{step + 1}/{SECTIONS.length}</span>
+          </div>
+          {restored && (
+            <button type="button" onClick={handleClear} className="mt-3 text-[11px] text-subtle underline decoration-border underline-offset-2 hover:text-foreground">
+              Saved from last time · start over
+            </button>
+          )}
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="min-w-0 flex-1">
       <form
         onSubmit={handleSubmit}
         onKeyDown={(e) => {
           if (e.key === "Enter" && e.target instanceof HTMLInputElement) e.preventDefault();
         }}
-        className="mx-auto max-w-xl px-6 py-14 sm:py-16"
+        className="mx-auto max-w-2xl px-6 py-14 md:px-16 md:py-20"
       >
-        {restored && (
-          <div className="mb-10 flex items-center justify-between gap-3 border-b border-border-faint pb-5 text-sm text-muted">
-            <span>We saved your progress from last time.</span>
-            <button
-              type="button"
-              onClick={handleClear}
-              className="flex-none text-foreground underline decoration-border underline-offset-2 hover:decoration-foreground/60"
-            >
-              Start over
-            </button>
+        {/* Editorial hero */}
+        <div className="mb-12">
+          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-subtle" style={mono}>Client Onboarding</p>
+          <div className="mt-5 flex items-baseline gap-4">
+            <span className="text-base tabular-nums text-subtle" style={mono}>{String(step + 1).padStart(2, "0")}</span>
+            <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight text-foreground md:text-5xl">{SECTIONS[step].title}</h1>
           </div>
-        )}
-
-        {/* Step heading */}
-        <div className="mb-10">
-          <span className="text-xs uppercase tracking-[0.2em] text-subtle" style={mono}>
-            {String(step + 1).padStart(2, "0")} / {String(SECTIONS.length).padStart(2, "0")}
-          </span>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{SECTIONS[step].title}</h2>
-          <p className="mt-2.5 leading-relaxed text-muted">{SECTIONS[step].intro}</p>
+          <p className="mt-5 max-w-xl leading-relaxed text-muted">{SECTIONS[step].intro}</p>
         </div>
 
         {/* Fields */}
@@ -539,10 +578,13 @@ export default function OnboardingFormPage() {
           )}
         </div>
 
-        <p className="mt-10 text-center text-xs text-subtle">
-          Your answers save on this device as you type. Nothing is sent until you submit.
-        </p>
+        {/* Footer */}
+        <div className="mt-14 flex items-center justify-between border-t border-border-faint pt-6 text-[11px] text-subtle">
+          <span className="font-medium text-muted">Ecom Landers</span>
+          <span>Saved on this device · nothing sent until you submit</span>
+        </div>
       </form>
+      </main>
     </div>
   );
 }
