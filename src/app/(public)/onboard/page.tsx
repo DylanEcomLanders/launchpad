@@ -85,7 +85,7 @@ const SECTIONS: { title: string; intro: string; required: (keyof FormData)[] }[]
 // Apps our dev team plan around. Client ticks what they use + keep, adds any others.
 const APP_OPTIONS = [
   "Klaviyo", "Recharge", "Skio", "Yotpo", "Okendo", "Loox", "Judge.me", "Gorgias",
-  "Rebuy", "ReConvert", "Postscript", "Attentive", "Triple Whale", "Shogun", "Replo", "Tapcart", "Smile.io", "Stamped",
+  "Rebuy", "ReConvert", "Postscript", "Attentive", "Triple Whale", "Tapcart", "Smile.io", "Stamped",
 ];
 const LAST = SECTIONS.length - 1;
 const REQUIRED_FIELDS: (keyof FormData)[] = SECTIONS.flatMap((s) => s.required);
@@ -152,26 +152,34 @@ function ChipMultiSelect({ value, onChange, options }: { value: string; onChange
   );
 }
 
-// Single-select cards (used for the brand creative-latitude question).
-function ChoiceCards({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string; desc?: string }[] }) {
+// 1-10 scale (used for the brand creative-latitude question).
+function Scale({ value, onChange, lowLabel, highLabel }: { value: string; onChange: (v: string) => void; lowLabel?: string; highLabel?: string }) {
+  const nums = Array.from({ length: 10 }, (_, i) => i + 1);
   return (
-    <div className="grid gap-2.5 sm:grid-cols-3">
-      {options.map((o) => {
-        const on = value === o.value;
-        return (
-          <button
-            key={o.value}
-            type="button"
-            onClick={() => onChange(on ? "" : o.value)}
-            className={`flex flex-col items-start gap-1 rounded border px-4 py-3.5 text-left transition-colors ${
-              on ? "border-foreground bg-foreground/5" : "border-border bg-surface hover:border-foreground/40"
-            }`}
-          >
-            <span className="text-sm font-medium text-foreground">{o.label}</span>
-            {o.desc && <span className="text-xs leading-snug text-subtle">{o.desc}</span>}
-          </button>
-        );
-      })}
+    <div className="space-y-2">
+      <div className="flex gap-1.5">
+        {nums.map((n) => {
+          const on = value === String(n);
+          return (
+            <button
+              key={n}
+              type="button"
+              onClick={() => onChange(on ? "" : String(n))}
+              className={`flex-1 rounded border py-2.5 text-sm font-medium tabular-nums transition-colors ${
+                on ? "border-foreground bg-foreground text-background" : "border-border bg-surface text-muted hover:border-foreground/40 hover:text-foreground"
+              }`}
+            >
+              {n}
+            </button>
+          );
+        })}
+      </div>
+      {(lowLabel || highLabel) && (
+        <div className="flex justify-between text-2xs text-subtle">
+          <span>{lowLabel}</span>
+          <span>{highLabel}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -553,14 +561,11 @@ export default function OnboardingFormPage() {
 
               <Group title="Creative freedom">
                 <Field label="How much creative freedom do we have?" required>
-                  <ChoiceCards
+                  <Scale
                     value={form.brand_flexibility}
                     onChange={(v) => setForm((f) => ({ ...f, brand_flexibility: v }))}
-                    options={[
-                      { value: "strict", label: "Stick to brand", desc: "Follow our guidelines closely." },
-                      { value: "some", label: "Some room", desc: "On-brand, but you can push it." },
-                      { value: "open", label: "Go for it", desc: "Full creative freedom." },
-                    ]}
+                    lowLabel="1 · Stick to brand"
+                    highLabel="10 · Full creative freedom"
                   />
                 </Field>
               </Group>
