@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-143",
+    date: "30 July 2026",
+    version: "3.4.0",
+    title: "Agreement Checkout: one link takes a client from signature to payment to onboarding",
+    changes: [
+      { type: "added", text: "Agreement Checkout at /checkouts: create one link per deal that runs the whole client kickoff. The client signs the agreement (a full Services Agreement generated per deal, retainer or one-time project variant), pays through Whop (recurring for retainers, a single charge for projects), downloads their invoice and signed agreement, then goes straight into onboarding. Everything logs to a checkouts table." },
+      { type: "added", text: "Paid checkouts create a real invoice in Finance > Invoices (source: Whop) with sequential EL-YYYY-NNN numbering, and the client downloads that same branded PDF. VAT is tagged by billing country: UK-inclusive once registered, 'Outside the scope of UK VAT' for overseas." },
+      { type: "improved", text: "Onboarding (/onboard) rebuilt into a left-rail layout matching our proposals: five sections (Brand information, Access, Design, Development, Insights), a contents rail that checks off completed sections, a 1-10 creative-freedom scale, an app-stack selector so devs know what to keep, and Articulat headings. The checkout's final step links straight in, prefilled with the client's details." },
+      { type: "improved", text: "All invoices now use the EL-YYYY-NNN format (the manual New Invoice screen matched to the house format)." },
+      { type: "fixed", text: "Registered office updated to Manchester across agreements and invoices." },
+    ],
+  },
+  {
     id: "cl-142",
     date: "22 July 2026",
     version: "3.3.0",
