@@ -84,6 +84,28 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
 
   const vat = computeVat(checkout.amountGross, country);
 
+  // Render the full (unsigned) agreement so the client reads it before signing.
+  const [agreementUrl, setAgreementUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    let url: string | null = null;
+    (async () => {
+      try {
+        const { agreementBlob } = await import("@/lib/checkout/agreement");
+        const blob = await agreementBlob(checkout);
+        url = URL.createObjectURL(blob);
+        if (alive) setAgreementUrl(url);
+        else URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error("[checkout] agreement preview failed:", e);
+      }
+    })();
+    return () => {
+      alive = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [checkout.token]);
+
   function doSign() {
     if (!canSign) return;
     setSigned({
@@ -103,7 +125,7 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
     <div className="space-y-6">
       <header>
         <h1 className="text-xl font-semibold text-foreground">Your agreement</h1>
-        <p className="mt-1 text-sm text-muted">Review, sign, then pay. You will get your invoice to download at the end.</p>
+        <p className="mt-1 text-sm text-muted">Read the agreement below, then sign at the bottom. You pay and get your invoice next.</p>
       </header>
 
       <section className="rounded-lg border border-border bg-surface p-5 text-sm">
@@ -120,6 +142,21 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
           {checkout.termsNote}
         </p>
       </section>
+
+      {/* Full agreement to read before signing */}
+      <div>
+        <span className="mb-1.5 block text-2xs font-medium uppercase tracking-wide text-subtle">Full agreement</span>
+        {agreementUrl ? (
+          <>
+            <iframe src={agreementUrl} title="Services Agreement" className="h-[460px] w-full rounded-lg border border-border bg-white" />
+            <a href={agreementUrl} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-block text-2xs text-subtle underline decoration-border underline-offset-2 hover:text-foreground">
+              Trouble viewing? Open the agreement in a new tab
+            </a>
+          </>
+        ) : (
+          <div className="grid h-[460px] place-items-center rounded-lg border border-border bg-surface text-sm text-subtle">Preparing your agreement…</div>
+        )}
+      </div>
 
       <section className="space-y-3">
         <label className="block">
