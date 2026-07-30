@@ -1,26 +1,24 @@
 /* ── Agreement Checkout: Whop integration (server only) ──
  *
- * The only external piece of the flow. Reads credentials from env vars:
- *   WHOP_API_KEY         - a company API key with checkout_configuration:create,
- *                          plan:create, access_pass:create/update permissions
- *   WHOP_WEBHOOK_SECRET  - the webhook signing secret from the Whop dashboard
- *   WHOP_COMPANY_ID      - your Whop company id (biz_...)
- *   WHOP_PRODUCT_ID      - (optional) an existing product/access-pass id (prod_...)
- *                          to hang the plans off. If unset we find-or-create one.
+ * Uses the SAME Whop account + env vars as the existing payment-link tool:
+ *   WHOP_API_KEY, WHOP_COMPANY_ID, WHOP_WEBHOOK_SECRET
+ * (already set in Vercel). No new product or webhook needed - the plan config
+ * mirrors src/app/api/payment-link/route.ts, and payment.succeeded is handled
+ * by the existing webhook at /api/webhooks/whop-payment (keyed on our
+ * metadata.agreement_id).
  *
- * createCheckoutSession builds a per-deal checkout with an INLINE plan (custom
- * amount, one-off or monthly), so no pre-made pricing is needed. It returns the
- * plan id + session id the client mounts Whop's embedded checkout with. The
- * authoritative "paid" flip happens in the webhook (api/whop/webhook), never
- * from the client.
+ * createCheckoutSession builds a per-deal INLINE plan (custom amount, one-off
+ * or monthly, VAT-inclusive) and returns the plan id + session id the client
+ * mounts Whop's embedded checkout with. The authoritative "paid" flip is the
+ * webhook, never the client.
  */
 
 import Whop from "@whop/sdk";
 import type { Checkout } from "./types";
 
 // Lazy singleton: the Whop client throws at construction if WHOP_API_KEY is
-// missing, so we build it on first use (inside a try/catch) rather than at
-// module load. That keeps the API routes importable before keys are wired.
+// missing, so we build it on first use rather than at module load. That keeps
+// the API routes importable before keys are present.
 let _whop: Whop | null = null;
 export function getWhop(): Whop {
   if (!_whop) {
@@ -41,34 +39,42 @@ export async function createCheckoutSession(c: Checkout): Promise<CheckoutSessio
   if (!process.env.WHOP_API_KEY) throw new Error("WHOP_API_KEY is not set");
   if (!company_id) throw new Error("WHOP_COMPANY_ID is not set");
 
-  // Base currency is GBP (prices are VAT-inclusive, UK-first). Whop can still
-  // present the buyer's local currency if adaptivePricing is turned on client-side.
-  const currency = "gbp" as const;
+  const isRecurring = c.planType === "renewal";
 
-  // Hang the plan off a product: a pre-made one if given, else find-or-create a
-  // single shared "Ecom Landers" product (keyed by external_identifier).
-  const productLink = process.env.WHOP_PRODUCT_ID
-    ? { product_id: process.env.WHOP_PRODUCT_ID }
-    : { product: { external_identifier: "ecomlanders-engagements", title: "Ecom Landers" } };
-
-  const base = {
+  // Inline plan - same shape the payment-link tool uses (no separate product;
+  // hidden, buy-now, tax inclusive since our prices already include VAT).
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const plan: any = {
     company_id,
-    currency,
-    description: c.scope || undefined,
-    ...productLink,
+    currency: "gbp",
+    initial_price: c.amountGross,
+    title: `${isRecurring ? "Retainer" : "Project"} - ${c.company || c.clientName}`.slice(0, 30),
+    description: c.scope || `${isRecurring ? "Monthly retainer" : "Project"} for ${c.clientName}`,
+    visibility: "hidden",
+    release_method: "buy_now",
+    override_tax_type: "inclusive",
   };
-
-  const plan =
-    c.planType === "renewal"
-      ? // retainer -> monthly subscription (billing_period is in days)
-        { ...base, plan_type: "renewal" as const, initial_price: c.amountGross, renewal_price: c.amountGross, billing_period: 30 }
-      : // project -> single charge
-        { ...base, plan_type: "one_time" as const, initial_price: c.amountGross };
+  if (isRecurring) {
+    plan.plan_type = "renewal";
+    plan.renewal_price = c.amountGross;
+    plan.billing_period = 30; // days
+  } else {
+    plan.plan_type = "one_time";
+    plan.renewal_price = 0;
+  }
 
   const config = await getWhop().checkoutConfigurations.create({
     mode: "payment",
     plan,
-    metadata: { agreement_id: c.id },
+    // Top-level currency locks the buyer-facing display currency to GBP (else
+    // Whop auto-localises to the buyer's region). Prices are VAT-inclusive GBP.
+    currency: "gbp",
+    metadata: {
+      agreement_id: c.id,
+      client_name: c.clientName,
+      client_email: c.email || "",
+      source: "agreement-checkout",
+    },
   });
 
   const planId = config.plan?.id;

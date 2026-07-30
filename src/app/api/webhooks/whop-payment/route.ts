@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import Whop from "@whop/sdk";
 import { supabase } from "@/lib/supabase";
 import { isNotificationEnabled } from "@/lib/notification-settings";
+import { getCheckoutByToken, saveCheckout } from "@/lib/checkout/data";
+import { computeVat } from "@/lib/checkout/vat";
 
 // ── Whop payment.succeeded webhook handler ──────────────────────
 // Fires when a Whop payment succeeds. Verifies signature via the
@@ -49,6 +51,37 @@ export async function POST(request: Request) {
 
   const payment = event.data;
   const metadata: Record<string, string> = payment?.metadata || {};
+
+  // ── Agreement Checkout payments carry agreement_id ──────────────
+  // Mark the checkout paid, compute VAT, assign an invoice number, then return.
+  // (These are separate from proposal payments below.)
+  const agreementId = metadata.agreement_id;
+  if (agreementId) {
+    try {
+      const c = await getCheckoutByToken(agreementId); // token === row id
+      if (c && !c.paid) {
+        const vat = computeVat(c.amountGross, c.billingCountry);
+        const now = new Date().toISOString();
+        await saveCheckout({
+          ...c,
+          paid: true,
+          paidAt: now,
+          whopPaymentId: String(payment?.id ?? ""),
+          whopMembershipId: payment?.membership?.id,
+          status: "paid",
+          vatStatus: vat.status,
+          amountNet: vat.net,
+          amountVat: vat.vat,
+          invoiceNumber: c.invoiceNumber ?? `EL-${Date.now().toString(36).toUpperCase()}`,
+          updated_at: now,
+        });
+      }
+      return NextResponse.json({ ok: true, checkout: agreementId });
+    } catch (err) {
+      console.error("[webhook] checkout fulfilment failed:", err);
+      return NextResponse.json({ ok: true, error: "checkout_fulfil_failed" });
+    }
+  }
 
   const proposalToken = metadata.proposal_token;
   const clientName = metadata.client_name || "Unknown";
