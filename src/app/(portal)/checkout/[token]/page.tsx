@@ -434,7 +434,7 @@ function InvoiceStep({ checkout }: { checkout: Checkout }) {
           <ArrowDownTrayIcon className="size-4" /> {busy === "agreement" ? "Preparing…" : "Download signed agreement (PDF)"}
         </button>
       </div>
-      <p className="text-center text-2xs text-subtle">Copies have been saved and emailed to {checkout.email}.</p>
+      <p className="text-center text-2xs text-subtle">We keep a copy of your invoice and agreement on file. Just ask if you need them again.</p>
 
       {/* Next step: onboarding. Prefilled with what we already know. */}
       <div className="rounded-lg border border-border bg-surface-raised p-5">

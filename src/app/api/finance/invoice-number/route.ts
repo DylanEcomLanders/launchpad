@@ -1,6 +1,7 @@
 /* ── Reserve next invoice number ──
  * Calls finance_next_invoice_number(year) and returns the formatted
- * INV-YYYY-NNN string. Server-side so the service role can RPC.
+ * EL-YYYY-NNN string (the house format, shared with the checkout flow).
+ * Server-side so the service role can RPC.
  *
  * Called by the New Invoice form ONLY on save (not on mount) so that
  * abandoned drafts don't leave holes in the sequence.
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!Number.isFinite(n) || n <= 0) {
       return NextResponse.json({ error: "Invalid sequence value" }, { status: 500 });
     }
-    return NextResponse.json({ invoice_number: `INV-${year}-${String(n).padStart(3, "0")}` });
+    return NextResponse.json({ invoice_number: `EL-${year}-${String(n).padStart(3, "0")}` });
   } catch (err) {
     if (err instanceof FinanceConfigError) {
       return NextResponse.json(

@@ -1,7 +1,7 @@
 export const ecomlanders = {
   legalName: "Ecom Landers Ltd",
   companyNumber: "16308589",
-  address: "4 Station Court, Cannock, England, WS11 0EJ",
+  address: "Gateway House, Suite 3.5, Manchester, M22 5WY",
   contactEmail: "hello@ecomlanders.com",
 };
 

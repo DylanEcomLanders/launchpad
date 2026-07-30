@@ -6,7 +6,7 @@
  */
 export const businessProfile = {
   legalName: "Ecomlanders Ltd",
-  addressLines: ["4 Station Court", "Cannock", "England", "WS11 0EJ"],
+  addressLines: ["Gateway House, Suite 3.5", "Manchester", "M22 5WY"],
   companyNumber: "16308589",
   vatNumber: null as string | null, // Not VAT registered
   email: "" as string,

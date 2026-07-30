@@ -25,7 +25,7 @@ import type { TemplateBody } from "./types";
 const ECOM_LANDERS_LEGAL_NAME = "Ecom Landers Ltd";
 const ECOM_LANDERS_COMPANY_NUMBER = "16308589"; // Companies House, incorporated 11 March 2025
 const ECOM_LANDERS_ADDRESS =
-  "4 Station Court, Cannock, England, WS11 0EJ";
+  "Gateway House, Suite 3.5, Manchester, M22 5WY";
 
 export const DEFAULT_NDA_TEMPLATE: TemplateBody = {
   title: "Mutual Non-Disclosure Agreement",
