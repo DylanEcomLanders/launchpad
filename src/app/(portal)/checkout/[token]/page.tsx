@@ -5,7 +5,7 @@
  *   1. Sign (in-house)  2. Pay (Whop, embedded)  3. Invoice (in-house, download)
  * The token is the row id (unguessable). Everything logs to the checkouts table.
  *
- * STATUS: sign + invoice-summary are built. The Pay step currently shows the
+ * STATUS: sign + invoice (with real PDF download) are built. The Pay step shows the
  * placeholder where Whop's embedded checkout mounts, plus a temporary "test paid"
  * control so the flow is walkable before the Whop keys are wired. Swap that for
  * the Whop embed (see docs/agreement-checkout-brief.md, "Whop integration").
@@ -204,6 +204,21 @@ function PayStep({
 /* ── Step 3: Invoice ── */
 function InvoiceStep({ checkout }: { checkout: Checkout }) {
   const ccy = checkout.currency;
+  const [downloading, setDownloading] = useState(false);
+
+  async function download() {
+    setDownloading(true);
+    try {
+      const { downloadInvoicePdf } = await import("@/lib/checkout/invoice");
+      await downloadInvoicePdf(checkout);
+    } catch (err) {
+      console.error("[checkout] invoice download failed:", err);
+      alert("Could not generate the invoice. Please contact Ecom Landers.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-status-ontrack">
@@ -230,10 +245,11 @@ function InvoiceStep({ checkout }: { checkout: Checkout }) {
       </section>
 
       <button
-        onClick={() => alert("Invoice PDF download is wired next (react-pdf). Details above are your invoice.")}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90"
+        onClick={download}
+        disabled={downloading}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50"
       >
-        <ArrowDownTrayIcon className="size-4" /> Download invoice (PDF)
+        <ArrowDownTrayIcon className="size-4" /> {downloading ? "Preparing…" : "Download invoice (PDF)"}
       </button>
       <p className="text-center text-2xs text-subtle">A copy has been saved and emailed to {checkout.email}.</p>
     </div>
