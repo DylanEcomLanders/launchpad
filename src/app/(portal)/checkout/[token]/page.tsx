@@ -74,9 +74,26 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
   const [country, setCountry] = useState(checkout.billingCountry ?? "GB");
   const [signature, setSignature] = useState("");
   const [agreed, setAgreed] = useState(false);
+  // Local snapshot once signed: hold on this step so a copy can be downloaded
+  // before continuing. Persisting (and advancing to Pay) waits for "Continue".
+  const [signed, setSigned] = useState<Checkout | null>(null);
   const canSign = name.trim().length > 1 && signature && agreed;
 
   const vat = computeVat(checkout.amountGross, country);
+
+  function doSign() {
+    if (!canSign) return;
+    setSigned({
+      ...checkout,
+      signedName: name.trim(),
+      signatureImage: signature,
+      billingCountry: country,
+      signedAt: new Date().toISOString(),
+      status: "signed",
+    });
+  }
+
+  if (signed) return <SignedConfirm signed={signed} onContinue={onSigned} />;
 
   return (
     <div className="space-y-6">
@@ -123,18 +140,63 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
 
       <button
         disabled={!canSign}
+        onClick={doSign}
+        className="w-full rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90 disabled:opacity-40"
+      >
+        Sign
+      </button>
+    </div>
+  );
+}
+
+/* ── Step 1b: signed, before payment ── */
+function SignedConfirm({ signed, onContinue }: { signed: Checkout; onContinue: (p: Partial<Checkout>) => Promise<void> }) {
+  const [downloading, setDownloading] = useState(false);
+
+  async function downloadSigned() {
+    setDownloading(true);
+    try {
+      const { downloadAgreementPdf } = await import("@/lib/checkout/agreement");
+      await downloadAgreementPdf(signed);
+    } catch (err) {
+      console.error("[checkout] agreement download failed:", err);
+      alert("Could not generate the signed copy. Please contact Ecom Landers.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 text-status-ontrack">
+        <CheckCircleIcon className="size-6" />
+        <h1 className="text-xl font-semibold text-foreground">Agreement signed</h1>
+      </div>
+      <p className="text-sm text-muted">
+        Download a copy for your records. You can also get it again after payment, so nothing is lost if you continue now.
+      </p>
+
+      <button
+        onClick={downloadSigned}
+        disabled={downloading}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface py-3 text-sm font-medium text-foreground transition hover:bg-surface-raised disabled:opacity-50"
+      >
+        <ArrowDownTrayIcon className="size-4" /> {downloading ? "Preparing…" : "Download signed agreement (PDF)"}
+      </button>
+
+      <button
         onClick={() =>
-          onSigned({
-            signedName: name.trim(),
-            signatureImage: signature,
-            billingCountry: country,
-            signedAt: new Date().toISOString(),
+          onContinue({
+            signedName: signed.signedName,
+            signatureImage: signed.signatureImage,
+            billingCountry: signed.billingCountry,
+            signedAt: signed.signedAt,
             status: "signed",
           })
         }
-        className="w-full rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90 disabled:opacity-40"
+        className="w-full rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90"
       >
-        Sign &amp; continue to payment
+        Continue to payment
       </button>
     </div>
   );
@@ -204,18 +266,23 @@ function PayStep({
 /* ── Step 3: Invoice ── */
 function InvoiceStep({ checkout }: { checkout: Checkout }) {
   const ccy = checkout.currency;
-  const [downloading, setDownloading] = useState(false);
+  const [busy, setBusy] = useState<null | "invoice" | "agreement">(null);
 
-  async function download() {
-    setDownloading(true);
+  async function download(kind: "invoice" | "agreement") {
+    setBusy(kind);
     try {
-      const { downloadInvoicePdf } = await import("@/lib/checkout/invoice");
-      await downloadInvoicePdf(checkout);
+      if (kind === "invoice") {
+        const { downloadInvoicePdf } = await import("@/lib/checkout/invoice");
+        await downloadInvoicePdf(checkout);
+      } else {
+        const { downloadAgreementPdf } = await import("@/lib/checkout/agreement");
+        await downloadAgreementPdf(checkout);
+      }
     } catch (err) {
-      console.error("[checkout] invoice download failed:", err);
-      alert("Could not generate the invoice. Please contact Ecom Landers.");
+      console.error(`[checkout] ${kind} download failed:`, err);
+      alert(`Could not generate the ${kind}. Please contact Ecom Landers.`);
     } finally {
-      setDownloading(false);
+      setBusy(null);
     }
   }
 
@@ -223,11 +290,11 @@ function InvoiceStep({ checkout }: { checkout: Checkout }) {
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-status-ontrack">
         <CheckCircleIcon className="size-6" />
-        <h1 className="text-xl font-semibold text-foreground">Paid — thank you</h1>
+        <h1 className="text-xl font-semibold text-foreground">Paid, thank you</h1>
       </div>
 
       <section className="rounded-lg border border-border bg-surface p-5 text-sm">
-        <Row label="Invoice" value={checkout.invoiceNumber ?? "—"} />
+        <Row label="Invoice" value={checkout.invoiceNumber ?? "-"} />
         <Row label="Billed to" value={checkout.clientName + (checkout.company ? ` · ${checkout.company}` : "")} />
         <div className="my-3 border-t border-border-faint" />
         {checkout.vatStatus === "uk" ? (
@@ -244,14 +311,23 @@ function InvoiceStep({ checkout }: { checkout: Checkout }) {
         )}
       </section>
 
-      <button
-        onClick={download}
-        disabled={downloading}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50"
-      >
-        <ArrowDownTrayIcon className="size-4" /> {downloading ? "Preparing…" : "Download invoice (PDF)"}
-      </button>
-      <p className="text-center text-2xs text-subtle">A copy has been saved and emailed to {checkout.email}.</p>
+      <div className="space-y-2">
+        <button
+          onClick={() => download("invoice")}
+          disabled={busy !== null}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50"
+        >
+          <ArrowDownTrayIcon className="size-4" /> {busy === "invoice" ? "Preparing…" : "Download invoice (PDF)"}
+        </button>
+        <button
+          onClick={() => download("agreement")}
+          disabled={busy !== null}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface py-3 text-sm font-medium text-foreground transition hover:bg-surface-raised disabled:opacity-50"
+        >
+          <ArrowDownTrayIcon className="size-4" /> {busy === "agreement" ? "Preparing…" : "Download signed agreement (PDF)"}
+        </button>
+      </div>
+      <p className="text-center text-2xs text-subtle">Copies have been saved and emailed to {checkout.email}.</p>
     </div>
   );
 }

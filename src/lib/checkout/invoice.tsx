@@ -11,14 +11,8 @@
 
 import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer";
 import { computeVat, VAT_NUMBER } from "./vat";
+import { SELLER, PDF } from "./company";
 import type { Checkout } from "./types";
-
-// TODO(dylan): fill in the real registered details before sending live invoices.
-const SELLER = {
-  name: "Ecom Landers",
-  addressLines: ["", ""], // e.g. ["1 Example Street, London", "EC1A 1BB, United Kingdom"]
-  email: "hello@ecomlanders.com",
-};
 
 const money = (n: number, ccy = "GBP") =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: ccy }).format(n);
@@ -30,10 +24,7 @@ const fmtDate = (iso?: string) =>
     year: "numeric",
   });
 
-const ink = "#1a1b1e";
-const grey = "#6b6b70";
-const faint = "#e5e5e7";
-const lime = "#CDF93A";
+const { ink, grey, faint, lime } = PDF;
 
 const s = StyleSheet.create({
   page: { paddingTop: 56, paddingBottom: 56, paddingHorizontal: 56, fontSize: 10, color: ink, fontFamily: "Helvetica" },
@@ -58,7 +49,7 @@ export function InvoiceDocument({ c }: { c: Checkout }) {
   const ccy = c.currency;
   const billedTo = [c.company || c.clientName, c.company ? c.clientName : "", c.email].filter(Boolean);
   const desc =
-    (c.engagementType === "retainer" ? "Retainer" : "Project") + (c.scope ? ` — ${c.scope}` : "");
+    (c.engagementType === "retainer" ? "Retainer" : "Project") + (c.scope ? ` - ${c.scope}` : "");
 
   return (
     <Document title={`Invoice ${c.invoiceNumber ?? ""}`} author={SELLER.name}>
@@ -75,7 +66,7 @@ export function InvoiceDocument({ c }: { c: Checkout }) {
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={s.title}>Invoice</Text>
-            <Text style={s.meta}>{c.invoiceNumber ?? "—"}</Text>
+            <Text style={s.meta}>{c.invoiceNumber ?? "-"}</Text>
             <Text style={s.meta}>{fmtDate(c.paidAt)}</Text>
           </View>
         </View>
