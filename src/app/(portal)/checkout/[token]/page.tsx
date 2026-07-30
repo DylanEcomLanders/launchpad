@@ -13,13 +13,14 @@
 
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CheckCircleIcon, LockClosedIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { Logo } from "@/components/logo";
 import { SignaturePad } from "@/components/signature-pad";
 import { getCheckoutByToken, saveCheckout } from "@/lib/checkout/data";
-import { computeVat, VAT_NUMBER } from "@/lib/checkout/vat";
+import { computeVat } from "@/lib/checkout/vat";
 import type { Checkout } from "@/lib/checkout/types";
+import type { InvoiceIssued, CompanyProfile } from "@/lib/finance/types";
 
 const money = (n: number, ccy = "GBP") =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: ccy }).format(n);
@@ -63,7 +64,7 @@ export default function CheckoutPage() {
       <Stepper step={step} />
 
       {step === "sign" && <SignStep checkout={checkout} onSigned={patch} />}
-      {step === "pay" && <PayStep checkout={checkout} vatCountry={checkout.billingCountry} onPaid={patch} />}
+      {step === "pay" && <PayStep checkout={checkout} onPaid={patch} />}
       {step === "invoice" && <InvoiceStep checkout={checkout} />}
     </Shell>
   );
@@ -223,14 +224,11 @@ type Session = { sessionId: string; planId: string };
 
 function PayStep({
   checkout,
-  vatCountry,
   onPaid,
 }: {
   checkout: Checkout;
-  vatCountry?: string;
   onPaid: (p: Partial<Checkout>) => Promise<void>;
 }) {
-  const vat = computeVat(checkout.amountGross, vatCountry);
   // undefined = still loading; null = Whop unavailable (no keys yet); Session = ready
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [reason, setReason] = useState("");
@@ -262,19 +260,9 @@ function PayStep({
   }, [checkout.token]);
 
   function markPaid(whopPaymentId?: string) {
-    const now = new Date().toISOString();
-    // Provisional number for the client; the webhook is authoritative server-side.
-    const invoiceNumber = `EL-${Date.now().toString(36).toUpperCase()}`;
-    return onPaid({
-      paid: true,
-      paidAt: now,
-      whopPaymentId,
-      status: "paid",
-      vatStatus: vat.status,
-      amountNet: vat.net,
-      amountVat: vat.vat,
-      invoiceNumber,
-    });
+    // Optimistic UI advance only. The Whop webhook writes the authoritative
+    // paid flag, invoice number, VAT and Finance invoice record server-side.
+    return onPaid({ paid: true, paidAt: new Date().toISOString(), whopPaymentId, status: "paid" });
   }
 
   return (
@@ -328,24 +316,71 @@ function PayStep({
   );
 }
 
-/* ── Step 3: Invoice ── */
+/* ── Step 3: Invoice ──
+ * Invoice is generated + recorded by the Finance module server-side (via the
+ * Whop webhook). We fetch that record and render its PDF (finance-invoice-pdf)
+ * client-side. The signed agreement is generated in-house from the checkout. */
+type InvoiceData = { invoice: InvoiceIssued; profile: CompanyProfile };
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function InvoiceStep({ checkout }: { checkout: Checkout }) {
-  const ccy = checkout.currency;
+  // undefined = loading; "pending" = webhook not done; "error"; else the data
+  const [inv, setInv] = useState<InvoiceData | "pending" | "error" | undefined>(undefined);
   const [busy, setBusy] = useState<null | "invoice" | "agreement">(null);
 
-  async function download(kind: "invoice" | "agreement") {
-    setBusy(kind);
+  const fetchInvoice = useCallback(() => {
+    setInv(undefined);
+    fetch(`/api/checkout/invoice-data?token=${encodeURIComponent(checkout.token)}`)
+      .then(async (r) => {
+        if (r.status === 202) return setInv("pending");
+        if (!r.ok) return setInv("error");
+        setInv((await r.json()) as InvoiceData);
+      })
+      .catch(() => setInv("error"));
+  }, [checkout.token]);
+
+  useEffect(() => {
+    fetchInvoice();
+  }, [fetchInvoice]);
+
+  const ready = inv && typeof inv !== "string" ? inv : null;
+
+  async function downloadInvoice() {
+    if (!ready) return;
+    setBusy("invoice");
     try {
-      if (kind === "invoice") {
-        const { downloadInvoicePdf } = await import("@/lib/checkout/invoice");
-        await downloadInvoicePdf(checkout);
-      } else {
-        const { downloadAgreementPdf } = await import("@/lib/checkout/agreement");
-        await downloadAgreementPdf(checkout);
-      }
+      const [{ pdf }, { FinanceInvoicePdf }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/components/finance/finance-invoice-pdf"),
+      ]);
+      const blob = await pdf(<FinanceInvoicePdf invoice={ready.invoice} profile={ready.profile} />).toBlob();
+      triggerDownload(blob, `Invoice-${ready.invoice.invoice_number}.pdf`);
     } catch (err) {
-      console.error(`[checkout] ${kind} download failed:`, err);
-      alert(`Could not generate the ${kind}. Please contact Ecom Landers.`);
+      console.error("[checkout] invoice download failed:", err);
+      alert("Could not generate the invoice. Please contact Ecom Landers.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function downloadAgreement() {
+    setBusy("agreement");
+    try {
+      const { downloadAgreementPdf } = await import("@/lib/checkout/agreement");
+      await downloadAgreementPdf(checkout);
+    } catch (err) {
+      console.error("[checkout] agreement download failed:", err);
+      alert("Could not generate the agreement. Please contact Ecom Landers.");
     } finally {
       setBusy(null);
     }
@@ -358,34 +393,41 @@ function InvoiceStep({ checkout }: { checkout: Checkout }) {
         <h1 className="text-xl font-semibold text-foreground">Paid, thank you</h1>
       </div>
 
-      <section className="rounded-lg border border-border bg-surface p-5 text-sm">
-        <Row label="Invoice" value={checkout.invoiceNumber ?? "-"} />
-        <Row label="Billed to" value={checkout.clientName + (checkout.company ? ` · ${checkout.company}` : "")} />
-        <div className="my-3 border-t border-border-faint" />
-        {checkout.vatStatus === "uk" ? (
-          <>
-            <Row label="Net" value={money(checkout.amountNet ?? checkout.amountGross, ccy)} />
-            <Row label={`VAT (20%)${VAT_NUMBER ? ` · ${VAT_NUMBER}` : ""}`} value={money(checkout.amountVat ?? 0, ccy)} />
-            <Row label="Total" value={money(checkout.amountGross, ccy)} strong />
-          </>
-        ) : (
-          <>
-            <Row label="Total" value={money(checkout.amountGross, ccy)} strong />
-            {checkout.vatStatus === "outside" && <p className="mt-1 text-xs text-subtle">Outside of UK VAT.</p>}
-          </>
-        )}
-      </section>
+      {ready ? (
+        <section className="rounded-lg border border-border bg-surface p-5 text-sm">
+          <Row label="Invoice" value={ready.invoice.invoice_number} />
+          <Row label="Billed to" value={ready.invoice.client_name} />
+          <div className="my-3 border-t border-border-faint" />
+          <Row label="Total" value={money(ready.invoice.gross_amount, ready.invoice.currency)} strong />
+        </section>
+      ) : inv === "pending" ? (
+        <section className="rounded-lg border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
+          Your invoice is being finalised. This can take a few seconds after payment.
+          <button onClick={fetchInvoice} className="mt-2 block w-full text-2xs text-subtle underline hover:text-foreground">
+            Refresh
+          </button>
+        </section>
+      ) : inv === "error" ? (
+        <section className="rounded-lg border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
+          Could not load your invoice.
+          <button onClick={fetchInvoice} className="mt-2 block w-full text-2xs text-subtle underline hover:text-foreground">
+            Try again
+          </button>
+        </section>
+      ) : (
+        <section className="rounded-lg border border-border bg-surface p-5 text-center text-sm text-subtle">Loading your invoice…</section>
+      )}
 
       <div className="space-y-2">
         <button
-          onClick={() => download("invoice")}
-          disabled={busy !== null}
+          onClick={downloadInvoice}
+          disabled={busy !== null || !ready}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground py-3 text-sm font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50"
         >
           <ArrowDownTrayIcon className="size-4" /> {busy === "invoice" ? "Preparing…" : "Download invoice (PDF)"}
         </button>
         <button
-          onClick={() => download("agreement")}
+          onClick={downloadAgreement}
           disabled={busy !== null}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface py-3 text-sm font-medium text-foreground transition hover:bg-surface-raised disabled:opacity-50"
         >

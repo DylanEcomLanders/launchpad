@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { isNotificationEnabled } from "@/lib/notification-settings";
 import { getCheckoutByToken, saveCheckout } from "@/lib/checkout/data";
 import { computeVat } from "@/lib/checkout/vat";
+import { createFinanceInvoiceForCheckout } from "@/lib/checkout/finance-invoice";
 
 // ── Whop payment.succeeded webhook handler ──────────────────────
 // Fires when a Whop payment succeeds. Verifies signature via the
@@ -59,20 +60,35 @@ export async function POST(request: Request) {
   if (agreementId) {
     try {
       const c = await getCheckoutByToken(agreementId); // token === row id
-      if (c && !c.paid) {
+      if (c) {
+        const whopPaymentId = String(payment?.id ?? "");
+        // Create the Finance invoice once. Guard on financeInvoiceId (not paid)
+        // so it still runs if the client optimistically flipped paid first.
+        let invoiceNumber = c.invoiceNumber;
+        let financeInvoiceId = c.financeInvoiceId;
+        if (!financeInvoiceId) {
+          try {
+            const res = await createFinanceInvoiceForCheckout({ ...c, whopPaymentId }, whopPaymentId);
+            invoiceNumber = res.invoiceNumber;
+            financeInvoiceId = res.invoiceId;
+          } catch (e) {
+            console.error("[webhook] finance invoice creation failed:", e);
+          }
+        }
         const vat = computeVat(c.amountGross, c.billingCountry);
         const now = new Date().toISOString();
         await saveCheckout({
           ...c,
           paid: true,
-          paidAt: now,
-          whopPaymentId: String(payment?.id ?? ""),
-          whopMembershipId: payment?.membership?.id,
+          paidAt: c.paidAt ?? now,
+          whopPaymentId: whopPaymentId || c.whopPaymentId,
+          whopMembershipId: payment?.membership?.id ?? c.whopMembershipId,
           status: "paid",
           vatStatus: vat.status,
           amountNet: vat.net,
           amountVat: vat.vat,
-          invoiceNumber: c.invoiceNumber ?? `EL-${Date.now().toString(36).toUpperCase()}`,
+          invoiceNumber,
+          financeInvoiceId,
           updated_at: now,
         });
       }

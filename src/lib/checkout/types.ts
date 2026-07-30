@@ -53,6 +53,8 @@ export interface Checkout {
 
   /* Invoice (step 3) + VAT breakdown at time of payment */
   invoiceNumber?: string;
+  /** Links to the record in the Finance module (finance_invoices_issued). */
+  financeInvoiceId?: string;
   invoicePdfPath?: string;
   vatStatus?: VatStatus;
   amountNet?: number;
