@@ -48,6 +48,11 @@ interface FormData {
   timezone: string;
   // Final
   additional_info: string;
+  // Added: creative latitude (Brand), design direction (Design), dev stack (Development)
+  brand_flexibility: string;
+  design_style: string;
+  dev_apps: string;
+  dev_apps_other: string;
 }
 
 const emptyForm: FormData = {
@@ -64,19 +69,23 @@ const emptyForm: FormData = {
   previous_agencies: "",
   primary_contact: "", approval_decision_maker: "", timezone: "",
   additional_info: "",
+  brand_flexibility: "", design_style: "", dev_apps: "", dev_apps_other: "",
 };
 
 // Section = one step. title + a short editorial intro + its required fields
 // (which drive the segmented progress + the overall completion meter).
 const SECTIONS: { title: string; intro: string; required: (keyof FormData)[] }[] = [
-  { title: "Brand & Business", intro: "Tell us who you are and who you're for. Takes about 10 minutes, and everything saves as you go.", required: ["company_name", "website_url", "brief_description", "target_customer", "top_competitors", "usps", "main_products", "current_metrics"] },
-  { title: "Project Specifics", intro: "What are we building, and where's the traffic coming from?", required: [] },
-  { title: "Creative & Messaging", intro: "The words, proof, and tone that make it convert.", required: ["brand_assets_link", "core_value_props", "reviews_testimonials", "words_to_avoid", "tone_of_voice"] },
-  { title: "Access & Data", intro: "So we can get in and see what's really happening.", required: ["myshopify_url", "analytics_software", "existing_landing_pages", "tracking_pixels", "other_integrations"] },
-  { title: "Success Metrics & Priorities", intro: "How we'll know this worked.", required: ["primary_goal", "success_definition", "timeline_expectations"] },
-  { title: "Risk & Bottlenecks", intro: "What's held you back before, so we don't repeat it.", required: ["conversion_challenges", "common_objections", "compliance_restrictions", "previous_agencies"] },
-  { title: "Workflow & Communication", intro: "How we'll work together, day to day.", required: ["primary_contact", "approval_decision_maker", "timezone"] },
-  { title: "Final Uploads & Extras", intro: "Anything else we should have, then send it our way.", required: ["additional_info"] },
+  { title: "Brand information", intro: "Who you are, how you sound, and how much room we have to be creative.", required: ["company_name", "website_url", "brief_description", "target_customer", "usps", "main_products", "tone_of_voice", "brand_flexibility"] },
+  { title: "Access", intro: "Get us into your store and tools, and tell us who we're working with.", required: ["myshopify_url", "primary_contact"] },
+  { title: "Design", intro: "What we're building, and the direction that feels like you.", required: [] },
+  { title: "Development", intro: "Your stack and setup, so our dev team are ready before day one.", required: [] },
+  { title: "Insights", intro: "Your goals, your numbers, and what's held you back before.", required: ["primary_goal", "success_definition"] },
+];
+
+// Apps our dev team plan around. Client ticks what they use + keep, adds any others.
+const APP_OPTIONS = [
+  "Klaviyo", "Recharge", "Skio", "Yotpo", "Okendo", "Loox", "Judge.me", "Gorgias",
+  "Rebuy", "ReConvert", "Postscript", "Attentive", "Triple Whale", "Shogun", "Replo", "Tapcart", "Smile.io", "Stamped",
 ];
 const LAST = SECTIONS.length - 1;
 const REQUIRED_FIELDS: (keyof FormData)[] = SECTIONS.flatMap((s) => s.required);
@@ -125,6 +134,104 @@ function ChipMultiSelect({ value, onChange, options }: { value: string; onChange
             }`}
           >
             {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Single-select cards (used for the brand creative-latitude question).
+function ChoiceCards({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string; desc?: string }[] }) {
+  return (
+    <div className="grid gap-2.5 sm:grid-cols-3">
+      {options.map((o) => {
+        const on = value === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(on ? "" : o.value)}
+            className={`flex flex-col items-start gap-1 rounded border px-4 py-3.5 text-left transition-colors ${
+              on ? "border-foreground bg-foreground/5" : "border-border bg-surface hover:border-foreground/40"
+            }`}
+          >
+            <span className="text-sm font-medium text-foreground">{o.label}</span>
+            {o.desc && <span className="text-xs leading-snug text-subtle">{o.desc}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Abstract CSS preview evoking each design direction (no external images).
+function StylePreview({ kind }: { kind: string }) {
+  if (kind === "bold")
+    return (
+      <div className="flex h-24 flex-col justify-center gap-1.5 rounded-md bg-background p-3">
+        <div className="h-3 w-3/4 rounded-sm bg-foreground" />
+        <div className="h-3 w-1/2 rounded-sm bg-foreground" />
+        <div className="mt-1 h-2 w-1/3 rounded-sm bg-accent" />
+      </div>
+    );
+  if (kind === "minimal")
+    return (
+      <div className="flex h-24 flex-col justify-center gap-2.5 rounded-md bg-background p-4">
+        <div className="h-1.5 w-1/3 rounded-full bg-muted" />
+        <div className="h-px w-full bg-border" />
+        <div className="h-1.5 w-1/4 rounded-full bg-border" />
+      </div>
+    );
+  if (kind === "editorial")
+    return (
+      <div className="flex h-24 gap-2 rounded-md bg-background p-3">
+        <div className="flex-1 space-y-1.5">
+          <div className="h-2.5 w-full rounded-sm bg-foreground" />
+          <div className="h-1 w-full rounded-full bg-border" />
+          <div className="h-1 w-5/6 rounded-full bg-border" />
+          <div className="h-1 w-full rounded-full bg-border" />
+        </div>
+        <div className="w-10 rounded bg-surface-raised" />
+      </div>
+    );
+  return (
+    <div className="flex h-24 items-center gap-2.5 rounded-md bg-background p-3">
+      <div className="size-9 rounded-full bg-accent" />
+      <div className="flex-1 space-y-1.5">
+        <div className="h-2.5 w-2/3 rounded-full bg-foreground" />
+        <div className="h-2 w-1/2 rounded-full bg-accent/60" />
+      </div>
+    </div>
+  );
+}
+
+function StyleCards({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const styles = [
+    { value: "bold", label: "Bold & punchy", desc: "Big type, high contrast, impossible to ignore." },
+    { value: "minimal", label: "Clean & minimal", desc: "Restrained, lots of space, product-first." },
+    { value: "editorial", label: "Editorial & premium", desc: "Refined and considered, magazine-like." },
+    { value: "playful", label: "Vibrant & playful", desc: "Energetic, colourful, full of character." },
+  ];
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {styles.map((s) => {
+        const on = value === s.value;
+        return (
+          <button
+            key={s.value}
+            type="button"
+            onClick={() => onChange(on ? "" : s.value)}
+            className={`rounded-lg border p-2.5 text-left transition-colors ${
+              on ? "border-foreground bg-foreground/5" : "border-border bg-surface hover:border-foreground/40"
+            }`}
+          >
+            <StylePreview kind={s.value} />
+            <div className="mt-2.5 flex items-center justify-between px-1">
+              <span className="text-sm font-medium text-foreground">{s.label}</span>
+              {on && <CheckIcon className="size-4 text-foreground" />}
+            </div>
+            <p className="mt-0.5 px-1 text-xs leading-snug text-subtle">{s.desc}</p>
           </button>
         );
       })}
@@ -369,6 +476,7 @@ export default function OnboardingFormPage() {
 
         {/* Fields */}
         <div className="space-y-8">
+          {/* 01 Brand information */}
           {step === 0 && (
             <>
               <Row>
@@ -385,135 +493,149 @@ export default function OnboardingFormPage() {
               <Field label="Who is your target customer? (demographics, lifestyle, purchasing triggers)" required>
                 <textarea className={textareaClass} value={form.target_customer} onChange={set("target_customer")} placeholder="e.g. Women 25 to 45, health-conscious, active on Instagram..." />
               </Field>
-              <Field label="Top 3 competitors (URLs or brand names)" required>
-                <textarea className={textareaClass} value={form.top_competitors} onChange={set("top_competitors")} placeholder="e.g. https://ecomlanders.com, similar brand, another" />
-              </Field>
               <Field label="What are your main USPs that set you apart?" required>
                 <textarea className={textareaClass} value={form.usps} onChange={set("usps")} />
               </Field>
               <Field label="Main products/offers you want us to focus on" required>
                 <textarea className={textareaClass} value={form.main_products} onChange={set("main_products")} />
               </Field>
-              <Field label="What are the current metrics you want to focus on?" required>
-                <textarea className={textareaClass} value={form.current_metrics} onChange={set("current_metrics")} placeholder="e.g. CVR, AOV, bounce rate, ad ROAS..." />
-              </Field>
-            </>
-          )}
-
-          {step === 1 && (
-            <>
-              <Field label="Product URL(s): the page(s) being built or rebuilt">
-                <textarea className={textareaClass} value={form.product_url} onChange={set("product_url")} placeholder="e.g. https://ecomlanders.com/products/example" />
-              </Field>
-              <Row>
-                <Field label="Page type (select all that apply)">
-                  <ChipMultiSelect value={form.page_type} onChange={(v) => setForm((f) => ({ ...f, page_type: v }))} options={["PDP", "Advertorial", "Hero Lander", "Listicle", "Homepage", "Bundle Builder", "Collection Page", "Cart / Checkout", "Other"]} />
-                </Field>
-                <Field label="Traffic source (select all that apply)">
-                  <ChipMultiSelect value={form.traffic_source} onChange={(v) => setForm((f) => ({ ...f, traffic_source: v }))} options={["Meta (cold)", "Google", "Email", "Organic", "TikTok", "Mixed", "Other"]} />
-                </Field>
-              </Row>
-              <Field label="Amazon ASIN(s), if applicable">
-                <input className={inputClass} value={form.amazon_asins} onChange={set("amazon_asins")} placeholder="e.g. B09XYZ1234" />
-              </Field>
-              <Field label="Meta page name (so we can find running ads)">
-                <input className={inputClass} value={form.meta_page_name} onChange={set("meta_page_name")} placeholder="e.g. Ecomlanders on Facebook/Meta" />
-              </Field>
-              <Field label="Specific direction: anything to prioritise or exclude">
-                <textarea className={textareaClass} value={form.specific_direction} onChange={set("specific_direction")} placeholder="e.g. Focus on subscription push, avoid mentioning competitor X..." />
-              </Field>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              <Field label="Please provide a link to your brand assets (if available)" required>
-                <input className={inputClass} value={form.brand_assets_link} onChange={set("brand_assets_link")} placeholder="Google Drive, Dropbox, etc." />
-              </Field>
-              <Field label="Core value props or benefits to highlight (bullet list)" required>
-                <textarea className={textareaClass} value={form.core_value_props} onChange={set("core_value_props")} />
-              </Field>
-              <Field label="Any customer reviews/testimonials/press features we should use? (links)" required>
-                <textarea className={textareaClass} value={form.reviews_testimonials} onChange={set("reviews_testimonials")} />
-              </Field>
-              <Field label="Words, claims, or imagery we MUST avoid (compliance/brand guardrails)" required>
-                <textarea className={textareaClass} value={form.words_to_avoid} onChange={set("words_to_avoid")} />
+              <Field label="Top competitors (URLs or brand names)">
+                <textarea className={textareaClass} value={form.top_competitors} onChange={set("top_competitors")} placeholder="e.g. https://competitor.com, another brand" />
               </Field>
               <Field label="Preferred brand tone of voice (authoritative, playful, luxury, etc.)" required>
                 <textarea className={textareaClass} value={form.tone_of_voice} onChange={set("tone_of_voice")} />
               </Field>
+              <Field label="Core value props or benefits to highlight">
+                <textarea className={textareaClass} value={form.core_value_props} onChange={set("core_value_props")} />
+              </Field>
+              <Field label="Reviews, testimonials or press we should use (links)">
+                <textarea className={textareaClass} value={form.reviews_testimonials} onChange={set("reviews_testimonials")} />
+              </Field>
+              <Field label="Words, claims or imagery we MUST avoid">
+                <textarea className={textareaClass} value={form.words_to_avoid} onChange={set("words_to_avoid")} />
+              </Field>
+              <Field label="Link to your brand assets (logos, fonts, guidelines)">
+                <input className={inputClass} value={form.brand_assets_link} onChange={set("brand_assets_link")} placeholder="Google Drive, Dropbox, Figma, etc." />
+              </Field>
+              <Field label="How much creative freedom do we have?" required>
+                <ChoiceCards
+                  value={form.brand_flexibility}
+                  onChange={(v) => setForm((f) => ({ ...f, brand_flexibility: v }))}
+                  options={[
+                    { value: "strict", label: "Stick to brand", desc: "Follow our guidelines closely." },
+                    { value: "some", label: "Some room", desc: "On-brand, but you can push it." },
+                    { value: "open", label: "Go for it", desc: "Full creative freedom." },
+                  ]}
+                />
+              </Field>
             </>
           )}
 
-          {step === 3 && (
+          {/* 02 Access */}
+          {step === 1 && (
             <>
-              <Field label="Please enter your myshopify.com URL & collaborator code" required>
+              <Field label="Your myshopify.com URL & collaborator code" required>
                 <input className={inputClass} value={form.myshopify_url} onChange={set("myshopify_url")} placeholder="e.g. ecomlanders.myshopify.com / code: XXXX" />
               </Field>
-              <Field label="Do you have analytics software set up? (Clarity, Intelligems, etc.)" required>
+              <Field label="Analytics tools set up? (Clarity, Intelligems, GA4, etc.)">
                 <textarea className={textareaClass} value={form.analytics_software} onChange={set("analytics_software")} />
               </Field>
-              <Field label="Do you have existing landing pages/funnels we should review? (links)" required>
-                <textarea className={textareaClass} value={form.existing_landing_pages} onChange={set("existing_landing_pages")} />
-              </Field>
-              <Field label="Are tracking pixels, tags, or survey tools already set up? (yes/no, details)" required>
+              <Field label="Tracking pixels, tags or survey tools already set up? (details)">
                 <textarea className={textareaClass} value={form.tracking_pixels} onChange={set("tracking_pixels")} />
               </Field>
-              <Field label="Other integrations we should be aware of (email/SMS, reviews, loyalty, etc.)" required>
+              <Field label="Other integrations we should be aware of (email/SMS, reviews, loyalty)">
                 <textarea className={textareaClass} value={form.other_integrations} onChange={set("other_integrations")} />
               </Field>
+              <Field label="Existing landing pages / funnels we should review (links)">
+                <textarea className={textareaClass} value={form.existing_landing_pages} onChange={set("existing_landing_pages")} />
+              </Field>
+              <Field label="Meta page name (so we can find running ads)">
+                <input className={inputClass} value={form.meta_page_name} onChange={set("meta_page_name")} placeholder="e.g. Ecomlanders on Facebook/Meta" />
+              </Field>
+              <div className="border-t border-border-faint pt-8">
+                <p className="mb-5 text-sm font-medium text-foreground">Who we&apos;re working with</p>
+                <div className="space-y-8">
+                  <Field label="Primary point of contact (name, are they in Slack?)" required>
+                    <input className={inputClass} value={form.primary_contact} onChange={set("primary_contact")} placeholder="e.g. Jane Doe, in Slack" />
+                  </Field>
+                  <Row>
+                    <Field label="Who makes final approval decisions?">
+                      <input className={inputClass} value={form.approval_decision_maker} onChange={set("approval_decision_maker")} />
+                    </Field>
+                    <Field label="Which timezone does your team work out of?">
+                      <input className={inputClass} value={form.timezone} onChange={set("timezone")} placeholder="e.g. GMT / London" />
+                    </Field>
+                  </Row>
+                </div>
+              </div>
             </>
           )}
 
-          {step === 4 && (
+          {/* 03 Design */}
+          {step === 2 && (
             <>
-              <Field label="Primary goal of this project (e.g. increase CR, raise AOV, scale revenue, CLTV growth)" required>
-                <textarea className={textareaClass} value={form.primary_goal} onChange={set("primary_goal")} />
+              <Field label="Which direction feels most like you? (pick one)">
+                <StyleCards value={form.design_style} onChange={(v) => setForm((f) => ({ ...f, design_style: v }))} />
               </Field>
-              <Field label="What success looks like to you in your own words?" required>
-                <textarea className={textareaClass} value={form.success_definition} onChange={set("success_definition")} />
+              <Field label="Page(s) being built or rebuilt (URLs)">
+                <textarea className={textareaClass} value={form.product_url} onChange={set("product_url")} placeholder="e.g. https://ecomlanders.com/products/example" />
               </Field>
-              <Field label="Timeline expectations (hard launch dates, campaign deadlines, seasonal promotions)" required>
-                <textarea className={textareaClass} value={form.timeline_expectations} onChange={set("timeline_expectations")} />
+              <Field label="Page type (select all that apply)">
+                <ChipMultiSelect value={form.page_type} onChange={(v) => setForm((f) => ({ ...f, page_type: v }))} options={["PDP", "Advertorial", "Hero Lander", "Listicle", "Homepage", "Bundle Builder", "Collection Page", "Cart / Checkout", "Other"]} />
+              </Field>
+              <Field label="Anything to prioritise or exclude, creatively?">
+                <textarea className={textareaClass} value={form.specific_direction} onChange={set("specific_direction")} placeholder="e.g. Push the subscription offer, avoid mentioning competitor X..." />
               </Field>
             </>
           )}
 
-          {step === 5 && (
+          {/* 04 Development */}
+          {step === 3 && (
             <>
-              <Field label="Known conversion challenges (low mobile CR, cart abandonment, low email capture, etc.)" required>
-                <textarea className={textareaClass} value={form.conversion_challenges} onChange={set("conversion_challenges")} />
+              <Field label="Which apps are you using that we should keep? (so our devs plan around them)">
+                <ChipMultiSelect value={form.dev_apps} onChange={(v) => setForm((f) => ({ ...f, dev_apps: v }))} options={APP_OPTIONS} />
               </Field>
-              <Field label="Most common objections or negative feedback from customers" required>
-                <textarea className={textareaClass} value={form.common_objections} onChange={set("common_objections")} />
+              <Field label="Any other apps we didn't list?">
+                <input className={inputClass} value={form.dev_apps_other} onChange={set("dev_apps_other")} placeholder="e.g. a custom subscription app, a headless setup..." />
               </Field>
-              <Field label="Any industry compliance/restrictions we need to know? (supplements, finance, skincare, etc.)" required>
+              <Field label="Where's your traffic coming from? (select all)">
+                <ChipMultiSelect value={form.traffic_source} onChange={(v) => setForm((f) => ({ ...f, traffic_source: v }))} options={["Meta (cold)", "Google", "Email", "Organic", "TikTok", "Mixed", "Other"]} />
+              </Field>
+              <Field label="Amazon ASIN(s), if applicable">
+                <input className={inputClass} value={form.amazon_asins} onChange={set("amazon_asins")} placeholder="e.g. B09XYZ1234" />
+              </Field>
+              <Field label="Industry compliance or restrictions (supplements, finance, skincare, etc.)">
                 <textarea className={textareaClass} value={form.compliance_restrictions} onChange={set("compliance_restrictions")} />
               </Field>
-              <Field label="Have you worked with agencies/consultants before? (what worked / didn't work)" required>
+            </>
+          )}
+
+          {/* 05 Insights */}
+          {step === 4 && (
+            <>
+              <Field label="Primary goal of this project (increase CR, raise AOV, scale revenue, CLTV growth)" required>
+                <textarea className={textareaClass} value={form.primary_goal} onChange={set("primary_goal")} />
+              </Field>
+              <Field label="What does success look like, in your own words?" required>
+                <textarea className={textareaClass} value={form.success_definition} onChange={set("success_definition")} />
+              </Field>
+              <Field label="Current metrics you want to focus on">
+                <textarea className={textareaClass} value={form.current_metrics} onChange={set("current_metrics")} placeholder="e.g. CVR, AOV, bounce rate, ad ROAS..." />
+              </Field>
+              <Field label="Timeline expectations (launch dates, campaign deadlines, seasonal promotions)">
+                <textarea className={textareaClass} value={form.timeline_expectations} onChange={set("timeline_expectations")} />
+              </Field>
+              <Field label="Known conversion challenges (low mobile CR, cart abandonment, low email capture)">
+                <textarea className={textareaClass} value={form.conversion_challenges} onChange={set("conversion_challenges")} />
+              </Field>
+              <Field label="Most common objections or negative feedback from customers">
+                <textarea className={textareaClass} value={form.common_objections} onChange={set("common_objections")} />
+              </Field>
+              <Field label="Worked with agencies before? What worked / didn't work?">
                 <textarea className={textareaClass} value={form.previous_agencies} onChange={set("previous_agencies")} />
               </Field>
-            </>
-          )}
-
-          {step === 6 && (
-            <>
-              <Field label="Who will be our primary point of contact? (name, are they in Slack?)" required>
-                <textarea className={textareaClass} value={form.primary_contact} onChange={set("primary_contact")} />
-              </Field>
-              <Field label="Who makes final approval decisions?" required>
-                <textarea className={textareaClass} value={form.approval_decision_maker} onChange={set("approval_decision_maker")} />
-              </Field>
-              <Field label="Which timezone do your team work out of?" required>
-                <textarea className={textareaClass} value={form.timezone} onChange={set("timezone")} />
-              </Field>
-            </>
-          )}
-
-          {step === 7 && (
-            <>
-              <div>
-                <label className={labelClass}>Upload any additional assets not already provided</label>
+              <div className="border-t border-border-faint pt-8">
+                <label className={labelClass}>Upload any extra assets or references</label>
                 <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded border border-dashed border-border bg-surface py-10 transition-colors hover:border-foreground/40">
                   {uploadingFiles ? (
                     <div className="flex items-center gap-2">
@@ -538,7 +660,7 @@ export default function OnboardingFormPage() {
                   </div>
                 )}
               </div>
-              <Field label="Any other information you think we should know before starting?" required>
+              <Field label="Anything else we should know before starting?">
                 <textarea className={textareaClass} value={form.additional_info} onChange={set("additional_info")} />
               </Field>
             </>
