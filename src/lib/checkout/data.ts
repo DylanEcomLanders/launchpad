@@ -92,6 +92,25 @@ export async function saveCheckout(c: Checkout): Promise<void> {
   }
 }
 
+/** Delete a checkout (admin). Removes from Supabase + the local mirror. */
+export async function deleteCheckout(id: string): Promise<void> {
+  if (typeof window !== "undefined") {
+    try {
+      const all = lsAll();
+      delete all[id];
+      window.localStorage.setItem(LS_KEY, JSON.stringify(all));
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!isSupabaseConfigured()) return;
+  try {
+    await supabase.from("checkouts").delete().eq("id", id);
+  } catch {
+    /* table not migrated yet */
+  }
+}
+
 export interface NewCheckoutInput {
   clientName: string;
   company?: string;

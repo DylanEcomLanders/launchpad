@@ -7,8 +7,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PlusIcon, XMarkIcon, LinkIcon, CheckIcon } from "@heroicons/react/24/outline";
-import { loadCheckouts, saveCheckout, newCheckout, checkoutUrl } from "@/lib/checkout/data";
+import { PlusIcon, XMarkIcon, LinkIcon, CheckIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { loadCheckouts, saveCheckout, newCheckout, checkoutUrl, deleteCheckout } from "@/lib/checkout/data";
 import { STATUS_LABEL } from "@/lib/checkout/types";
 import type { Checkout, EngagementType } from "@/lib/checkout/types";
 
@@ -51,6 +51,13 @@ export default function CheckoutsPage() {
     void navigator.clipboard?.writeText(url);
     setCopied(c.id);
     setTimeout(() => setCopied((cur) => (cur === c.id ? null : cur)), 1500);
+  }, []);
+
+  const removeRow = useCallback((c: Checkout) => {
+    const label = c.clientName + (c.company ? ` (${c.company})` : "");
+    if (!window.confirm(`Delete the checkout for ${label}? This can't be undone.`)) return;
+    setRows((prev) => prev.filter((r) => r.id !== c.id));
+    void deleteCheckout(c.id);
   }, []);
 
   return (
@@ -105,13 +112,23 @@ export default function CheckoutsPage() {
                     </td>
                     <td className="px-3 py-2.5 text-sm tabular-nums text-subtle">{fmtDate(c.created_at)}</td>
                     <td className="px-3 py-2.5 text-right">
-                      <button
-                        onClick={() => copyLink(c)}
-                        className="inline-flex items-center gap-1 rounded px-2 py-1 text-2xs text-muted hover:bg-surface-hover hover:text-foreground"
-                      >
-                        {copied === c.id ? <CheckIcon className="size-3.5 text-status-ontrack" /> : <LinkIcon className="size-3.5" />}
-                        {copied === c.id ? "Copied" : "Copy"}
-                      </button>
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          onClick={() => copyLink(c)}
+                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-2xs text-muted hover:bg-surface-hover hover:text-foreground"
+                        >
+                          {copied === c.id ? <CheckIcon className="size-3.5 text-status-ontrack" /> : <LinkIcon className="size-3.5" />}
+                          {copied === c.id ? "Copied" : "Copy"}
+                        </button>
+                        <button
+                          onClick={() => removeRow(c)}
+                          title="Delete"
+                          aria-label="Delete checkout"
+                          className="rounded p-1 text-subtle hover:bg-surface-hover hover:text-status-late"
+                        >
+                          <TrashIcon className="size-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
