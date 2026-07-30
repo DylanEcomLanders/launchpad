@@ -5,13 +5,14 @@
  *   1. Sign (in-house)  2. Pay (Whop, embedded)  3. Invoice (in-house, download)
  * The token is the row id (unguessable). Everything logs to the checkouts table.
  *
- * STATUS: sign + invoice (with real PDF download) are built. The Pay step shows the
- * placeholder where Whop's embedded checkout mounts, plus a temporary "test paid"
- * control so the flow is walkable before the Whop keys are wired. Swap that for
- * the Whop embed (see docs/agreement-checkout-brief.md, "Whop integration").
+ * STATUS: sign + invoice (real PDF downloads) and Pay (Whop embedded checkout)
+ * are all wired. The Pay step calls /api/checkout/session to create a Whop
+ * checkout, then mounts WhopCheckoutEmbed. If the Whop keys are not set yet, it
+ * shows a "not connected" notice plus a [test] control so the flow stays walkable.
  */
 
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { CheckCircleIcon, LockClosedIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { Logo } from "@/components/logo";
@@ -202,7 +203,12 @@ function SignedConfirm({ signed, onContinue }: { signed: Checkout; onContinue: (
   );
 }
 
-/* ── Step 2: Pay (Whop embed goes here) ── */
+/* ── Step 2: Pay (Whop embedded checkout) ── */
+// Mounts client-side only (it renders an iframe and talks to Whop's SDK).
+const WhopCheckoutEmbed = dynamic(() => import("@whop/checkout/react").then((m) => m.WhopCheckoutEmbed), { ssr: false });
+
+type Session = { sessionId: string; planId: string };
+
 function PayStep({
   checkout,
   vatCountry,
@@ -213,10 +219,39 @@ function PayStep({
   onPaid: (p: Partial<Checkout>) => Promise<void>;
 }) {
   const vat = computeVat(checkout.amountGross, vatCountry);
+  // undefined = still loading; null = Whop unavailable (no keys yet); Session = ready
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/checkout/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: checkout.token }),
+    })
+      .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
+      .then(({ ok, j }) => {
+        if (!alive) return;
+        if (ok && j.planId && j.sessionId) setSession({ planId: j.planId, sessionId: j.sessionId });
+        else {
+          setReason(String(j?.error ?? "unavailable"));
+          setSession(null);
+        }
+      })
+      .catch((e) => {
+        if (!alive) return;
+        setReason(String(e?.message ?? "network error"));
+        setSession(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [checkout.token]);
 
   function markPaid(whopPaymentId?: string) {
     const now = new Date().toISOString();
-    // Invoice number is provisional; final numbering handled server-side later.
+    // Provisional number for the client; the webhook is authoritative server-side.
     const invoiceNumber = `EL-${Date.now().toString(36).toUpperCase()}`;
     return onPaid({
       paid: true,
@@ -240,25 +275,43 @@ function PayStep({
         </p>
       </header>
 
-      {/* WHOP EMBEDDED CHECKOUT MOUNTS HERE.
-          Server creates a checkout configuration (inline plan: initial_price =
-          checkout.amountGross, plan_type = checkout.planType, metadata.agreement_id
-          = checkout.id) and returns a session id; render Whop's embedded checkout
-          with it. On the client-side success callback, call markPaid(paymentId).
-          The authoritative flip is the payment.succeeded webhook (server). */}
-      <section className="grid place-items-center rounded-lg border border-dashed border-border bg-surface p-10 text-center">
-        <LockClosedIcon className="size-6 text-subtle" />
-        <p className="mt-2 text-sm text-muted">Whop secure checkout mounts here.</p>
-        <p className="mt-1 text-2xs text-subtle">Card details are handled by Whop; you stay on this page.</p>
-      </section>
+      {session === undefined && (
+        <section className="grid place-items-center rounded-lg border border-dashed border-border bg-surface p-10 text-center">
+          <LockClosedIcon className="size-6 text-subtle" />
+          <p className="mt-2 text-sm text-muted">Loading secure checkout…</p>
+        </section>
+      )}
 
-      {/* TEMPORARY: walk the flow before Whop keys are wired. Remove once the embed is live. */}
-      <button
-        onClick={() => markPaid()}
-        className="w-full rounded-lg border border-border bg-surface py-2.5 text-xs font-medium text-muted transition hover:bg-surface-raised hover:text-foreground"
-      >
-        [test] simulate successful payment
-      </button>
+      {session && (
+        <div className="overflow-hidden rounded-lg border border-border bg-surface">
+          <WhopCheckoutEmbed
+            planId={session.planId}
+            sessionId={session.sessionId}
+            theme="light"
+            prefill={{ email: checkout.email }}
+            onComplete={(_planId: string, receiptId?: string) => {
+              void markPaid(receiptId);
+            }}
+          />
+        </div>
+      )}
+
+      {session === null && (
+        <>
+          <section className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
+            <LockClosedIcon className="mx-auto size-6 text-subtle" />
+            <p className="mt-2 text-sm text-muted">Payment isn&apos;t connected yet.</p>
+            <p className="mt-1 text-2xs text-subtle">Add the Whop keys to enable live checkout ({reason}).</p>
+          </section>
+          {/* Fallback so the flow stays walkable before Whop keys are wired. Remove once live. */}
+          <button
+            onClick={() => markPaid()}
+            className="w-full rounded-lg border border-border bg-surface py-2.5 text-xs font-medium text-muted transition hover:bg-surface-raised hover:text-foreground"
+          >
+            [test] simulate successful payment
+          </button>
+        </>
+      )}
     </div>
   );
 }

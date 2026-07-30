@@ -8,18 +8,21 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { whop } from "@/lib/checkout/whop";
+import { getWhop } from "@/lib/checkout/whop";
 import { getCheckoutByToken, saveCheckout } from "@/lib/checkout/data";
 import { computeVat } from "@/lib/checkout/vat";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
 
-  // Loosely typed: the unwrapped event is a big union; we read the fields we need.
-  // Confirm the exact `action` string against a real Whop webhook when wiring.
-  let event: { action?: string; data?: { id?: string; metadata?: Record<string, unknown> } };
+  // Loosely typed: the unwrapped event is a big union discriminated by `type`;
+  // on payment.succeeded, `data` is a Payment carrying our metadata.
+  let event: {
+    type?: string;
+    data?: { id?: string; metadata?: Record<string, unknown> | null; membership?: { id?: string } | null };
+  };
   try {
-    event = whop.webhooks.unwrap(body, {
+    event = getWhop().webhooks.unwrap(body, {
       headers: Object.fromEntries(req.headers),
       key: process.env.WHOP_WEBHOOK_SECRET,
     }) as typeof event;
@@ -29,8 +32,8 @@ export async function POST(req: NextRequest) {
   }
 
   // Fulfil only on payment.succeeded, never payment.created / pending.
-  if (event.action === "payment.succeeded") {
-    const payment = event.data as { id?: string; metadata?: Record<string, unknown> };
+  if (event.type === "payment.succeeded") {
+    const payment = event.data;
     const agreementId = payment?.metadata?.agreement_id as string | undefined;
     if (agreementId) {
       const c = await getCheckoutByToken(agreementId); // token === id
@@ -41,7 +44,8 @@ export async function POST(req: NextRequest) {
           ...c,
           paid: true,
           paidAt: now,
-          whopPaymentId: payment.id,
+          whopPaymentId: payment?.id,
+          whopMembershipId: payment?.membership?.id,
           status: "paid",
           vatStatus: vat.status,
           amountNet: vat.net,

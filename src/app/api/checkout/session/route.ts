@@ -16,11 +16,12 @@ export async function POST(req: NextRequest) {
   if (!c.signedAt) return NextResponse.json({ error: "not signed" }, { status: 409 });
 
   try {
-    const sessionId = await createCheckoutSession(c);
+    const { sessionId, planId } = await createCheckoutSession(c);
     await saveCheckout({ ...c, whopCheckoutId: sessionId, status: "signed", updated_at: new Date().toISOString() });
-    return NextResponse.json({ sessionId });
+    return NextResponse.json({ sessionId, planId });
   } catch (err) {
     console.error("[checkout/session] Whop error:", err);
-    return NextResponse.json({ error: "checkout failed" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "checkout failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
