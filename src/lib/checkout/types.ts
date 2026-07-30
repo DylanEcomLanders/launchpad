@@ -23,6 +23,8 @@ export interface Checkout {
   clientName: string;
   company?: string;
   email: string;
+  /** Client's registered address (for the agreement's parties + signature block). */
+  clientAddress?: string;
   /** ISO-2 country code from the billing address; "GB" = UK for VAT. */
   billingCountry?: string;
   engagementType: EngagementType;
@@ -35,6 +37,8 @@ export interface Checkout {
 
   /* Signature (step 1) */
   signedName?: string;
+  /** The signatory's role/position at the client (for the signature block). */
+  signatoryPosition?: string;
   signedAt?: string;
   /** PNG data URL from SignaturePad, or a storage path once uploaded. */
   signatureImage?: string;

@@ -1,13 +1,25 @@
 /* ── Agreement Checkout: seller details ──
- * Single source of truth for the company block on the invoice AND the signed
- * agreement PDF. EDIT these before sending anything live.
- * (VAT number lives in ./vat and appears automatically once VAT_REGISTERED.)
+ * Company block on the signed agreement PDF (the invoice reuses the Finance
+ * CompanyProfile). VAT number lives in ./vat and shows once VAT_REGISTERED.
+ *
+ * NOTE: the Keggy retainer showed a Manchester registered office; the invoice
+ * (EL-2026-053) shows the Cannock one below. Confirm the correct registered office.
  */
 
 export const SELLER = {
-  name: "Ecom Landers",
-  addressLines: ["", ""], // e.g. ["1 Example Street, London", "EC1A 1BB, United Kingdom"]
-  email: "hello@ecomlanders.com",
+  name: "Ecomlanders Ltd",
+  addressLines: ["4 Station Court, Cannock", "England, WS11 0EJ"],
+  companyNumber: "16308589",
+  email: "hello@ecomlanders.co",
+  registeredOffice: "4 Station Court, Cannock, England, WS11 0EJ, United Kingdom",
+};
+
+// The agency signatory who pre-signs each agreement before it goes to the client
+// (mirrors the Keggy agreement, signed by Ajay before sending).
+export const AGENCY_SIGNATORY = {
+  name: "AJAY JANI",
+  position: "Founder",
+  signature: "A.Jani",
 };
 
 // Shared PDF palette (keeps invoice + agreement visually identical).

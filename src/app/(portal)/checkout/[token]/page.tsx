@@ -72,6 +72,7 @@ export default function CheckoutPage() {
 /* ── Step 1: Sign ── */
 function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Partial<Checkout>) => Promise<void> }) {
   const [name, setName] = useState("");
+  const [position, setPosition] = useState("");
   const [country, setCountry] = useState(checkout.billingCountry ?? "GB");
   const [signature, setSignature] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -87,6 +88,7 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
     setSigned({
       ...checkout,
       signedName: name.trim(),
+      signatoryPosition: position.trim() || undefined,
       signatureImage: signature,
       billingCountry: country,
       signedAt: new Date().toISOString(),
@@ -111,7 +113,10 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
         {vat.status === "outside" && <Row label="VAT" value="Outside of UK VAT" />}
         {checkout.scope && <Row label="Scope" value={checkout.scope} />}
         <p className="mt-3 border-t border-border-faint pt-3 text-xs text-subtle">
-          90-day initial commitment, then rolling monthly. {checkout.termsNote}
+          {checkout.engagementType === "retainer"
+            ? "90-day initial commitment, then rolling monthly."
+            : "One-time project. Fee payable in full."}{" "}
+          {checkout.termsNote}
         </p>
       </section>
 
@@ -125,10 +130,16 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
             <option value="OTHER">Other</option>
           </select>
         </label>
-        <label className="block">
-          <span className="mb-1 block text-2xs font-medium uppercase tracking-wide text-subtle">Full name</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} />
-        </label>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-2xs font-medium uppercase tracking-wide text-subtle">Full name</span>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-2xs font-medium uppercase tracking-wide text-subtle">Position</span>
+            <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="e.g. Director" className={inputCls} />
+          </label>
+        </div>
         <div>
           <span className="mb-1 block text-2xs font-medium uppercase tracking-wide text-subtle">Signature</span>
           <SignaturePad value={signature} onChange={setSignature} label="" />
@@ -189,6 +200,7 @@ function SignedConfirm({ signed, onContinue }: { signed: Checkout; onContinue: (
         onClick={() =>
           onContinue({
             signedName: signed.signedName,
+            signatoryPosition: signed.signatoryPosition,
             signatureImage: signed.signatureImage,
             billingCountry: signed.billingCountry,
             signedAt: signed.signedAt,
