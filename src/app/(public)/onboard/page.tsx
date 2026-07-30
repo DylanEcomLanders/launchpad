@@ -48,9 +48,8 @@ interface FormData {
   timezone: string;
   // Final
   additional_info: string;
-  // Added: creative latitude (Brand), design direction (Design), dev stack (Development)
+  // Added: creative latitude (Brand), dev stack (Development)
   brand_flexibility: string;
-  design_style: string;
   dev_apps: string;
   dev_apps_other: string;
 }
@@ -69,7 +68,7 @@ const emptyForm: FormData = {
   previous_agencies: "",
   primary_contact: "", approval_decision_maker: "", timezone: "",
   additional_info: "",
-  brand_flexibility: "", design_style: "", dev_apps: "", dev_apps_other: "",
+  brand_flexibility: "", dev_apps: "", dev_apps_other: "",
 };
 
 // Section = one step. title + a short editorial intro + its required fields
@@ -180,80 +179,6 @@ function Scale({ value, onChange, lowLabel, highLabel }: { value: string; onChan
           <span>{highLabel}</span>
         </div>
       )}
-    </div>
-  );
-}
-
-// Abstract CSS preview evoking each design direction (no external images).
-function StylePreview({ kind }: { kind: string }) {
-  if (kind === "bold")
-    return (
-      <div className="flex h-24 flex-col justify-center gap-1.5 rounded-md bg-background p-3">
-        <div className="h-3 w-3/4 rounded-sm bg-foreground" />
-        <div className="h-3 w-1/2 rounded-sm bg-foreground" />
-        <div className="mt-1 h-2 w-1/3 rounded-sm bg-accent" />
-      </div>
-    );
-  if (kind === "minimal")
-    return (
-      <div className="flex h-24 flex-col justify-center gap-2.5 rounded-md bg-background p-4">
-        <div className="h-1.5 w-1/3 rounded-full bg-muted" />
-        <div className="h-px w-full bg-border" />
-        <div className="h-1.5 w-1/4 rounded-full bg-border" />
-      </div>
-    );
-  if (kind === "editorial")
-    return (
-      <div className="flex h-24 gap-2 rounded-md bg-background p-3">
-        <div className="flex-1 space-y-1.5">
-          <div className="h-2.5 w-full rounded-sm bg-foreground" />
-          <div className="h-1 w-full rounded-full bg-border" />
-          <div className="h-1 w-5/6 rounded-full bg-border" />
-          <div className="h-1 w-full rounded-full bg-border" />
-        </div>
-        <div className="w-10 rounded bg-surface-raised" />
-      </div>
-    );
-  return (
-    <div className="flex h-24 items-center gap-2.5 rounded-md bg-background p-3">
-      <div className="size-9 rounded-full bg-accent" />
-      <div className="flex-1 space-y-1.5">
-        <div className="h-2.5 w-2/3 rounded-full bg-foreground" />
-        <div className="h-2 w-1/2 rounded-full bg-accent/60" />
-      </div>
-    </div>
-  );
-}
-
-function StyleCards({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const styles = [
-    { value: "bold", label: "Bold & punchy", desc: "Big type, high contrast, impossible to ignore." },
-    { value: "minimal", label: "Clean & minimal", desc: "Restrained, lots of space, product-first." },
-    { value: "editorial", label: "Editorial & premium", desc: "Refined and considered, magazine-like." },
-    { value: "playful", label: "Vibrant & playful", desc: "Energetic, colourful, full of character." },
-  ];
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {styles.map((s) => {
-        const on = value === s.value;
-        return (
-          <button
-            key={s.value}
-            type="button"
-            onClick={() => onChange(on ? "" : s.value)}
-            className={`rounded-lg border p-2.5 text-left transition-colors ${
-              on ? "border-foreground bg-foreground/5" : "border-border bg-surface hover:border-foreground/40"
-            }`}
-          >
-            <StylePreview kind={s.value} />
-            <div className="mt-2.5 flex items-center justify-between px-1">
-              <span className="text-sm font-medium text-foreground">{s.label}</span>
-              {on && <CheckIcon className="size-4 text-foreground" />}
-            </div>
-            <p className="mt-0.5 px-1 text-xs leading-snug text-subtle">{s.desc}</p>
-          </button>
-        );
-      })}
     </div>
   );
 }
@@ -619,12 +544,6 @@ export default function OnboardingFormPage() {
           {/* 03 Design */}
           {step === 2 && (
             <>
-              <Group title="Direction">
-                <Field label="Which direction feels most like you? (pick one)">
-                  <StyleCards value={form.design_style} onChange={(v) => setForm((f) => ({ ...f, design_style: v }))} />
-                </Field>
-              </Group>
-
               <Group title="Scope">
                 <Field label="Page(s) being built or rebuilt (URLs)">
                   <input className={inputClass} value={form.product_url} onChange={set("product_url")} placeholder="https://..." />
