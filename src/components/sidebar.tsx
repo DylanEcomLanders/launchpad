@@ -240,6 +240,13 @@ const financeItem = {
   href: "/finance",
   icon: <PixelCoins className="size-4" />,
 };
+/* Checkout — the client sign + pay + invoice flow. Create a link, the client
+ * signs and pays, they get their invoice; all logged. Admin/CRO. */
+const checkoutItem = {
+  label: "Checkout",
+  href: "/checkouts",
+  icon: <PixelCard className="size-4" />,
+};
 /* Admin — replaces the old "Company" section. Single pinned item; the
  * previous tabs (Overview / People / Structure / Hiring / Contracts / Settings)
  * live as tabs inside /company's layout. CompanyGate handles the password. */
@@ -402,7 +409,7 @@ const navSections: NavSection[] = [
     icon: <PixelBuilding className="size-4" />,
     group: "ops",
     roles: ADMIN_CRO,
-    items: [financeItem, { ...adminItem, roles: ["admin"] }],
+    items: [financeItem, checkoutItem, { ...adminItem, roles: ["admin"] }],
   },
 ];
 
