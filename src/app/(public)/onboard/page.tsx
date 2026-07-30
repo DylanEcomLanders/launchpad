@@ -260,6 +260,7 @@ export default function OnboardingFormPage() {
   const [uploadedFiles, setUploadedFiles] = useState<{ filename: string; url: string; originalName: string }[]>([]);
   const [restored, setRestored] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [visited, setVisited] = useState<Set<number>>(() => new Set([0]));
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Restore any in-progress draft so returning clients never re-type from scratch.
@@ -303,9 +304,14 @@ export default function OnboardingFormPage() {
   const sectionComplete = (i: number) => SECTIONS[i].required.every((k) => form[k].trim());
   const filledRequired = REQUIRED_FIELDS.filter((k) => form[k].trim()).length;
   const pct = Math.round((filledRequired / REQUIRED_FIELDS.length) * 100);
+  // A section reads as complete when its required fields are filled; sections
+  // with no required fields count once the client has visited and moved past them.
+  const complete = (i: number) => (SECTIONS[i].required.length > 0 ? sectionComplete(i) : visited.has(i) && i !== step);
 
   const goto = (i: number) => {
-    setStep(Math.max(0, Math.min(LAST, i)));
+    const n = Math.max(0, Math.min(LAST, i));
+    setStep(n);
+    setVisited((v) => new Set(v).add(n));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -430,7 +436,7 @@ export default function OnboardingFormPage() {
         <nav className="-mx-2 flex-1 space-y-0.5 overflow-y-auto scrollbar-thin">
           {SECTIONS.map((s, i) => {
             const active = i === step;
-            const done = SECTIONS[i].required.length > 0 && sectionComplete(i);
+            const done = complete(i);
             return (
               <button
                 key={s.title}
@@ -438,13 +444,18 @@ export default function OnboardingFormPage() {
                 onClick={() => goto(i)}
                 className={`group flex w-full items-center gap-3 rounded px-2 py-2 text-left transition-colors ${active ? "bg-surface" : "hover:bg-surface/60"}`}
               >
-                <span className={`w-5 shrink-0 text-[11px] tabular-nums ${active ? "text-foreground" : "text-subtle"}`} style={mono}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className={`flex-1 text-[13px] leading-snug ${active ? "font-medium text-foreground" : "text-muted group-hover:text-foreground"}`}>
+                {done ? (
+                  <span className="grid size-5 shrink-0 place-items-center rounded-full bg-foreground">
+                    <CheckIcon className="size-3 text-background [stroke-width:3]" />
+                  </span>
+                ) : (
+                  <span className={`w-5 shrink-0 text-center text-[11px] tabular-nums ${active ? "text-foreground" : "text-subtle"}`} style={mono}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                )}
+                <span className={`flex-1 text-[13px] leading-snug ${active ? "font-medium text-foreground" : done ? "text-foreground" : "text-muted group-hover:text-foreground"}`}>
                   {s.title}
                 </span>
-                {done && !active && <CheckIcon className="size-3.5 shrink-0 text-subtle" />}
               </button>
             );
           })}
@@ -478,10 +489,9 @@ export default function OnboardingFormPage() {
         {/* Editorial hero */}
         <div className="mb-12">
           <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-subtle" style={mono}>Client Onboarding</p>
-          <div className="mt-5 flex items-baseline gap-4">
-            <span className="text-base tabular-nums text-subtle" style={mono}>{String(step + 1).padStart(2, "0")}</span>
-            <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight text-foreground md:text-5xl">{SECTIONS[step].title}</h1>
-          </div>
+          <h1 className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tight text-foreground md:text-5xl" style={{ fontFamily: "var(--font-body)" }}>
+            {SECTIONS[step].title}
+          </h1>
           <p className="mt-5 max-w-xl leading-relaxed text-muted">{SECTIONS[step].intro}</p>
         </div>
 
