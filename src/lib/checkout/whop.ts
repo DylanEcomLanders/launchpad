@@ -41,8 +41,14 @@ export async function createCheckoutSession(c: Checkout): Promise<CheckoutSessio
 
   const isRecurring = c.planType === "renewal";
 
-  // Inline plan - same shape the payment-link tool uses (no separate product;
-  // hidden, buy-now, tax inclusive since our prices already include VAT).
+  // Whop needs product details on the inline plan (required for renewal plans,
+  // harmless for one-time). Use a pre-made product if WHOP_PRODUCT_ID is set,
+  // else find-or-create a single shared "Ecom Landers" product by external id.
+  const productLink = process.env.WHOP_PRODUCT_ID
+    ? { product_id: process.env.WHOP_PRODUCT_ID }
+    : { product: { external_identifier: "ecomlanders-engagements", title: "Ecom Landers" } };
+
+  // Inline plan: hidden, buy-now, tax inclusive (our prices already include VAT).
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const plan: any = {
     company_id,
@@ -53,6 +59,7 @@ export async function createCheckoutSession(c: Checkout): Promise<CheckoutSessio
     visibility: "hidden",
     release_method: "buy_now",
     override_tax_type: "inclusive",
+    ...productLink,
   };
   if (isRecurring) {
     plan.plan_type = "renewal";
