@@ -74,6 +74,7 @@ export default function CheckoutPage() {
 function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Partial<Checkout>) => Promise<void> }) {
   const [name, setName] = useState("");
   const [position, setPosition] = useState("");
+  const [address, setAddress] = useState(checkout.clientAddress ?? "");
   const [country, setCountry] = useState(checkout.billingCountry ?? "GB");
   const [signature, setSignature] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -112,6 +113,7 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
       ...checkout,
       signedName: name.trim(),
       signatoryPosition: position.trim() || undefined,
+      clientAddress: address.trim() || undefined,
       signatureImage: signature,
       billingCountry: country,
       signedAt: new Date().toISOString(),
@@ -178,6 +180,10 @@ function SignStep({ checkout, onSigned }: { checkout: Checkout; onSigned: (p: Pa
             <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="e.g. Director" className={inputCls} />
           </label>
         </div>
+        <label className="block">
+          <span className="mb-1 block text-2xs font-medium uppercase tracking-wide text-subtle">Registered company address</span>
+          <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Your registered business address" className={inputCls} />
+        </label>
         <div>
           <span className="mb-1 block text-2xs font-medium uppercase tracking-wide text-subtle">Signature</span>
           <SignaturePad value={signature} onChange={setSignature} label="" />
@@ -239,6 +245,7 @@ function SignedConfirm({ signed, onContinue }: { signed: Checkout; onContinue: (
           onContinue({
             signedName: signed.signedName,
             signatoryPosition: signed.signatoryPosition,
+            clientAddress: signed.clientAddress,
             signatureImage: signed.signatureImage,
             billingCountry: signed.billingCountry,
             signedAt: signed.signedAt,
