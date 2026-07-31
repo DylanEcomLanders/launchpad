@@ -147,7 +147,6 @@ function NewCheckoutModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [clientName, setClientName] = useState("");
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
-  const [clientAddress, setClientAddress] = useState("");
   const [engagementType, setEngagementType] = useState<EngagementType>("retainer");
   const [amount, setAmount] = useState("");
   const [scope, setScope] = useState("");
@@ -160,12 +159,12 @@ function NewCheckoutModal({ onClose, onCreated }: { onClose: () => void; onCreat
     () => async () => {
       if (!valid) return;
       setSaving(true);
-      const c = newCheckout({ clientName, company, email, clientAddress, engagementType, amountGross: amountNum, scope });
+      const c = newCheckout({ clientName, company, email, engagementType, amountGross: amountNum, scope });
       await saveCheckout(c);
       setSaving(false);
       onCreated(c);
     },
-    [valid, clientName, company, email, clientAddress, engagementType, amountNum, scope, onCreated],
+    [valid, clientName, company, email, engagementType, amountNum, scope, onCreated],
   );
 
   return (
@@ -200,9 +199,6 @@ function NewCheckoutModal({ onClose, onCreated }: { onClose: () => void; onCreat
               <input value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} placeholder="10000" inputMode="decimal" />
             </Field>
           </div>
-          <Field label="Client registered address (for the agreement)">
-            <input value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} className={inputCls} placeholder="12 Example Road, London, EC1A 1BB" />
-          </Field>
           <Field label="Scope (optional)">
             <input value={scope} onChange={(e) => setScope(e.target.value)} className={inputCls} placeholder="What's included" />
           </Field>

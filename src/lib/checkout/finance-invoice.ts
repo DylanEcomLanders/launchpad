@@ -21,6 +21,28 @@ type SB = ReturnType<typeof financeServerClient>;
 
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+/** UK tax year (starts 6 April) for the given date, defaulting to now. */
+function currentTaxYear(): number {
+  const d = new Date();
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth(); // 0 = Jan, 3 = Apr
+  return m > 3 || (m === 3 && d.getUTCDate() >= 6) ? y : y - 1;
+}
+
+/** Next EL-YYYY-NNN for the current tax year, one above the highest existing. */
+async function nextElNumber(sb: SB): Promise<string> {
+  const taxYear = currentTaxYear();
+  const re = new RegExp(`^EL-${taxYear}-(\\d+)$`);
+  let max = 0;
+  const { data } = await sb.from("finance_invoices_issued").select("data");
+  for (const row of data ?? []) {
+    const num = (row.data as { invoice_number?: string } | null)?.invoice_number;
+    const m = typeof num === "string" ? num.match(re) : null;
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  }
+  return `EL-${taxYear}-${String(max + 1).padStart(3, "0")}`;
+}
+
 /** Read the single Finance company profile, falling back to businessProfile. */
 export async function serverCompanyProfile(sb: SB): Promise<CompanyProfile> {
   const { data } = await sb.from("finance_company_profile").select("data").eq("id", "default").maybeSingle();
@@ -66,12 +88,11 @@ export async function createFinanceInvoiceForCheckout(
   const sb = financeServerClient();
   const profile = await serverCompanyProfile(sb);
 
-  // Reserve an EL-YYYY-NNN number (atomic RPC; shares the calendar-year counter
-  // with the manual New Invoice screen's INV- numbers).
-  const year = new Date().getUTCFullYear();
-  const { data: seq, error: seqErr } = await sb.rpc("finance_next_invoice_number", { p_year: year });
-  if (seqErr) throw new Error(`invoice number RPC failed: ${seqErr.message}`);
-  const invoiceNumber = `EL-${year}-${String(Number(seq)).padStart(3, "0")}`;
+  // Next EL-YYYY-NNN for the current UK tax year, based on the highest existing
+  // number. The finance sequence RPC is NOT synced with the CSV-imported
+  // invoices, so it would collide (hand out EL-2026-001 when EL-2026-053 exists).
+  // Not strictly atomic, which is fine at checkout volume.
+  const invoiceNumber = await nextElNumber(sb);
 
   const treatment = treatmentFor(c, profile);
   const items: InvoiceLineItem[] = [

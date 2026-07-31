@@ -115,7 +115,6 @@ export interface NewCheckoutInput {
   clientName: string;
   company?: string;
   email: string;
-  clientAddress?: string;
   engagementType: EngagementType;
   amountGross: number;
   currency?: string;
@@ -132,7 +131,6 @@ export function newCheckout(input: NewCheckoutInput): Checkout {
     clientName: input.clientName.trim() || "Client",
     company: input.company?.trim() || undefined,
     email: input.email.trim(),
-    clientAddress: input.clientAddress?.trim() || undefined,
     engagementType: input.engagementType,
     planType: planTypeFor(input.engagementType),
     amountGross: input.amountGross,
