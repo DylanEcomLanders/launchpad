@@ -11,6 +11,7 @@
  */
 
 import type { Agreement, Clause, TemplateBody } from "./types";
+import { ecomlanders } from "@/lib/agreement-terms";
 
 /* Format helpers — kept inline so the render layer has zero deps on
  * the rest of the app's date/money utils. */
@@ -82,6 +83,11 @@ export function buildPlaceholderMap(agreement: Agreement): Record<string, string
     restriction_months: agreement.restriction_months
       ? String(agreement.restriction_months)
       : "6",
+    /* Company details from the agreement's snapshot (taken from Company
+     * Settings at generation), falling back to the constant for older rows. */
+    company_legal_name: agreement.company_legal_name || ecomlanders.legalName,
+    company_number: agreement.company_number || ecomlanders.companyNumber,
+    company_address: agreement.company_address || ecomlanders.address,
   };
 }
 

@@ -25,7 +25,9 @@ import {
   uid,
   nowISO,
   todayISO,
+  companySnapshot,
 } from "@/lib/agreements/data";
+import { loadSettings } from "@/lib/settings";
 import type { Agreement, TemplateRole } from "@/lib/agreements/types";
 import { TEMPLATE_ROLE_LABEL, TEMPLATE_ROLES_BY_KIND } from "@/lib/agreements/types";
 import { templateRoleForDepartment } from "@/lib/agreements/data";
@@ -118,6 +120,7 @@ export function GenerateAgreementsModal({
     setError("");
     try {
       const tpl = await ensureTemplate("contract", templateRole);
+      const settings = await loadSettings(); // company details for the snapshot
       const now = nowISO();
       const agreement: Agreement = {
         id: uid(),
@@ -132,6 +135,7 @@ export function GenerateAgreementsModal({
         comp_currency: compCurrency,
         comp_frequency: compFrequency,
         start_date: startDate,
+        ...companySnapshot(settings),
         template_revision: tpl.revision,
         template_body: structuredClone(tpl.body),
         status: "draft",

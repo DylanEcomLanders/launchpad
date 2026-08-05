@@ -22,14 +22,13 @@
 
 import type { TemplateBody } from "./types";
 
-const ECOM_LANDERS_LEGAL_NAME = "Ecom Landers Ltd";
-const ECOM_LANDERS_COMPANY_NUMBER = "16308589"; // Companies House, incorporated 11 March 2025
-const ECOM_LANDERS_ADDRESS =
-  "Gateway House, Suite 3.5, Manchester, M22 5WY";
+/* Company details (legal name / number / registered office) render from
+ * {{ company_legal_name }}, {{ company_number }}, {{ company_address }},
+ * resolved from Company Settings at generation (see render.ts + companySnapshot). */
 
 export const DEFAULT_NDA_TEMPLATE: TemplateBody = {
   title: "Mutual Non-Disclosure Agreement",
-  intro: `This Non-Disclosure Agreement ("Agreement") is entered into between ${ECOM_LANDERS_LEGAL_NAME} ("Company"), with its registered address at ${ECOM_LANDERS_ADDRESS}, and {{ person_full_name }} ("Recipient"), and is effective from {{ effective_date }}.
+  intro: `This Non-Disclosure Agreement ("Agreement") is entered into between {{ company_legal_name }} ("Company"), with its registered address at {{ company_address }}, and {{ person_full_name }} ("Recipient"), and is effective from {{ effective_date }}.
 
 The parties wish to share confidential information in connection with Recipient's engagement with Company. This Agreement sets out the terms on which that confidential information may be used and protected.`,
   clauses: [
@@ -106,7 +105,7 @@ THIS AGREEMENT is dated {{ agreement_date }}.
 
 PARTIES
 
-(1) ${ECOM_LANDERS_LEGAL_NAME}, a company incorporated in England and Wales (company number ${ECOM_LANDERS_COMPANY_NUMBER}) whose registered office is at ${ECOM_LANDERS_ADDRESS} (the "Company"); and
+(1) {{ company_legal_name }}, a company incorporated in England and Wales (company number {{ company_number }}) whose registered office is at {{ company_address }} (the "Company"); and
 
 (2) {{ person_full_name }}, the individual named in the Engagement Schedule below (the "Contractor").
 
@@ -374,7 +373,7 @@ Time off and family leave: the Contractor sets their own schedule and takes time
   ],
   outro: `AGREED by the parties on the date stated above.
 
-Signed for and on behalf of the COMPANY (${ECOM_LANDERS_LEGAL_NAME})
+Signed for and on behalf of the COMPANY ({{ company_legal_name }})
 
 Signature: ____________________________     Date: ____________________
 Name: Dylan Evans
