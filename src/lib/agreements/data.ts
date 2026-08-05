@@ -8,6 +8,22 @@ import { createStore } from "@/lib/supabase-store";
 import type { Agreement, AgreementTemplate, AgreementKind, TemplateRole } from "./types";
 import { TEMPLATE_ROLE_LABEL } from "./types";
 import { DEFAULT_NDA_TEMPLATE, DEFAULT_CONTRACT_TEMPLATE, TBC_TEMPLATE_BODY } from "./defaults";
+import { getSettings } from "@/lib/settings";
+import type { BusinessSettings } from "@/lib/settings";
+import { ecomlanders } from "@/lib/agreement-terms";
+
+/* Company (Ecom Landers) details snapshotted onto each new agreement, taken
+ * from Company Settings and falling back to the constant when a field is blank.
+ * Pass the result of `await loadSettings()` so it works regardless of
+ * localStorage timing / server context; defaults to getSettings() otherwise. */
+export function companySnapshot(settings?: BusinessSettings): Pick<Agreement, "company_legal_name" | "company_number" | "company_address"> {
+  const c = (settings ?? getSettings()).company;
+  return {
+    company_legal_name: c?.legal_name?.trim() || ecomlanders.legalName,
+    company_number: c?.company_number?.trim() || ecomlanders.companyNumber,
+    company_address: c?.registered_address?.trim() || ecomlanders.address,
+  };
+}
 
 export const agreementStore = createStore<Agreement>({
   table: "company_agreements",

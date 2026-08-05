@@ -33,7 +33,9 @@ import {
   uid as agreementUid,
   nowISO,
   todayISO,
+  companySnapshot,
 } from "@/lib/agreements/data";
+import { loadSettings } from "@/lib/settings";
 import { peopleStore, uid as personUid } from "@/lib/company/data";
 import type { Agreement, TemplateRole } from "@/lib/agreements/types";
 import { TEMPLATE_ROLE_LABEL, TEMPLATE_ROLES_BY_KIND } from "@/lib/agreements/types";
@@ -165,6 +167,7 @@ export function QuickAddAgreementModal({
           ? templateRoleForDepartment(matchedPerson.department)
           : templateRole;
       const tpl = await ensureTemplate("contract", effectiveTemplateRole);
+      const settings = await loadSettings(); // company details for the snapshot
       const startDate = person.start_date || todayISO();
       const agreement: Agreement = {
         id: agreementUid(),
@@ -178,6 +181,7 @@ export function QuickAddAgreementModal({
         comp_currency: compCurrency,
         comp_frequency: compFrequency,
         start_date: startDate,
+        ...companySnapshot(settings),
         template_revision: tpl.revision,
         template_body: structuredClone(tpl.body),
         status: "draft",

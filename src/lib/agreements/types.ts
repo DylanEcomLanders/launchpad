@@ -122,6 +122,12 @@ export interface Agreement {
   services_description?: string;     // Bullets of role-specific scope
   vat_status?: string;               // "Not VAT registered" | "VAT no. XXX"
   restriction_months?: number;       // Post-engagement non-compete window (default 6)
+  /* Company (Ecom Landers) snapshot at creation, from Company Settings.
+   * Renders via {{ company_address }} etc.; falls back to the ecomlanders
+   * constant when absent (older rows / empty settings). */
+  company_legal_name?: string;
+  company_number?: string;
+  company_address?: string;
   /* ── Template snapshot ────────────────────────────────────────── */
   template_revision: string;
   template_body: TemplateBody;
