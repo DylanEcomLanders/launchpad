@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-144",
+    date: "6 August 2026",
+    version: "3.4.1",
+    title: "Agreements pull the registered office from Company Settings",
+    changes: [
+      { type: "fixed", text: "New agreements now render the company's registered office straight from Company Settings, so editing the address there flows through to every agreement generated afterwards." },
+      { type: "fixed", text: "The three existing team agreements had the old Cannock address frozen into their body from before the change. Re-pointed them at the current Manchester address and cleared the stale 'cannock address' revision tag they were stamped with." },
+    ],
+  },
+  {
     id: "cl-143",
     date: "30 July 2026",
     version: "3.4.0",
