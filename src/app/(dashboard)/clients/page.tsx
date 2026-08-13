@@ -8,7 +8,8 @@
  * retainer / one-time template so the spine is always there.
  *
  * Prototype: localStorage-backed (see lib/pod-projects/data.ts), seeded with
- * Pod 1 + two example docs. Migration 059 wires the shared Supabase table.
+ * Pod 1 + two example docs. Migration 059 wires the shared Supabase table;
+ * 065 mirrors packageType + commercialPriority out of the jsonb blob.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -23,6 +24,7 @@ import { ResultsTable } from "./results-table";
 import { JournalNotes } from "./journal-notes";
 import { WipReflection } from "./wip-reflection";
 import { ReportExport } from "./report-export";
+import { OfferStrip } from "./offer-strip";
 import {
   loadDocs,
   loadPodsCloud,
@@ -47,7 +49,8 @@ import {
   toggleSectionDone,
 } from "@/lib/pod-projects/data";
 import { flattenSections, firstLeaf, BRIEF_BLOCK } from "@/lib/pod-projects/templates";
-import type { Pod, PodDoc, DocSection, DocType, RetainerTier } from "@/lib/pod-projects/types";
+import type { Pod, PodDoc, DocSection, DocType, RetainerTier, ClientPackage } from "@/lib/pod-projects/types";
+import { CLIENT_PACKAGES, PACKAGE_HINT, PACKAGE_LABEL, templateForPackage } from "@/lib/pod-projects/offer";
 import { loadCards, saveCard, removeCard, newCard, cardsForClient } from "@/lib/cx/data";
 import { stageLabel } from "@/lib/cx/stages";
 import type { CxCard } from "@/lib/cx/types";
@@ -139,6 +142,30 @@ export default function PodProjectsPage() {
     };
     setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
     persistDoc(updated);
+  }
+
+  function changePackage(packageType: ClientPackage | undefined) {
+    if (!active || active.isTemplate) return;
+    const updated: PodDoc = {
+      ...active,
+      packageType,
+      updated_at: new Date().toISOString(),
+    };
+    if (!packageType) delete updated.packageType;
+    setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
+    persistDoc(updated);
+  }
+
+  function changePriority(commercialPriority: PodDoc["commercialPriority"]) {
+    if (!active || active.isTemplate) return;
+    const updated: PodDoc = {
+      ...active,
+      commercialPriority,
+      updated_at: new Date().toISOString(),
+    };
+    if (!commercialPriority) delete updated.commercialPriority;
+    setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
+    persist(updated);
   }
 
   // Delete a pod (only when empty, so no client is orphaned).
@@ -243,8 +270,8 @@ export default function PodProjectsPage() {
     [active, section, persist],
   );
 
-  function createDoc(podId: string, title: string, type: DocType, tier?: RetainerTier) {
-    const doc = newDoc(podId, title, type, tier);
+  function createDoc(podId: string, title: string, type: DocType, tier?: RetainerTier, packageType?: ClientPackage) {
+    const doc = newDoc(podId, title, type, tier, packageType);
     setDocs((prev) => [...prev, doc]);
     setActiveId(doc.id);
     setSectionId(firstLeaf(doc.sections)?.id ?? null);
@@ -433,6 +460,16 @@ export default function PodProjectsPage() {
               </div>
             </div>
 
+            {!active.isTemplate && (
+              <OfferStrip
+                packageType={active.packageType}
+                priority={active.commercialPriority}
+                canEdit={canEdit}
+                onPackageChange={changePackage}
+                onPriorityChange={changePriority}
+              />
+            )}
+
             <div className="min-h-0 flex-1">
               {!section ? (
                 <div className="grid h-full place-items-center text-sm text-subtle">
@@ -493,7 +530,7 @@ export default function PodProjectsPage() {
         <NewDocModal
           podName={pods.find((p) => p.id === newFor)?.name ?? "pod"}
           onCancel={() => setNewFor(null)}
-          onCreate={(title, type, tier) => createDoc(newFor, title, type, tier)}
+          onCreate={(title, type, tier, packageType) => createDoc(newFor, title, type, tier, packageType)}
         />
       )}
 
@@ -663,14 +700,16 @@ function NewDocModal({
 }: {
   podName: string;
   onCancel: () => void;
-  onCreate: (title: string, type: DocType, tier?: RetainerTier) => void;
+  onCreate: (title: string, type: DocType, tier?: RetainerTier, packageType?: ClientPackage) => void;
 }) {
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<DocType>("retainer");
-  const [tier, setTier] = useState<RetainerTier>("core");
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+  const [packageType, setPackageType] = useState<ClientPackage>("partner");
+
+  function submit() {
+    if (!title.trim()) return;
+    const t = templateForPackage(packageType);
+    onCreate(title, t.type, t.tier, packageType);
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center bg-background/60 p-4 backdrop-blur-[2px]">
@@ -685,48 +724,28 @@ function NewDocModal({
           autoFocus
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && title.trim() && onCreate(title, type, type === "retainer" ? tier : undefined)}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
           placeholder="e.g. Lumen Skincare"
           className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-subtle focus:border-foreground focus:outline-none focus:ring-1 focus:ring-ring/40"
         />
 
-        <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-subtle">Type</label>
-        <div className="mt-1.5 grid grid-cols-2 gap-2">
-          {(["retainer", "project"] as DocType[]).map((t) => (
+        <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-subtle">Package</label>
+        <div className="mt-1.5 grid grid-cols-3 gap-2">
+          {CLIENT_PACKAGES.map((p) => (
             <button
-              key={t}
-              onClick={() => setType(t)}
-              className={`rounded-md border px-3 py-2 text-xs transition-colors ${
-                type === t
+              key={p}
+              onClick={() => setPackageType(p)}
+              className={`rounded-md border px-3 py-2 text-left transition-colors ${
+                packageType === p
                   ? "border-foreground/30 bg-surface text-foreground"
                   : "border-border text-muted hover:text-foreground"
               }`}
             >
-              {t === "retainer" ? "Retainer" : "One-time project"}
+              <span className="block text-xs">{PACKAGE_LABEL[p]}</span>
+              <span className="mt-0.5 block text-3xs text-subtle">{PACKAGE_HINT[p]}</span>
             </button>
           ))}
         </div>
-
-        {type === "retainer" && (
-          <>
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-subtle">Tier</label>
-            <div className="mt-1.5 grid grid-cols-4 gap-1.5">
-              {(Object.keys(TIER_LABEL) as RetainerTier[]).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTier(t)}
-                  className={`rounded-md border px-2 py-1.5 text-2xs transition-colors ${
-                    tier === t
-                      ? "border-foreground/30 bg-surface text-foreground"
-                      : "border-border text-muted hover:text-foreground"
-                  }`}
-                >
-                  {TIER_LABEL[t]}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
 
         <div className="mt-5 flex justify-end gap-2">
           <button onClick={onCancel} className="rounded-md px-3 py-1.5 text-xs text-muted hover:text-foreground">
@@ -734,7 +753,7 @@ function NewDocModal({
           </button>
           <button
             disabled={!title.trim()}
-            onClick={() => onCreate(title, type, type === "retainer" ? tier : undefined)}
+            onClick={submit}
             className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground transition-opacity disabled:opacity-40"
           >
             Create doc
