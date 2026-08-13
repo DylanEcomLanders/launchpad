@@ -13,8 +13,9 @@
  */
 
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import type { Pod, PodDoc, DocSection, DocType, TestRow, NoteEntry } from "./types";
+import type { Pod, PodDoc, DocSection, DocType, TestRow, NoteEntry, ClientPackage } from "./types";
 import { templateSections, resultsRowsToHtml } from "./templates";
+import { normalizePackageType, normalizePriority } from "./offer";
 
 const DOCS_KEY = "pod-projects-docs";
 const PODS_KEY = "pod-projects-pods";
@@ -232,6 +233,25 @@ export function addPod(name: string, pods: Pod[]): Pod[] {
 }
 
 /* ── Docs ── */
+
+/** Map a pod_docs row onto PodDoc. Invalid/absent packageType stays unset so
+ *  legacy clients are not silently rewritten. */
+function hydrateDoc(row: Record<string, unknown>): PodDoc {
+  const data = (row.data && typeof row.data === "object" ? row.data : {}) as Partial<PodDoc>;
+  return hydrateStoredDoc({ ...data, id: row.id as string } as PodDoc);
+}
+
+function hydrateStoredDoc(doc: PodDoc): PodDoc {
+  const packageType = normalizePackageType(doc.packageType);
+  const commercialPriority = normalizePriority(doc.commercialPriority);
+  const next: PodDoc = { ...doc };
+  if (packageType) next.packageType = packageType;
+  else delete next.packageType;
+  if (commercialPriority) next.commercialPriority = commercialPriority;
+  else delete next.commercialPriority;
+  return next;
+}
+
 export async function loadDocs(): Promise<PodDoc[]> {
   // Best-effort cloud read; falls straight through to LS on any error.
   if (isSupabaseConfigured()) {
@@ -241,10 +261,7 @@ export async function loadDocs(): Promise<PodDoc[]> {
         .select("*")
         .order("created_at", { ascending: true });
       if (!error && data) {
-        const mapped = data.map((row: Record<string, unknown>) => ({
-          ...(row.data as object),
-          id: row.id as string,
-        })) as PodDoc[];
+        const mapped = data.map((row: Record<string, unknown>) => hydrateDoc(row)) as PodDoc[];
         const fresh = mapped.filter((d) => !isLegacy(d));
         if (fresh.length) {
           const refreshed = refreshDemoSections(fresh);
@@ -256,7 +273,7 @@ export async function loadDocs(): Promise<PodDoc[]> {
       /* table missing / offline — use LS */
     }
   }
-  const stored = lsLoad<PodDoc>(DOCS_KEY).filter((d) => !isLegacy(d));
+  const stored = lsLoad<PodDoc>(DOCS_KEY).filter((d) => !isLegacy(d)).map(hydrateStoredDoc);
   if (stored.length) {
     const refreshed = refreshDemoSections(stored);
     lsSave(DOCS_KEY, refreshed);
@@ -289,7 +306,7 @@ async function cloudUpsert(doc: PodDoc): Promise<void> {
 export async function saveDoc(doc: PodDoc): Promise<void> {
   const all = lsLoad<PodDoc>(DOCS_KEY);
   const idx = all.findIndex((d) => d.id === doc.id);
-  const next = { ...doc, updated_at: new Date().toISOString() };
+  const next = hydrateStoredDoc({ ...doc, updated_at: new Date().toISOString() });
   if (idx >= 0) all[idx] = next;
   else all.push(next);
   lsSave(DOCS_KEY, all);
@@ -339,7 +356,13 @@ export function loadDeletedDocs(): PodDoc[] {
 }
 
 let seq = 0;
-export function newDoc(podId: string, title: string, type: PodDoc["type"], tier?: PodDoc["tier"]): PodDoc {
+export function newDoc(
+  podId: string,
+  title: string,
+  type: PodDoc["type"],
+  tier?: PodDoc["tier"],
+  packageType?: ClientPackage,
+): PodDoc {
   const now = new Date().toISOString();
   seq += 1;
   // Clone from the team-editable template so their changes flow into new clients.
@@ -347,12 +370,14 @@ export function newDoc(podId: string, title: string, type: PodDoc["type"], tier?
   const sections: DocSection[] = template
     ? (JSON.parse(JSON.stringify(template.sections)) as DocSection[])
     : templateSections(type);
+  const pkg = normalizePackageType(packageType);
   return {
     id: `doc-${Date.now().toString(36)}-${seq}`,
     podId,
     title: title.trim() || "Untitled",
     type,
     tier: type === "retainer" ? tier ?? "core" : undefined,
+    ...(pkg ? { packageType: pkg } : {}),
     sections,
     startDate: now.slice(0, 10),
     created_at: now,

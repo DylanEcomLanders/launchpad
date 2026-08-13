@@ -15,6 +15,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import type { Pod, PodDoc } from "@/lib/pod-projects/types";
+import { PACKAGE_LABEL } from "@/lib/pod-projects/offer";
 
 export function Rail({
   pods,
@@ -157,6 +158,12 @@ export function Rail({
                   )}
                   {podDocs.map((doc) => {
                     const active = doc.id === activeDocId;
+                    const offerHint = [
+                      doc.packageType ? PACKAGE_LABEL[doc.packageType] : "Package unset",
+                      doc.commercialPriority?.statement?.trim(),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
                     return (
                       <button
                         key={doc.id}
@@ -167,6 +174,7 @@ export function Rail({
                           setDragOverPod(null);
                         }}
                         onClick={() => onSelectDoc(doc.id)}
+                        title={offerHint}
                         className={`flex w-full items-center gap-2 rounded-md py-1 pl-6 pr-2 text-left text-[13px] transition-colors ${
                           draggedDocId === doc.id ? "opacity-40" : ""
                         } ${

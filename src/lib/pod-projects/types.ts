@@ -15,6 +15,17 @@ export type DocType = "retainer" | "project";
 /** Retainer tier — the Lite/Core/Growth/Scale line from the source doc. */
 export type RetainerTier = "lite" | "core" | "growth" | "scale";
 
+/** Commercial offer on the client record. Distinct from DocType (template spine).
+ *  `undefined` = legacy / not yet classified — never backfilled. */
+export type ClientPackage = "sprint" | "audit" | "partner";
+
+/** The one active commercial problem (Partner) or current focus (Sprint/Audit).
+ *  Statement is the line a client could repeat; metric is optional. */
+export interface CommercialPriority {
+  statement: string;
+  metric?: string;
+}
+
 /** One navigable section of a doc — a "tab". Sections isolate: the editor
  *  shows one section's body at a time. A section may nest children (e.g.
  *  Reports → Week 1 / Week 2 / Month 1); a pure container has an empty body and
@@ -72,6 +83,10 @@ export interface PodDoc {
   title: string;
   type: DocType;
   tier?: RetainerTier;
+  /** Commercial offer. Absent on legacy rows (unset / unknown). */
+  packageType?: ClientPackage;
+  /** One active priority (Partner) or current focus (Sprint/Audit). */
+  commercialPriority?: CommercialPriority;
   /** True for the two editable templates new clients clone from. */
   isTemplate?: boolean;
   /** The section tree — each entry is a navigable tab. Replaces the old single

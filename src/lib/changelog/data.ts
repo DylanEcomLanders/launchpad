@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-145",
+    date: "13 August 2026",
+    version: "3.4.2",
+    title: "Package type and one active priority on every client",
+    changes: [
+      { type: "added", text: "Opening a client on /clients now shows the commercial package (Sprint, Audit, or Partner) and the one active priority — a short statement plus an optional primary metric. Admin and CRO set them in place; team members see the same line read-only. Existing clients stay Unset until someone classifies them." },
+    ],
+  },
+  {
     id: "cl-144",
     date: "6 August 2026",
     version: "3.4.1",
