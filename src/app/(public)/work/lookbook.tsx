@@ -221,6 +221,7 @@ export function Lookbook({ catalog }: { catalog: WorkCatalog }) {
       {openPiece && (
         <ModalPortal>
           <StageView
+            key={openPiece.slug}
             piece={openPiece}
             overlay
             onClose={() => setOpenSlug(null)}

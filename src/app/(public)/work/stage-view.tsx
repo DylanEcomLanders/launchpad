@@ -89,20 +89,12 @@ export function StageView({
 }) {
   const router = useRouter();
   const [pair, setPair] = useState<"after" | "before">("after");
+  const [modeOverride, setModeOverride] = useState<"desktop" | "mobile" | null>(null);
   const activeProject: PortfolioProject | null =
     pair === "before" && piece.before ? piece.before : piece.project;
   const hasDesktop = (activeProject?.desktop_slices.length ?? 0) > 0;
   const hasMobile = (activeProject?.mobile_slices.length ?? 0) > 0;
-  const [mode, setMode] = useState<"desktop" | "mobile">(hasDesktop ? "desktop" : "mobile");
-
-  useEffect(() => {
-    const nextMode =
-      (pair === "before" && piece.before ? piece.before : piece.project)?.desktop_slices
-        .length
-        ? "desktop"
-        : "mobile";
-    setMode(nextMode);
-  }, [pair, piece]);
+  const mode: "desktop" | "mobile" = modeOverride ?? (hasDesktop ? "desktop" : "mobile");
 
   useEffect(() => {
     if (!overlay) return;
@@ -187,7 +179,7 @@ export function StageView({
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <DeviceToggle
               mode={mode}
-              onChange={setMode}
+              onChange={setModeOverride}
               hasDesktop={hasDesktop}
               hasMobile={hasMobile}
             />
@@ -195,7 +187,10 @@ export function StageView({
               <div className="inline-flex items-center gap-1 p-1 rounded-full border border-[var(--work-line)]">
                 <button
                   type="button"
-                  onClick={() => setPair("before")}
+                  onClick={() => {
+                    setPair("before");
+                    setModeOverride(null);
+                  }}
                   className={`px-3 py-1 text-[11px] rounded-full ${
                     pair === "before"
                       ? "bg-[var(--work-ink)] text-[var(--work-bg)]"
@@ -206,7 +201,10 @@ export function StageView({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPair("after")}
+                  onClick={() => {
+                    setPair("after");
+                    setModeOverride(null);
+                  }}
                   className={`px-3 py-1 text-[11px] rounded-full ${
                     pair === "after"
                       ? "bg-[var(--work-ink)] text-[var(--work-bg)]"
