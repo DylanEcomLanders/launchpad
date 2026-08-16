@@ -43,13 +43,13 @@ export type LibraryBoard = {
 
 const SKIP = /angusway/i;
 
-const CARD_W = 228;
-const CARD_RATIO = 2.52;
-const GAP_X = 26;
-const GAP_Y = 22;
-const ISLAND_GAP_X = 260;
-const ISLAND_GAP_Y = 220;
-const LABEL_H = 36;
+const CARD_W = 196;
+const CARD_RATIO = 2.48;
+const GAP_X = 12;
+const GAP_Y = 12;
+const ISLAND_GAP_X = 52;
+const ISLAND_GAP_Y = 56;
+const LABEL_H = 22;
 
 /* Obvious brand → niche only. Do not invent clients or win stories. */
 const KNOWN_BRANDS: { match: RegExp; niche: string }[] = [
@@ -203,14 +203,47 @@ export function buildLibraryBoard(projects: PortfolioProject[]): LibraryBoard {
   return {
     cards,
     clusters,
-    niches: [...nicheSet].sort((a, b) => a.localeCompare(b)),
+    niches: collectFilterPills(real, cards, nicheSet),
   };
 }
 
+function collectFilterPills(
+  real: LibraryCard[],
+  all: LibraryCard[],
+  nicheSet: Set<string>
+): string[] {
+  const pills: string[] = [];
+  const add = (raw: string | null | undefined) => {
+    const s = raw?.trim();
+    if (!s) return;
+    if (pills.some((p) => p.toLowerCase() === s.toLowerCase())) return;
+    pills.push(s);
+  };
+
+  [...nicheSet].sort((a, b) => a.localeCompare(b)).forEach(add);
+
+  for (const card of real) {
+    for (const tag of card.tags) {
+      if (PAGE_TYPES.has(tag.toLowerCase())) continue;
+      if (tag.length > 24 || /\d{3,}/.test(tag)) continue;
+      add(titleCase(tag));
+    }
+  }
+
+  for (const card of real) add(card.category);
+
+  if (pills.length < 4) {
+    for (const card of all) add(card.category);
+  }
+
+  return pills;
+}
+
 function islandCols(n: number): number {
-  if (n <= 2) return 1;
-  if (n <= 7) return 2;
-  return 3;
+  if (n <= 1) return 1;
+  if (n <= 4) return 2;
+  if (n <= 9) return 3;
+  return 4;
 }
 
 function masonry(cards: LibraryCard[], cols: number): LibraryCard[] {
@@ -220,9 +253,9 @@ function masonry(cards: LibraryCard[], cols: number): LibraryCard[] {
     for (let i = 1; i < cols; i++) {
       if (colH[i] < colH[col]) col = i;
     }
-    const jitterX = (unit(card.id, 1) - 0.5) * 18;
-    const jitterY = (unit(card.id, 2) - 0.5) * 20;
-    const rotate = (unit(card.id, 4) - 0.5) * 3.6;
+    const jitterX = (unit(card.id, 1) - 0.5) * 6;
+    const jitterY = (unit(card.id, 2) - 0.5) * 8;
+    const rotate = (unit(card.id, 4) - 0.5) * 1.4;
     const x = col * (CARD_W + GAP_X) + jitterX;
     const y = colH[col] + jitterY;
     colH[col] += card.h + GAP_Y;
@@ -247,12 +280,13 @@ function layoutIslands(cards: LibraryCard[]): { cards: LibraryCard[]; clusters: 
     return a.localeCompare(b);
   });
 
-  const islandColsCount = names.length <= 3 ? 2 : 3;
+  const islandColsCount = names.length <= 2 ? 2 : 3;
   const colBottom = Array.from({ length: islandColsCount }, () => 0);
+  const colWidth = Array.from({ length: islandColsCount }, () => CARD_W * 2 + GAP_X);
   const placed: LibraryCard[] = [];
   const clusters: LibraryCluster[] = [];
 
-  names.forEach((name, i) => {
+  names.forEach((name) => {
     const local = masonry(groups.get(name)!, islandCols(groups.get(name)!.length));
     let maxX = 0;
     let maxY = 0;
@@ -261,14 +295,16 @@ function layoutIslands(cards: LibraryCard[]): { cards: LibraryCard[]; clusters: 
       maxY = Math.max(maxY, c.y + c.h);
     }
 
-    let col = i % islandColsCount;
+    let col = 0;
     for (let c = 1; c < islandColsCount; c++) {
       if (colBottom[c] < colBottom[col]) col = c;
     }
 
-    const islandW = Math.max(maxX, CARD_W);
-    const ox = col * (islandW + ISLAND_GAP_X + CARD_W) + (unit(name, 5) - 0.5) * 70;
-    const oy = colBottom[col] + (col % 2) * 90 + (unit(name, 6) - 0.5) * 50;
+    let ox = 0;
+    for (let c = 0; c < col; c++) ox += colWidth[c] + ISLAND_GAP_X;
+    ox += (unit(name, 5) - 0.5) * 16;
+    const oy = colBottom[col] + (unit(name, 6) - 0.5) * 18;
+    colWidth[col] = Math.max(colWidth[col], maxX);
 
     clusters.push({ id: name, label: name, x: ox, y: oy });
     for (const c of local) {
@@ -303,6 +339,11 @@ export function cardMatchesQuery(card: LibraryCard, query: string): boolean {
 }
 
 export function cardIsVisible(card: LibraryCard, query: string, niche: string | null): boolean {
-  if (niche && card.niche !== niche) return false;
+  if (niche) {
+    const keys = [card.niche, card.category, card.cluster, ...card.tags]
+      .filter(Boolean)
+      .map((s) => s!.toLowerCase());
+    if (!keys.includes(niche.toLowerCase())) return false;
+  }
   return cardMatchesQuery(card, query);
 }

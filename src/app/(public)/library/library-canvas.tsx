@@ -31,10 +31,10 @@ function fitCamera(cards: LibraryCard[], clusters: { x: number; y: number }[], v
     b.minX = Math.min(b.minX, c.x);
     b.minY = Math.min(b.minY, c.y);
   }
-  const pad = 160;
+  const pad = 72;
   const w = Math.max(1, b.maxX - b.minX + pad * 2);
   const h = Math.max(1, b.maxY - b.minY + pad * 2);
-  const scale = clamp(Math.min(vw / w, vh / h) * 0.92, 0.28, 1.05);
+  const scale = clamp(Math.min(vw / w, vh / h) * 1.06, 0.32, 1.35);
   const cx = (b.minX + b.maxX) / 2;
   const cy = (b.minY + b.maxY) / 2;
   return {
@@ -258,9 +258,9 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
       ref={viewportRef}
       className="fixed inset-0 overflow-hidden select-none"
       style={{
-        backgroundColor: "#E8E8E6",
-        backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.16) 1.05px, transparent 1.15px)",
-        backgroundSize: "22px 22px",
+        backgroundColor: "#F4F3EF",
+        backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.085) 0.9px, transparent 1px)",
+        backgroundSize: "20px 20px",
         touchAction: "none",
         cursor: inspect ? "default" : "grab",
       }}
@@ -290,7 +290,7 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
                 transition: "opacity 160ms ease",
               }}
             >
-              <p className="text-[10px] uppercase tracking-[0.18em] text-black/35 whitespace-nowrap">
+              <p className="text-[9px] uppercase tracking-[0.22em] text-black/22 whitespace-nowrap">
                 {cluster.label}
               </p>
             </div>
@@ -310,8 +310,8 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
                 width: card.w,
                 height: card.h,
                 transform: `rotate(${card.rotate}deg) translateZ(0)`,
-                borderRadius: 14,
-                boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 18px 40px rgba(0,0,0,0.10)",
+                borderRadius: 10,
+                boxShadow: "0 1px 1px rgba(0,0,0,0.04), 0 10px 28px rgba(0,0,0,0.08)",
                 opacity: hiddenForInspect ? 0 : shown ? 1 : 0.08,
                 pointerEvents: shown && !inspect ? "auto" : "none",
                 cursor: "pointer",
@@ -324,8 +324,8 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
         })}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col items-center pt-5 px-4 gap-2.5">
-        <label className="pointer-events-auto relative block w-full max-w-[420px]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col items-center pt-4 px-4 gap-3">
+        <label className="pointer-events-auto relative block w-full max-w-[440px]">
           <span className="sr-only">Search the library</span>
           <input
             ref={searchRef}
@@ -333,30 +333,35 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search the library…"
-            className="w-full h-11 rounded-full bg-white/92 text-[13px] text-[#1A1A1C] placeholder:text-[#8A8A8E] px-5 shadow-[0_8px_28px_rgba(0,0,0,0.10)] outline-none ring-1 ring-black/5 focus:ring-black/15"
+            className="w-full h-12 rounded-full bg-white text-[14px] text-[#1A1A1C] placeholder:text-[#9A9A9E] px-6 shadow-[0_10px_32px_rgba(0,0,0,0.08)] outline-none ring-1 ring-black/[0.06] focus:ring-black/12"
             onPointerDown={(e) => e.stopPropagation()}
           />
         </label>
-        {niches.length > 0 && (
-          <div
-            className="pointer-events-auto flex flex-wrap justify-center gap-1.5 max-w-[520px]"
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            <FilterPill active={niche === null} onClick={() => setNiche(null)}>
-              All
+        <div
+          className="pointer-events-auto flex items-center gap-1.5 max-w-[780px] flex-wrap justify-center rounded-[28px] bg-white/95 pl-4 pr-2 py-2 shadow-[0_10px_32px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.06]"
+          onPointerDown={(e) => e.stopPropagation()}
+          role="group"
+          aria-label="Niche"
+        >
+          <span className="text-[12px] font-semibold tracking-wide text-black/55 pl-1 pr-1">
+            Niche
+          </span>
+          <FilterPill active={niche === null} onClick={() => setNiche(null)}>
+            All
+          </FilterPill>
+          {niches.map((n) => (
+            <FilterPill key={n} active={niche === n} onClick={() => setNiche(n)}>
+              {n}
             </FilterPill>
-            {niches.map((n) => (
-              <FilterPill key={n} active={niche === n} onClick={() => setNiche(n)}>
-                {n}
-              </FilterPill>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
       {!inspect && (
-        <p className="pointer-events-none absolute inset-x-0 bottom-5 z-20 text-center text-[11px] tracking-wide text-black/40">
-          drag to pan · scroll to zoom · click a card to expand
+        <p className="pointer-events-none absolute inset-x-0 bottom-5 z-20 flex justify-center">
+          <span className="rounded-full bg-white/90 px-4 py-2 text-[11px] tracking-wide text-black/45 shadow-[0_6px_20px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.05]">
+            drag to pan · scroll to zoom · click a card to expand
+          </span>
         </p>
       )}
 
@@ -390,10 +395,10 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`h-7 px-3 rounded-full text-[11px] tracking-wide transition-colors ${
+      className={`h-9 px-4 rounded-full text-[13px] font-medium tracking-wide transition-colors ${
         active
-          ? "bg-[#1A1A1C] text-white"
-          : "bg-white/80 text-black/45 hover:text-black/70 ring-1 ring-black/8"
+          ? "bg-[#111111] text-white"
+          : "text-black/55 hover:text-black/80 hover:bg-black/[0.04]"
       }`}
     >
       {children}
@@ -421,23 +426,9 @@ function CardFace({ card }: { card: LibraryCard }) {
 }
 
 function EmptyFrame({ category }: { category: string }) {
-  const bars = [72, 88, 64, 80, 56];
   return (
-    <div className="h-full w-full bg-[#F4F4F2] flex flex-col">
-      <div className="h-7 flex items-center gap-1.5 px-2.5 border-b border-black/5">
-        <span className="size-1.5 rounded-full bg-black/12" />
-        <span className="size-1.5 rounded-full bg-black/12" />
-        <span className="size-1.5 rounded-full bg-black/12" />
-        <span className="ml-2 h-2 flex-1 rounded-full bg-black/[0.05]" />
-      </div>
-      <div className="flex-1 p-4 space-y-2.5">
-        {bars.map((w, i) => (
-          <div key={i} className="h-2 rounded-full bg-black/[0.06]" style={{ width: `${w}%` }} />
-        ))}
-        <div className="mt-5 aspect-[4/3] rounded-md bg-black/[0.04]" />
-        <div className="h-2 rounded-full bg-black/[0.05] w-2/3" />
-        <div className="h-2 rounded-full bg-black/[0.05] w-5/6" />
-      </div>
+    <div className="h-full w-full bg-[#F7F6F3]">
+      <div className="h-full w-full bg-gradient-to-b from-black/[0.03] to-transparent" />
       <span className="sr-only">{category}</span>
     </div>
   );
@@ -492,19 +483,21 @@ function InspectStage({
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute inset-0 bg-black/50 backdrop-blur-2xl transition-opacity duration-300"
+        className="absolute inset-0 bg-black/60 backdrop-blur-[28px] transition-opacity duration-300"
         style={{ opacity: open ? 1 : 0 }}
       />
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute top-5 right-6 z-40 text-white/35 hover:text-white/70 text-2xl leading-none"
+        className="absolute top-6 right-7 z-40 text-white/30 hover:text-white/65 text-[28px] leading-none font-light"
       >
         ×
       </button>
-      <p className="pointer-events-none absolute inset-x-0 bottom-5 z-40 text-center text-[11px] tracking-wide text-white/45">
-        move cursor across the card · Esc | click outside to close
+      <p className="pointer-events-none absolute inset-x-0 bottom-6 z-40 flex justify-center">
+        <span className="rounded-full bg-white/10 px-4 py-2 text-[11px] tracking-wide text-white/55 ring-1 ring-white/10">
+          move cursor across the card · Esc | click outside to close
+        </span>
       </p>
 
       <div
@@ -530,8 +523,9 @@ function InspectStage({
           <div
             className="absolute inset-0 overflow-hidden bg-white"
             style={{
-              borderRadius: 16,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
+              borderRadius: 18,
+              outline: "1px solid rgba(255,255,255,0.22)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.18), 0 40px 90px rgba(0,0,0,0.42)",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
             }}
@@ -539,10 +533,11 @@ function InspectStage({
             <InspectFront key={card.id} card={card} />
           </div>
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center bg-[#161616]"
+            className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center bg-[#141414]"
             style={{
-              borderRadius: 16,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
+              borderRadius: 18,
+              outline: "1px solid rgba(255,255,255,0.14)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.18), 0 40px 90px rgba(0,0,0,0.42)",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
@@ -553,9 +548,11 @@ function InspectStage({
                 {card.name}
               </p>
             ) : null}
-            <p className={`text-[11px] uppercase tracking-[0.18em] text-white/45 ${card.name ? "mt-3" : ""}`}>
-              {card.category}
-            </p>
+            {(card.niche || card.category) && (
+              <p className={`text-[11px] uppercase tracking-[0.18em] text-white/45 ${card.name ? "mt-3" : ""}`}>
+                {card.niche || card.category}
+              </p>
+            )}
           </div>
         </div>
       </div>
