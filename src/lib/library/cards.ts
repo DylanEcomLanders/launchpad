@@ -51,17 +51,20 @@ function isSkipped(project: PortfolioProject): boolean {
   return SKIP.test(hay);
 }
 
-function previewFor(project: PortfolioProject): {
+function framesFor(project: PortfolioProject): {
   preview: PortfolioSlice | null;
   slices: PortfolioSlice[];
 } {
-  if (project.mobile_slices.length > 0) {
-    return { preview: project.mobile_slices[0], slices: project.mobile_slices };
-  }
-  if (project.desktop_slices.length > 0) {
-    return { preview: project.desktop_slices[0], slices: project.desktop_slices };
-  }
-  return { preview: null, slices: [] };
+  const mobile = project.mobile_slices ?? [];
+  const desktop = project.desktop_slices ?? [];
+  // Preview viewport first so expand starts on the card face; the other
+  // viewport follows so cursor-scrub can walk the long page and desktop/mobile.
+  const slices = mobile.length
+    ? desktop.length
+      ? [...mobile, ...desktop]
+      : mobile
+    : desktop;
+  return { preview: slices[0] ?? null, slices };
 }
 
 function cardSize(id: string, preview: PortfolioSlice | null, empty: boolean): { w: number; h: number } {
@@ -87,7 +90,7 @@ export function buildLibraryCards(projects: PortfolioProject[]): LibraryCard[] {
 
   for (const project of projects) {
     if (isSkipped(project)) continue;
-    const { preview, slices } = previewFor(project);
+    const { preview, slices } = framesFor(project);
     const category = project.category?.trim() || "Product Pages";
     if (PORTFOLIO_CATEGORIES.includes(category as PortfolioCategory)) {
       present.add(category);

@@ -316,7 +316,7 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
 
       {!inspect && (
         <p className="pointer-events-none absolute inset-x-0 bottom-5 z-20 text-center text-[11px] tracking-wide text-black/40">
-          drag to pan · scroll to zoom · click a card to inspect
+          drag to pan · scroll to zoom · click a card to expand
         </p>
       )}
 
@@ -428,7 +428,7 @@ function InspectStage({
         ×
       </button>
       <p className="pointer-events-none absolute inset-x-0 bottom-5 z-40 text-center text-[11px] tracking-wide text-white/45">
-        space to flip the card · click outside to close
+        move cursor across the card · Esc | click outside to close
       </p>
 
       <div
@@ -460,7 +460,7 @@ function InspectStage({
               WebkitBackfaceVisibility: "hidden",
             }}
           >
-            <InspectFront card={card} />
+            <InspectFront key={card.id} card={card} />
           </div>
           <div
             className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center bg-[#161616]"
@@ -488,18 +488,47 @@ function InspectStage({
 }
 
 function InspectFront({ card }: { card: LibraryCard }) {
-  if (card.empty || card.slices.length === 0) {
+  const frames = card.slices;
+  const [index, setIndex] = useState(0);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const indexRef = useRef(0);
+
+  const scrub = (clientX: number, clientY: number) => {
+    if (frames.length < 2) return;
+    const box = boxRef.current;
+    if (!box) return;
+    const rect = box.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const x = clamp((clientX - rect.left) / rect.width, 0, 1);
+    const y = clamp((clientY - rect.top) / rect.height, 0, 1);
+    // Across the card: X walks variants / page frames; Y walks a long page.
+    const t = frames.length > 3 ? (x + y) / 2 : x;
+    const next = Math.round(t * (frames.length - 1));
+    if (next === indexRef.current) return;
+    indexRef.current = next;
+    setIndex(next);
+  };
+
+  if (card.empty || frames.length === 0) {
     return <EmptyFrame category={card.category} />;
   }
+
   return (
-    <div className="h-full w-full overflow-y-auto overscroll-contain">
-      {card.slices.map((slice, i) => (
+    <div
+      ref={boxRef}
+      className="relative h-full w-full overflow-hidden"
+      onPointerMove={(e) => scrub(e.clientX, e.clientY)}
+    >
+      {frames.map((slice, i) => (
         <div
           key={`${card.id}-${i}`}
-          className="relative w-full"
-          style={{ aspectRatio: `${slice.width} / ${slice.height}` }}
+          className="absolute inset-0"
+          style={{
+            opacity: i === index ? 1 : 0,
+            pointerEvents: "none",
+          }}
         >
-          <SliceImage slice={slice} eager={i < 2} />
+          <SliceImage slice={slice} eager={i < 4} />
         </div>
       ))}
     </div>
