@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { LogoMark } from "@/components/logo";
 import {
   cardBounds,
-  cardMatchesQuery,
+  cardIsVisible,
+  type LibraryBoard,
   type LibraryCard,
 } from "@/lib/library/cards";
 import type { PortfolioSlice } from "@/lib/portfolio-v2/types";
@@ -24,9 +25,13 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
 
-function fitCamera(cards: LibraryCard[], vw: number, vh: number): Camera {
+function fitCamera(cards: LibraryCard[], clusters: { x: number; y: number }[], vw: number, vh: number): Camera {
   const b = cardBounds(cards);
-  const pad = 120;
+  for (const c of clusters) {
+    b.minX = Math.min(b.minX, c.x);
+    b.minY = Math.min(b.minY, c.y);
+  }
+  const pad = 160;
   const w = Math.max(1, b.maxX - b.minX + pad * 2);
   const h = Math.max(1, b.maxY - b.minY + pad * 2);
   const scale = clamp(Math.min(vw / w, vh / h) * 0.92, 0.28, 1.05);
@@ -44,7 +49,8 @@ function applyWorld(el: HTMLDivElement | null, cam: Camera) {
   el.style.transform = `translate3d(${cam.x}px, ${cam.y}px, 0) scale(${cam.scale})`;
 }
 
-export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
+export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
+  const { cards, clusters, niches } = board;
   const viewportRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<Camera>({ x: 0, y: 0, scale: 1 });
@@ -61,6 +67,7 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
   } | null>(null);
 
   const [query, setQuery] = useState("");
+  const [niche, setNiche] = useState<string | null>(null);
   const [inspect, setInspect] = useState<InspectState | null>(null);
   const [inspectOpen, setInspectOpen] = useState(false);
   const [flipped, setFlipped] = useState(false);
@@ -68,8 +75,8 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const visible = useMemo(
-    () => new Set(cards.filter((c) => cardMatchesQuery(c, query)).map((c) => c.id)),
-    [cards, query]
+    () => new Set(cards.filter((c) => cardIsVisible(c, query, niche)).map((c) => c.id)),
+    [cards, query, niche]
   );
 
   const setCamera = useCallback((next: Camera) => {
@@ -95,8 +102,8 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
     const el = viewportRef.current;
     if (!el) return;
     const { clientWidth, clientHeight } = el;
-    setCamera(fitCamera(cards, clientWidth, clientHeight));
-  }, [cards, setCamera]);
+    setCamera(fitCamera(cards, clusters, clientWidth, clientHeight));
+  }, [cards, clusters, setCamera]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -270,6 +277,25 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
           backfaceVisibility: "hidden",
         }}
       >
+        {clusters.map((cluster) => {
+          const anyShown = cards.some((c) => c.cluster === cluster.id && visible.has(c.id));
+          return (
+            <div
+              key={cluster.id}
+              className="absolute pointer-events-none"
+              style={{
+                left: cluster.x,
+                top: cluster.y,
+                opacity: anyShown ? 1 : 0.12,
+                transition: "opacity 160ms ease",
+              }}
+            >
+              <p className="text-[10px] uppercase tracking-[0.18em] text-black/35 whitespace-nowrap">
+                {cluster.label}
+              </p>
+            </div>
+          );
+        })}
         {cards.map((card) => {
           const shown = visible.has(card.id);
           const hiddenForInspect = inspect?.card.id === card.id;
@@ -298,8 +324,7 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
         })}
       </div>
 
-      {/* Search */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center pt-5 px-4">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col items-center pt-5 px-4 gap-2.5">
         <label className="pointer-events-auto relative block w-full max-w-[420px]">
           <span className="sr-only">Search the library</span>
           <input
@@ -312,6 +337,21 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
             onPointerDown={(e) => e.stopPropagation()}
           />
         </label>
+        {niches.length > 0 && (
+          <div
+            className="pointer-events-auto flex flex-wrap justify-center gap-1.5 max-w-[520px]"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <FilterPill active={niche === null} onClick={() => setNiche(null)}>
+              All
+            </FilterPill>
+            {niches.map((n) => (
+              <FilterPill key={n} active={niche === n} onClick={() => setNiche(n)}>
+                {n}
+              </FilterPill>
+            ))}
+          </div>
+        )}
       </div>
 
       {!inspect && (
@@ -337,11 +377,47 @@ export default function LibraryCanvas({ cards }: { cards: LibraryCard[] }) {
   );
 }
 
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`h-7 px-3 rounded-full text-[11px] tracking-wide transition-colors ${
+        active
+          ? "bg-[#1A1A1C] text-white"
+          : "bg-white/80 text-black/45 hover:text-black/70 ring-1 ring-black/8"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function CardFace({ card }: { card: LibraryCard }) {
-  if (card.preview) {
-    return <SliceImage slice={card.preview} eager />;
+  if (card.coverSlices.length === 0) {
+    return <EmptyFrame category={card.category} />;
   }
-  return <EmptyFrame category={card.category} />;
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {card.coverSlices.map((slice, i) => (
+        <div
+          key={`${card.id}-cover-${i}`}
+          className="relative w-full"
+          style={{ aspectRatio: `${slice.width} / ${slice.height}` }}
+        >
+          <SliceImage slice={slice} eager={i === 0} />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function EmptyFrame({ category }: { category: string }) {
@@ -489,9 +565,9 @@ function InspectStage({
 
 function InspectFront({ card }: { card: LibraryCard }) {
   const frames = card.slices;
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState<number | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
-  const indexRef = useRef(0);
+  const indexRef = useRef<number | null>(null);
 
   const scrub = (clientX: number, clientY: number) => {
     if (frames.length < 2) return;
@@ -501,7 +577,6 @@ function InspectFront({ card }: { card: LibraryCard }) {
     if (rect.width <= 0 || rect.height <= 0) return;
     const x = clamp((clientX - rect.left) / rect.width, 0, 1);
     const y = clamp((clientY - rect.top) / rect.height, 0, 1);
-    // Across the card: X walks variants / page frames; Y walks a long page.
     const t = frames.length > 3 ? (x + y) / 2 : x;
     const next = Math.round(t * (frames.length - 1));
     if (next === indexRef.current) return;
@@ -519,18 +594,22 @@ function InspectFront({ card }: { card: LibraryCard }) {
       className="relative h-full w-full overflow-hidden"
       onPointerMove={(e) => scrub(e.clientX, e.clientY)}
     >
-      {frames.map((slice, i) => (
-        <div
-          key={`${card.id}-${i}`}
-          className="absolute inset-0"
-          style={{
-            opacity: i === index ? 1 : 0,
-            pointerEvents: "none",
-          }}
-        >
-          <SliceImage slice={slice} eager={i < 4} />
-        </div>
-      ))}
+      {index === null ? (
+        <CardFace card={card} />
+      ) : (
+        frames.map((slice, i) => (
+          <div
+            key={`${card.id}-${i}`}
+            className="absolute inset-0"
+            style={{
+              opacity: i === index ? 1 : 0,
+              pointerEvents: "none",
+            }}
+          >
+            <SliceImage slice={slice} eager={i < 4} />
+          </div>
+        ))
+      )}
     </div>
   );
 }
