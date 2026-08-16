@@ -5,6 +5,7 @@ import { LogoMark } from "@/components/logo";
 import {
   cardBounds,
   cardIsVisible,
+  unitPeriod,
   type LibraryBoard,
   type LibraryCard,
 } from "@/lib/library/cards";
@@ -25,16 +26,12 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
 
-function fitCamera(cards: LibraryCard[], clusters: { x: number; y: number }[], vw: number, vh: number): Camera {
+function fitCamera(cards: LibraryCard[], vw: number, vh: number): Camera {
   const b = cardBounds(cards);
-  for (const c of clusters) {
-    b.minX = Math.min(b.minX, c.x);
-    b.minY = Math.min(b.minY, c.y);
-  }
-  const pad = 72;
+  const pad = 48;
   const w = Math.max(1, b.maxX - b.minX + pad * 2);
   const h = Math.max(1, b.maxY - b.minY + pad * 2);
-  const scale = clamp(Math.min(vw / w, vh / h) * 1.06, 0.32, 1.35);
+  const scale = clamp(Math.min(vw / w, vh / h) * 1.12, 0.34, 1.4);
   const cx = (b.minX + b.maxX) / 2;
   const cy = (b.minY + b.maxY) / 2;
   return {
@@ -44,13 +41,39 @@ function fitCamera(cards: LibraryCard[], clusters: { x: number; y: number }[], v
   };
 }
 
+function sourceId(id: string): string {
+  const i = id.lastIndexOf("#");
+  return i === -1 ? id : id.slice(0, i);
+}
+
+function tilesAround(cam: Camera, vw: number, vh: number, period: { x: number; y: number }): string[] {
+  const minX = (0 - cam.x) / cam.scale;
+  const minY = (0 - cam.y) / cam.scale;
+  const maxX = (vw - cam.x) / cam.scale;
+  const maxY = (vh - cam.y) / cam.scale;
+  const padX = period.x * 0.85;
+  const padY = period.y * 0.85;
+  const minTx = Math.floor((minX - padX) / period.x);
+  const maxTx = Math.ceil((maxX + padX) / period.x);
+  const minTy = Math.floor((minY - padY) / period.y);
+  const maxTy = Math.ceil((maxY + padY) / period.y);
+  const out: string[] = [];
+  for (let ty = minTy; ty <= maxTy; ty++) {
+    for (let tx = minTx; tx <= maxTx; tx++) {
+      out.push(`${tx}:${ty}`);
+    }
+  }
+  return out;
+}
+
 function applyWorld(el: HTMLDivElement | null, cam: Camera) {
   if (!el) return;
   el.style.transform = `translate3d(${cam.x}px, ${cam.y}px, 0) scale(${cam.scale})`;
 }
 
 export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
-  const { cards, clusters, niches } = board;
+  const { cards, niches } = board;
+  const period = useMemo(() => unitPeriod(cards), [cards]);
   const viewportRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<Camera>({ x: 0, y: 0, scale: 1 });
@@ -66,6 +89,8 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
     cardId: string | null;
   } | null>(null);
 
+  const [tiles, setTiles] = useState<string[]>(["0:0", "1:0", "-1:0", "0:1", "0:-1"]);
+  const tilesKeyRef = useRef(tiles.join("|"));
   const [query, setQuery] = useState("");
   const [niche, setNiche] = useState<string | null>(null);
   const [inspect, setInspect] = useState<InspectState | null>(null);
@@ -79,10 +104,27 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
     [cards, query, niche]
   );
 
-  const setCamera = useCallback((next: Camera) => {
-    cameraRef.current = next;
-    applyWorld(worldRef.current, next);
-  }, []);
+  const syncTiles = useCallback(
+    (cam: Camera) => {
+      const el = viewportRef.current;
+      if (!el) return;
+      const next = tilesAround(cam, el.clientWidth, el.clientHeight, period);
+      const key = next.join("|");
+      if (key === tilesKeyRef.current) return;
+      tilesKeyRef.current = key;
+      setTiles(next);
+    },
+    [period]
+  );
+
+  const setCamera = useCallback(
+    (next: Camera) => {
+      cameraRef.current = next;
+      applyWorld(worldRef.current, next);
+      syncTiles(next);
+    },
+    [syncTiles]
+  );
 
   const zoomAt = useCallback(
     (clientX: number, clientY: number, factor: number) => {
@@ -102,8 +144,8 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
     const el = viewportRef.current;
     if (!el) return;
     const { clientWidth, clientHeight } = el;
-    setCamera(fitCamera(cards, clusters, clientWidth, clientHeight));
-  }, [cards, clusters, setCamera]);
+    setCamera(fitCamera(cards, clientWidth, clientHeight));
+  }, [cards, setCamera]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -145,7 +187,7 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
   }, [inspect]);
 
   const openInspect = (card: LibraryCard, node: HTMLElement) => {
-    if (!visible.has(card.id)) return;
+    if (!visible.has(sourceId(card.id))) return;
     const rect = node.getBoundingClientRect();
     setFlipped(false);
     setClosing(false);
@@ -249,8 +291,10 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
     dragRef.current = null;
     if (moved || !cardId) return;
     const node = (e.target as HTMLElement | null)?.closest?.("[data-lib-card]") as HTMLElement | null;
-    const card = cards.find((c) => c.id === cardId);
-    if (card && node) openInspect(card, node);
+    const source = cards.find((c) => c.id === sourceId(cardId));
+    if (source && node && cardId) {
+      openInspect({ ...source, id: cardId }, node);
+    }
   };
 
   return (
@@ -269,6 +313,20 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
+      <style>{`
+        .lib-card {
+          opacity: 0;
+          transform: rotate(var(--r, 0deg)) scale(0.92);
+          transition: opacity 480ms cubic-bezier(0.22, 1, 0.36, 1), transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: opacity, transform;
+        }
+        .lib-card.lib-in {
+          opacity: 1;
+          transform: rotate(var(--r, 0deg)) scale(1);
+        }
+        .lib-card.lib-dim { opacity: 0.07 !important; }
+        .lib-card.lib-gone { opacity: 0 !important; }
+      `}</style>
       <div
         ref={worldRef}
         className="absolute top-0 left-0 will-change-transform"
@@ -277,50 +335,27 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
           backfaceVisibility: "hidden",
         }}
       >
-        {clusters.map((cluster) => {
-          const anyShown = cards.some((c) => c.cluster === cluster.id && visible.has(c.id));
-          return (
-            <div
-              key={cluster.id}
-              className="absolute pointer-events-none"
-              style={{
-                left: cluster.x,
-                top: cluster.y,
-                opacity: anyShown ? 1 : 0.12,
-                transition: "opacity 160ms ease",
-              }}
-            >
-              <p className="text-[9px] uppercase tracking-[0.22em] text-black/22 whitespace-nowrap">
-                {cluster.label}
-              </p>
-            </div>
-          );
-        })}
-        {cards.map((card) => {
-          const shown = visible.has(card.id);
-          const hiddenForInspect = inspect?.card.id === card.id;
-          return (
-            <div
-              key={card.id}
-              data-lib-card={card.id}
-              className="absolute overflow-hidden bg-white"
-              style={{
-                left: card.x,
-                top: card.y,
-                width: card.w,
-                height: card.h,
-                transform: `rotate(${card.rotate}deg) translateZ(0)`,
-                borderRadius: 10,
-                boxShadow: "0 1px 1px rgba(0,0,0,0.04), 0 10px 28px rgba(0,0,0,0.08)",
-                opacity: hiddenForInspect ? 0 : shown ? 1 : 0.08,
-                pointerEvents: shown && !inspect ? "auto" : "none",
-                cursor: "pointer",
-                transition: "opacity 160ms ease",
-              }}
-            >
-              <CardFace card={card} />
-            </div>
-          );
+        {tiles.flatMap((tile) => {
+          const [tx, ty] = tile.split(":").map(Number);
+          return cards.map((card) => {
+            const inst: LibraryCard = {
+              ...card,
+              id: `${card.id}#${tile}`,
+              x: card.x + tx * period.x,
+              y: card.y + ty * period.y,
+            };
+            const shown = visible.has(card.id);
+            const hiddenForInspect = inspect?.card.id === inst.id;
+            return (
+              <WallCard
+                key={inst.id}
+                card={inst}
+                shown={shown}
+                hidden={hiddenForInspect}
+                locked={!!inspect}
+              />
+            );
+          });
         })}
       </div>
 
@@ -382,6 +417,54 @@ export default function LibraryCanvas({ board }: { board: LibraryBoard }) {
   );
 }
 
+function WallCard({
+  card,
+  shown,
+  hidden,
+  locked,
+}: {
+  card: LibraryCard;
+  shown: boolean;
+  hidden: boolean;
+  locked: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) el.classList.add("lib-in");
+      },
+      { root: null, rootMargin: "80px", threshold: 0.01 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      data-lib-card={card.id}
+      className={`lib-card absolute overflow-hidden ${hidden ? "lib-gone" : shown ? "" : "lib-dim"}`}
+      style={{
+        left: card.x,
+        top: card.y,
+        width: card.w,
+        height: card.h,
+        ["--r" as string]: `${card.rotate}deg`,
+        borderRadius: 10,
+        background: card.empty ? "#E6E5E1" : "#fff",
+        boxShadow: "0 1px 1px rgba(0,0,0,0.035), 0 8px 22px rgba(0,0,0,0.07)",
+        pointerEvents: shown && !locked ? "auto" : "none",
+        cursor: "pointer",
+      }}
+    >
+      <CardFace card={card} />
+    </div>
+  );
+}
+
 function FilterPill({
   active,
   onClick,
@@ -408,7 +491,7 @@ function FilterPill({
 
 function CardFace({ card }: { card: LibraryCard }) {
   if (card.coverSlices.length === 0) {
-    return <EmptyFrame category={card.category} />;
+    return <EmptyFrame />;
   }
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -425,13 +508,8 @@ function CardFace({ card }: { card: LibraryCard }) {
   );
 }
 
-function EmptyFrame({ category }: { category: string }) {
-  return (
-    <div className="h-full w-full bg-[#F7F6F3]">
-      <div className="h-full w-full bg-gradient-to-b from-black/[0.03] to-transparent" />
-      <span className="sr-only">{category}</span>
-    </div>
-  );
+function EmptyFrame() {
+  return <div className="h-full w-full" />;
 }
 
 function SliceImage({ slice, eager }: { slice: PortfolioSlice; eager?: boolean }) {
@@ -582,7 +660,7 @@ function InspectFront({ card }: { card: LibraryCard }) {
   };
 
   if (card.empty || frames.length === 0) {
-    return <EmptyFrame category={card.category} />;
+    return <EmptyFrame />;
   }
 
   return (

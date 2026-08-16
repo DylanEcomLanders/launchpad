@@ -43,13 +43,11 @@ export type LibraryBoard = {
 
 const SKIP = /angusway/i;
 
-const CARD_W = 196;
-const CARD_RATIO = 2.48;
-const GAP_X = 12;
-const GAP_Y = 12;
-const ISLAND_GAP_X = 52;
-const ISLAND_GAP_Y = 56;
-const LABEL_H = 22;
+const CARD_W = 188;
+const CARD_RATIO = 2.46;
+const GAP_X = 7;
+const GAP_Y = 7;
+const MIN_UNIT_CARDS = 32;
 
 /* Obvious brand → niche only. Do not invent clients or win stories. */
 const KNOWN_BRANDS: { match: RegExp; niche: string }[] = [
@@ -175,35 +173,43 @@ export function buildLibraryBoard(projects: PortfolioProject[]): LibraryBoard {
     });
   }
 
-  const empties: LibraryCard[] = [];
+  const blanks: LibraryCard[] = [];
   for (const category of PORTFOLIO_CATEGORIES) {
     if (present.has(category)) continue;
-    const id = `empty:${category}`;
-    const { w, h } = cardSize();
-    empties.push({
-      id,
-      name: "",
-      category,
-      niche: null,
-      tags: [category],
-      preview: null,
-      coverSlices: [],
-      slices: [],
-      empty: true,
-      cluster: category,
-      x: 0,
-      y: 0,
-      w,
-      h,
-      rotate: 0,
-    });
+    blanks.push(blankCard(`empty:${category}`, category));
+  }
+  let i = 0;
+  while (real.length + blanks.length < MIN_UNIT_CARDS) {
+    blanks.push(blankCard(`blank:${i}`, ""));
+    i += 1;
   }
 
-  const { cards, clusters } = layoutIslands([...real, ...empties]);
+  const packed = layoutDense([...real, ...blanks]);
   return {
-    cards,
-    clusters,
-    niches: collectFilterPills(real, cards, nicheSet),
+    cards: packed,
+    clusters: [],
+    niches: collectFilterPills(real, packed, nicheSet),
+  };
+}
+
+function blankCard(id: string, category: string): LibraryCard {
+  const { w, h } = cardSize();
+  return {
+    id,
+    name: "",
+    category,
+    niche: null,
+    tags: category ? [category] : [],
+    preview: null,
+    coverSlices: [],
+    slices: [],
+    empty: true,
+    cluster: category || "blank",
+    x: 0,
+    y: 0,
+    w,
+    h,
+    rotate: 0,
   };
 }
 
@@ -239,23 +245,18 @@ function collectFilterPills(
   return pills;
 }
 
-function islandCols(n: number): number {
-  if (n <= 1) return 1;
-  if (n <= 4) return 2;
-  if (n <= 9) return 3;
-  return 4;
-}
-
-function masonry(cards: LibraryCard[], cols: number): LibraryCard[] {
+function layoutDense(cards: LibraryCard[]): LibraryCard[] {
+  if (cards.length === 0) return cards;
+  const cols = Math.min(6, Math.max(4, Math.round(Math.sqrt(cards.length * 0.7))));
   const colH = Array.from({ length: cols }, () => 0);
   return cards.map((card) => {
     let col = 0;
     for (let i = 1; i < cols; i++) {
       if (colH[i] < colH[col]) col = i;
     }
-    const jitterX = (unit(card.id, 1) - 0.5) * 6;
-    const jitterY = (unit(card.id, 2) - 0.5) * 8;
-    const rotate = (unit(card.id, 4) - 0.5) * 1.4;
+    const jitterX = (unit(card.id, 1) - 0.5) * 4;
+    const jitterY = (unit(card.id, 2) - 0.5) * 5;
+    const rotate = (unit(card.id, 4) - 0.5) * 0.9;
     const x = col * (CARD_W + GAP_X) + jitterX;
     const y = colH[col] + jitterY;
     colH[col] += card.h + GAP_Y;
@@ -263,57 +264,12 @@ function masonry(cards: LibraryCard[], cols: number): LibraryCard[] {
   });
 }
 
-function layoutIslands(cards: LibraryCard[]): { cards: LibraryCard[]; clusters: LibraryCluster[] } {
-  if (cards.length === 0) return { cards, clusters: [] };
-
-  const groups = new Map<string, LibraryCard[]>();
-  for (const card of cards) {
-    const list = groups.get(card.cluster) ?? [];
-    list.push(card);
-    groups.set(card.cluster, list);
-  }
-
-  const names = [...groups.keys()].sort((a, b) => {
-    const aNiche = groups.get(a)!.some((c) => c.niche === a);
-    const bNiche = groups.get(b)!.some((c) => c.niche === b);
-    if (aNiche !== bNiche) return aNiche ? -1 : 1;
-    return a.localeCompare(b);
-  });
-
-  const islandColsCount = names.length <= 2 ? 2 : 3;
-  const colBottom = Array.from({ length: islandColsCount }, () => 0);
-  const colWidth = Array.from({ length: islandColsCount }, () => CARD_W * 2 + GAP_X);
-  const placed: LibraryCard[] = [];
-  const clusters: LibraryCluster[] = [];
-
-  names.forEach((name) => {
-    const local = masonry(groups.get(name)!, islandCols(groups.get(name)!.length));
-    let maxX = 0;
-    let maxY = 0;
-    for (const c of local) {
-      maxX = Math.max(maxX, c.x + c.w);
-      maxY = Math.max(maxY, c.y + c.h);
-    }
-
-    let col = 0;
-    for (let c = 1; c < islandColsCount; c++) {
-      if (colBottom[c] < colBottom[col]) col = c;
-    }
-
-    let ox = 0;
-    for (let c = 0; c < col; c++) ox += colWidth[c] + ISLAND_GAP_X;
-    ox += (unit(name, 5) - 0.5) * 16;
-    const oy = colBottom[col] + (unit(name, 6) - 0.5) * 18;
-    colWidth[col] = Math.max(colWidth[col], maxX);
-
-    clusters.push({ id: name, label: name, x: ox, y: oy });
-    for (const c of local) {
-      placed.push({ ...c, x: c.x + ox, y: c.y + oy + LABEL_H });
-    }
-    colBottom[col] = oy + LABEL_H + maxY + ISLAND_GAP_Y;
-  });
-
-  return { cards: placed, clusters };
+export function unitPeriod(cards: LibraryCard[]): { x: number; y: number } {
+  const b = cardBounds(cards);
+  return {
+    x: Math.max(1, b.maxX - b.minX + GAP_X),
+    y: Math.max(1, b.maxY - b.minY + GAP_Y),
+  };
 }
 
 export function cardBounds(cards: LibraryCard[]): { minX: number; minY: number; maxX: number; maxY: number } {
