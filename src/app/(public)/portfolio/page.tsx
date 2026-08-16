@@ -41,8 +41,14 @@ export default function PortfolioPage() {
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
-      <header className="px-6 md:px-12 py-5">
+      <header className="px-6 md:px-12 py-5 flex items-center justify-between gap-4">
         <Logo height={16} className="text-foreground" />
+        <a
+          href="/work"
+          className="text-[11px] text-muted hover:text-foreground transition-colors"
+        >
+          Lookbook
+        </a>
       </header>
 
       <div className="px-6 md:px-12 pb-4">
