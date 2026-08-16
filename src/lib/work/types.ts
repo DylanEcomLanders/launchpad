@@ -1,4 +1,4 @@
-import type { PortfolioProject } from "@/lib/portfolio-v2/types";
+import type { PortfolioCategory, PortfolioProject } from "@/lib/portfolio-v2/types";
 
 export type WorkStoryBeat = {
   label: string;
@@ -24,8 +24,17 @@ export type WorkPiece = {
   story: WorkStory | null;
 };
 
+export type WorkReel = {
+  category: PortfolioCategory;
+  slug: string;
+  index: string;
+  blurb: string;
+  frames: WorkPiece[];
+};
+
 export type WorkCatalog = {
   featured: WorkPiece;
+  reels: WorkReel[];
   frames: WorkPiece[];
   pieces: WorkPiece[];
 };

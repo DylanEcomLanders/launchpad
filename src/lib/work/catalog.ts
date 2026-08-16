@@ -3,11 +3,13 @@ import type { PortfolioProject } from "@/lib/portfolio-v2/types";
 import {
   HOUND_SLUG,
   HOUND_STORY,
+  WORK_REELS,
   isHoundProject,
   isSkippedProject,
   pickHoundPair,
+  resolveCategory,
 } from "./stories";
-import type { WorkCatalog, WorkPiece } from "./types";
+import type { WorkCatalog, WorkPiece, WorkReel } from "./types";
 
 function featuredPiece(
   project: PortfolioProject | null,
@@ -28,7 +30,7 @@ function framePiece(project: PortfolioProject): WorkPiece {
   return {
     slug: project.slug,
     name: project.name,
-    category: project.category || "Page",
+    category: resolveCategory(project) ?? project.category ?? "Page",
     kind: "frame",
     project,
     before: null,
@@ -46,10 +48,21 @@ export async function getWorkCatalog(): Promise<WorkCatalog> {
   const used = new Set(
     [featuredProject?.id, before?.id].filter((id): id is string => Boolean(id))
   );
-  const frames = projects
-    .filter((p) => !used.has(p.id) && !isHoundProject(p))
-    .map(framePiece);
-  return { featured, frames, pieces: [featured, ...frames] };
+  const frames = projects.filter((p) => !used.has(p.id) && !isHoundProject(p)).map(framePiece);
+
+  const reels: WorkReel[] = WORK_REELS.map((meta) => {
+    const inCategory = frames.filter((piece) => piece.category === meta.category);
+    const uncategorized = frames.filter((piece) => piece.category === "Page");
+    return {
+      ...meta,
+      frames:
+        meta.category === "Product Pages"
+          ? [...inCategory, ...uncategorized.filter((p) => !inCategory.includes(p))]
+          : inCategory,
+    };
+  });
+
+  return { featured, reels, frames, pieces: [featured, ...frames] };
 }
 
 export async function getWorkPiece(slug: string): Promise<WorkPiece | null> {

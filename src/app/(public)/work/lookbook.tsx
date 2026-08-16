@@ -1,32 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ModalPortal } from "@/components/modal-portal";
-import type { WorkCatalog, WorkPiece } from "@/lib/work/types";
+import type { WorkCatalog, WorkPiece, WorkReel } from "@/lib/work/types";
 import { WorkChrome } from "./chrome";
 import { PageFrame } from "./page-frame";
 import { StageView } from "./stage-view";
 
 export function Lookbook({ catalog }: { catalog: WorkCatalog }) {
-  const { featured, frames, pieces } = catalog;
+  const { featured, reels, pieces } = catalog;
+  const [reelSlug, setReelSlug] = useState(reels[0]?.slug ?? "product-pages");
   const [focus, setFocus] = useState(0);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  const reel = reels.find((item) => item.slug === reelSlug) ?? reels[0];
+  const film = useMemo(
+    () => (reel?.frames ?? []).filter((piece) => piece.slug !== featured.slug),
+    [reel, featured.slug]
+  );
+  const sequence = useMemo(() => [featured, ...film], [featured, film]);
+
   const openPiece = pieces.find((p) => p.slug === openSlug) ?? null;
-  const openIndex = openPiece ? pieces.findIndex((p) => p.slug === openPiece.slug) : -1;
+  const openIndex = openPiece ? sequence.findIndex((p) => p.slug === openPiece.slug) : -1;
+
+  const selectReel = useCallback((next: WorkReel) => {
+    setReelSlug(next.slug);
+    setFocus(0);
+  }, []);
 
   const move = useCallback(
     (delta: number) => {
       setFocus((current) => {
-        const next = (current + delta + pieces.length) % pieces.length;
+        const next = (current + delta + sequence.length) % sequence.length;
         const node = rootRef.current?.querySelector<HTMLElement>(`[data-film-index="${next}"]`);
         node?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
         return next;
       });
     },
-    [pieces.length]
+    [sequence.length]
   );
 
   useEffect(() => {
@@ -46,9 +59,19 @@ export function Lookbook({ catalog }: { catalog: WorkCatalog }) {
         if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
           event.preventDefault();
           const dir = event.key === "ArrowLeft" ? -1 : 1;
-          const next = pieces[(openIndex + dir + pieces.length) % pieces.length];
+          const pool = sequence.length > 1 ? sequence : pieces;
+          const idx = pool.findIndex((p) => p.slug === openSlug);
+          const next = pool[(idx + dir + pool.length) % pool.length];
           setOpenSlug(next.slug);
-          setFocus((openIndex + dir + pieces.length) % pieces.length);
+          setFocus(Math.max(0, sequence.findIndex((p) => p.slug === next.slug)));
+        }
+        return;
+      }
+      if (event.key >= "1" && event.key <= "6") {
+        const nextReel = reels[Number(event.key) - 1];
+        if (nextReel) {
+          event.preventDefault();
+          selectReel(nextReel);
         }
         return;
       }
@@ -60,19 +83,19 @@ export function Lookbook({ catalog }: { catalog: WorkCatalog }) {
         move(1);
       } else if (event.key === "Enter") {
         event.preventDefault();
-        const piece = pieces[focus];
+        const piece = sequence[focus];
         if (piece) setOpenSlug(piece.slug);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [focus, move, openIndex, openSlug, pieces]);
+  }, [focus, move, openSlug, pieces, reels, selectReel, sequence]);
 
   return (
     <div ref={rootRef}>
       <WorkChrome />
 
-      <section className="relative px-5 md:px-8 pt-14 md:pt-20 pb-16 md:pb-24">
+      <section className="relative px-5 md:px-8 pt-14 md:pt-20 pb-16 md:pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-12 lg:gap-16 items-end">
           <div>
             <p
@@ -139,82 +162,111 @@ export function Lookbook({ catalog }: { catalog: WorkCatalog }) {
         )}
       </section>
 
-      <section className="border-t border-[var(--work-faint)] px-5 md:px-8 pt-10 pb-20">
-        <div className="flex items-end justify-between gap-6 mb-8">
+      <section className="border-t border-[var(--work-faint)]">
+        <div className="px-5 md:px-8 pt-8 pb-4 flex items-end justify-between gap-6">
           <div>
             <p
               className="text-[10px] uppercase tracking-[0.22em] text-[var(--work-mute)] mb-2"
               style={{ fontFamily: "var(--font-mono)" }}
             >
-              The film
+              Six files. Instant pages.
             </p>
             <h2
               className="text-2xl md:text-3xl font-semibold tracking-tight"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              Other pages
+              The lookbook
             </h2>
           </div>
           <p
             className="hidden md:block text-[10px] uppercase tracking-[0.18em] text-[var(--work-dim)]"
             style={{ fontFamily: "var(--font-mono)" }}
           >
-            ← → move · enter open · esc close
+            1–6 files · ← → move · enter open · esc close
           </p>
         </div>
 
-        {frames.length === 0 ? (
-          <p className="text-sm text-[var(--work-mute)] max-w-md leading-relaxed">
-            The film fills as pages are synced from the library. Hound is the public case today.
-          </p>
-        ) : (
-          <div className="work-film">
-            {frames.map((piece, i) => {
-              const index = i + 1;
-              return (
-                <div key={piece.slug} className="work-film-cell" data-film-index={index}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFocus(index);
-                      setOpenSlug(piece.slug);
-                    }}
-                    onFocus={() => setFocus(index)}
-                    className="w-full text-left"
-                    aria-label={`Open ${piece.name}`}
-                  >
-                    <PageFrame
-                      project={piece.project}
-                      label={piece.name}
-                      focused={focus === index && !openSlug}
-                      eager={i < 2}
-                    />
-                  </button>
-                  <div className="mt-3 flex items-baseline justify-between gap-3">
-                    <p
-                      className="text-sm tracking-tight truncate"
-                      style={{ fontFamily: "var(--font-heading)" }}
-                    >
-                      {piece.name}
-                    </p>
-                    <p
-                      className="text-[10px] uppercase tracking-[0.16em] text-[var(--work-dim)] shrink-0"
-                      style={{ fontFamily: "var(--font-mono)" }}
-                    >
-                      {piece.category}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+        <nav className="work-reels" aria-label="Work files">
+          {reels.map((item) => {
+            const active = item.slug === reel?.slug;
+            return (
+              <button
+                key={item.slug}
+                type="button"
+                onClick={() => selectReel(item)}
+                className={`work-reel-tab ${active ? "is-active" : ""}`}
+                aria-current={active ? "true" : undefined}
+              >
+                <span className="work-reel-index">{item.index}</span>
+                <span className="work-reel-name">{item.category}</span>
+                <span className="work-reel-count">
+                  {item.frames.length > 0 ? `${item.frames.length}` : "—"}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {reel && (
+          <div className="px-5 md:px-8 pt-8 pb-20">
+            <p className="text-sm text-[var(--work-mute)] max-w-xl mb-8 leading-relaxed">
+              {reel.blurb}
+            </p>
+
+            {film.length === 0 ? (
+              <EmptyReel reel={reel} featuredHere={reel.category === featured.category} />
+            ) : (
+              <div className="work-film">
+                {film.map((piece, i) => {
+                  const index = i + 1;
+                  return (
+                    <div key={piece.slug} className="work-film-cell" data-film-index={index}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFocus(index);
+                          setOpenSlug(piece.slug);
+                        }}
+                        onFocus={() => setFocus(index)}
+                        className="w-full text-left"
+                        aria-label={`Open ${piece.name}`}
+                      >
+                        <PageFrame
+                          project={piece.project}
+                          label={piece.name}
+                          focused={focus === index && !openSlug}
+                          eager={i < 2}
+                        />
+                      </button>
+                      <div className="mt-3 flex items-baseline justify-between gap-3">
+                        <p
+                          className="text-sm tracking-tight truncate"
+                          style={{ fontFamily: "var(--font-heading)" }}
+                        >
+                          {piece.name}
+                        </p>
+                        {piece.category !== "Page" && (
+                          <p
+                            className="text-[10px] uppercase tracking-[0.16em] text-[var(--work-dim)] shrink-0"
+                            style={{ fontFamily: "var(--font-mono)" }}
+                          >
+                            {piece.category}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </section>
 
       <footer className="px-5 md:px-8 py-8 border-t border-[var(--work-faint)] flex flex-wrap items-center justify-between gap-3 text-[12px] text-[var(--work-mute)]">
-        <p>Pages, not decks.</p>
+        <p>Pages, not a Figma wall.</p>
         <Link href="/portfolio" className="hover:text-[var(--work-ink)]">
-          Prefer the Figma archive →
+          Figma archive →
         </Link>
       </footer>
 
@@ -225,11 +277,35 @@ export function Lookbook({ catalog }: { catalog: WorkCatalog }) {
             piece={openPiece}
             overlay
             onClose={() => setOpenSlug(null)}
-            prev={neighbor(pieces, openIndex, -1)}
-            next={neighbor(pieces, openIndex, 1)}
+            prev={neighbor(sequence.length > 1 ? sequence : pieces, openIndex >= 0 ? openIndex : 0, -1)}
+            next={neighbor(sequence.length > 1 ? sequence : pieces, openIndex >= 0 ? openIndex : 0, 1)}
           />
         </ModalPortal>
       )}
+    </div>
+  );
+}
+
+function EmptyReel({ reel, featuredHere }: { reel: WorkReel; featuredHere: boolean }) {
+  return (
+    <div className="work-empty-reel">
+      <PageFrame project={null} label={reel.category} live={false} aspect="16 / 9" />
+      <div className="mt-6 max-w-lg">
+        <p
+          className="text-[10px] uppercase tracking-[0.2em] text-[var(--work-mute)] mb-3"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          {reel.index} · {reel.category}
+        </p>
+        <p
+          className="text-xl md:text-2xl font-semibold tracking-tight leading-snug"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          {featuredHere
+            ? "The public case is on the stage above. More pages from this file land here as they’re synced."
+            : "Pages from this file land here as they’re synced. Until then, this is the body of work — not a zoomed-out canvas."}
+        </p>
+      </div>
     </div>
   );
 }

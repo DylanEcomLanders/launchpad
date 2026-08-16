@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { getTabs } from "@/lib/portfolio/data";
 import type { PortfolioTab } from "@/lib/portfolio/types";
@@ -42,14 +41,8 @@ export default function PortfolioPage() {
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
-      <header className="px-6 md:px-12 py-5 flex items-center justify-between gap-4">
+      <header className="px-6 md:px-12 py-5">
         <Logo height={16} className="text-foreground" />
-        <Link
-          href="/work"
-          className="text-[11px] text-muted hover:text-foreground transition-colors"
-        >
-          Lookbook
-        </Link>
       </header>
 
       <div className="px-6 md:px-12 pb-4">

@@ -1,4 +1,8 @@
-import type { PortfolioProject } from "@/lib/portfolio-v2/types";
+import {
+  PORTFOLIO_CATEGORIES,
+  type PortfolioCategory,
+  type PortfolioProject,
+} from "@/lib/portfolio-v2/types";
 import type { WorkStory } from "./types";
 
 /** The only public case we narrate. Everything else is a work frame. */
@@ -31,6 +35,71 @@ export const HOUND_STORY: WorkStory = {
 };
 
 const SKIP = ["angusway"];
+
+/** Same six bodies of work as the /portfolio Figma files — never invented clients. */
+export const WORK_REELS: {
+  category: PortfolioCategory;
+  slug: string;
+  index: string;
+  blurb: string;
+}[] = [
+  {
+    category: "Product Pages",
+    slug: "product-pages",
+    index: "01",
+    blurb: "The buy page. Offer, proof, add to cart — readable at a glance.",
+  },
+  {
+    category: "Highlight Pages",
+    slug: "highlight-pages",
+    index: "02",
+    blurb: "One product, one job. No nav, no wander.",
+  },
+  {
+    category: "Advertorials / Listicles",
+    slug: "advertorials-listicles",
+    index: "03",
+    blurb: "The prelander. Story before the store.",
+  },
+  {
+    category: "Carts",
+    slug: "carts",
+    index: "04",
+    blurb: "The last three inches before pay.",
+  },
+  {
+    category: "Homepages",
+    slug: "homepages",
+    index: "05",
+    blurb: "The brand, then the path in.",
+  },
+  {
+    category: "Webflow Pages",
+    slug: "webflow-pages",
+    index: "06",
+    blurb: "Built pages. Not a theme with the logo swapped.",
+  },
+];
+
+export function categorySlug(category: string): string {
+  const known = WORK_REELS.find((reel) => reel.category === category);
+  if (known) return known.slug;
+  return category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export function resolveCategory(project: PortfolioProject): PortfolioCategory | null {
+  if (project.category && (PORTFOLIO_CATEGORIES as readonly string[]).includes(project.category)) {
+    return project.category as PortfolioCategory;
+  }
+  const hay = `${project.category ?? ""} ${project.slug} ${project.name}`.toLowerCase();
+  if (hay.includes("advertorial") || hay.includes("listicle")) return "Advertorials / Listicles";
+  if (hay.includes("highlight")) return "Highlight Pages";
+  if (hay.includes("webflow")) return "Webflow Pages";
+  if (hay.includes("homepage") || hay.includes("home page")) return "Homepages";
+  if (/\bcart/.test(hay)) return "Carts";
+  if (hay.includes("product page") || hay.includes("pdp")) return "Product Pages";
+  return null;
+}
 
 export function haystack(project: Pick<PortfolioProject, "slug" | "name" | "client">): string {
   return `${project.slug} ${project.name} ${project.client ?? ""}`.toLowerCase();
