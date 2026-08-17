@@ -14,7 +14,15 @@ import type { Pod, PodDoc, DocSection, DocType, TestRow, NoteEntry } from "./typ
 import { templateSections, resultsRowsToHtml } from "./templates";
 import { isCloudNewer, mergePodDocs } from "./sync";
 
-export type SaveDocResult = { doc: PodDoc; conflicted: boolean };
+export type SaveDocResult = { doc: PodDoc; conflicted: boolean; error?: string };
+
+export const POD_DOCS_SYNC_ERROR = "pod-docs-sync-error";
+
+function emitSyncError(message: string): void {
+  console.error("[pod_docs]", message);
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(POD_DOCS_SYNC_ERROR, { detail: { message } }));
+}
 
 const DOCS_KEY = "pod-projects-docs";
 const PODS_KEY = "pod-projects-pods";
@@ -312,13 +320,21 @@ async function cloudLoadOne(id: string): Promise<CloudLoad> {
 
 /** Unconditional write — only used when we cannot read cloud, or as a last-resort
  *  write of an already-merged snapshot. Never call this with a known-stale tree. */
-async function cloudUpsert(doc: PodDoc): Promise<void> {
+async function cloudUpsert(doc: PodDoc): Promise<string | undefined> {
   if (!isSupabaseConfigured()) return;
   try {
     const { id, ...rest } = doc;
-    await supabase.from("pod_docs").upsert({ id, data: rest, updated_at: doc.updated_at }, { onConflict: "id" });
-  } catch {
-    /* table not migrated yet — LS already holds it */
+    const { error } = await supabase
+      .from("pod_docs")
+      .upsert({ id, data: rest, updated_at: doc.updated_at }, { onConflict: "id" });
+    if (error) {
+      emitSyncError(error.message);
+      return error.message;
+    }
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    emitSyncError(message);
+    return message;
   }
 }
 
@@ -330,6 +346,7 @@ async function cloudWrite(doc: PodDoc, expectedDataUpdatedAt: string | null): Pr
       const { error } = await supabase.from("pod_docs").insert({ id, data: rest, updated_at: doc.updated_at });
       if (!error) return "ok";
       if (error.code === "23505") return "conflict";
+      emitSyncError(error.message);
       return "error";
     }
     const { data, error } = await supabase
@@ -338,10 +355,14 @@ async function cloudWrite(doc: PodDoc, expectedDataUpdatedAt: string | null): Pr
       .eq("id", id)
       .filter("data->>updated_at", "eq", expectedDataUpdatedAt)
       .select("id");
-    if (error) return "error";
+    if (error) {
+      emitSyncError(error.message);
+      return "error";
+    }
     if (!data?.length) return "conflict";
     return "ok";
-  } catch {
+  } catch (e) {
+    emitSyncError(e instanceof Error ? e.message : String(e));
     return "error";
   }
 }
@@ -359,8 +380,8 @@ export async function saveDoc(doc: PodDoc): Promise<SaveDocResult> {
   const first = await cloudLoadOne(doc.id);
   if (first.status === "error") {
     cacheDoc(toWrite);
-    await cloudUpsert(toWrite);
-    return { doc: toWrite, conflicted: false };
+    const error = await cloudUpsert(toWrite);
+    return { doc: toWrite, conflicted: false, error };
   }
 
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -379,8 +400,8 @@ export async function saveDoc(doc: PodDoc): Promise<SaveDocResult> {
       }
       if (wr === "conflict") continue;
       cacheDoc(toWrite);
-      await cloudUpsert(toWrite);
-      return { doc: toWrite, conflicted: false };
+      const error = await cloudUpsert(toWrite);
+      return { doc: toWrite, conflicted: false, error };
     }
 
     if (isCloudNewer(loaded.doc.updated_at, doc.updated_at)) {
@@ -400,13 +421,13 @@ export async function saveDoc(doc: PodDoc): Promise<SaveDocResult> {
     cacheDoc(toWrite);
     // Write failed after we already reconciled — upsert the merged/current
     // snapshot, never the raw stale tree.
-    await cloudUpsert(toWrite);
-    return { doc: toWrite, conflicted };
+    const error = await cloudUpsert(toWrite);
+    return { doc: toWrite, conflicted, error };
   }
 
   cacheDoc(toWrite);
-  await cloudUpsert(toWrite);
-  return { doc: toWrite, conflicted: true };
+  const error = await cloudUpsert(toWrite);
+  return { doc: toWrite, conflicted: true, error };
 }
 
 /** Soft delete: mark the doc deleted and keep the row so it can be restored from
@@ -433,9 +454,10 @@ export async function purgeDoc(id: string): Promise<void> {
   lsSave(DOCS_KEY, lsLoad<PodDoc>(DOCS_KEY).filter((d) => d.id !== id));
   if (isSupabaseConfigured()) {
     try {
-      await supabase.from("pod_docs").delete().eq("id", id);
-    } catch {
-      /* LS already updated */
+      const { error } = await supabase.from("pod_docs").delete().eq("id", id);
+      if (error) emitSyncError(error.message);
+    } catch (e) {
+      emitSyncError(e instanceof Error ? e.message : String(e));
     }
   }
 }

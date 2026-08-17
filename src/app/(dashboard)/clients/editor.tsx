@@ -7,7 +7,7 @@
  * parent swaps documents by changing `docId`, which re-seeds the editor.
  */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import { type EditorView } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
@@ -164,6 +164,11 @@ export function DocEditor({
   /** false = read-only render (no toolbar, no typing) for member/view roles. */
   editable?: boolean;
 }) {
+  /* Section switch / remount calls setContent. Even with emitUpdate: false,
+   * TipTap can still fire onUpdate and persist the just-loaded (often empty
+   * template) body over a newer cloud brief. Ignore those programmatic writes. */
+  const suppressUpdate = useRef(true);
+
   const editor = useEditor({
     immediatelyRender: false, // SSR-safe (Next 16 / React 19)
     editable,
@@ -187,7 +192,13 @@ export function DocEditor({
         return insertImageFiles(view, event.dataTransfer?.files ?? null, pos);
       },
     },
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onCreate: () => {
+      suppressUpdate.current = false;
+    },
+    onUpdate: ({ editor }) => {
+      if (suppressUpdate.current) return;
+      onChange(editor.getHTML());
+    },
   });
 
   // Keep editability in sync if the role/prop changes.
@@ -195,10 +206,14 @@ export function DocEditor({
     if (editor && !editor.isDestroyed) editor.setEditable(editable);
   }, [editor, editable]);
 
-  // Swap content when the selected doc/section changes.
+  // Swap content when the selected doc/section changes. Do not persist this.
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
+      suppressUpdate.current = true;
       editor.commands.setContent(initialBody, false);
+      queueMicrotask(() => {
+        suppressUpdate.current = false;
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentKey]);

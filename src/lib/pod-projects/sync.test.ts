@@ -83,6 +83,19 @@ describe("mergePodDocs — stale tab cannot wipe a newer brief", () => {
     });
   }
 
+  it("keeps a filled cloud brief when a stale tab only edited another section", () => {
+    const cloud = clientDoc("2026-08-17T09:44:23.000Z", FILLED_BRIEF);
+    const stale = clientDoc("2026-08-12T08:00:00.000Z", TWO_EMPTY_BLOCKS);
+    stale.sections = stale.sections.map((s) =>
+      s.id === "overview" ? { ...s, body: "<p>Barnaby typed in Overview</p>" } : s,
+    );
+    const merged = mergePodDocs(stale, cloud);
+    const wins = merged.sections.find((s) => s.id === "first-week-wins")?.children ?? [];
+    const overview = merged.sections.find((s) => s.id === "overview");
+    assert.equal(wins.find((s) => s.id === briefId)?.body, FILLED_BRIEF);
+    assert.equal(overview?.body, "<p>Barnaby typed in Overview</p>");
+  });
+
   it("keeps the newer cloud brief when a stale tab saves the empty template", () => {
     const cloud = clientDoc("2026-08-17T09:44:00.000Z", FILLED_BRIEF);
     const stale = clientDoc("2026-08-12T08:00:00.000Z", TWO_EMPTY_BLOCKS);
