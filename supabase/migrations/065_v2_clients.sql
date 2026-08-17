@@ -91,6 +91,11 @@ begin
 end;
 $$;
 
+-- Trigger-only. Must not be callable via /rest/v1/rpc.
+revoke all on function public.clients_stamp_meta() from public;
+revoke all on function public.clients_stamp_meta() from anon;
+revoke all on function public.clients_stamp_meta() from authenticated;
+
 drop trigger if exists clients_stamp_meta on public.clients;
 create trigger clients_stamp_meta
   before insert or update on public.clients
