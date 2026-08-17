@@ -1,20 +1,20 @@
 /* ── Pod Projects: data layer ──
  *
- * Prototype-grade persistence. localStorage is the source of truth so the
- * feature works with no migration applied; every write also best-efforts to
- * Supabase's `pod_docs` table ({ id, data jsonb, created_at }) when it exists,
- * wrapped so a missing table degrades silently instead of throwing (createStore
- * .create/.upsert throw by design — see supabase-store.ts).
+ * Cloud (`pod_docs`) is the source of truth. localStorage is a cache so the
+ * feature still works when the table is missing or the browser is offline.
  *
- * Productionising = paste supabase/migrations/059_pod_docs.sql, then swap the
- * hand-rolled read/write below for createStore<PodDoc>({ table:"pod_docs" }).
- * Writes are per-doc upsert (additive, multi-device-safe) — never a destructive
- * saveAll diff (see the sync-patterns incident).
+ * A per-doc upsert of the whole JSON tree is NOT additive for section bodies —
+ * a stale tab last-write-wins newer Strategy Brief / report / custom-page copy.
+ * saveDoc therefore reads the cloud row first and refuses to persist an older
+ * revision over a newer `updated_at` (merge-on-conflict, never silent LWW).
  */
 
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import type { Pod, PodDoc, DocSection, DocType, TestRow, NoteEntry } from "./types";
 import { templateSections, resultsRowsToHtml } from "./templates";
+import { isCloudNewer, mergePodDocs } from "./sync";
+
+export type SaveDocResult = { doc: PodDoc; conflicted: boolean };
 
 const DOCS_KEY = "pod-projects-docs";
 const PODS_KEY = "pod-projects-pods";
@@ -232,8 +232,22 @@ export function addPod(name: string, pods: Pod[]): Pod[] {
 }
 
 /* ── Docs ── */
+function mapRow(row: Record<string, unknown>): PodDoc | null {
+  const data = row.data as Record<string, unknown> | null;
+  if (!data || !Array.isArray(data.sections)) return null;
+  const updatedAt =
+    (typeof data.updated_at === "string" && data.updated_at) ||
+    (typeof row.updated_at === "string" ? row.updated_at : "") ||
+    "";
+  return {
+    ...(data as unknown as PodDoc),
+    id: String(row.id),
+    updated_at: updatedAt,
+  };
+}
+
 export async function loadDocs(): Promise<PodDoc[]> {
-  // Best-effort cloud read; falls straight through to LS on any error.
+  // Cloud-first; LS is only a cache / offline fallback.
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -241,11 +255,9 @@ export async function loadDocs(): Promise<PodDoc[]> {
         .select("*")
         .order("created_at", { ascending: true });
       if (!error && data) {
-        const mapped = data.map((row: Record<string, unknown>) => ({
-          ...(row.data as object),
-          id: row.id as string,
-        })) as PodDoc[];
-        const fresh = mapped.filter((d) => !isLegacy(d));
+        const fresh = data
+          .map((row: Record<string, unknown>) => mapRow(row))
+          .filter((d): d is PodDoc => !!d);
         if (fresh.length) {
           const refreshed = refreshDemoSections(fresh);
           lsSave(DOCS_KEY, refreshed); // cache keeps soft-deleted rows for the trash
@@ -274,26 +286,127 @@ export async function loadDocs(): Promise<PodDoc[]> {
   return seeded;
 }
 
+function cacheDoc(doc: PodDoc): void {
+  const all = lsLoad<PodDoc>(DOCS_KEY);
+  const idx = all.findIndex((d) => d.id === doc.id);
+  if (idx >= 0) all[idx] = doc;
+  else all.push(doc);
+  lsSave(DOCS_KEY, all);
+}
+
+type CloudLoad = { status: "ok"; doc: PodDoc } | { status: "missing" } | { status: "error" };
+
+async function cloudLoadOne(id: string): Promise<CloudLoad> {
+  if (!isSupabaseConfigured()) return { status: "error" };
+  try {
+    const { data, error } = await supabase.from("pod_docs").select("id, data, updated_at").eq("id", id).maybeSingle();
+    if (error) return { status: "error" };
+    if (!data) return { status: "missing" };
+    const doc = mapRow(data as Record<string, unknown>);
+    if (!doc) return { status: "missing" };
+    return { status: "ok", doc };
+  } catch {
+    return { status: "error" };
+  }
+}
+
+/** Unconditional write — only used when we cannot read cloud, or as a last-resort
+ *  write of an already-merged snapshot. Never call this with a known-stale tree. */
 async function cloudUpsert(doc: PodDoc): Promise<void> {
   if (!isSupabaseConfigured()) return;
   try {
     const { id, ...rest } = doc;
-    await supabase
-      .from("pod_docs")
-      .upsert({ id, data: rest, updated_at: new Date().toISOString() }, { onConflict: "id" });
+    await supabase.from("pod_docs").upsert({ id, data: rest, updated_at: doc.updated_at }, { onConflict: "id" });
   } catch {
     /* table not migrated yet — LS already holds it */
   }
 }
 
-export async function saveDoc(doc: PodDoc): Promise<void> {
-  const all = lsLoad<PodDoc>(DOCS_KEY);
-  const idx = all.findIndex((d) => d.id === doc.id);
-  const next = { ...doc, updated_at: new Date().toISOString() };
-  if (idx >= 0) all[idx] = next;
-  else all.push(next);
-  lsSave(DOCS_KEY, all);
-  await cloudUpsert(next); // additive — never a destructive diff
+async function cloudWrite(doc: PodDoc, expectedDataUpdatedAt: string | null): Promise<"ok" | "conflict" | "error"> {
+  if (!isSupabaseConfigured()) return "error";
+  const { id, ...rest } = doc;
+  try {
+    if (expectedDataUpdatedAt === null) {
+      const { error } = await supabase.from("pod_docs").insert({ id, data: rest, updated_at: doc.updated_at });
+      if (!error) return "ok";
+      if (error.code === "23505") return "conflict";
+      return "error";
+    }
+    const { data, error } = await supabase
+      .from("pod_docs")
+      .update({ data: rest, updated_at: doc.updated_at })
+      .eq("id", id)
+      .filter("data->>updated_at", "eq", expectedDataUpdatedAt)
+      .select("id");
+    if (error) return "error";
+    if (!data?.length) return "conflict";
+    return "ok";
+  } catch {
+    return "error";
+  }
+}
+
+/**
+ * Persist a client doc. Cloud wins on revision: if the row's `updated_at` is
+ * newer than the snapshot this tab last loaded, section trees are merged
+ * (richer bodies / extra pages kept) instead of last-write-wins.
+ */
+export async function saveDoc(doc: PodDoc): Promise<SaveDocResult> {
+  const stamp = (base: PodDoc): PodDoc => ({ ...base, updated_at: new Date().toISOString() });
+  let toWrite = stamp(doc);
+  let conflicted = false;
+
+  const first = await cloudLoadOne(doc.id);
+  if (first.status === "error") {
+    cacheDoc(toWrite);
+    await cloudUpsert(toWrite);
+    return { doc: toWrite, conflicted: false };
+  }
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const loaded = attempt === 0 ? first : await cloudLoadOne(doc.id);
+    if (loaded.status === "error") {
+      cacheDoc(toWrite);
+      return { doc: toWrite, conflicted };
+    }
+
+    if (loaded.status === "missing") {
+      toWrite = stamp(doc);
+      const wr = await cloudWrite(toWrite, null);
+      if (wr === "ok") {
+        cacheDoc(toWrite);
+        return { doc: toWrite, conflicted: false };
+      }
+      if (wr === "conflict") continue;
+      cacheDoc(toWrite);
+      await cloudUpsert(toWrite);
+      return { doc: toWrite, conflicted: false };
+    }
+
+    if (isCloudNewer(loaded.doc.updated_at, doc.updated_at)) {
+      toWrite = stamp(mergePodDocs(doc, loaded.doc));
+      conflicted = true;
+    } else {
+      toWrite = stamp(doc);
+    }
+
+    const wr = await cloudWrite(toWrite, loaded.doc.updated_at);
+    if (wr === "ok") {
+      cacheDoc(toWrite);
+      return { doc: toWrite, conflicted };
+    }
+    if (wr === "conflict") continue;
+
+    cacheDoc(toWrite);
+    // Write failed after we already reconciled — upsert the merged/current
+    // snapshot, never the raw stale tree.
+    await cloudUpsert(toWrite);
+    return { doc: toWrite, conflicted };
+  }
+
+  cacheDoc(toWrite);
+  await cloudUpsert(toWrite);
+  return { doc: toWrite, conflicted: true };
 }
 
 /** Soft delete: mark the doc deleted and keep the row so it can be restored from
@@ -302,9 +415,7 @@ export async function removeDoc(id: string): Promise<void> {
   const all = lsLoad<PodDoc>(DOCS_KEY);
   const doc = all.find((d) => d.id === id);
   if (!doc) return;
-  const next: PodDoc = { ...doc, deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() };
-  lsSave(DOCS_KEY, all.map((d) => (d.id === id ? next : d)));
-  await cloudUpsert(next);
+  await saveDoc({ ...doc, deleted_at: new Date().toISOString() });
 }
 
 /** Bring a soft-deleted doc back. */
@@ -312,10 +423,9 @@ export async function restoreDoc(id: string): Promise<void> {
   const all = lsLoad<PodDoc>(DOCS_KEY);
   const doc = all.find((d) => d.id === id);
   if (!doc) return;
-  const restored: PodDoc = { ...doc, updated_at: new Date().toISOString() };
+  const restored: PodDoc = { ...doc };
   delete restored.deleted_at;
-  lsSave(DOCS_KEY, all.map((d) => (d.id === id ? restored : d)));
-  await cloudUpsert(restored); // data no longer carries deleted_at
+  await saveDoc(restored);
 }
 
 /** Permanently remove a doc (from the trash). Not recoverable. */

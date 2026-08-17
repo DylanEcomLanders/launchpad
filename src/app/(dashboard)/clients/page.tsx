@@ -7,8 +7,9 @@
  * doc reads as navigable tabs, not one long scroll. Each doc seeds from the
  * retainer / one-time template so the spine is always there.
  *
- * Prototype: localStorage-backed (see lib/pod-projects/data.ts), seeded with
- * Pod 1 + two example docs. Migration 059 wires the shared Supabase table.
+ * Persistence: Supabase `pod_docs` is the source of truth (see
+ * lib/pod-projects/data.ts). localStorage is a cache. Saves refuse to
+ * overwrite a newer cloud revision with a stale tab's section tree.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -46,6 +47,7 @@ import {
   deleteSection,
   toggleSectionDone,
 } from "@/lib/pod-projects/data";
+import { mergePodDocs } from "@/lib/pod-projects/sync";
 import { flattenSections, firstLeaf, BRIEF_BLOCK } from "@/lib/pod-projects/templates";
 import type { Pod, PodDoc, DocSection, DocType, RetainerTier } from "@/lib/pod-projects/types";
 import { loadCards, saveCard, removeCard, newCard, cardsForClient } from "@/lib/cx/data";
@@ -113,10 +115,24 @@ export default function PodProjectsPage() {
     [active, sectionId],
   );
 
-  /* Route persistence: templates save to their own store, clients to theirs. */
-  const persistDoc = useCallback((doc: PodDoc) => {
-    if (doc.isTemplate) saveTemplate(doc);
-    else void saveDoc(doc);
+  /* Route persistence: templates save to their own store, clients to theirs.
+   * After a client save, stamp `updated_at` so the next write is compared
+   * against the revision we just persisted. On a stale-tab conflict, take the
+   * merged cloud tree (filled briefs survive) without clobbering keystrokes
+   * that landed after this save started. */
+  const persistDoc = useCallback(async (doc: PodDoc) => {
+    if (doc.isTemplate) {
+      saveTemplate(doc);
+      return;
+    }
+    const { doc: saved, conflicted } = await saveDoc(doc);
+    setDocs((prev) =>
+      prev.map((d) => {
+        if (d.id !== saved.id) return d;
+        if (conflicted) return { ...mergePodDocs(d, saved), updated_at: saved.updated_at };
+        return { ...d, updated_at: saved.updated_at };
+      }),
+    );
   }, []);
 
   const persist = useCallback(
@@ -216,6 +232,7 @@ export default function PodProjectsPage() {
   const handleBodyChange = useCallback(
     (html: string) => {
       if (!active || !section) return;
+      if (html === section.body) return;
       const updated = setSectionBody(active, section.id, html);
       setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
       persist(updated);
@@ -248,7 +265,7 @@ export default function PodProjectsPage() {
     setDocs((prev) => [...prev, doc]);
     setActiveId(doc.id);
     setSectionId(firstLeaf(doc.sections)?.id ?? null);
-    void saveDoc(doc);
+    void persistDoc(doc);
     setNewFor(null);
   }
 
