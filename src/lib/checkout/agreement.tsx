@@ -37,7 +37,8 @@ function servicesAndFees(c: Checkout): { subtitle: string; clauses: Clause[] } {
             { n: "1.2", text: "The scope, order and prioritisation of individual builds and tests shall be agreed between the parties in writing (including via WhatsApp or email) during the Term and may be adjusted by mutual agreement based on performance data." },
             { n: "1.3", text: "Any monthly build or test allowance not used in a given month shall roll forward to subsequent months within the Term but shall expire, without refund or credit, at the end of the Term." },
             { n: "1.4", text: "The Agency designs and builds all deliverables from scratch and shall not be required to develop or implement designs or mockups supplied by the Client or any third party." },
-            { n: "1.5", text: "The Services are provided on a deliverables basis with reasonable skill and care; the Agency does not guarantee any particular commercial result or metric, and the absence of any particular result shall not constitute a breach of this Agreement nor entitle the Client to withhold Fees or terminate before the end of the Term." },
+            { n: "1.5", text: "Each deliverable shall be built responsive and optimised for both desktop and mobile devices, and shall be tested by the Agency across current versions of the major browsers and common device breakpoints before release." },
+            { n: "1.6", text: "The Services are provided on a deliverables basis with reasonable skill and care; the Agency does not guarantee any particular commercial result or metric, and the absence of any particular result shall not constitute a breach of this Agreement nor entitle the Client to withhold Fees or terminate before the end of the Term." },
           ],
         },
         {
@@ -62,7 +63,8 @@ function servicesAndFees(c: Checkout): { subtitle: string; clauses: Clause[] } {
           { n: "1.1", text: `The Agency shall provide the Client with the following project (the “Services”): ${c.scope || "the project as agreed between the parties in writing"}. The Services are designed and coded from scratch by the Agency and are inclusive of copywriting, design, Shopify development, implementation, quality assurance and testing.` },
           { n: "1.2", text: "The scope and prioritisation of the work shall be agreed between the parties in writing (including via WhatsApp or email) and may be adjusted by mutual agreement." },
           { n: "1.3", text: "The Agency designs and builds all deliverables from scratch and shall not be required to develop or implement designs or mockups supplied by the Client or any third party." },
-          { n: "1.4", text: "The Services are provided on a deliverables basis with reasonable skill and care; the Agency does not guarantee any particular commercial result or metric, and the absence of any particular result shall not constitute a breach of this Agreement." },
+          { n: "1.4", text: "Each deliverable shall be built responsive and optimised for both desktop and mobile devices, and shall be tested by the Agency across current versions of the major browsers and common device breakpoints before release." },
+          { n: "1.5", text: "The Services are provided on a deliverables basis with reasonable skill and care; the Agency does not guarantee any particular commercial result or metric, and the absence of any particular result shall not constitute a breach of this Agreement." },
         ],
       },
       {
@@ -100,51 +102,84 @@ function feesClause(c: Checkout): Clause {
   };
 }
 
-/* ── Shared clauses 4-9 ── */
+/* ── Clauses 4-5: delivery timelines + post-build support ──
+ * Deliberately generalised so the same agreement covers every deal:
+ * timelines are agreed per deliverable rather than fixed in the document,
+ * and the support period attaches to each deliverable's release date. */
+function deliveryAndSupport(c: Checkout): Clause[] {
+  const isRetainer = c.engagementType === "retainer";
+  return [
+    {
+      title: "4. DELIVERY AND TIMELINES",
+      items: [
+        { n: "4.1", text: "This Agreement does not fix calendar delivery dates. The turnaround time for each deliverable shall instead be agreed between the parties on a per-deliverable basis, having regard to the scope, size and complexity of that deliverable and the Agency's then-current workload." },
+        { n: "4.2", text: "Such timelines may be agreed verbally or in writing (including via WhatsApp or email). Where a timeline is agreed verbally, either party may confirm it in writing, and that written confirmation shall be treated as the agreed timeline for that deliverable unless disputed within two (2) business days." },
+        { n: "4.3", text: "Agreed timelines are good-faith estimates given on the basis of the information available at the time. Time shall not be of the essence, and the Agency shall not be liable for any delay provided it continues to perform the Services with reasonable skill and care." },
+        { n: "4.4", text: "All timelines are conditional on the Client complying with clause 6.1. Any delay caused by the Client, including late feedback, approvals, access or materials, shall extend the affected timeline accordingly and shall not reduce the Fees." },
+        { n: "4.5", text: "If the scope of a deliverable materially changes after a timeline has been agreed, the parties shall agree a revised timeline for that deliverable, and any additional work shall be dealt with under clause 5.4." },
+      ],
+    },
+    {
+      title: "5. OPTIMISATION AND POST-BUILD SUPPORT",
+      items: [
+        { n: "5.1", text: "For a period of thirty (30) days following the release of each deliverable (the “Support Period”), the Agency's development team shall be available to investigate and resolve defects, bugs and site issues affecting that deliverable, at no additional cost to the Client." },
+        { n: "5.2", text: "The Support Period covers: (a) functional defects in the deliverable; (b) display, layout or responsiveness errors on desktop or mobile; (c) errors on the Client's site caused by code implemented by the Agency; and (d) material degradation of site performance or page speed attributable to the Agency's work." },
+        { n: "5.3", text: "During the Support Period the Agency shall also continue to review the performance of the deliverable and, where the data supports it, iterate and refine it with the aim of improving its commercial performance. For the avoidance of doubt this is an obligation of effort and not of result, and clause 1." + (isRetainer ? "6" : "5") + " continues to apply." },
+        { n: "5.4", text: "The Support Period does not cover new features, changes to the agreed scope, or issues arising from third-party applications, themes, integrations or changes made by the Client or anyone other than the Agency, nor pre-existing issues on the Client's site not caused by the Agency. The Agency shall notify the Client where it considers a request falls outside the Support Period and may quote for that work separately." },
+        { n: "5.5", text: "The Client shall report any defect promptly and, so far as reasonably possible, with sufficient detail (including the device, browser and steps to reproduce) to enable the Agency to investigate it." },
+        ...(isRetainer
+          ? [{ n: "5.6", text: "For so long as this Agreement remains in force, the Agency shall in any event continue to test, iterate and optimise the deliverables as part of the Services under clause 1, independently of the Support Period." }]
+          : []),
+      ],
+    },
+  ];
+}
+
+/* ── Shared clauses 6-11 ── */
 const SHARED: Clause[] = [
   {
-    title: "4. CLIENT OBLIGATIONS",
+    title: "6. CLIENT OBLIGATIONS",
     items: [
-      { n: "4.1", text: "The Client shall promptly provide the Agency with all access, materials and cooperation reasonably required to perform the Services, including Shopify store access, brand assets, product information and imagery, analytics access, and timely feedback and approvals." },
-      { n: "4.2", text: "Timeframes communicated by the Agency are estimates and are conditional on the Client complying with clause 4.1. Delays caused by the Client shall extend affected timeframes accordingly and shall not reduce the Fees." },
+      { n: "6.1", text: "The Client shall promptly provide the Agency with all access, materials and cooperation reasonably required to perform the Services, including Shopify store access, brand assets, product information and imagery, analytics access, and timely feedback and approvals." },
+      { n: "6.2", text: "The Client shall ensure that any content, imagery or claims it supplies to the Agency are accurate and do not infringe the rights of any third party." },
     ],
   },
   {
-    title: "5. INTELLECTUAL PROPERTY",
+    title: "7. INTELLECTUAL PROPERTY",
     items: [
-      { n: "5.1", text: "Upon receipt by the Agency of all Fees due for the relevant deliverable, all intellectual property rights in the completed deliverables created for the Client under this Agreement shall be assigned to, and belong exclusively to, the Client." },
-      { n: "5.2", text: "The Agency retains all rights in its pre-existing materials, know-how, tools, processes and frameworks, and grants the Client a non-exclusive, perpetual licence to use the same solely as embedded in the deliverables." },
-      { n: "5.3", text: "The Agency may, with the Client's prior written consent (not to be unreasonably withheld), reference the work and anonymised results in its portfolio and marketing." },
+      { n: "7.1", text: "Upon receipt by the Agency of all Fees due for the relevant deliverable, all intellectual property rights in the completed deliverables created for the Client under this Agreement shall be assigned to, and belong exclusively to, the Client." },
+      { n: "7.2", text: "The Agency retains all rights in its pre-existing materials, know-how, tools, processes and frameworks, and grants the Client a non-exclusive, perpetual licence to use the same solely as embedded in the deliverables." },
+      { n: "7.3", text: "The Agency may, with the Client's prior written consent (not to be unreasonably withheld), reference the work and anonymised results in its portfolio and marketing." },
     ],
   },
   {
-    title: "6. CONFIDENTIALITY",
+    title: "8. CONFIDENTIALITY",
     items: [
-      { n: "6.1", text: "Each party shall keep confidential all non-public information disclosed by the other party in connection with this Agreement and shall use it only for the purposes of this Agreement. This clause shall survive termination for a period of two (2) years." },
+      { n: "8.1", text: "Each party shall keep confidential all non-public information disclosed by the other party in connection with this Agreement and shall use it only for the purposes of this Agreement. This clause shall survive termination for a period of two (2) years." },
     ],
   },
   {
-    title: "7. LIMITATION OF LIABILITY",
+    title: "9. LIMITATION OF LIABILITY",
     items: [
-      { n: "7.1", text: "Neither party shall be liable for any loss of profit, loss of revenue, loss of business, loss of anticipated savings or any indirect or consequential loss." },
-      { n: "7.2", text: "The Agency's total aggregate liability arising under or in connection with this Agreement shall not exceed the total Fees paid by the Client under this Agreement." },
+      { n: "9.1", text: "Neither party shall be liable for any loss of profit, loss of revenue, loss of business, loss of anticipated savings or any indirect or consequential loss." },
+      { n: "9.2", text: "The Agency's total aggregate liability arising under or in connection with this Agreement shall not exceed the total Fees paid by the Client under this Agreement." },
     ],
   },
   {
-    title: "8. GENERAL",
+    title: "10. GENERAL",
     items: [
-      { n: "8.1", text: "Entire agreement. This Agreement constitutes the entire agreement between the parties in relation to its subject matter and supersedes all prior discussions and correspondence, including messages exchanged via WhatsApp." },
-      { n: "8.2", text: "Variation. No variation of this Agreement shall be effective unless in writing and agreed by both parties (email being sufficient)." },
-      { n: "8.3", text: "Assignment. Neither party may assign this Agreement without the other's prior written consent, not to be unreasonably withheld." },
-      { n: "8.4", text: "Force majeure. Neither party shall be in breach of this Agreement for delay or failure caused by events beyond its reasonable control." },
-      { n: "8.5", text: "Third parties. No person other than a party to this Agreement shall have any rights under the Contracts (Rights of Third Parties) Act 1999 to enforce any term of this Agreement." },
-      { n: "8.6", text: "Notices. Formal notices under this Agreement shall be given in writing by email to the addresses set out below the signature blocks, and shall be deemed received on the next business day after sending." },
+      { n: "10.1", text: "Entire agreement. This Agreement constitutes the entire agreement between the parties in relation to its subject matter and supersedes all prior discussions and correspondence, including messages exchanged via WhatsApp, save that timelines agreed under clause 4 form part of this Agreement." },
+      { n: "10.2", text: "Variation. No variation of this Agreement shall be effective unless in writing and agreed by both parties (email being sufficient), save that timelines may be agreed as set out in clause 4.2." },
+      { n: "10.3", text: "Assignment. Neither party may assign this Agreement without the other's prior written consent, not to be unreasonably withheld." },
+      { n: "10.4", text: "Force majeure. Neither party shall be in breach of this Agreement for delay or failure caused by events beyond its reasonable control." },
+      { n: "10.5", text: "Third parties. No person other than a party to this Agreement shall have any rights under the Contracts (Rights of Third Parties) Act 1999 to enforce any term of this Agreement." },
+      { n: "10.6", text: "Notices. Formal notices under this Agreement shall be given in writing by email to the addresses set out below the signature blocks, and shall be deemed received on the next business day after sending." },
     ],
   },
   {
-    title: "9. GOVERNING LAW AND JURISDICTION",
+    title: "11. GOVERNING LAW AND JURISDICTION",
     items: [
-      { n: "9.1", text: "This Agreement and any dispute or claim arising out of or in connection with it (including non-contractual disputes or claims) shall be governed by and construed in accordance with the law of England and Wales, and the parties irrevocably submit to the exclusive jurisdiction of the courts of England and Wales." },
+      { n: "11.1", text: "This Agreement and any dispute or claim arising out of or in connection with it (including non-contractual disputes or claims) shall be governed by and construed in accordance with the law of England and Wales, and the parties irrevocably submit to the exclusive jurisdiction of the courts of England and Wales." },
     ],
   },
 ];
@@ -265,7 +300,15 @@ export function AgreementDocument({ c }: { c: Checkout }) {
           <ItemList items={fees.items} />
         </View>
 
-        {/* Shared clauses 4-9 */}
+        {/* Clauses 4-5: timelines + post-build support */}
+        {deliveryAndSupport(c).map((cl) => (
+          <View key={cl.title} style={s.clause}>
+            <Text style={s.clauseTitle}>{cl.title}</Text>
+            <ItemList items={cl.items} />
+          </View>
+        ))}
+
+        {/* Shared clauses 6-11 */}
         {SHARED.map((cl) => (
           <View key={cl.title} style={s.clause}>
             <Text style={s.clauseTitle}>{cl.title}</Text>
