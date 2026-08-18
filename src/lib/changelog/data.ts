@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-145",
+    date: "18 August 2026",
+    version: "3.4.2",
+    title: "Client agreement: delivery timelines and a 30-day support period",
+    changes: [
+      { type: "added", text: "Delivery and timelines clause. The agreement no longer implies fixed calendar dates: turnaround for each deliverable is agreed per deliverable based on its scope and size, verbally or in writing, with either side able to confirm a verbal timeline in writing. Client-caused delays extend the timeline and do not reduce the fees. One agreement now covers every deal without rewriting it each time." },
+      { type: "added", text: "Optimisation and post-build support clause. For 30 days after each deliverable goes live, the dev team is on hand for defects, bugs, display and responsiveness errors, and any page-speed degradation caused by our work, at no extra cost. New features, scope changes, third-party apps and client-made changes sit outside it and get quoted separately. Retainers keep optimising for the whole term regardless." },
+      { type: "added", text: "Every deliverable is now stated in the agreement as responsive and optimised for desktop and mobile, and tested across the major browsers and common breakpoints before release." },
+      { type: "added", text: "Internal agreement preview at /preview/agreement: read the current retainer and project wording end to end on sample data, without creating a checkout." },
+    ],
+  },
+  {
     id: "cl-144",
     date: "6 August 2026",
     version: "3.4.1",
