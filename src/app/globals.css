@@ -715,23 +715,56 @@ h1, h2, h3, h4, h5, h6 {
    * to the viewport rectangle which clipped the contract to 1 page.
    * Without a bottom bound the content flows to its natural height
    * across as many printed pages as it needs. */
-  html, body { background: white !important; }
-  body * { visibility: hidden; }
-  .printable-document, .printable-document * { visibility: visible !important; }
+  html, body {
+    background: white !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Every ancestor of the document, stripped of layout constraints.
+   * The dashboard shell is `h-screen overflow-hidden` with `main` as an
+   * inner scroll container; left alone it caps the printed output at a
+   * single viewport-sized box, which is what produced a blank one-page
+   * PDF. Unlocking the chain lets the document paginate naturally. */
+  body,
+  body :has(.printable-document) {
+    display: block !important;
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* At every level of that chain, drop the siblings: header, sidebar,
+   * the signing-link box, the clauses editor, footer actions. Anything
+   * inside .printable-document is untouched, so the document keeps its
+   * own flex/grid layout (signature blocks included). */
+  :is(body, body :has(.printable-document))
+    > *:not(:has(.printable-document)):not(.printable-document) {
+    display: none !important;
+  }
+
+  /* The document itself prints in normal flow. */
+  .printable-document {
+    position: static !important;
+    width: auto !important;
+    background: white !important;
+    padding: 0 !important;
+  }
   .printable-document, .printable-document * {
     color: #111 !important;
     background: transparent !important;
     border-color: #d0d0d0 !important;
     box-shadow: none !important;
     text-shadow: none !important;
-  }
-  .printable-document {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: white !important;
-    padding: 0 !important;
   }
   /* Article wrapper inside RenderedDocument carries the dashboard
    * card padding + rounded corners - reset to a clean print layout

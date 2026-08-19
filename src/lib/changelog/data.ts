@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-146",
+    date: "19 August 2026",
+    version: "3.4.3",
+    title: "Team contract PDF download was printing a blank page",
+    changes: [
+      { type: "fixed", text: "The PDF button on a team contract produced a single blank page. The dashboard shell is a fixed-height frame with its own inner scroll area, which capped the printed output at one screen-sized box and clipped the contract out of it entirely. Printing now unlocks that frame so the contract flows across as many pages as it needs, with the app chrome and the surrounding page controls dropped and the signature blocks kept intact." },
+    ],
+  },
+  {
     id: "cl-145",
     date: "18 August 2026",
     version: "3.4.2",
