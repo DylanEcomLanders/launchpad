@@ -89,6 +89,24 @@ const APP_OPTIONS = [
 const LAST = SECTIONS.length - 1;
 const REQUIRED_FIELDS: (keyof FormData)[] = SECTIONS.flatMap((s) => s.required);
 
+/* Field labels for the required fields, so a blocked submit can name exactly
+ * what is still missing rather than just refusing. Keep in step with the
+ * <Field label> used for each one below. */
+const REQUIRED_LABELS: Partial<Record<keyof FormData, string>> = {
+  company_name: "Company / brand name",
+  website_url: "Website",
+  brief_description: "Brief description",
+  target_customer: "Target customer",
+  usps: "What sets you apart (USPs)",
+  main_products: "Main products / offers to focus on",
+  tone_of_voice: "Tone of voice",
+  brand_flexibility: "How much creative freedom do we have?",
+  myshopify_url: "myshopify.com URL & collaborator code",
+  primary_contact: "Primary point of contact",
+  primary_goal: "Primary goal of this project",
+  success_definition: "What does success look like, in your words?",
+};
+
 const DRAFT_KEY = "el-onboarding-draft-v1";
 
 /* Driven by the app's design tokens so the client form matches the rest of
@@ -244,6 +262,7 @@ export default function OnboardingFormPage() {
   const goto = (i: number) => {
     const n = Math.max(0, Math.min(LAST, i));
     setStep(n);
+    setError("");
     setVisited((v) => new Set(v).add(n));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -288,9 +307,23 @@ export default function OnboardingFormPage() {
       goto(step + 1);
       return;
     }
-    if (!form.company_name.trim() || !form.website_url.trim()) {
-      setError("Company name and website URL are required (in the first step).");
-      setStep(0);
+    /* Every required field, not just the first two. The contents rail lets a
+     * client jump straight to the last section, so without this a brief can be
+     * submitted almost empty. Send them to the first incomplete section and
+     * name what is missing there. */
+    const firstIncomplete = SECTIONS.findIndex((s) => s.required.some((k) => !form[k].trim()));
+    if (firstIncomplete !== -1) {
+      const missingHere = SECTIONS[firstIncomplete].required
+        .filter((k) => !form[k].trim())
+        .map((k) => REQUIRED_LABELS[k] ?? k);
+      const totalMissing = REQUIRED_FIELDS.filter((k) => !form[k].trim()).length;
+      const more = totalMissing - missingHere.length;
+      setError(
+        `Still to fill in under ${SECTIONS[firstIncomplete].title}: ${missingHere.join(", ")}.` +
+          (more > 0 ? ` Plus ${more} more in later sections.` : ""),
+      );
+      setStep(firstIncomplete);
+      setVisited((prev) => new Set(prev).add(firstIncomplete));
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -426,6 +459,13 @@ export default function OnboardingFormPage() {
             {SECTIONS[step].title}
           </h1>
           <p className="mt-5 max-w-xl leading-relaxed text-muted">{SECTIONS[step].intro}</p>
+          {/* A blocked submit sends the client back here, so the reason has to
+           * be visible at the top of the section, not only beside the button. */}
+          {error && (
+            <p className="mt-6 rounded border border-status-late/30 bg-status-late/10 px-4 py-3 text-sm font-medium text-status-late">
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Fields */}
@@ -652,8 +692,6 @@ export default function OnboardingFormPage() {
             </>
           )}
         </div>
-
-        {error && <p className="mt-6 text-sm font-medium text-status-late">{error}</p>}
 
         {/* Nav */}
         <div className="mt-14 flex items-center justify-between gap-3">
