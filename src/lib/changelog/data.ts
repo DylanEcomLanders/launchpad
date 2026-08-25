@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-147",
+    date: "24 August 2026",
+    version: "3.4.4",
+    title: "Onboarding briefs could be submitted before they were finished",
+    changes: [
+      { type: "fixed", text: "The onboarding form marks 12 fields as required, and they drive the progress bar and the section ticks in the contents rail, but submitting only ever checked the company name and website. Because the rail lets a client jump straight to the last section, and the checkout link prefills the company name, a brief could be sent in almost empty. Submitting now checks every required field, drops the client on the first unfinished section, and names exactly what is still missing there and how many fields remain elsewhere." },
+      { type: "improved", text: "That message now sits at the top of the section rather than down beside the button, so a client who gets sent back actually sees why, and it clears as soon as they move between sections." },
+    ],
+  },
+  {
     id: "cl-146",
     date: "19 August 2026",
     version: "3.4.3",
