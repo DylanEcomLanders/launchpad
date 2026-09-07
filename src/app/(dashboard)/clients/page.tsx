@@ -7,8 +7,9 @@
  * doc reads as navigable tabs, not one long scroll. Each doc seeds from the
  * retainer / one-time template so the spine is always there.
  *
- * Prototype: localStorage-backed (see lib/pod-projects/data.ts), seeded with
- * Pod 1 + two example docs. Migration 059 wires the shared Supabase table.
+ * Persistence: Supabase `pod_docs` is the source of truth (see
+ * lib/pod-projects/data.ts). localStorage is a cache. Saves refuse to
+ * overwrite a newer cloud revision with a stale tab's section tree.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -35,6 +36,7 @@ import {
   restoreDoc,
   purgeDoc,
   loadDeletedDocs,
+  POD_DOCS_SYNC_ERROR,
   newDoc,
   setSectionBody,
   setSectionRows,
@@ -46,6 +48,7 @@ import {
   deleteSection,
   toggleSectionDone,
 } from "@/lib/pod-projects/data";
+import { mergePodDocs } from "@/lib/pod-projects/sync";
 import { flattenSections, firstLeaf, BRIEF_BLOCK } from "@/lib/pod-projects/templates";
 import type { Pod, PodDoc, DocSection, DocType, RetainerTier } from "@/lib/pod-projects/types";
 import { loadCards, saveCard, removeCard, newCard, cardsForClient } from "@/lib/cx/data";
@@ -89,6 +92,15 @@ export default function PodProjectsPage() {
   const [clientCards, setClientCards] = useState<CxCard[]>([]);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const docsRef = useRef<PodDoc[]>([]);
+
+  const applyDocs = useCallback((updater: (prev: PodDoc[]) => PodDoc[]) => {
+    setDocs((prev) => {
+      const next = updater(prev);
+      docsRef.current = next;
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -99,7 +111,9 @@ export default function PodProjectsPage() {
       // Templates live in the same docs state (flagged isTemplate) so every
       // editor handler works on them uniformly; they're grouped separately in
       // the rail and persist to their own store.
-      setDocs([...d, ...templates]);
+      const initial = [...d, ...templates];
+      docsRef.current = initial;
+      setDocs(initial);
       const first = d[0] ?? null;
       setActiveId(first?.id ?? null);
       setSectionId(first ? firstLeaf(first.sections)?.id ?? null : null);
@@ -113,32 +127,60 @@ export default function PodProjectsPage() {
     [active, sectionId],
   );
 
-  /* Route persistence: templates save to their own store, clients to theirs. */
-  const persistDoc = useCallback((doc: PodDoc) => {
-    if (doc.isTemplate) saveTemplate(doc);
-    else void saveDoc(doc);
-  }, []);
+  /* Route persistence: templates save to their own store, clients to theirs.
+   * After a client save, stamp `updated_at` so the next write is compared
+   * against the revision we just persisted. On a stale-tab conflict, take the
+   * merged cloud tree (filled briefs survive) without clobbering keystrokes
+   * that landed after this save started.
+   *
+   * Mutations always patch from `prev` (via applyDocs) and the debounced
+   * flush reads `docsRef` — never a captured `active` snapshot — so editing
+   * Overview cannot overwrite an in-flight Strategy Brief edit. */
+  const persistDoc = useCallback(async (doc: PodDoc) => {
+    if (doc.isTemplate) {
+      saveTemplate(doc);
+      return;
+    }
+    const { doc: saved, conflicted } = await saveDoc(doc);
+    applyDocs((prev) =>
+      prev.map((d) => {
+        if (d.id !== saved.id) return d;
+        if (conflicted) return { ...mergePodDocs(d, saved), updated_at: saved.updated_at };
+        return { ...d, updated_at: saved.updated_at };
+      }),
+    );
+  }, [applyDocs]);
 
-  const persist = useCallback(
-    (doc: PodDoc) => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => persistDoc(doc), 700);
+  const persistNow = useCallback(
+    (id: string) => {
+      const doc = docsRef.current.find((d) => d.id === id);
+      if (doc) void persistDoc(doc);
     },
     [persistDoc],
+  );
+
+  const persist = useCallback(
+    (id: string) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => persistNow(id), 700);
+    },
+    [persistNow],
   );
 
   // Switch a client between retainer and one-time after creation. Sections are
   // kept as-is; only the type (and default tier) change.
   function changeType(type: DocType) {
-    if (!active || active.isTemplate || active.type === type) return;
-    const updated: PodDoc = {
-      ...active,
-      type,
-      tier: type === "retainer" ? active.tier ?? "core" : active.tier,
-      updated_at: new Date().toISOString(),
-    };
-    setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
-    persistDoc(updated);
+    if (!activeId) return;
+    applyDocs((prev) => {
+      const current = prev.find((d) => d.id === activeId);
+      if (!current || current.isTemplate || current.type === type) return prev;
+      return prev.map((d) =>
+        d.id === activeId
+          ? { ...current, type, tier: type === "retainer" ? current.tier ?? "core" : current.tier }
+          : d,
+      );
+    });
+    persistNow(activeId);
   }
 
   // Delete a pod (only when empty, so no client is orphaned).
@@ -155,11 +197,12 @@ export default function PodProjectsPage() {
 
   // Move a client doc to another pod (drag-drop in the rail).
   function moveDocToPod(docId: string, podId: string) {
-    const doc = docs.find((d) => d.id === docId);
-    if (!doc || doc.isTemplate || doc.podId === podId) return;
-    const updated = { ...doc, podId, updated_at: new Date().toISOString() };
-    setDocs((prev) => prev.map((d) => (d.id === docId ? updated : d)));
-    persistDoc(updated);
+    applyDocs((prev) => {
+      const current = prev.find((d) => d.id === docId);
+      if (!current || current.isTemplate || current.podId === podId) return prev;
+      return prev.map((d) => (d.id === docId ? { ...current, podId } : d));
+    });
+    persistNow(docId);
   }
 
   // Selecting a doc lands on its first content-bearing section.
@@ -174,81 +217,110 @@ export default function PodProjectsPage() {
   }
 
   function handleAddSection(parentId: string | null) {
-    if (!active) return;
-    const { doc, section } = addSection(active, parentId);
-    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
-    setSectionId(section.id);
-    setAutoEditId(section.id);
-    void persistDoc(doc);
+    if (!activeId) return;
+    let createdId: string | null = null;
+    applyDocs((prev) => {
+      const current = prev.find((d) => d.id === activeId);
+      if (!current) return prev;
+      const { doc, section } = addSection(current, parentId);
+      createdId = section.id;
+      return prev.map((d) => (d.id === activeId ? doc : d));
+    });
+    if (!createdId) return;
+    setSectionId(createdId);
+    setAutoEditId(createdId);
+    persistNow(activeId);
   }
 
   function handleRenameSection(id: string, title: string) {
-    if (!active) return;
+    if (!activeId) return;
     setAutoEditId(null);
-    const doc = renameSection(active, id, title);
-    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
-    persist(doc);
+    applyDocs((prev) => {
+      const current = prev.find((d) => d.id === activeId);
+      if (!current) return prev;
+      return prev.map((d) => (d.id === activeId ? renameSection(current, id, title) : d));
+    });
+    persist(activeId);
   }
 
   function handleToggleDone() {
-    if (!active || !section) return;
-    const doc = toggleSectionDone(active, section.id);
-    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
-    persist(doc);
+    if (!activeId || !sectionId) return;
+    applyDocs((prev) => {
+      const current = prev.find((d) => d.id === activeId);
+      if (!current) return prev;
+      return prev.map((d) => (d.id === activeId ? toggleSectionDone(current, sectionId) : d));
+    });
+    persist(activeId);
   }
 
-
   function handleDeleteSection(id: string) {
-    if (!active) return;
-    const flat = flattenSections(active.sections);
-    const target = flat.find((s) => s.id === id);
-    const childIds = target?.children?.map((c) => c.id) ?? [];
-    const doc = deleteSection(active, id);
-    setDocs((prev) => prev.map((d) => (d.id === active.id ? doc : d)));
-    // If the open section was deleted (or was a child of a deleted group), land
-    // on the doc's first section again.
-    if (sectionId === id || childIds.includes(sectionId ?? "")) {
-      setSectionId(firstLeaf(doc.sections)?.id ?? null);
-    }
-    void persistDoc(doc);
+    if (!activeId) return;
+    let nextLeaf: string | null | undefined;
+    applyDocs((prev) => {
+      const current = prev.find((d) => d.id === activeId);
+      if (!current) return prev;
+      const flat = flattenSections(current.sections);
+      const target = flat.find((s) => s.id === id);
+      const childIds = target?.children?.map((c) => c.id) ?? [];
+      const doc = deleteSection(current, id);
+      if (sectionId === id || childIds.includes(sectionId ?? "")) {
+        nextLeaf = firstLeaf(doc.sections)?.id ?? null;
+      }
+      return prev.map((d) => (d.id === activeId ? doc : d));
+    });
+    if (nextLeaf !== undefined) setSectionId(nextLeaf);
+    persistNow(activeId);
   }
 
   const handleBodyChange = useCallback(
     (html: string) => {
-      if (!active || !section) return;
-      const updated = setSectionBody(active, section.id, html);
-      setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
-      persist(updated);
+      if (!activeId || !sectionId) return;
+      let changed = false;
+      applyDocs((prev) => {
+        const current = prev.find((d) => d.id === activeId);
+        if (!current) return prev;
+        const currentSection = flattenSections(current.sections).find((s) => s.id === sectionId);
+        if (!currentSection || html === currentSection.body) return prev;
+        changed = true;
+        return prev.map((d) => (d.id === activeId ? setSectionBody(current, sectionId, html) : d));
+      });
+      if (changed) persist(activeId);
     },
-    [active, section, persist],
+    [activeId, sectionId, applyDocs, persist],
   );
 
   const handleRowsChange = useCallback(
     (rows: Parameters<typeof setSectionRows>[2]) => {
-      if (!active || !section) return;
-      const updated = setSectionRows(active, section.id, rows);
-      setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
-      persist(updated);
+      if (!activeId || !sectionId) return;
+      applyDocs((prev) => {
+        const current = prev.find((d) => d.id === activeId);
+        if (!current) return prev;
+        return prev.map((d) => (d.id === activeId ? setSectionRows(current, sectionId, rows) : d));
+      });
+      persist(activeId);
     },
-    [active, section, persist],
+    [activeId, sectionId, applyDocs, persist],
   );
 
   const handleEntriesChange = useCallback(
     (entries: Parameters<typeof setSectionEntries>[2]) => {
-      if (!active || !section) return;
-      const updated = setSectionEntries(active, section.id, entries);
-      setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
-      persist(updated);
+      if (!activeId || !sectionId) return;
+      applyDocs((prev) => {
+        const current = prev.find((d) => d.id === activeId);
+        if (!current) return prev;
+        return prev.map((d) => (d.id === activeId ? setSectionEntries(current, sectionId, entries) : d));
+      });
+      persist(activeId);
     },
-    [active, section, persist],
+    [activeId, sectionId, applyDocs, persist],
   );
 
   function createDoc(podId: string, title: string, type: DocType, tier?: RetainerTier) {
     const doc = newDoc(podId, title, type, tier);
-    setDocs((prev) => [...prev, doc]);
+    applyDocs((prev) => [...prev, doc]);
     setActiveId(doc.id);
     setSectionId(firstLeaf(doc.sections)?.id ?? null);
-    void saveDoc(doc);
+    persistNow(doc.id);
     setNewFor(null);
   }
 
@@ -256,9 +328,8 @@ export default function PodProjectsPage() {
     if (!active || active.isTemplate) return;
     if (!confirm(`Delete "${active.title}"? You can restore it from Recently deleted.`)) return;
     const removed = active;
-    const remaining = docs.filter((d) => d.id !== removed.id);
-    setDocs(remaining);
-    selectDoc(remaining.find((d) => !d.isTemplate)?.id ?? "");
+    applyDocs((prev) => prev.filter((d) => d.id !== removed.id));
+    selectDoc(docsRef.current.find((d) => !d.isTemplate)?.id ?? "");
     void removeDoc(removed.id).then(() => setDeletedDocs(loadDeletedDocs()));
   }
 
@@ -272,7 +343,7 @@ export default function PodProjectsPage() {
     if (doc) {
       const revived = { ...doc };
       delete revived.deleted_at;
-      setDocs((prev) => (prev.some((d) => d.id === id) ? prev : [...prev, revived]));
+      applyDocs((prev) => (prev.some((d) => d.id === id) ? prev : [...prev, revived]));
     }
     setDeletedDocs(loadDeletedDocs());
   }
@@ -341,9 +412,9 @@ export default function PodProjectsPage() {
                   value={active.title}
                   readOnly={!canEdit}
                   onChange={(e) => {
-                    const updated = { ...active, title: e.target.value };
-                    setDocs((prev) => prev.map((d) => (d.id === active.id ? updated : d)));
-                    persist(updated);
+                    const title = e.target.value;
+                    applyDocs((prev) => prev.map((d) => (d.id === active.id ? { ...d, title } : d)));
+                    persist(active.id);
                   }}
                   className="w-full min-w-0 truncate bg-transparent font-heading text-xl font-medium tracking-tight text-foreground focus:outline-none"
                 />
@@ -515,6 +586,32 @@ export default function PodProjectsPage() {
           onClose={() => setShowDeliverables(false)}
         />
       )}
+
+      <PodDocsSyncErrorToast />
+    </div>
+  );
+}
+
+function PodDocsSyncErrorToast() {
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    function handler(e: Event) {
+      const detail = (e as CustomEvent<{ message: string }>).detail;
+      if (detail?.message) {
+        setError(detail.message);
+        window.setTimeout(() => setError(null), 10000);
+      }
+    }
+    window.addEventListener(POD_DOCS_SYNC_ERROR, handler);
+    return () => window.removeEventListener(POD_DOCS_SYNC_ERROR, handler);
+  }, []);
+
+  if (!error) return null;
+  return (
+    <div className="fixed bottom-6 left-1/2 z-50 max-w-md -translate-x-1/2 rounded bg-status-late/[0.95] px-5 py-3 text-xs font-medium text-white">
+      <div className="mb-0.5 font-semibold">Cloud save failed</div>
+      <div className="break-all text-2xs opacity-90">{error}</div>
     </div>
   );
 }
